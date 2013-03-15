@@ -1,6 +1,8 @@
 import json
 from pprint import pprint
 import datetime
+from fireworks.core.firework import FireWork
+from mpworks.firetasks.vaspwriter_task import VASPWriterTask
 from pymatgen.core.structure import Structure
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -13,6 +15,7 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 import numpy as np
+
 
 def snl_to_spec(snl):
     spec = {}
@@ -36,6 +39,11 @@ def snl_to_spec(snl):
 
     return spec
 
+def snl_to_fw(snl):
+
+    spec = snl_to_spec(snl)
+    tasks = [VASPWriterTask()]
+    return FireWork(tasks, spec)
 
 
 
@@ -44,7 +52,5 @@ if __name__ == '__main__':
     s = Structure(np.eye(3, 3) * 3, ["Fe", "Mn"], [[0, 0, 0], [0.5, 0.5, 0.5]])
     snl = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
 
-    spec = snl_to_spec(snl)
-    print json.dumps(spec, default= lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None)
-    print '--'
-    pprint(spec)
+    fw = snl_to_fw(snl)
+    fw.to_file('pmg_fw.json')
