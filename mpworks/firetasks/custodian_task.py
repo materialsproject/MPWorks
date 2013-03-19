@@ -21,7 +21,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         if 'cvrsvc' in socket.gethostname():  # carver
             v_exe = shlex.split('mpirun -n 8 vasp')  # TODO: make ncores dynamic!
-        elif 'hopp' in socket.gethostname():  # hopper
+        elif 'nid' in socket.gethostname():  # hopper
             v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
         else:
             raise ValueError('Unrecognized host!')
