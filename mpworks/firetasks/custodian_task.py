@@ -27,8 +27,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
             raise ValueError('Unrecognized host!')
 
         handlers = [VaspErrorHandler(), UnconvergedErrorHandler(), PoscarErrorHandler()]
-        job = VaspJob.double_relaxation_run(v_exe)
-        job.gzipped = False
+        job = VaspJob.double_relaxation_run(v_exe, gzipped=False)
 
         c = Custodian(handlers, job, max_errors=10)
         c.run()
