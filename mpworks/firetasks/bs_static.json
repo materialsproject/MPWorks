@@ -1,0 +1,13 @@
+{
+     "INCAR": {
+          "IBRION": -1,
+          "ISMEAR": -5,
+          "LAECHG": ".TRUE.",
+          "LCHARG": ".TRUE.",
+          "LORBIT": 11,
+          "LVHAR": ".TRUE.",
+          "LWAVE": ".FALSE",
+          "NSW": 0
+     },
+     "KPOINTS": 90
+}
