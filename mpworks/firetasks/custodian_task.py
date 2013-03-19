@@ -27,8 +27,10 @@ class CustodianTask(FireTaskBase, FWSerializable):
             raise ValueError('Unrecognized host!')
 
         handlers = [VaspErrorHandler(), UnconvergedErrorHandler(), PoscarErrorHandler()]
-        jobs = VaspJob.double_relaxation_run(v_exe)
-        c = Custodian(handlers, jobs, max_errors=10)
+        job = VaspJob.double_relaxation_run(v_exe)
+        job.gzipped = False
+
+        c = Custodian(handlers, job, max_errors=10)
         c.run()
 
         # return FWAction('CONTINUE', {}, {'$set': {'prev_VASP_dir': os.getcwd()}})

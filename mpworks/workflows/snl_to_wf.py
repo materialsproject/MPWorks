@@ -29,9 +29,16 @@ def snl_to_spec(snl):
     spec['vasp_pmg']['poscar'] = mpvis.get_poscar(structure).to_dict
     spec['vasp_pmg']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp_pmg']['potcar'] = mpvis.get_potcar(structure).to_dict
+
+    # modify the INCAR to remove +U if it's there
+    if 'LDAUU' in spec['vasp_pmg']['incar']:
+        del(spec['vasp_pmg']['incar']['LDAUU'])
+        del(spec['vasp_pmg']['incar']['LDAUJ'])
+        del(spec['vasp_pmg']['incar']['LDAUL'])
+
     spec['vaspinputset'] = mpvis.to_dict
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-    spec['task_type'] = 'optimize structure (2x)'
+    spec['task_type'] = 'GGA optimize structure (2x)'
     spec['snl'] = snl.to_dict
     spec['snl_id'] = -1
     spec['snl_group'] = -2
@@ -55,4 +62,10 @@ if __name__ == '__main__':
     snl = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
 
     fw = snl_to_fw(snl)
-    fw.to_file('pmg_fw.json')
+    fw.to_file('pmg_fw_si.json')
+
+    s2 = Structure(np.eye(3, 3) * 3, ["Fe", "O"], [[0, 0, 0], [0.25, 0.25, 0.25]])
+    snl2 = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
+
+    fw2 = snl_to_fw(snl2)
+    fw2.to_file('pmg_fw_feo.json')
