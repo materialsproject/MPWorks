@@ -1,9 +1,10 @@
 import socket
-from fireworks.core.firework import FireTaskBase
+from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
 from custodian.vasp.handlers import VaspErrorHandler, UnconvergedErrorHandler, PoscarErrorHandler
 from custodian.vasp.jobs import VaspJob
+import shlex
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -18,10 +19,10 @@ class CustodianTask(FireTaskBase, FWSerializable):
     _fw_name = "Custodian Task"
 
     def run_task(self, fw_spec):
-        if 'carv' in socket.gethostname():
-            v_exe = 'mpirun -n 8 vasp'  # TODO: make ncores dynamic!
-        elif 'hopp' in socket.gethostname():
-            v_exe = 'aprun -n 24 vasp'  # TODO: make ncores dynamic!
+        if 'cvrsvc' in socket.gethostname():  # carver
+            v_exe = shlex.split('mpirun -n 8 vasp')  # TODO: make ncores dynamic!
+        elif 'hopp' in socket.gethostname():  # hopper
+            v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
         else:
             raise ValueError('Unrecognized host!')
 
@@ -29,3 +30,5 @@ class CustodianTask(FireTaskBase, FWSerializable):
         jobs = VaspJob.double_relaxation_run(v_exe)
         c = Custodian(handlers, jobs, max_errors=10)
         c.run()
+
+        # return FWAction('CONTINUE', {}, {'$set': {'prev_VASP_dir': os.getcwd()}})
