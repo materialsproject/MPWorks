@@ -36,7 +36,6 @@ def snl_to_spec(snl):
         del(spec['vasp_pmg']['incar']['LDAUJ'])
         del(spec['vasp_pmg']['incar']['LDAUL'])
 
-    # spec['vaspinputset'] = mpvis.to_dict
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA optimize structure (2x)'
     spec['snl'] = snl.to_dict
