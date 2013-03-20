@@ -51,7 +51,7 @@
                         "gamma": 90.0
                     }, 
                     "about": {
-                        "created_at": "2013-03-20T21:13:02.555149", 
+                        "created_at": "2013-03-20T21:18:07.963184", 
                         "references": "", 
                         "authors": [
                             {
@@ -123,7 +123,7 @@
                         ], 
                         "ALGO": "Fast", 
                         "NELM": 100, 
-                        "PREC": "Accurate", 
+                        "PREC": "Med", 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
                         "ISIF": 3, 
                         "ICHARG": 1, 
@@ -132,7 +132,7 @@
                         "LREAL": "Auto", 
                         "ISMEAR": -5, 
                         "ISPIN": 2, 
-                        "EDIFF": 0.0001, 
+                        "EDIFF": 0.001, 
                         "LWAVE": "False", 
                         "NPAR": 1, 
                         "SIGMA": 0.2, 
@@ -257,7 +257,7 @@
                 }, 
                 "snl_group": -2
             }, 
-            "created_on": "2013-03-20T21:13:02.566348"
+            "created_on": "2013-03-20T21:18:07.974234"
         }
     ]
 }

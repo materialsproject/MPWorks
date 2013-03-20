@@ -16,7 +16,7 @@ __date__ = 'Mar 15, 2013'
 import numpy as np
 
 
-def _snl_to_spec(snl):
+def _snl_to_spec(snl, testing=False):
     spec = {}
 
     mpvis = MaterialsProjectGGAVaspInputSet()
@@ -37,21 +37,26 @@ def _snl_to_spec(snl):
     spec['snl_strictgroup'] = -2
     spec['tags'] = ['auto_generation_v1.0']
 
+    #  override parameters for testing
+    if testing:
+        spec['vasp']['incar']['PREC'] = 'Med'
+        spec['vasp']['incar']['EDIFF'] *= 10
+
     return spec
 
 
-def _snl_to_fw(snl, fw_id=-1):
-    spec = _snl_to_spec(snl)
+def _snl_to_fw(snl, fw_id=-1, testing=False):
+    spec = _snl_to_spec(snl, testing)
     tasks = [VASPWriterTask(), CustodianTask()]
     return FireWork(tasks, spec, fw_id=fw_id)
 
 
-def snl_to_wf(snl):
+def snl_to_wf(snl, testing=False):
     # TODO: add WF metadata
     fws = []
     connections = {}
 
-    fws.append(_snl_to_fw(snl, fw_id=-1))  # add the GGA FireWork to the workflow
+    fws.append(_snl_to_fw(snl, fw_id=-1, testing=testing))  # add the GGA FireWork to the workflow
 
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
@@ -72,5 +77,5 @@ if __name__ == '__main__':
     s2 = Structure(np.eye(3, 3) * 3, ["Fe", "O"], [[0, 0, 0], [0.25, 0.25, 0.25]])
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
 
-    snl_to_wf(snl1).to_file('test_wfs/wf_si.json', indent=4)
-    snl_to_wf(snl2).to_file('test_wfs/wf_feo.json', indent=4)
+    snl_to_wf(snl1, testing=True).to_file('test_wfs/wf_si.json', indent=4)
+    snl_to_wf(snl2, testing=True).to_file('test_wfs/wf_feo.json', indent=4)
