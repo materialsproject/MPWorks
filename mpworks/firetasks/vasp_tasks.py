@@ -73,4 +73,4 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
 
         vi["INCAR"].write_file("INCAR")  # write back the new INCAR to the current directory
 
-        return FWAction('CONTINUE', {'incar_overrides': self.parameters})
+        return FWAction('CONTINUE')
