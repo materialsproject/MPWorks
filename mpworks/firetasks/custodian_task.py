@@ -31,7 +31,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
 
         if 'static_run' in fw_spec['task_type']:
             jobs = VaspJob(v_exe,suffix=".static")  # TODO: fix this
-        else:
+        elif 'optimize structure (2x)' in fw_spec['task_type']:
             jobs = VaspJob.double_relaxation_run(v_exe)
 
         c = Custodian(handlers, jobs, max_errors=10)

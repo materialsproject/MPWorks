@@ -58,8 +58,11 @@ def snl_to_wf(snl):
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
     if 'LDAU' in incar and incar['LDAU']:
+        spec = {}
+        spec['task_type'] = 'GGA+U optimize structure (2x)'
+        # TODO: add more specs
         incar_updates = { k: incar[k] for k in incar.keys() if 'LDAU' in k}  # LDAU values to use
-        fws.append(FireWork([VASPCopyTask(), SetupGGAUTask(incar_updates)], fw_id=-2))
+        fws.append(FireWork([VASPCopyTask(), SetupGGAUTask(incar_updates), CustodianTask()], spec, fw_id=-2))
         connections[-1] = -2
 
     return Workflow(fws, connections)
