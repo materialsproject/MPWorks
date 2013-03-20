@@ -14,10 +14,31 @@
                     {
                         "_fw_name": "VASP Copy Task", 
                         "parameters": {}
+                    }, 
+                    {
+                        "_fw_name": "Setup GGAU Task", 
+                        "parameters": {
+                            "LDAU": "True", 
+                            "LDAUL": [
+                                2, 
+                                0
+                            ], 
+                            "LDAUU": [
+                                5.3, 
+                                0
+                            ], 
+                            "LDAUTYPE": [
+                                2
+                            ], 
+                            "LDAUJ": [
+                                0, 
+                                0
+                            ]
+                        }
                     }
                 ]
             }, 
-            "created_on": "2013-03-20T18:28:16.014154"
+            "created_on": "2013-03-20T20:22:57.734352"
         }, 
         {
             "fw_id": -1, 
@@ -66,7 +87,7 @@
                         "gamma": 90.0
                     }, 
                     "about": {
-                        "created_at": "2013-03-20T18:28:15.767335", 
+                        "created_at": "2013-03-20T20:22:57.698913", 
                         "references": "", 
                         "authors": [
                             {
@@ -80,7 +101,7 @@
                     }, 
                     "sites": [
                         {
-                            "label": "Si", 
+                            "label": "Fe", 
                             "xyz": [
                                 0.0, 
                                 0.0, 
@@ -97,12 +118,12 @@
                                     "occu": 1, 
                                     "@module": "pymatgen.core.periodic_table", 
                                     "@class": "Element", 
-                                    "element": "Si"
+                                    "element": "Fe"
                                 }
                             ]
                         }, 
                         {
-                            "label": "Si", 
+                            "label": "O", 
                             "xyz": [
                                 0.75, 
                                 0.75, 
@@ -119,7 +140,7 @@
                                     "occu": 1, 
                                     "@module": "pymatgen.core.periodic_table", 
                                     "@class": "Element", 
-                                    "element": "Si"
+                                    "element": "O"
                                 }
                             ]
                         }
@@ -128,33 +149,32 @@
                     "@module": "pymatgen.matproj.snl"
                 }, 
                 "snl_id": -1, 
-                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
+                "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
                 "snl_strictgroup": -2, 
-                "snl_group": -2, 
-                "vasp_pmg": {
+                "vasp": {
                     "incar": {
                         "MAGMOM": [
-                            0.6, 
+                            5, 
                             0.6
                         ], 
-                        "ENCUT": 520, 
+                        "ALGO": "Fast", 
                         "NELM": 100, 
-                        "NSW": 99, 
                         "PREC": "Accurate", 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
                         "ISIF": 3, 
                         "ICHARG": 1, 
                         "IBRION": 2, 
-                        "ALGO": "Fast", 
-                        "EDIFF": 0.0001, 
-                        "ISPIN": 2, 
+                        "ENCUT": 520, 
+                        "LREAL": "Auto", 
                         "ISMEAR": -5, 
+                        "ISPIN": 2, 
+                        "EDIFF": 0.0001, 
                         "LWAVE": "False", 
                         "NPAR": 1, 
                         "SIGMA": 0.2, 
                         "LORBIT": "11", 
                         "@class": "Incar", 
-                        "LREAL": "Auto"
+                        "NSW": 99
                     }, 
                     "kpoints": {
                         "comment": "pymatgen generated KPOINTS with grid density = 1000 / atom", 
@@ -176,7 +196,7 @@
                         "@class": "Kpoints"
                     }, 
                     "poscar": {
-                        "comment": "Si2", 
+                        "comment": "Fe1 O1", 
                         "selective_dynamics": null, 
                         "velocities": null, 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
@@ -213,7 +233,7 @@
                             }, 
                             "sites": [
                                 {
-                                    "label": "Si", 
+                                    "label": "Fe", 
                                     "xyz": [
                                         0.0, 
                                         0.0, 
@@ -230,12 +250,12 @@
                                             "occu": 1, 
                                             "@module": "pymatgen.core.periodic_table", 
                                             "@class": "Element", 
-                                            "element": "Si"
+                                            "element": "Fe"
                                         }
                                     ]
                                 }, 
                                 {
-                                    "label": "Si", 
+                                    "label": "O", 
                                     "xyz": [
                                         0.75, 
                                         0.75, 
@@ -252,7 +272,7 @@
                                             "occu": 1, 
                                             "@module": "pymatgen.core.periodic_table", 
                                             "@class": "Element", 
-                                            "element": "Si"
+                                            "element": "O"
                                         }
                                     ]
                                 }
@@ -264,15 +284,17 @@
                     }, 
                     "potcar": {
                         "symbols": [
-                            "Si"
+                            "Fe_pv", 
+                            "O"
                         ], 
                         "functional": "PBE", 
                         "@class": "Potcar", 
                         "@module": "pymatgen.io.vaspio.vasp_input"
                     }
-                }
+                }, 
+                "snl_group": -2
             }, 
-            "created_on": "2013-03-20T18:28:16.014029"
+            "created_on": "2013-03-20T20:22:57.733446"
         }
     ]
 }

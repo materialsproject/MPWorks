@@ -19,7 +19,7 @@ class VASPStaticRunTask(FireTaskBase, FWSerializable):
         #set INCAR with static run config
         vasp_param=load(open("bs_static.json"))
         for p,q in vasp_param["INCAR"]:
-            fw_spec['vasp_pmg']['incar'].__setitem__(p,q)
+            fw_spec['vasp']['incar'].__setitem__(p,q)
 
         try:
             self._vasprun=Vasprun("vasprun_xml")
@@ -31,14 +31,14 @@ class VASPStaticRunTask(FireTaskBase, FWSerializable):
         sym_finder=SymmetryFinder(relaxed_struct, symprec=0.01)
         self._refined_relaxed_struct=sym_finder.get_refined_structure()
         self._primitive_relaxed_struct=sym_finder.get_primitive_standard_structure()
-        fw_spec['vasp_pmg']['poscar']=Poscar(self._primitive_relaxed_struct)
+        fw_spec['vasp']['poscar']=Poscar(self._primitive_relaxed_struct)
 
         #set KPOINTS
         kpoint_density=vasp_param["KPOINTS"]
         num_kpoints=kpoint_density*self._primitive_relaxed_struct.reciprocal_lattice.volume
         kpoints=Kpoints.automatic_density(
             self._primitive_relaxed_struct,num_kpoints * self._primitive_relaxed_struct.num_sites)
-        fw_spec['vasp_pmg']['kpoints'] = kpoints
+        fw_spec['vasp']['kpoints'] = kpoints
 
         fw_spec['static'] = True
 
