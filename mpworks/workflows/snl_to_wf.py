@@ -67,6 +67,9 @@ def snl_to_wf(snl, testing=False):
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
         connections[-1] = -2
 
+    # TODO: add static run
+    # Notes to self: check if gap > 1 eV. Also make sure the connections are set properly
+
     return Workflow(fws, connections)
 
 
