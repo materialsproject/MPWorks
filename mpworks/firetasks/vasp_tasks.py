@@ -58,6 +58,8 @@ class VASPCopyTask(FireTaskBase, FWSerializable):
 
         for file in self.files:
             prev_filename = os.path.join(prev_dir, file + self.extension)
+            if file == 'POTCAR':
+                prev_filename = os.path.join(prev_dir, file)  # no extension gets added to POTCAR files
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
