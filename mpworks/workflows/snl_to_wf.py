@@ -1,9 +1,6 @@
-import json
-from pprint import pprint
-import datetime
 from fireworks.core.firework import FireWork
 from mpworks.firetasks.custodian_task import CustodianTask
-from mpworks.firetasks.vaspwriter_task import VASPWriterTask
+from mpworks.firetasks.vasp_tasks import VASPWriterTask
 from pymatgen.core.structure import Structure
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
 from pymatgen.matproj.snl import StructureNL
