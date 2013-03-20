@@ -27,7 +27,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
         else:
             raise ValueError('Unrecognized host!')
 
-        handlers = [VaspErrorHandler(), UnconvergedErrorHandler(), PoscarErrorHandler()]
+        handlers = [VaspErrorHandler(), PoscarErrorHandler()]
 
         if 'static_run' in fw_spec['task_type']:
             jobs = VaspJob(v_exe,suffix=".static")  # TODO: fix this
