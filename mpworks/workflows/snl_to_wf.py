@@ -1,6 +1,7 @@
 from fireworks.core.firework import FireWork
+from fireworks.core.workflow import Workflow
 from mpworks.firetasks.custodian_task import CustodianTask
-from mpworks.firetasks.vasp_tasks import VASPWriterTask
+from mpworks.firetasks.vasp_tasks import VASPWriterTask, VASPCopyTask
 from pymatgen.core.structure import Structure
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -44,24 +45,30 @@ def snl_to_spec(snl):
     return spec
 
 
-def snl_to_fw(snl):
+def snl_to_fw(snl, fw_id=-1):
 
     spec = snl_to_spec(snl)
     tasks = [VASPWriterTask(), CustodianTask()]
-    return FireWork(tasks, spec)
+    return FireWork(tasks, spec, fw_id=fw_id)
 
+
+def snl_to_wf(snl):
+    fw1 = snl_to_fw(snl, fw_id=-1)
+    # TODO: only add a second FW if we have a GGA+U material
+    fw2 = FireWork([VASPCopyTask()], fw_id=-2)  # TODO: add the GGA+U runner here
+    return Workflow([fw1, fw2], {-1: -2})
 
 
 
 if __name__ == '__main__':
     s = Structure(np.eye(3, 3) * 3, ["Si", "Si"], [[0, 0, 0], [0.25, 0.25, 0.25]])
-    snl = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
-
-    fw = snl_to_fw(snl)
-    fw.to_file('pmg_fw_si.json')
+    snl1 = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
 
     s2 = Structure(np.eye(3, 3) * 3, ["Fe", "O"], [[0, 0, 0], [0.25, 0.25, 0.25]])
     snl2 = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
 
-    fw2 = snl_to_fw(snl2)
-    fw2.to_file('pmg_fw_feo.json')
+    snl_to_fw(snl1).to_file('test_wfs/pmg_fw_si.json', indent=4)
+    snl_to_fw(snl2).to_file('test_wfs/pmg_fw_feo.json', indent=4)
+
+    snl_to_wf(snl1).to_file('test_wfs/wf_si.json', indent=4)
+    snl_to_wf(snl2).to_file('test_wfs/wf_feo.json', indent=4)

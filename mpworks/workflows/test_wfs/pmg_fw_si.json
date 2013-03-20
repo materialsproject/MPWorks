@@ -1,0 +1,255 @@
+{
+    "fw_id": -1, 
+    "spec": {
+        "_tasks": [
+            {
+                "_fw_name": "VASP Writer Task", 
+                "parameters": {}
+            }, 
+            {
+                "_fw_name": "Custodian Task", 
+                "parameters": {}
+            }
+        ], 
+        "task_type": "GGA optimize structure (2x)", 
+        "tags": [
+            "auto_generation_v1.0"
+        ], 
+        "snl": {
+            "lattice": {
+                "a": 3.0, 
+                "c": 3.0, 
+                "b": 3.0, 
+                "matrix": [
+                    [
+                        3.0, 
+                        0.0, 
+                        0.0
+                    ], 
+                    [
+                        0.0, 
+                        3.0, 
+                        0.0
+                    ], 
+                    [
+                        0.0, 
+                        0.0, 
+                        3.0
+                    ]
+                ], 
+                "@module": "pymatgen.core.lattice", 
+                "volume": 27.0, 
+                "beta": 90.0, 
+                "@class": "Lattice", 
+                "alpha": 90.0, 
+                "gamma": 90.0
+            }, 
+            "about": {
+                "created_at": "2013-03-20T18:28:15.764549", 
+                "references": "", 
+                "authors": [
+                    {
+                        "name": "Anubhav Jain", 
+                        "email": "ajain@lbl.gov"
+                    }
+                ], 
+                "remarks": [], 
+                "projects": [], 
+                "history": []
+            }, 
+            "sites": [
+                {
+                    "label": "Si", 
+                    "xyz": [
+                        0.0, 
+                        0.0, 
+                        0.0
+                    ], 
+                    "abc": [
+                        0.0, 
+                        0.0, 
+                        0.0
+                    ], 
+                    "properties": {}, 
+                    "species": [
+                        {
+                            "occu": 1, 
+                            "@module": "pymatgen.core.periodic_table", 
+                            "@class": "Element", 
+                            "element": "Si"
+                        }
+                    ]
+                }, 
+                {
+                    "label": "Si", 
+                    "xyz": [
+                        0.75, 
+                        0.75, 
+                        0.75
+                    ], 
+                    "abc": [
+                        0.25, 
+                        0.25, 
+                        0.25
+                    ], 
+                    "properties": {}, 
+                    "species": [
+                        {
+                            "occu": 1, 
+                            "@module": "pymatgen.core.periodic_table", 
+                            "@class": "Element", 
+                            "element": "Si"
+                        }
+                    ]
+                }
+            ], 
+            "@class": "StructureNL", 
+            "@module": "pymatgen.matproj.snl"
+        }, 
+        "snl_id": -1, 
+        "vaspinputset_name": "MaterialsProjectVaspInputSet", 
+        "snl_strictgroup": -2, 
+        "snl_group": -2, 
+        "vasp_pmg": {
+            "incar": {
+                "MAGMOM": [
+                    0.6, 
+                    0.6
+                ], 
+                "ENCUT": 520, 
+                "NELM": 100, 
+                "NSW": 99, 
+                "PREC": "Accurate", 
+                "@module": "pymatgen.io.vaspio.vasp_input", 
+                "ISIF": 3, 
+                "ICHARG": 1, 
+                "IBRION": 2, 
+                "ALGO": "Fast", 
+                "EDIFF": 0.0001, 
+                "ISPIN": 2, 
+                "ISMEAR": -5, 
+                "LWAVE": "False", 
+                "NPAR": 1, 
+                "SIGMA": 0.2, 
+                "LORBIT": "11", 
+                "@class": "Incar", 
+                "LREAL": "Auto"
+            }, 
+            "kpoints": {
+                "comment": "pymatgen generated KPOINTS with grid density = 1000 / atom", 
+                "usershift": [
+                    0, 
+                    0, 
+                    0
+                ], 
+                "kpoints": [
+                    [
+                        8, 
+                        8, 
+                        8
+                    ]
+                ], 
+                "@module": "pymatgen.io.vaspio.vasp_input", 
+                "nkpoints": 0, 
+                "generation_style": "Monkhorst", 
+                "@class": "Kpoints"
+            }, 
+            "poscar": {
+                "comment": "Si2", 
+                "selective_dynamics": null, 
+                "velocities": null, 
+                "@module": "pymatgen.io.vaspio.vasp_input", 
+                "@class": "Poscar", 
+                "predictor_corrector": null, 
+                "structure": {
+                    "lattice": {
+                        "a": 3.0, 
+                        "c": 3.0, 
+                        "b": 3.0, 
+                        "matrix": [
+                            [
+                                3.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            [
+                                0.0, 
+                                3.0, 
+                                0.0
+                            ], 
+                            [
+                                0.0, 
+                                0.0, 
+                                3.0
+                            ]
+                        ], 
+                        "@module": "pymatgen.core.lattice", 
+                        "volume": 27.0, 
+                        "beta": 90.0, 
+                        "@class": "Lattice", 
+                        "alpha": 90.0, 
+                        "gamma": 90.0
+                    }, 
+                    "sites": [
+                        {
+                            "label": "Si", 
+                            "xyz": [
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "abc": [
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "properties": {}, 
+                            "species": [
+                                {
+                                    "occu": 1, 
+                                    "@module": "pymatgen.core.periodic_table", 
+                                    "@class": "Element", 
+                                    "element": "Si"
+                                }
+                            ]
+                        }, 
+                        {
+                            "label": "Si", 
+                            "xyz": [
+                                0.75, 
+                                0.75, 
+                                0.75
+                            ], 
+                            "abc": [
+                                0.25, 
+                                0.25, 
+                                0.25
+                            ], 
+                            "properties": {}, 
+                            "species": [
+                                {
+                                    "occu": 1, 
+                                    "@module": "pymatgen.core.periodic_table", 
+                                    "@class": "Element", 
+                                    "element": "Si"
+                                }
+                            ]
+                        }
+                    ], 
+                    "@class": "Structure", 
+                    "@module": "pymatgen.core.structure"
+                }, 
+                "true_names": true
+            }, 
+            "potcar": {
+                "symbols": [
+                    "Si"
+                ], 
+                "functional": "PBE", 
+                "@class": "Potcar", 
+                "@module": "pymatgen.io.vaspio.vasp_input"
+            }
+        }
+    }, 
+    "created_on": "2013-03-20T18:28:15.792378"
+}
