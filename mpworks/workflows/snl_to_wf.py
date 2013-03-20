@@ -1,8 +1,10 @@
+from CifFile import CifFile
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.firetasks.custodian_task import CustodianTask
 from mpworks.firetasks.vasp_tasks import VASPWriterTask, VASPCopyTask, SetupGGAUTask
 from pymatgen.core.structure import Structure
+from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet, MITVaspInputSet
 from pymatgen.matproj.snl import StructureNL
 
@@ -73,10 +75,10 @@ def snl_to_wf(snl, testing=False):
 
 
 if __name__ == '__main__':
-    s = Structure(np.eye(3, 3) * 3, ["Si", "Si"], [[0, 0, 0], [0.25, 0.25, 0.25]])
-    snl1 = StructureNL(s, "Anubhav Jain <ajain@lbl.gov>")
+    s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
+    s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
 
-    s2 = Structure(np.eye(3, 3) * 3, ["Fe", "O"], [[0, 0, 0], [0.25, 0.25, 0.25]])
+    snl1 = StructureNL(s1, "Anubhav Jain <ajain@lbl.gov>")
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
 
     snl_to_wf(snl1, testing=True).to_file('test_wfs/wf_si.json', indent=4)

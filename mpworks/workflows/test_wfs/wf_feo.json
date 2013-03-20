@@ -28,7 +28,7 @@
                 ], 
                 "task_type": "GGA+U optimize structure (2x)"
             }, 
-            "created_on": "2013-03-20T21:18:07.997522"
+            "created_on": "2013-03-20T21:37:26.114279"
         }, 
         {
             "fw_id": -1, 
@@ -49,35 +49,35 @@
                 ], 
                 "snl": {
                     "lattice": {
-                        "a": 3.0, 
-                        "c": 3.0, 
-                        "b": 3.0, 
+                        "a": 3.0525137003499996, 
+                        "c": 3.0525137, 
+                        "b": 3.05251369966, 
                         "matrix": [
                             [
-                                3.0, 
+                                2.6435544100096924, 
                                 0.0, 
-                                0.0
+                                1.5262568499904452
+                            ], 
+                            [
+                                0.8811847999763114, 
+                                2.4923669999994655, 
+                                1.5262568500145548
                             ], 
                             [
                                 0.0, 
-                                3.0, 
-                                0.0
-                            ], 
-                            [
                                 0.0, 
-                                0.0, 
-                                3.0
+                                3.0525137
                             ]
                         ], 
                         "@module": "pymatgen.core.lattice", 
-                        "volume": 27.0, 
-                        "beta": 90.0, 
+                        "volume": 20.112120746076236, 
+                        "beta": 60.000000004, 
                         "@class": "Lattice", 
-                        "alpha": 90.0, 
-                        "gamma": 90.0
+                        "alpha": 59.999999996, 
+                        "gamma": 60.000000058
                     }, 
                     "about": {
-                        "created_at": "2013-03-20T21:18:07.963713", 
+                        "created_at": "2013-03-20T21:37:26.081536", 
                         "references": "", 
                         "authors": [
                             {
@@ -105,7 +105,7 @@
                             "properties": {}, 
                             "species": [
                                 {
-                                    "occu": 1, 
+                                    "occu": 1.0, 
                                     "@module": "pymatgen.core.periodic_table", 
                                     "@class": "Element", 
                                     "element": "Fe"
@@ -115,19 +115,19 @@
                         {
                             "label": "O", 
                             "xyz": [
-                                0.75, 
-                                0.75, 
-                                0.75
+                                1.7623678426233917, 
+                                1.2461859923667329, 
+                                3.0525106474888
                             ], 
                             "abc": [
-                                0.25, 
-                                0.25, 
-                                0.25
+                                0.499999, 
+                                0.500001, 
+                                0.499999
                             ], 
                             "properties": {}, 
                             "species": [
                                 {
-                                    "occu": 1, 
+                                    "occu": 1.0, 
                                     "@module": "pymatgen.core.periodic_table", 
                                     "@class": "Element", 
                                     "element": "O"
@@ -149,7 +149,7 @@
                         ], 
                         "ALGO": "Fast", 
                         "NELM": 100, 
-                        "PREC": "Med", 
+                        "PREC": "Accurate", 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
                         "ISIF": 3, 
                         "ICHARG": 1, 
@@ -194,32 +194,32 @@
                         "predictor_corrector": null, 
                         "structure": {
                             "lattice": {
-                                "a": 3.0, 
-                                "c": 3.0, 
-                                "b": 3.0, 
+                                "a": 3.0525137003499996, 
+                                "c": 3.0525137, 
+                                "b": 3.05251369966, 
                                 "matrix": [
                                     [
-                                        3.0, 
+                                        2.6435544100096924, 
                                         0.0, 
-                                        0.0
+                                        1.5262568499904452
+                                    ], 
+                                    [
+                                        0.8811847999763114, 
+                                        2.4923669999994655, 
+                                        1.5262568500145548
                                     ], 
                                     [
                                         0.0, 
-                                        3.0, 
-                                        0.0
-                                    ], 
-                                    [
                                         0.0, 
-                                        0.0, 
-                                        3.0
+                                        3.0525137
                                     ]
                                 ], 
                                 "@module": "pymatgen.core.lattice", 
-                                "volume": 27.0, 
-                                "beta": 90.0, 
+                                "volume": 20.112120746076236, 
+                                "beta": 60.000000004, 
                                 "@class": "Lattice", 
-                                "alpha": 90.0, 
-                                "gamma": 90.0
+                                "alpha": 59.999999996, 
+                                "gamma": 60.000000058
                             }, 
                             "sites": [
                                 {
@@ -237,7 +237,7 @@
                                     "properties": {}, 
                                     "species": [
                                         {
-                                            "occu": 1, 
+                                            "occu": 1.0, 
                                             "@module": "pymatgen.core.periodic_table", 
                                             "@class": "Element", 
                                             "element": "Fe"
@@ -247,19 +247,19 @@
                                 {
                                     "label": "O", 
                                     "xyz": [
-                                        0.75, 
-                                        0.75, 
-                                        0.75
+                                        1.7623678426233917, 
+                                        1.2461859923667329, 
+                                        3.0525106474888
                                     ], 
                                     "abc": [
-                                        0.25, 
-                                        0.25, 
-                                        0.25
+                                        0.499999, 
+                                        0.500001, 
+                                        0.499999
                                     ], 
                                     "properties": {}, 
                                     "species": [
                                         {
-                                            "occu": 1, 
+                                            "occu": 1.0, 
                                             "@module": "pymatgen.core.periodic_table", 
                                             "@class": "Element", 
                                             "element": "O"
@@ -284,7 +284,7 @@
                 }, 
                 "snl_group": -2
             }, 
-            "created_on": "2013-03-20T21:18:07.996605"
+            "created_on": "2013-03-20T21:37:26.113489"
         }
     ]
 }
