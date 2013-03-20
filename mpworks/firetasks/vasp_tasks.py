@@ -59,7 +59,8 @@ class VASPCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = os.path.join(prev_dir, file + self.extension)
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
-            shutil.copy2(prev_filename, file)
+            print 'COPYING', prev_filename, dest_file
+            shutil.copy2(prev_filename, dest_file)
 
         return FWAction('CONTINUE', {'copied_files': self.files})
 
