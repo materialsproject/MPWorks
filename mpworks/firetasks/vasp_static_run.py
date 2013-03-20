@@ -1,46 +1,53 @@
 __author__ = 'weichen'
-from json import load
 
+from json import load
+import os.path
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase,FWAction,FireWork
-from pymatgen.io.vaspio import Poscar,Kpoints,Vasprun
+from pymatgen.io.vaspio.vasp_output import Vasprun
+from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints
 from pymatgen.symmetry.finder import SymmetryFinder
-from mpworks.firetasks.vaspwriter_task import VASPWriterTask
+from pymatgen.core.structure import Structure
 
 
-class VASPStaticRunTask(FireTaskBase, FWSerializable):
+class SetupStaticRunTask(FireTaskBase, FWSerializable):
     '''
-    Set VASP input sets for static runs
+    Set VASP input sets for static runs, assuming vasp Inputs/Outputs from relax runs are already in the directory
     '''
 
-    _fw_name = "VASP Static Run Task"
+    _fw_name = "Setup Static Run Task"
 
     def run_task(self, fw_spec):
-        #set INCAR with static run config
-        vasp_param=load(open("bs_static.json"))
-        for p,q in vasp_param["INCAR"]:
-            fw_spec['vasp']['incar'].__setitem__(p,q)
 
         try:
-            self._vasprun=Vasprun("vasprun_xml")
-        except Exception:
-            print "Can't get valid results from relaxed run"
+            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+                                    parse_eigen=False).to_dict
+        except Exception as e:
+            raise RuntimeError("Can't get valid results from relaxed run")
+
+        with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
+            vasp_param = load(vs)
+        for p,q in vasp_param["INCAR"].items():
+            vasp_run['input']['incar'].__setitem__(p, q)
 
         #set POSCAR with the primitive relaxed structure
-        relaxed_struct=self._vasprun.final_structure
-        sym_finder=SymmetryFinder(relaxed_struct, symprec=0.01)
-        self._refined_relaxed_struct=sym_finder.get_refined_structure()
-        self._primitive_relaxed_struct=sym_finder.get_primitive_standard_structure()
-        fw_spec['vasp']['poscar']=Poscar(self._primitive_relaxed_struct)
+        relaxed_struct = vasp_run['output']['crystal']
+        sym_finder = SymmetryFinder(Structure.from_dict(relaxed_struct), symprec=0.01)
+        refined_relaxed_struct = sym_finder.get_refined_structure()
+        primitive_relaxed_struct = sym_finder.get_primitive_standard_structure()
+        Poscar(primitive_relaxed_struct).write_file("POSCAR")
 
         #set KPOINTS
-        kpoint_density=vasp_param["KPOINTS"]
-        num_kpoints=kpoint_density*self._primitive_relaxed_struct.reciprocal_lattice.volume
-        kpoints=Kpoints.automatic_density(
-            self._primitive_relaxed_struct,num_kpoints * self._primitive_relaxed_struct.num_sites)
-        fw_spec['vasp']['kpoints'] = kpoints
+        kpoint_density = vasp_param["KPOINTS"]
+        num_kpoints = kpoint_density * primitive_relaxed_struct.lattice.reciprocal_lattice.volume
+        Kpoints.automatic_density(primitive_relaxed_struct, num_kpoints *
+                                  primitive_relaxed_struct.num_sites).write_file("KPOINTS")
 
-        fw_spec['static'] = True
+        #set INCAR with static run config
+        with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
+            vasp_param = load(vs)
+        for p,q in vasp_param["INCAR"].items():
+            vasp_run['input']['incar'].__setitem__(p, q)
+        Incar.from_dict(vasp_run['input']['incar']).write_file("INCAR")
 
-        static_run_fw = FireWork(VASPWriterTask(),fw_spec)
-        return FWAction('CREATE',{'refined_struct':self._refined_relaxed_struct},{'create_fw':static_run_fw})
+        return FWAction('CONTINUE',{'refined_struct':refined_relaxed_struct})
