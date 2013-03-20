@@ -79,7 +79,7 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
 
         # figure out what GGA+U values to use and override them
         mpvis = MaterialsProjectVaspInputSet()
-        incar = mpvis.get_incar(Poscar.from_dict(vi['POSCAR']).structure).to_dict
+        incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
         incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}  # LDAU values to use
         vi['INCAR'].update(incar_updates)  # override the +U keys
 
