@@ -7,7 +7,8 @@
           "LORBIT": 11,
           "LVHAR": ".TRUE.",
           "LWAVE": ".FALSE",
-          "NSW": 0
+          "NSW": 0,
+          "LDAU": ".FALSE."
      },
      "KPOINTS": 90
 }
