@@ -39,7 +39,6 @@ def _snl_to_spec(snl, testing=False):
 
     #  override parameters for testing
     if testing:
-        spec['vasp']['incar']['PREC'] = 'Med'
         spec['vasp']['incar']['EDIFF'] *= 10
 
     return spec
