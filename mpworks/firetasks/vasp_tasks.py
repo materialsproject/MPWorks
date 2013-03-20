@@ -18,9 +18,9 @@ __date__ = 'Mar 15, 2013'
 
 
 class VASPWriterTask(FireTaskBase, FWSerializable):
-    
+
     _fw_name = "VASP Writer Task"
-    
+
     def run_task(self, fw_spec):
         Incar.from_dict(fw_spec['vasp_pmg']['incar']).write_file('INCAR')
         Poscar.from_dict(fw_spec['vasp_pmg']['poscar']).write_file('POSCAR')
@@ -29,10 +29,10 @@ class VASPWriterTask(FireTaskBase, FWSerializable):
 
 
 class VASPCopyTask(FireTaskBase, FWSerializable):
-
+    # TODO: allow VASPCopyTask to have internal parameters that specify which files to copy
     _fw_name = "VASP Copy Task"
 
     def run_task(self, fw_spec):
-        copied_files = distutils.dir_util.copy_tree(fw_spec['prev_vasp_dir'], '.')  # distutils was the best code I could find for this task
+        copied_files = distutils.dir_util.copy_tree(fw_spec['prev_vasp_dir'], '.')  # distutils > shutil for this
 
         return FWAction('CONTINUE', {'copied_files': copied_files})
