@@ -5,6 +5,7 @@ from custodian.custodian import Custodian
 from custodian.vasp.handlers import VaspErrorHandler, UnconvergedErrorHandler, PoscarErrorHandler
 from custodian.vasp.jobs import VaspJob
 import shlex
+import os
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -19,21 +20,23 @@ class CustodianTask(FireTaskBase, FWSerializable):
     _fw_name = "Custodian Task"
 
     def run_task(self, fw_spec):
-        if 'nid' in socket.gethostname():  # hopper
+        if 'nid' in socket.gethostname():  # hopper compute nodes
             v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
-        elif 'c' in socket.gethostname():  # carver
+        elif 'c' in socket.gethostname():  # carver compute nodes
             v_exe = shlex.split('mpirun -n 8 vasp')  # TODO: make ncores dynamic!
         else:
             raise ValueError('Unrecognized host!')
 
         handlers = [VaspErrorHandler(), UnconvergedErrorHandler(), PoscarErrorHandler()]
 
-        if fw_spec['static'] is True:
-            jobs = VaspJob(v_exe,suffix=".static")
+        if 'static_run' in fw_spec['task_type']:
+            jobs = VaspJob(v_exe,suffix=".static")  # TODO: fix this
         else:
             jobs = VaspJob.double_relaxation_run(v_exe)
 
         c = Custodian(handlers, jobs, max_errors=10)
-        c.run()
+        error_details = c.run()
 
-        # return FWAction('CONTINUE', {}, {'$set': {'prev_VASP_dir': os.getcwd()}})
+        stored_data = {'error_details': error_details, 'error_names': error_details.keys()}
+
+        return FWAction('CONTINUE', stored_data, {'$set': {'prev_VASP_dir': os.getcwd()}})
