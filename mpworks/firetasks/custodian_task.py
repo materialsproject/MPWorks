@@ -36,7 +36,5 @@ class CustodianTask(FireTaskBase, FWSerializable):
 
         c = Custodian(handlers, jobs, max_errors=10)
         error_details = c.run()
-
         stored_data = {'error_details': error_details, 'error_names': error_details.keys()}
-
-        return FWAction('CONTINUE', stored_data, {'$set': {'prev_VASP_dir': os.getcwd()}})
+        return FWAction('MODIFY', stored_data, {'dict_mods': {'$set': {'prev_VASP_dir': os.getcwd()}}})
