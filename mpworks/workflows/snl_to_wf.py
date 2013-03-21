@@ -2,7 +2,7 @@ from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.firetasks.custodian_task import CustodianTask
 from mpworks.firetasks.vasp_io_tasks import VASPCopyTask, VASPWriterTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupDOSRunTask
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -67,13 +67,19 @@ def snl_to_wf(snl, testing=False):
 
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
         connections[-1] = -2
-        spec = {'task_type': 'GGA+U static run'}  # TODO: add more spec keys? SNL, etc?
+        spec = {'task_type': 'GGA+U static'}  # TODO: add more spec keys? SNL, etc?
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-2] = -3
+        spec = {'task_type': 'GGA+U DOS'}  # TODO: add more spec keys? SNL, etc?
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        connections[-3] = -4
     else:
-        spec = {'task_type': 'GGA static run'}  # TODO: add more spec keys? SNL, etc?
+        spec = {'task_type': 'GGA static'}  # TODO: add more spec keys? SNL, etc?
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-1] = -3
+        spec = {'task_type': 'GGA DOS'}  # TODO: add more spec keys? SNL, etc?
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        connections[-3] = -4
 
     # TODO: check if gap > 1 eV before adding static run
 

@@ -29,10 +29,12 @@ class CustodianTask(FireTaskBase, FWSerializable):
 
         handlers = [VaspErrorHandler(), PoscarErrorHandler()]
 
-        if 'static_run' in fw_spec['task_type']:
-            jobs = VaspJob(v_exe,suffix=".static")
+        if 'static' or 'DOS' in fw_spec['task_type']:
+            jobs = VaspJob(v_exe)
         elif 'optimize structure (2x)' in fw_spec['task_type']:
             jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+        else:
+            raise ValueError('Unrecognized task type! {}'.format(fw_spec['task_type']))
 
         c = Custodian(handlers, jobs, max_errors=10)
         error_details = c.run()
