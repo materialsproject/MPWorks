@@ -57,7 +57,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
             vasp_run['input']['incar'].__setitem__(p, q)
         Incar.from_dict(vasp_run['input']['incar']).write_file("INCAR")
 
-        return FWAction('CONTINUE',{'refined_struct':refined_relaxed_struct})
+        return FWAction('CONTINUE', {'refined_struct':refined_relaxed_struct.to_dict})
 
 
 class SetupDOSRunTask(FireTaskBase, FWSerializable):
