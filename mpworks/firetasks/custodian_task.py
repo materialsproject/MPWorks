@@ -29,7 +29,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
 
         handlers = [VaspErrorHandler(), PoscarErrorHandler()]
 
-        if 'static' or 'DOS' in fw_spec['task_type']:
+        if 'static' in fw_spec['task_type'] or 'DOS' in fw_spec['task_type']:
             jobs = [VaspJob(v_exe)]
         elif 'optimize structure (2x)' in fw_spec['task_type']:
             jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
