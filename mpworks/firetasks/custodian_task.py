@@ -30,11 +30,11 @@ class CustodianTask(FireTaskBase, FWSerializable):
         handlers = [VaspErrorHandler(), PoscarErrorHandler()]
 
         if 'static_run' in fw_spec['task_type']:
-            jobs = VaspJob(v_exe,suffix=".static")  # TODO: fix this
+            jobs = VaspJob(v_exe,suffix=".static")
         elif 'optimize structure (2x)' in fw_spec['task_type']:
             jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
 
         c = Custodian(handlers, jobs, max_errors=10)
         error_details = c.run()
-        stored_data = {'error_details': error_details}  # TODO: make this better
+        stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
         return FWAction('MODIFY', stored_data, {'dict_mods': [{'_set': {'prev_vasp_dir': os.getcwd()}}]})
