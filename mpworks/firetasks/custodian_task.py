@@ -2,7 +2,7 @@ import socket
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
-from custodian.vasp.handlers import VaspErrorHandler, UnconvergedErrorHandler, PoscarErrorHandler
+from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from custodian.vasp.jobs import VaspJob
 import shlex
 import os

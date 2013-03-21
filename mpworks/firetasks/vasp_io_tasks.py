@@ -8,9 +8,7 @@ import shutil
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints, VaspInput
-import distutils.core
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
+from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -65,28 +63,3 @@ class VASPCopyTask(FireTaskBase, FWSerializable):
             shutil.copy2(prev_filename, dest_file)
 
         return FWAction('CONTINUE', {'copied_files': self.files})
-
-
-class SetupGGAUTask(FireTaskBase, FWSerializable):
-    """
-    Assuming that GGA inputs/outputs already exist in the directory, set up a GGA+U run.
-    """
-    _fw_name = "Setup GGAU Task"
-
-    def run_task(self, fw_spec):
-
-        vi = VaspInput.from_directory(".")  # read the VaspInput from the previous run
-
-        # figure out what GGA+U values to use and override them
-        mpvis = MaterialsProjectVaspInputSet()
-        incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
-        incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}  # LDAU values to use
-        vi['INCAR'].update(incar_updates)  # override the +U keys
-
-        # start from the CHGCAR of previous run
-        if os.path.exists('CHGCAR'):
-            vi['INCAR']['ICHARG'] = 1
-
-        vi["INCAR"].write_file("INCAR")  # write back the new INCAR to the current directory
-
-        return FWAction('CONTINUE')

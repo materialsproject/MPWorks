@@ -1,11 +1,10 @@
-from CifFile import CifFile
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.firetasks.custodian_task import CustodianTask
-from mpworks.firetasks.vasp_tasks import VASPWriterTask, VASPCopyTask, SetupGGAUTask
-from pymatgen.core.structure import Structure
+from mpworks.firetasks.vasp_io_tasks import VASPCopyTask, VASPWriterTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from pymatgen.io.cifio import CifParser
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet, MITVaspInputSet
+from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
