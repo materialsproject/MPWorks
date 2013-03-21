@@ -1,0 +1,6 @@
+{
+    "INCAR": {
+        "ICHARG":11
+    },
+    "KPOINTS": 1000
+}

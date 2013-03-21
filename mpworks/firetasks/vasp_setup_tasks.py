@@ -60,6 +60,31 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         return FWAction('CONTINUE',{'refined_struct':refined_relaxed_struct})
 
 
+class SetupDOSRunTask(FireTaskBase, FWSerializable):
+    _fw_name = "Setup DOS Run Task"
+
+    def run_task(self, fw_spec):
+        with open(os.path.join(os.path.dirname(__file__), "dos.json")) as vs:
+            vasp_param = load(vs)
+
+        try:
+            incar = Incar.from_file("INCAR")
+            poscar = Poscar.from_file("POSCAR")
+        except Exception as e:
+            raise RuntimeError(e)
+
+        for p,q in vasp_param["INCAR"].items():
+            incar.__setitem__(p, q)
+        incar.write_file("INCAR")
+
+        kpoint_density = vasp_param["KPOINTS"]
+        struct = poscar.structure
+        num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
+        Kpoints.automatic_density(struct, num_kpoints*struct.num_sites).write_file("KPOINTS")
+
+        return FWAction('CONTINUE')
+
+
 class SetupGGAUTask(FireTaskBase, FWSerializable):
     """
     Assuming that GGA inputs/outputs already exist in the directory, set up a GGA+U run.
