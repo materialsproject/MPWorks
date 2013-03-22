@@ -41,7 +41,7 @@ def _snl_to_spec(snl, enforce_gga=True, testing=False):
 
 
 def _get_metadata(snl, verbose=False):
-    md = {'tags': ['auto generation v1.0']}
+    md = {'run_tags': ['auto generation v1.0']}
     if verbose:
         md['snl'] = snl.to_dict
 
