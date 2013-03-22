@@ -14,8 +14,6 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
-import numpy as np
-
 
 def _snl_to_spec(snl, enforce_gga=True, testing=False):
     spec = {}
@@ -30,20 +28,28 @@ def _snl_to_spec(snl, enforce_gga=True, testing=False):
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-    # TODO: put entire vaspinputset.to_dict in the WF metadata?
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
-    spec['snl'] = snl.to_dict
-    spec['snl_id'] = -1
-    spec['snl_group'] = -2
-    spec['snl_strictgroup'] = -2
-    spec['tags'] = ['auto_generation_v1.0']
+
+    spec.update(_get_metadata(snl))
 
     #  override parameters for testing
     if testing:
         spec['vasp']['incar']['EDIFF'] *= 10
 
     return spec
+
+
+def _get_metadata(snl):
+    md = {'snl': snl.to_dict, 'tags': ['auto generation v1.0']}
+
+    if '_materialsproject' in snl.data:
+        sd = snl.data
+        md['snl_id'] = sd.get('snl_id', None)
+        md['snlgroup_id'] = sd.get('snlgroup_id', None)
+        md['snlgroupstrict_id'] = sd.get('snlgroupstrict_id', None)
+
+    return md
 
 
 def snl_to_wf(snl, testing=False):
@@ -57,33 +63,45 @@ def snl_to_wf(snl, testing=False):
     tasks = [VASPWriterTask(), CustodianTask()]
     fws.append(FireWork(tasks, spec, fw_id=-1))
 
+    wf_meta = _get_metadata(snl)
+
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)'}  # TODO: add more spec keys? SNL, etc?
-
+        spec = {'task_type': 'GGA+U optimize structure (2x)'}
+        spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
         connections[-1] = -2
-        spec = {'task_type': 'GGA+U static'}  # TODO: add more spec keys? SNL, etc?
+
+        spec = {'task_type': 'GGA+U static'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-2] = -3
-        spec = {'task_type': 'GGA+U DOS'}  # TODO: add more spec keys? SNL, etc?
+
+        spec = {'task_type': 'GGA+U DOS'}
+        spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
         connections[-3] = -4
     else:
-        spec = {'task_type': 'GGA static'}  # TODO: add more spec keys? SNL, etc?
+        spec = {'task_type': 'GGA static'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-1] = -3
-        spec = {'task_type': 'GGA DOS'}  # TODO: add more spec keys? SNL, etc?
+
+        spec = {'task_type': 'GGA DOS'}
+        spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
         connections[-3] = -4
 
-    # TODO: check if gap > 1 eV before adding static run
+        mpvis = MaterialsProjectGGAVaspInputSet()
 
-    return Workflow(fws, connections)
+    spec['vaspinputset_name'] = mpvis.__class__.__name__
+    wf_meta['vaspinputset'] = mpvis.to_dict
+
+    return Workflow(fws, connections, wf_meta)
 
 
 def snl_to_ggau_wf(snl):
