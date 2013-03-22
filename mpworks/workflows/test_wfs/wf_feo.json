@@ -1,96 +1,5 @@
 {
     "metadata": {
-        "snl": {
-            "lattice": {
-                "a": 3.0525137003499996, 
-                "gamma": 60.000000058, 
-                "c": 3.0525137, 
-                "b": 3.05251369966, 
-                "matrix": [
-                    [
-                        2.6435544100096924, 
-                        0.0, 
-                        1.5262568499904452
-                    ], 
-                    [
-                        0.8811847999763114, 
-                        2.4923669999994655, 
-                        1.5262568500145548
-                    ], 
-                    [
-                        0.0, 
-                        0.0, 
-                        3.0525137
-                    ]
-                ], 
-                "volume": 20.112120746076236, 
-                "alpha": 59.999999996, 
-                "beta": 60.000000004, 
-                "@class": "Lattice", 
-                "@module": "pymatgen.core.lattice"
-            }, 
-            "about": {
-                "created_at": "2013-03-22T05:59:13.138138", 
-                "references": "", 
-                "authors": [
-                    {
-                        "name": "Anubhav Jain", 
-                        "email": "ajain@lbl.gov"
-                    }
-                ], 
-                "remarks": [], 
-                "projects": [], 
-                "history": []
-            }, 
-            "sites": [
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.0, 
-                        0.0, 
-                        0.0
-                    ], 
-                    "xyz": [
-                        0.0, 
-                        0.0, 
-                        0.0
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "Fe", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "Fe"
-                }, 
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.499999, 
-                        0.500001, 
-                        0.499999
-                    ], 
-                    "xyz": [
-                        1.7623678426233917, 
-                        1.2461859923667329, 
-                        3.0525106474888
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "O", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "O"
-                }
-            ], 
-            "@class": "StructureNL", 
-            "@module": "pymatgen.matproj.snl"
-        }, 
         "vaspinputset": {
             "INCAR": {
                 "NELM": "100", 
@@ -319,104 +228,13 @@
                         "parameters": {}
                     }
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.138138", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "task_type": "GGA+U DOS", 
                 "tags": [
                     "auto generation v1.0"
                 ], 
                 "vaspinputset_name": "MaterialsProjectVaspInputSet"
             }, 
-            "created_on": "2013-03-22T05:59:13.174549"
+            "created_on": "2013-03-22T06:18:18.224133"
         }, 
         {
             "fw_id": -2, 
@@ -437,103 +255,12 @@
                         "parameters": {}
                     }
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.138138", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "task_type": "GGA+U optimize structure (2x)", 
                 "tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T05:59:13.174081"
+            "created_on": "2013-03-22T06:18:18.224069"
         }, 
         {
             "fw_id": -1, 
@@ -549,100 +276,10 @@
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
+                "verbose": true, 
                 "tags": [
                     "auto generation v1.0"
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.138138", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
                 "vasp": {
                     "incar": {
@@ -786,7 +423,7 @@
                     }
                 }
             }, 
-            "created_on": "2013-03-22T05:59:13.172946"
+            "created_on": "2013-03-22T06:18:18.223298"
         }, 
         {
             "fw_id": -3, 
@@ -807,103 +444,12 @@
                         "parameters": {}
                     }
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.138138", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "task_type": "GGA+U static", 
                 "tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T05:59:13.174330"
+            "created_on": "2013-03-22T06:18:18.224104"
         }
     ]
 }

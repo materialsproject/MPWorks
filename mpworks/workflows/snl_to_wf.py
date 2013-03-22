@@ -31,7 +31,7 @@ def _snl_to_spec(snl, enforce_gga=True, testing=False):
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
-    spec.update(_get_metadata(snl))
+    spec.update(_get_metadata(snl), verbose=True)
 
     #  override parameters for testing
     if testing:
@@ -40,8 +40,10 @@ def _snl_to_spec(snl, enforce_gga=True, testing=False):
     return spec
 
 
-def _get_metadata(snl):
-    md = {'snl': snl.to_dict, 'tags': ['auto generation v1.0']}
+def _get_metadata(snl, verbose=False):
+    md = {'tags': ['auto generation v1.0']}
+    if verbose:
+        md['snl'] = snl.to_dict
 
     if '_materialsproject' in snl.data:
         sd = snl.data

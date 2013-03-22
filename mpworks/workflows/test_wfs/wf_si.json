@@ -1,96 +1,5 @@
 {
     "metadata": {
-        "snl": {
-            "lattice": {
-                "a": 3.86697462285, 
-                "gamma": 60.000000024, 
-                "c": 3.86697462, 
-                "b": 3.86697462378, 
-                "matrix": [
-                    [
-                        3.3488982599877457, 
-                        0.0, 
-                        1.933487310022217
-                    ], 
-                    [
-                        1.1162994199944172, 
-                        3.1573715599960175, 
-                        1.9334873100196226
-                    ], 
-                    [
-                        0.0, 
-                        0.0, 
-                        3.86697462
-                    ]
-                ], 
-                "volume": 40.88829188829369, 
-                "alpha": 60.000000032, 
-                "beta": 60.000000024, 
-                "@class": "Lattice", 
-                "@module": "pymatgen.core.lattice"
-            }, 
-            "about": {
-                "created_at": "2013-03-22T05:59:13.137708", 
-                "references": "", 
-                "authors": [
-                    {
-                        "name": "Anubhav Jain", 
-                        "email": "ajain@lbl.gov"
-                    }
-                ], 
-                "remarks": [], 
-                "projects": [], 
-                "history": []
-            }, 
-            "sites": [
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.875, 
-                        0.875, 
-                        0.875
-                    ], 
-                    "xyz": [
-                        3.9070479699843927, 
-                        2.762700114996515, 
-                        6.76720558503661
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "Si", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "Si"
-                }, 
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.125, 
-                        0.125, 
-                        0.125
-                    ], 
-                    "xyz": [
-                        0.5581497099977704, 
-                        0.3946714449995022, 
-                        0.96674365500523
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "Si", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "Si"
-                }
-            ], 
-            "@class": "StructureNL", 
-            "@module": "pymatgen.matproj.snl"
-        }, 
         "vaspinputset": {
             "INCAR": {
                 "NELM": "100", 
@@ -250,104 +159,13 @@
                         "parameters": {}
                     }
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.86697462285, 
-                        "c": 3.86697462, 
-                        "b": 3.86697462378, 
-                        "matrix": [
-                            [
-                                3.3488982599877457, 
-                                0.0, 
-                                1.933487310022217
-                            ], 
-                            [
-                                1.1162994199944172, 
-                                3.1573715599960175, 
-                                1.9334873100196226
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.86697462
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 40.88829188829369, 
-                        "beta": 60.000000024, 
-                        "@class": "Lattice", 
-                        "alpha": 60.000000032, 
-                        "gamma": 60.000000024
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.137708", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                3.9070479699843927, 
-                                2.762700114996515, 
-                                6.76720558503661
-                            ], 
-                            "abc": [
-                                0.875, 
-                                0.875, 
-                                0.875
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                0.5581497099977704, 
-                                0.3946714449995022, 
-                                0.96674365500523
-                            ], 
-                            "abc": [
-                                0.125, 
-                                0.125, 
-                                0.125
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "task_type": "GGA DOS", 
                 "tags": [
                     "auto generation v1.0"
                 ], 
                 "vaspinputset_name": "MaterialsProjectGGAVaspInputSet"
             }, 
-            "created_on": "2013-03-22T05:59:13.149321"
+            "created_on": "2013-03-22T06:18:18.202280"
         }, 
         {
             "fw_id": -3, 
@@ -368,103 +186,12 @@
                         "parameters": {}
                     }
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.86697462285, 
-                        "c": 3.86697462, 
-                        "b": 3.86697462378, 
-                        "matrix": [
-                            [
-                                3.3488982599877457, 
-                                0.0, 
-                                1.933487310022217
-                            ], 
-                            [
-                                1.1162994199944172, 
-                                3.1573715599960175, 
-                                1.9334873100196226
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.86697462
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 40.88829188829369, 
-                        "beta": 60.000000024, 
-                        "@class": "Lattice", 
-                        "alpha": 60.000000032, 
-                        "gamma": 60.000000024
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.137708", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                3.9070479699843927, 
-                                2.762700114996515, 
-                                6.76720558503661
-                            ], 
-                            "abc": [
-                                0.875, 
-                                0.875, 
-                                0.875
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                0.5581497099977704, 
-                                0.3946714449995022, 
-                                0.96674365500523
-                            ], 
-                            "abc": [
-                                0.125, 
-                                0.125, 
-                                0.125
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "task_type": "GGA static", 
                 "tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T05:59:13.149085"
+            "created_on": "2013-03-22T06:18:18.202251"
         }, 
         {
             "fw_id": -1, 
@@ -480,100 +207,10 @@
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
+                "verbose": true, 
                 "tags": [
                     "auto generation v1.0"
                 ], 
-                "snl": {
-                    "lattice": {
-                        "a": 3.86697462285, 
-                        "c": 3.86697462, 
-                        "b": 3.86697462378, 
-                        "matrix": [
-                            [
-                                3.3488982599877457, 
-                                0.0, 
-                                1.933487310022217
-                            ], 
-                            [
-                                1.1162994199944172, 
-                                3.1573715599960175, 
-                                1.9334873100196226
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.86697462
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 40.88829188829369, 
-                        "beta": 60.000000024, 
-                        "@class": "Lattice", 
-                        "alpha": 60.000000032, 
-                        "gamma": 60.000000024
-                    }, 
-                    "about": {
-                        "created_at": "2013-03-22T05:59:13.137708", 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                3.9070479699843927, 
-                                2.762700114996515, 
-                                6.76720558503661
-                            ], 
-                            "abc": [
-                                0.875, 
-                                0.875, 
-                                0.875
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "Si", 
-                            "xyz": [
-                                0.5581497099977704, 
-                                0.3946714449995022, 
-                                0.96674365500523
-                            ], 
-                            "abc": [
-                                0.125, 
-                                0.125, 
-                                0.125
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Si"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
                 "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
                 "vasp": {
                     "incar": {
@@ -716,7 +353,7 @@
                     }
                 }
             }, 
-            "created_on": "2013-03-22T05:59:13.147886"
+            "created_on": "2013-03-22T06:18:18.201608"
         }
     ]
 }
