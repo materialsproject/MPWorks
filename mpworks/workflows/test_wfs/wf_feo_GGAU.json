@@ -1,62 +1,9 @@
 {
     "metadata": {}, 
     "links": {
-        "-4": [], 
-        "-1": [
-            -2
-        ], 
-        "-2": [
-            -3
-        ], 
-        "-3": [
-            -4
-        ]
+        "-1": []
     }, 
     "fws": [
-        {
-            "fw_id": -4, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "VASP Copy Task", 
-                        "parameters": null
-                    }, 
-                    {
-                        "_fw_name": "Setup DOS Run Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
-                    }
-                ], 
-                "task_type": "GGA+U DOS"
-            }, 
-            "created_on": "2013-03-22T05:05:28.917414"
-        }, 
-        {
-            "fw_id": -2, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "VASP Copy Task", 
-                        "parameters": {
-                            "extension": ".relax2"
-                        }
-                    }, 
-                    {
-                        "_fw_name": "Setup GGAU Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
-                    }
-                ], 
-                "task_type": "GGA+U optimize structure (2x)"
-            }, 
-            "created_on": "2013-03-22T05:05:28.917356"
-        }, 
         {
             "fw_id": -1, 
             "spec": {
@@ -70,7 +17,7 @@
                         "parameters": {}
                     }
                 ], 
-                "task_type": "GGA optimize structure (2x)", 
+                "task_type": "GGA+U optimize structure (2x)", 
                 "tags": [
                     "auto_generation_v1.0"
                 ], 
@@ -166,32 +113,49 @@
                     "@module": "pymatgen.matproj.snl"
                 }, 
                 "snl_id": -1, 
-                "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
+                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
                 "snl_strictgroup": -2, 
                 "vasp": {
                     "incar": {
+                        "NELM": 100, 
+                        "LMAXMIX": 4, 
+                        "ENCUT": 520, 
+                        "LWAVE": "False", 
+                        "SIGMA": 0.2, 
+                        "@class": "Incar", 
                         "MAGMOM": [
                             5, 
                             0.6
                         ], 
-                        "ALGO": "Fast", 
-                        "NELM": 100, 
-                        "PREC": "Accurate", 
-                        "@module": "pymatgen.io.vaspio.vasp_input", 
+                        "LDAUL": [
+                            2, 
+                            0
+                        ], 
+                        "LDAUJ": [
+                            0, 
+                            0
+                        ], 
+                        "LDAUTYPE": [
+                            2
+                        ], 
                         "ISIF": 3, 
                         "ICHARG": 1, 
-                        "IBRION": 2, 
-                        "ENCUT": 520, 
+                        "LDAUU": [
+                            5.3, 
+                            0
+                        ], 
+                        "EDIFF": 0.0001, 
+                        "NSW": 99, 
+                        "@module": "pymatgen.io.vaspio.vasp_input", 
                         "LREAL": "Auto", 
                         "ISMEAR": -5, 
-                        "ISPIN": 2, 
-                        "EDIFF": 0.001, 
-                        "LWAVE": "False", 
                         "NPAR": 1, 
-                        "SIGMA": 0.2, 
-                        "LORBIT": "11", 
-                        "@class": "Incar", 
-                        "NSW": 99
+                        "PREC": "Accurate", 
+                        "LDAU": "True", 
+                        "IBRION": 2, 
+                        "ALGO": "Fast", 
+                        "ISPIN": 2, 
+                        "LORBIT": "11"
                     }, 
                     "kpoints": {
                         "comment": "pymatgen generated KPOINTS with grid density = 1000 / atom", 
@@ -311,30 +275,7 @@
                 }, 
                 "snl_group": -2
             }, 
-            "created_on": "2013-03-22T05:05:28.916573"
-        }, 
-        {
-            "fw_id": -3, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "VASP Copy Task", 
-                        "parameters": {
-                            "extension": ".relax2"
-                        }
-                    }, 
-                    {
-                        "_fw_name": "Setup Static Run Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
-                    }
-                ], 
-                "task_type": "GGA+U static"
-            }, 
-            "created_on": "2013-03-22T05:05:28.917388"
+            "created_on": "2013-03-22T05:05:28.924446"
         }
     ]
 }
