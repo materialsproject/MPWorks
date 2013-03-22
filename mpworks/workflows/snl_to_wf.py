@@ -1,5 +1,7 @@
+import traceback
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
+from mpworks.dupefinders.dupefinder_vasp import DupeFinderVASP
 from mpworks.firetasks.custodian_task import CustodianTask
 from mpworks.firetasks.vasp_io_tasks import VASPCopyTask, VASPWriterTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupDOSRunTask
@@ -50,7 +52,8 @@ def _get_metadata(snl, verbose=False, dupecheck=True):
             sd = snl.data['_materialsproject']
             md['snl_id'] = sd['snl_id']
             md['snlgroup_id'] = sd['snlgroup_id']
-            md['snlgroupSG_id'] = sd['snlgroupsg_id']
+            md['snlgroupSG_id'] = sd['snlgroupSG_id']
+            md['_dupefinder'] = DupeFinderVASP().to_dict()
         except:
             raise ValueError("SNL must contain snl_id, snlgroup_id, snlgroupSG_id in data['_materialsproject']['snl_id']")
 
@@ -129,9 +132,11 @@ if __name__ == '__main__':
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
 
     snl1 = StructureNL(s1, "Anubhav Jain <ajain@lbl.gov>")
+    snl1.data['_materialsproject'] = {'snl_id': 1, 'snlgroup_id': 1, 'snlgroupSG_id': 1}
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
+    snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2, 'snlgroupSG_id': 2}
 
-    snl_to_wf(snl1, inaccurate=True, dupecheck=False).to_file('test_wfs/wf_si.json', indent=4)
-    snl_to_wf(snl2, inaccurate=True, dupecheck=False).to_file('test_wfs/wf_feo.json', indent=4)
+    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si.json', indent=4)
+    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo.json', indent=4)
 
     snl_to_ggau_wf(snl2).to_file('test_wfs/wf_feo_GGAU.json', indent=4)
