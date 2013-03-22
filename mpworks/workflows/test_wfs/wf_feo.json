@@ -1,11 +1,8 @@
 {
     "metadata": {
-        "snlgroupSG_id": 2, 
-        "snl_id": 2, 
-        "snlgroup_id": 2, 
-        "_dupefinder": {
-            "_fw_name": "Dupe Finder VASP"
-        }, 
+        "run_tags": [
+            "auto generation v1.0"
+        ], 
         "vaspinputset": {
             "INCAR": {
                 "NELM": "100", 
@@ -199,10 +196,7 @@
                 "In": "In_d", 
                 "Mo": "Mo_pv"
             }
-        }, 
-        "run_tags": [
-            "auto generation v1.0"
-        ]
+        }
     }, 
     "links": {
         "-4": [], 
@@ -235,18 +229,12 @@
                     }
                 ], 
                 "task_type": "GGA+U DOS", 
-                "snlgroupSG_id": 2, 
-                "snl_id": 2, 
-                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
-                "snlgroup_id": 2, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder VASP"
-                }, 
                 "run_tags": [
                     "auto generation v1.0"
-                ]
+                ], 
+                "vaspinputset_name": "MaterialsProjectVaspInputSet"
             }, 
-            "created_on": "2013-03-22T19:02:54.711751"
+            "created_on": "2013-03-22T20:31:28.549196"
         }, 
         {
             "fw_id": -2, 
@@ -268,17 +256,11 @@
                     }
                 ], 
                 "task_type": "GGA+U optimize structure (2x)", 
-                "snlgroupSG_id": 2, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder VASP"
-                }, 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T19:02:54.711677"
+            "created_on": "2013-03-22T20:31:28.549127"
         }, 
         {
             "fw_id": -1, 
@@ -294,7 +276,6 @@
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
-                "snlgroupSG_id": 2, 
                 "snl": {
                     "lattice": {
                         "a": 3.0525137003499996, 
@@ -325,12 +306,7 @@
                         "gamma": 60.000000058
                     }, 
                     "about": {
-                        "created_at": "2013-03-22T19:02:54.677124", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
+                        "created_at": "2013-03-22T20:31:28.514534", 
                         "references": "", 
                         "authors": [
                             {
@@ -391,12 +367,10 @@
                     "@class": "StructureNL", 
                     "@module": "pymatgen.matproj.snl"
                 }, 
-                "snl_id": 2, 
                 "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
-                "snlgroup_id": 2, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder VASP"
-                }, 
+                "run_tags": [
+                    "auto generation v1.0"
+                ], 
                 "vasp": {
                     "incar": {
                         "MAGMOM": [
@@ -537,12 +511,9 @@
                         "@class": "Potcar", 
                         "@module": "pymatgen.io.vaspio.vasp_input"
                     }
-                }, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
+                }
             }, 
-            "created_on": "2013-03-22T19:02:54.710878"
+            "created_on": "2013-03-22T20:31:28.548275"
         }, 
         {
             "fw_id": -3, 
@@ -564,17 +535,11 @@
                     }
                 ], 
                 "task_type": "GGA+U static", 
-                "snlgroupSG_id": 2, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder VASP"
-                }, 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T19:02:54.711718"
+            "created_on": "2013-03-22T20:31:28.549165"
         }
     ]
 }
