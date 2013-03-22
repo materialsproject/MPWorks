@@ -18,11 +18,101 @@
                     }
                 ], 
                 "task_type": "GGA+U optimize structure (2x)", 
-                "verbose": true, 
-                "tags": [
+                "snl": {
+                    "lattice": {
+                        "a": 3.0525137003499996, 
+                        "c": 3.0525137, 
+                        "b": 3.05251369966, 
+                        "matrix": [
+                            [
+                                2.6435544100096924, 
+                                0.0, 
+                                1.5262568499904452
+                            ], 
+                            [
+                                0.8811847999763114, 
+                                2.4923669999994655, 
+                                1.5262568500145548
+                            ], 
+                            [
+                                0.0, 
+                                0.0, 
+                                3.0525137
+                            ]
+                        ], 
+                        "@module": "pymatgen.core.lattice", 
+                        "volume": 20.112120746076236, 
+                        "beta": 60.000000004, 
+                        "@class": "Lattice", 
+                        "alpha": 59.999999996, 
+                        "gamma": 60.000000058
+                    }, 
+                    "about": {
+                        "created_at": "2013-03-22T18:57:15.848353", 
+                        "references": "", 
+                        "authors": [
+                            {
+                                "name": "Anubhav Jain", 
+                                "email": "ajain@lbl.gov"
+                            }
+                        ], 
+                        "remarks": [], 
+                        "projects": [], 
+                        "history": []
+                    }, 
+                    "sites": [
+                        {
+                            "label": "Fe", 
+                            "xyz": [
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "abc": [
+                                0.0, 
+                                0.0, 
+                                0.0
+                            ], 
+                            "properties": {}, 
+                            "species": [
+                                {
+                                    "occu": 1.0, 
+                                    "@module": "pymatgen.core.periodic_table", 
+                                    "@class": "Element", 
+                                    "element": "Fe"
+                                }
+                            ]
+                        }, 
+                        {
+                            "label": "O", 
+                            "xyz": [
+                                1.7623678426233917, 
+                                1.2461859923667329, 
+                                3.0525106474888
+                            ], 
+                            "abc": [
+                                0.499999, 
+                                0.500001, 
+                                0.499999
+                            ], 
+                            "properties": {}, 
+                            "species": [
+                                {
+                                    "occu": 1.0, 
+                                    "@module": "pymatgen.core.periodic_table", 
+                                    "@class": "Element", 
+                                    "element": "O"
+                                }
+                            ]
+                        }
+                    ], 
+                    "@class": "StructureNL", 
+                    "@module": "pymatgen.matproj.snl"
+                }, 
+                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
+                "run_tags": [
                     "auto generation v1.0"
                 ], 
-                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
                 "vasp": {
                     "incar": {
                         "NELM": 100, 
@@ -182,7 +272,7 @@
                     }
                 }
             }, 
-            "created_on": "2013-03-22T06:18:18.231466"
+            "created_on": "2013-03-22T18:57:15.891261"
         }
     ]
 }
