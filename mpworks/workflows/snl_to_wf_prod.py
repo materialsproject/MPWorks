@@ -69,34 +69,33 @@ def snl_to_wf(snl, inaccurate=False):
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl)
 
-    """
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)'}
+        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
         connections[-1] = -2
 
-        spec = {'task_type': 'GGA+U static'}
+        spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-2] = -3
 
-        spec = {'task_type': 'GGA+U DOS'}
+        spec = {'task_type': 'GGA+U DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
         connections[-3] = -4
     else:
-        spec = {'task_type': 'GGA static'}
+        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
         connections[-1] = -3
 
-        spec = {'task_type': 'GGA DOS'}
+        spec = {'task_type': 'GGA DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
         connections[-3] = -4
@@ -105,7 +104,6 @@ def snl_to_wf(snl, inaccurate=False):
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     wf_meta['vaspinputset'] = mpvis.to_dict
-    """
 
     return Workflow(fws, connections, wf_meta)
 
