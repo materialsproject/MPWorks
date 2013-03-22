@@ -22,4 +22,4 @@ class DupeFinderVASP(DupeFinderBase):
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 
     def query(self, spec):
-        return {'spec.task_type': spec['task_type'], 'spec.snlgroup_id': spec['snlgroup_id']}
+        return {'spec.task_type': spec['task_type'], 'spec.snlgroupSG_id': spec['snlgroupSG_id']}

@@ -109,24 +109,6 @@ def snl_to_wf(snl, inaccurate=False, dupecheck=True):
     return Workflow(fws, connections, wf_meta)
 
 
-def snl_to_ggau_wf(snl):
-    """
-    This is a special workflow intended specifically for testing whether to run GGA+U runs without first running GGA>
-
-    TODO: delete this (or at least comment it out) once we're done with tests.
-    :param snl:
-    :param testing:
-    :return:
-    """
-
-    spec = _snl_to_spec(snl, enforce_gga=False, inaccurate=False, dupecheck=False)
-    if not spec['vasp']['incar']['LDAU']:
-        raise ValueError('This method is only intended for GGA+U structures!')
-    tasks = [VASPWriterTask(), CustodianTask()]
-    fw = FireWork(tasks, spec)
-    return Workflow.from_FireWork(fw)
-
-
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
@@ -136,7 +118,5 @@ if __name__ == '__main__':
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
     snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2, 'snlgroupSG_id': 2}
 
-    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si.json', indent=4)
-    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo.json', indent=4)
-
-    snl_to_ggau_wf(snl2).to_file('test_wfs/wf_feo_GGAU.json', indent=4)
+    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si_dupes.json', indent=4)
+    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo_dupes.json', indent=4)
