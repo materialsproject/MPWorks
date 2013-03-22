@@ -96,8 +96,9 @@ def snl_to_ggau_wf(snl):
     :return:
     """
 
-    # add the root FW (GGA)
     spec = _snl_to_spec(snl, enforce_gga=False, testing=False)
+    if not spec['vasp']['incar']['LDAU']:
+        raise ValueError('This method is only intended for GGA+U structures!')
     tasks = [VASPWriterTask(), CustodianTask()]
     fw = FireWork(tasks, spec)
     return Workflow.from_FireWork(fw)
