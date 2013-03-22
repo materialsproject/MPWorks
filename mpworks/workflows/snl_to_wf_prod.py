@@ -70,6 +70,8 @@ def snl_to_wf(snl, inaccurate=False, dupecheck=True):
     tasks = [VASPWriterTask(), CustodianTask()]
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl, dupecheck=dupecheck)
+
+    """
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
@@ -105,6 +107,7 @@ def snl_to_wf(snl, inaccurate=False, dupecheck=True):
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     wf_meta['vaspinputset'] = mpvis.to_dict
+    """
 
     return Workflow(fws, connections, wf_meta)
 

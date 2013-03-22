@@ -17,7 +17,7 @@ class DupeFinderVASP(DupeFinderBase):
 
     def verify(self, spec1, spec2):
         # TODO: check snlgroupSG_id for DOS/static/BS runs
-
+        print 'DUPE VERIFIES', set(spec1['run_tags']) == set(spec2['run_tags'])
         # assert: task_type and snlgroup_id have already been checked
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 
