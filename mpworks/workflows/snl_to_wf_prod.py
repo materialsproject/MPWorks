@@ -1,4 +1,7 @@
 import traceback
+from custodian.custodian import Custodian
+from custodian.vasp.jobs import VaspJob
+from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVASP
@@ -15,6 +18,19 @@ __version__ = '0.1'
 __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
+
+
+def _get_custodian_task(task_type):
+    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
+    if 'static' in task_type or 'DOS' in task_type:
+        jobs = [VaspJob(v_exe)]
+    elif 'optimize structure (2x)' in task_type:
+        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+    else:
+        raise ValueError('Unrecognized task type!')
+
+    handlers = [VaspErrorHandler(), PoscarErrorHandler()]
+    return Custodian(handlers, jobs, max_errors=10)
 
 
 def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
@@ -65,7 +81,7 @@ def snl_to_wf(snl, inaccurate=False):
     connections = {}
     # add the root FW (GGA)
     spec = _snl_to_spec(snl, enforce_gga=True, inaccurate=inaccurate)
-    tasks = [VASPWriterTask(), CustodianTask()]
+    tasks = [VASPWriterTask(), _get_custodian_task(spec['task_type'])]
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl)
 
