@@ -16,7 +16,7 @@ __date__ = 'Mar 15, 2013'
 
 
 class CustodianTask(FireTaskBase, FWSerializable):
-
+    # TODO: deprecate and remove once confirmed that Wei is not using this...
     _fw_name = "Custodian Task"
 
     def run_task(self, fw_spec):
@@ -37,6 +37,23 @@ class CustodianTask(FireTaskBase, FWSerializable):
             raise ValueError('Unrecognized task type! {}'.format(fw_spec['task_type']))
 
         c = Custodian(handlers, jobs, max_errors=10)
+        error_details = c.run()
+        stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
+        return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})
+
+
+class VASPCustodianTask(FireTaskBase, FWSerializable):
+
+    _fw_name = "VASPJob Custodian Task"
+
+    def __init__(self, parameters):
+        self.parameters = parameters
+        self.jobs = [VaspJob.from_dict(d) for d in parameters['jobs']]
+        self.handlers = [VaspErrorHandler.from_dict(d) for d in parameters['handlers']]
+        self.max_errors = parameters['max_errors']
+
+    def run_task(self, fw_spec):
+        c = Custodian(self.handlers, self.jobs, self.max_errors)
         error_details = c.run()
         stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})
