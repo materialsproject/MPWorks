@@ -1,11 +1,9 @@
-import traceback
-from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVASP
-from mpworks.firetasks.custodian_task import CustodianTask
+from mpworks.firetasks.custodian_task import VASPCustodianTask
 from mpworks.firetasks.vasp_io_tasks import VASPCopyTask, VASPWriterTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupDOSRunTask
 from pymatgen.io.cifio import CifParser
@@ -20,7 +18,8 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-def _get_custodian_task(task_type):
+def _get_custodian_task(spec):
+    task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
     if 'static' in task_type or 'DOS' in task_type:
         jobs = [VaspJob(v_exe)]
@@ -30,7 +29,9 @@ def _get_custodian_task(task_type):
         raise ValueError('Unrecognized task type!')
 
     handlers = [VaspErrorHandler(), PoscarErrorHandler()]
-    return Custodian(handlers, jobs, max_errors=10)
+    params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+
+    return VASPCustodianTask(params)
 
 
 def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
@@ -81,7 +82,7 @@ def snl_to_wf(snl, inaccurate=False):
     connections = {}
     # add the root FW (GGA)
     spec = _snl_to_spec(snl, enforce_gga=True, inaccurate=inaccurate)
-    tasks = [VASPWriterTask(), _get_custodian_task(spec['task_type'])]
+    tasks = [VASPWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl)
 
@@ -91,29 +92,29 @@ def snl_to_wf(snl, inaccurate=False):
     if 'LDAU' in incar and incar['LDAU']:
         spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
+        fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=-2))
         connections[-1] = -2
 
         spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
+            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
         connections[-2] = -3
 
         spec = {'task_type': 'GGA+U DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
         connections[-3] = -4
     else:
         spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
+            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
         connections[-1] = -3
 
         spec = {'task_type': 'GGA DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
         connections[-3] = -4
 
         mpvis = MaterialsProjectGGAVaspInputSet()

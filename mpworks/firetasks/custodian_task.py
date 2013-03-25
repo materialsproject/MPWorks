@@ -44,7 +44,7 @@ class CustodianTask(FireTaskBase, FWSerializable):
 
 class VASPCustodianTask(FireTaskBase, FWSerializable):
 
-    _fw_name = "VASPJob Custodian Task"
+    _fw_name = "VASP Custodian Task"
 
     def __init__(self, parameters):
         self.parameters = parameters
