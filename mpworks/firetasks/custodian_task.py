@@ -64,7 +64,14 @@ class VASPCustodianTask(FireTaskBase, FWSerializable):
         for job in self.jobs:
             job.vasp_command = v_exe
 
+
         c = Custodian(self.handlers, self.jobs, self.max_errors)
-        error_details = c.run()
-        stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
+        error_details = c.run()['corrections']
+
+        all_errors = set()
+        for run in error_details:
+            for correction in run:
+                all_errors.update(correction['errors'])
+
+        stored_data = {'error_details': error_details, 'error_list': list(all_errors)}
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})
