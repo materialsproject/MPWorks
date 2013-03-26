@@ -66,12 +66,13 @@ class VASPCustodianTask(FireTaskBase, FWSerializable):
 
 
         c = Custodian(self.handlers, self.jobs, self.max_errors)
-        error_details = c.run()['corrections']
+        custodian_out = c.run()
 
         all_errors = set()
-        for run in error_details:
-            for correction in run:
+        for run in custodian_out:
+            for correction in run['corrections']:
                 all_errors.update(correction['errors'])
 
-        stored_data = {'error_details': error_details, 'error_list': list(all_errors)}
+        stored_data = {'error_list': list(all_errors)}
+        
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})
