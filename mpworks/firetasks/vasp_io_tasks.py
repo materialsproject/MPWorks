@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-VASP tasks for Materials Project, e.g. VASPWriter and VASP mover
+
 """
 import os
 import shutil
@@ -18,12 +18,12 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-class VASPWriterTask(FireTaskBase, FWSerializable):
+class VaspWriterTask(FireTaskBase, FWSerializable):
     """
     Write VASP input files based on the fw_spec
     """
 
-    _fw_name = "VASP Writer Task"
+    _fw_name = "Vasp Writer Task"
 
     def run_task(self, fw_spec):
         Incar.from_dict(fw_spec['vasp']['incar']).write_file('INCAR')
@@ -32,12 +32,12 @@ class VASPWriterTask(FireTaskBase, FWSerializable):
         Kpoints.from_dict(fw_spec['vasp']['kpoints']).write_file('KPOINTS')
 
 
-class VASPCopyTask(FireTaskBase, FWSerializable):
+class VaspCopyTask(FireTaskBase, FWSerializable):
     """
     Copy the VASP run directory in 'prev_vasp_dir' to the current dir
     """
 
-    _fw_name = "VASP Copy Task"
+    _fw_name = "Vasp Copy Task"
 
     def __init__(self, parameters=None):
         """

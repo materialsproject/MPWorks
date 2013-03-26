@@ -15,9 +15,9 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-class VASPCustodianTask(FireTaskBase, FWSerializable):
+class VaspCustodianTask(FireTaskBase, FWSerializable):
 
-    _fw_name = "VASP Custodian Task"
+    _fw_name = "Vasp Custodian Task"
 
     def __init__(self, parameters):
         self.parameters = parameters

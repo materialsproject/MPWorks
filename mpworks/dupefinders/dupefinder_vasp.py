@@ -8,12 +8,12 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 22, 2013'
 
 
-class DupeFinderVASP(DupeFinderBase):
+class DupeFinderVasp(DupeFinderBase):
     """
     TODO: add docs
     """
 
-    _fw_name = 'Dupe Finder VASP'
+    _fw_name = 'Dupe Finder Vasp'
 
     def verify(self, spec1, spec2):
         # TODO: check snlgroupSG_id for DOS/static/BS runs
