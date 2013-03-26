@@ -15,33 +15,6 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-class CustodianTask(FireTaskBase, FWSerializable):
-    # TODO: deprecate and remove once confirmed that Wei is not using this...
-    _fw_name = "Custodian Task"
-
-    def run_task(self, fw_spec):
-        if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
-        elif 'c' in socket.gethostname():  # carver / mendel compute nodes
-            v_exe = shlex.split('mpirun -n 16 vasp')  # TODO: make ncores dynamic!
-        else:
-            raise ValueError('Unrecognized host!')
-
-        handlers = [VaspErrorHandler(), PoscarErrorHandler()]
-
-        if 'static' in fw_spec['task_type'] or 'DOS' in fw_spec['task_type']:
-            jobs = [VaspJob(v_exe)]
-        elif 'optimize structure (2x)' in fw_spec['task_type']:
-            jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-        else:
-            raise ValueError('Unrecognized task type! {}'.format(fw_spec['task_type']))
-
-        c = Custodian(handlers, jobs, max_errors=10)
-        error_details = c.run()
-        stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
-        return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})
-
-
 class VASPCustodianTask(FireTaskBase, FWSerializable):
 
     _fw_name = "VASP Custodian Task"
@@ -74,5 +47,5 @@ class VASPCustodianTask(FireTaskBase, FWSerializable):
                 all_errors.update(correction['errors'])
 
         stored_data = {'error_list': list(all_errors)}
-        
+
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd()}})

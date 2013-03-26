@@ -1,8 +1,9 @@
-import traceback
+from custodian.vasp.jobs import VaspJob
+from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVASP
-from mpworks.firetasks.custodian_task import CustodianTask
+from mpworks.firetasks.custodian_task import VASPCustodianTask
 from mpworks.firetasks.vasp_io_tasks import VASPCopyTask, VASPWriterTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupDOSRunTask
 from pymatgen.io.cifio import CifParser
@@ -17,6 +18,22 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
+def _get_custodian_task(spec):
+    task_type = spec['task_type']
+    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
+    if 'static' in task_type or 'DOS' in task_type:
+        jobs = [VaspJob(v_exe)]
+    elif 'optimize structure (2x)' in task_type:
+        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+    else:
+        raise ValueError('Unrecognized task type!')
+
+    handlers = [VaspErrorHandler(), PoscarErrorHandler()]
+    params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+
+    return VASPCustodianTask(params)
+
+
 def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
     spec = {}
 
@@ -28,7 +45,7 @@ def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
     spec['vasp']['poscar'] = mpvis.get_poscar(structure).to_dict
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
-
+    spec['_dupefinder'] = DupeFinderVASP().to_dict()
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
@@ -47,6 +64,14 @@ def _get_metadata(snl, verbose=False):
     if verbose:
         md['snl'] = snl.to_dict
 
+    try:
+        sd = snl.data['_materialsproject']
+        md['snl_id'] = sd['snl_id']
+        md['snlgroup_id'] = sd['snlgroup_id']
+        md['snlgroupSG_id'] = sd['snlgroupSG_id']
+    except:
+        raise ValueError("SNL must contain snl_id, snlgroup_id, snlgroupSG_id in data['_materialsproject']['snl_id']")
+
     return md
 
 
@@ -57,38 +82,39 @@ def snl_to_wf(snl, inaccurate=False):
     connections = {}
     # add the root FW (GGA)
     spec = _snl_to_spec(snl, enforce_gga=True, inaccurate=inaccurate)
-    tasks = [VASPWriterTask(), CustodianTask()]
+    tasks = [VASPWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl)
+
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)'}
+        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), CustodianTask()], spec, fw_id=-2))
+        fws.append(FireWork([VASPCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=-2))
         connections[-1] = -2
 
-        spec = {'task_type': 'GGA+U static'}
+        spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
+            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
         connections[-2] = -3
 
-        spec = {'task_type': 'GGA+U DOS'}
+        spec = {'task_type': 'GGA+U DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
         connections[-3] = -4
     else:
-        spec = {'task_type': 'GGA static'}
+        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), CustodianTask()], spec, fw_id=-3))
+            FireWork([VASPCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
         connections[-1] = -3
 
-        spec = {'task_type': 'GGA DOS'}
+        spec = {'task_type': 'GGA DOS', '_dupefinder': DupeFinderVASP().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), CustodianTask()], spec, fw_id=-4))
+        fws.append(FireWork([VASPCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
         connections[-3] = -4
 
         mpvis = MaterialsProjectGGAVaspInputSet()
@@ -99,32 +125,14 @@ def snl_to_wf(snl, inaccurate=False):
     return Workflow(fws, connections, wf_meta)
 
 
-def snl_to_ggau_wf(snl):
-    """
-    This is a special workflow intended specifically for testing whether to run GGA+U runs without first running GGA>
-
-    TODO: delete this (or at least comment it out) once we're done with tests.
-    :param snl:
-    :param testing:
-    :return:
-    """
-
-    spec = _snl_to_spec(snl, enforce_gga=False, inaccurate=False)
-    if not spec['vasp']['incar']['LDAU']:
-        raise ValueError('This method is only intended for GGA+U structures!')
-    tasks = [VASPWriterTask(), CustodianTask()]
-    fw = FireWork(tasks, spec)
-    return Workflow.from_FireWork(fw)
-
-
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
 
     snl1 = StructureNL(s1, "Anubhav Jain <ajain@lbl.gov>")
+    snl1.data['_materialsproject'] = {'snl_id': 1, 'snlgroup_id': 1, 'snlgroupSG_id': 1}
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
+    snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2, 'snlgroupSG_id': 2}
 
-    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si.json', indent=4)
-    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo.json', indent=4)
-
-    snl_to_ggau_wf(snl2).to_file('test_wfs/wf_feo_GGAU.json', indent=4)
+    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si_dupes.json', indent=4)
+    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo_dupes.json', indent=4)
