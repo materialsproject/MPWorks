@@ -53,6 +53,17 @@ class VASPCustodianTask(FireTaskBase, FWSerializable):
         self.max_errors = parameters['max_errors']
 
     def run_task(self, fw_spec):
+        # TODO: make this better
+        if 'nid' in socket.gethostname():  # hopper compute nodes
+            v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
+        elif 'c' in socket.gethostname():  # carver / mendel compute nodes
+            v_exe = shlex.split('mpirun -n 16 vasp')  # TODO: make ncores dynamic!
+        else:
+            raise ValueError('Unrecognized host!')
+
+        for job in self.jobs:
+            job.vasp_command = v_exe
+
         c = Custodian(self.handlers, self.jobs, self.max_errors)
         error_details = c.run()
         stored_data = {'error_details': error_details}  # TODO: make this better, i.e. have all errors as list
