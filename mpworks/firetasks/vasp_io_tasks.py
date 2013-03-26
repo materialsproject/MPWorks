@@ -3,11 +3,13 @@
 """
 
 """
+import json
 import os
 import shutil
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
+from mpworks.drones.matproj_vaspdrone import MatprojVaspDrone
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -63,3 +65,45 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             shutil.copy2(prev_filename, dest_file)
 
         return FWAction('CONTINUE', {'copied_files': self.files})
+
+
+class VaspToDBTask(FireTaskBase, FWSerializable):
+    """
+    Enter the VASP run directory in 'prev_vasp_dir' to the database.
+    """
+
+    _fw_name = "Vasp to Database Task"
+
+    def __init__(self, parameters=None):
+        """
+        :param parameters: (dict) Potential keys are 'parse_dos', 'additional_fields', and 'update_duplicates'
+        """
+        self.parameters = parameters  # store the parameters explicitly set by the user
+
+        self.parse_dos = parameters.get('parse_dos', False)
+        self.additional_fields = parameters.get('additional_fields', None)
+        self.update_duplicates = parameters.get('update_duplicates', False)
+
+    def run_task(self, fw_spec):
+        prev_dir = fw_spec['prev_vasp_dir']
+
+        # TODO: should the PATH point to the file not the dir? probably...
+
+        # get the directory containing the db file
+        db_dir = os.environ['DB_LOC']
+        print 'THE DATABASE IS LOCATED IN ', db_dir
+        db_path = os.path.join(db_dir, 'db.json')
+        with open(db_path) as f:
+            db_creds = json.load(f)
+            drone = MatprojVaspDrone(host=db_creds['host'], port=db_creds['port'], database=db_creds['database'],
+                                     user=db_creds['admin_user'], password=db_creds['admin_password'],
+                                     collection=db_creds['collection'], parse_dos=self.parse_dos,
+                                     additional_fields=self.additional_fields, update_duplicates=self.update_duplicates)
+            drone.assimilate(prev_dir)
+
+        stored_data = {}  # TODO: decide what data to store (if any)
+        return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': prev_dir}})
+
+
+
+
