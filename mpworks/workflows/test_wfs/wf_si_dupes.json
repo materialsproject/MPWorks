@@ -6,132 +6,10 @@
             "auto generation v1.0"
         ], 
         "vaspinputset": {
-            "INCAR": {
-                "NELM": "100", 
-                "IBRION": "2", 
-                "LDAUTYPE": "2", 
-                "LWAVE": "FALSE", 
-                "SIGMA": "0.2", 
-                "MAGMOM": {
-                    "Ni": 5, 
-                    "Mn4+": 3, 
-                    "Co": 5, 
-                    "Mo": 5, 
-                    "Mn": 5, 
-                    "Fe": 5, 
-                    "W": 5, 
-                    "Mn3+": 4, 
-                    "Cr": 5, 
-                    "V": 5
-                }, 
-                "ENCUT": "520", 
-                "ISIF": "3", 
-                "ICHARG": "1", 
-                "EDIFF": "0.00005", 
-                "NSW": "99", 
-                "LREAL": "AUTO", 
-                "ISMEAR": "-5", 
-                "NPAR": "1", 
-                "PREC": "Accurate", 
-                "LDAU": false, 
-                "ALGO": "FAST", 
-                "ISPIN": "2", 
-                "LORBIT": "11"
-            }, 
-            "KPOINTS": {
-                "grid_density": "1000"
-            }, 
-            "POTCAR": {
-                "Ru": "Ru_pv", 
-                "Re": "Re_pv", 
-                "Rb": "Rb_sv", 
-                "Rh": "Rh_pv", 
-                "Be": "Be_sv", 
-                "Ba": "Ba_sv", 
-                "Bi": "Bi", 
-                "Br": "Br", 
-                "H": "H", 
-                "P": "P", 
-                "Os": "Os_pv", 
-                "Ge": "Ge_d", 
-                "Gd": "Gd", 
-                "Ga": "Ga_d", 
-                "Pr": "Pr_3", 
-                "Pt": "Pt", 
-                "Pu": "Pu", 
-                "C": "C", 
-                "Pb": "Pb_d", 
-                "Pa": "Pa", 
-                "Pd": "Pd", 
-                "Cd": "Cd", 
-                "Pm": "Pm_3", 
-                "Ho": "Ho_3", 
-                "Hf": "Hf_pv", 
-                "Hg": "Hg", 
-                "He": "He", 
-                "Mg": "Mg_pv", 
-                "K": "K_sv", 
-                "Mn": "Mn_pv", 
-                "O": "O", 
-                "S": "S", 
-                "W": "W_pv", 
-                "Zn": "Zn", 
-                "Eu": "Eu", 
-                "Zr": "Zr_sv", 
-                "Er": "Er_3", 
-                "Ni": "Ni_pv", 
-                "Na": "Na_pv", 
-                "Nb": "Nb_pv", 
-                "Nd": "Nd_3", 
-                "Ne": "Ne", 
-                "Np": "Np", 
-                "Fe": "Fe_pv", 
-                "B": "B", 
-                "F": "F", 
-                "Sr": "Sr_sv", 
-                "N": "N", 
-                "Kr": "Kr", 
-                "Si": "Si", 
-                "Sn": "Sn_d", 
-                "Sm": "Sm_3", 
-                "V": "V_pv", 
-                "Sc": "Sc_sv", 
-                "Sb": "Sb", 
-                "Se": "Se", 
-                "Co": "Co", 
-                "Cl": "Cl", 
-                "Ca": "Ca_sv", 
-                "Ce": "Ce", 
-                "Xe": "Xe", 
-                "Tm": "Tm_3", 
-                "Cs": "Cs_sv", 
-                "Cr": "Cr_pv", 
-                "Cu": "Cu_pv", 
-                "La": "La", 
-                "Li": "Li_sv", 
-                "Tl": "Tl_d", 
-                "Lu": "Lu_3", 
-                "Th": "Th", 
-                "Ti": "Ti_pv", 
-                "Te": "Te", 
-                "Tb": "Tb_3", 
-                "Tc": "Tc_pv", 
-                "Ta": "Ta_pv", 
-                "Yb": "Yb_2", 
-                "Dy": "Dy_3", 
-                "I": "I", 
-                "U": "U", 
-                "Y": "Y_sv", 
-                "Ac": "Ac", 
-                "Ag": "Ag", 
-                "Ir": "Ir", 
-                "Al": "Al", 
-                "As": "As", 
-                "Ar": "Ar", 
-                "Au": "Au", 
-                "In": "In_d", 
-                "Mo": "Mo_pv"
-            }
+            "user_incar_settings": null, 
+            "constrain_total_magmom": false, 
+            "@class": "MaterialsProjectGGAVaspInputSet", 
+            "@module": "pymatgen.io.vaspio_set"
         }, 
         "snl_id": 1
     }, 
@@ -158,8 +36,42 @@
                         "parameters": {}
                     }, 
                     {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
+                        "_fw_name": "VASP Custodian Task", 
+                        "parameters": {
+                            "max_errors": 10, 
+                            "jobs": [
+                                {
+                                    "settings_override": null, 
+                                    "suffix": "", 
+                                    "vasp_command": "VASP_EXE", 
+                                    "output_file": "vasp.out", 
+                                    "@module": "custodian.vasp.jobs", 
+                                    "default_vasp_input_set": {
+                                        "user_incar_settings": null, 
+                                        "constrain_total_magmom": false, 
+                                        "name": "MIT", 
+                                        "@class": "MITVaspInputSet", 
+                                        "@module": "pymatgen.io.vaspio_set"
+                                    }, 
+                                    "gzipped": false, 
+                                    "backup": true, 
+                                    "final": true, 
+                                    "@class": "VaspJob"
+                                }
+                            ], 
+                            "handlers": [
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "VaspErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }, 
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "PoscarErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }
+                            ]
+                        }
                     }
                 ], 
                 "task_type": "GGA DOS", 
@@ -174,7 +86,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T22:52:52.826793"
+            "created_on": "2013-03-26T06:33:28.721288"
         }, 
         {
             "fw_id": -3, 
@@ -191,8 +103,42 @@
                         "parameters": {}
                     }, 
                     {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
+                        "_fw_name": "VASP Custodian Task", 
+                        "parameters": {
+                            "max_errors": 10, 
+                            "jobs": [
+                                {
+                                    "settings_override": null, 
+                                    "suffix": "", 
+                                    "vasp_command": "VASP_EXE", 
+                                    "output_file": "vasp.out", 
+                                    "@module": "custodian.vasp.jobs", 
+                                    "default_vasp_input_set": {
+                                        "user_incar_settings": null, 
+                                        "constrain_total_magmom": false, 
+                                        "name": "MIT", 
+                                        "@class": "MITVaspInputSet", 
+                                        "@module": "pymatgen.io.vaspio_set"
+                                    }, 
+                                    "gzipped": false, 
+                                    "backup": true, 
+                                    "final": true, 
+                                    "@class": "VaspJob"
+                                }
+                            ], 
+                            "handlers": [
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "VaspErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }, 
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "PoscarErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }
+                            ]
+                        }
                     }
                 ], 
                 "task_type": "GGA static", 
@@ -206,7 +152,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T22:52:52.826622"
+            "created_on": "2013-03-26T06:33:28.720878"
         }, 
         {
             "fw_id": -1, 
@@ -217,8 +163,77 @@
                         "parameters": {}
                     }, 
                     {
-                        "_fw_name": "Custodian Task", 
-                        "parameters": {}
+                        "_fw_name": "VASP Custodian Task", 
+                        "parameters": {
+                            "max_errors": 10, 
+                            "jobs": [
+                                {
+                                    "settings_override": null, 
+                                    "suffix": ".relax1", 
+                                    "vasp_command": "VASP_EXE", 
+                                    "output_file": "vasp.out", 
+                                    "@module": "custodian.vasp.jobs", 
+                                    "default_vasp_input_set": {
+                                        "user_incar_settings": null, 
+                                        "constrain_total_magmom": false, 
+                                        "name": "MIT", 
+                                        "@class": "MITVaspInputSet", 
+                                        "@module": "pymatgen.io.vaspio_set"
+                                    }, 
+                                    "gzipped": false, 
+                                    "backup": true, 
+                                    "final": false, 
+                                    "@class": "VaspJob"
+                                }, 
+                                {
+                                    "settings_override": [
+                                        {
+                                            "action": {
+                                                "_set": {
+                                                    "ISTART": 1
+                                                }
+                                            }, 
+                                            "dict": "INCAR"
+                                        }, 
+                                        {
+                                            "action": {
+                                                "_file_copy": {
+                                                    "dest": "POSCAR"
+                                                }
+                                            }, 
+                                            "filename": "CONTCAR"
+                                        }
+                                    ], 
+                                    "suffix": ".relax2", 
+                                    "vasp_command": "VASP_EXE", 
+                                    "output_file": "vasp.out", 
+                                    "@module": "custodian.vasp.jobs", 
+                                    "default_vasp_input_set": {
+                                        "user_incar_settings": null, 
+                                        "constrain_total_magmom": false, 
+                                        "name": "MIT", 
+                                        "@class": "MITVaspInputSet", 
+                                        "@module": "pymatgen.io.vaspio_set"
+                                    }, 
+                                    "gzipped": false, 
+                                    "backup": false, 
+                                    "final": true, 
+                                    "@class": "VaspJob"
+                                }
+                            ], 
+                            "handlers": [
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "VaspErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }, 
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "PoscarErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }
+                            ]
+                        }
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
@@ -253,7 +268,7 @@
                         "gamma": 60.000000024
                     }, 
                     "about": {
-                        "created_at": "2013-03-22T22:52:52.815335", 
+                        "created_at": "2013-03-26T06:33:28.708682", 
                         "_materialsproject": {
                             "snlgroupSG_id": 1, 
                             "snl_id": 1, 
@@ -469,7 +484,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-22T22:52:52.825891"
+            "created_on": "2013-03-26T06:33:28.719812"
         }
     ]
 }
