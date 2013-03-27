@@ -1,5 +1,7 @@
+import os
 from pymongo import MongoClient
 import time
+from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.workflows.snl_to_wf import snl_to_wf
@@ -15,38 +17,37 @@ __date__ = 'Mar 27, 2013'
 
 class SubmissionHandler(FWSerializable):
 
-    def __init__(self, host, port, db, username, password, launchpad):
+    def __init__(self, host, port, db, username, password):
         self.host = host
         self.port = port
         self.db = db
         self.username = username
         self.password = password
-
+        '''
         self.connection = MongoClient(host, port, j=False)
         self.database = self.connection[db]
         self.database.authenticate(username, password)
 
-        self.launchpad = launchpad
 
         self.jobs = self.database.jobs
+        '''
 
     def to_dict(self):
         """
         Note: usernames/passwords are exported as unencrypted Strings!
         """
         d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
-             'password': self.password, 'launchpad': self.launchpad.to_dict()}
+             'password': self.password}
         return d
 
     @classmethod
     def from_dict(cls, d):
         lp = LaunchPad.from_dict(d['launchpad'])
-        return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'], d['launchpad'])
+        return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'])
 
-
-    def process_submission(self):
+    def process_submission(self, launchpad):
         # TODO: sort by date (FIFO), priority
-        job = self.jobs.find_and_modify({'status': 'waiting'}, {'status': 'checked out'})
+        job = self.jobs.find_and_modify({'status': 'queued'}, {'status': 'checked out (test)'})
         if job:
             submission_id = str(job['_id'])
 
@@ -61,17 +62,29 @@ class SubmissionHandler(FWSerializable):
 
             # create a workflow
             wf = snl_to_wf(snl)
-            self.launchpad.add_wf(wf)
+            launchpad.add_wf(wf)
             print 'ADDED A JOB TO THE WORKFLOW!'
             return int(job['_id'])
 
-    def process_submissions(self):
+    def process_submissions(self, launchpad):
         last_id = -1
         while last_id:
-            last_id = self.process_submission()
+            last_id = self.process_submission(launchpad)
 
-    def sleep_and_process(self):
+    def sleep_and_process(self, launchpad):
         while True:
-            self.process_submissions()
+            self.process_submissions(launchpad)
             print 'looked for submissions, sleeping 60s'
             time.sleep(60)
+
+if __name__ == '__main__':
+
+    s_dir = os.environ['DB_LOC']
+    s_file = os.path.join(s_dir, 'submission.yaml')
+    sh = SubmissionHandler.from_file(s_file)
+
+    l_dir = FWConfig().CONFIG_FILE_DIR
+    l_file = os.path.join(l_dir, 'my_launchpad.yaml')
+    lp = LaunchPad.from_file(l_file)
+
+    sh.process_submission(lp)

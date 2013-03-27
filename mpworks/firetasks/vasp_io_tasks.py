@@ -92,7 +92,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
-        print 'THE DATABASE IS LOCATED IN ', db_dir
         db_path = os.path.join(db_dir, 'db.json')
         with open(db_path) as f:
             db_creds = json.load(f)
