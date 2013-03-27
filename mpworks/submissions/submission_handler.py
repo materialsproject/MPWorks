@@ -81,7 +81,7 @@ class SubmissionHandler(FWSerializable):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
 
         task_key = 'task_dict.' + task_type
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'set': {task_key: tid}})
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {task_key: tid}})
 
 if __name__ == '__main__':
 
