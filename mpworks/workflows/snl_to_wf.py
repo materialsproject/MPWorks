@@ -92,6 +92,7 @@ def snl_to_wf(snl, inaccurate=False):
 
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion'}
+    spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=-2))
     connections[-1] = -2
 
@@ -106,6 +107,7 @@ def snl_to_wf(snl, inaccurate=False):
         connections[-2] = -3
 
         spec = {'task_type': 'VASP db insertion'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=-4))
         connections[-3] = -4
@@ -117,6 +119,7 @@ def snl_to_wf(snl, inaccurate=False):
         connections[-4] = -5
 
         spec = {'task_type': 'VASP db insertion'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=-6))
         connections[-5] = -6
@@ -127,6 +130,7 @@ def snl_to_wf(snl, inaccurate=False):
         connections[-6] = -7
 
         spec = {'task_type': 'VASP db insertion'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask({'parse_dos': True})], spec, fw_id=-8))
         connections[-7] = -8
@@ -139,6 +143,7 @@ def snl_to_wf(snl, inaccurate=False):
         connections[-2] = -3
 
         spec = {'task_type': 'VASP db insertion'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=-4))
         connections[-3] = -4
@@ -149,6 +154,7 @@ def snl_to_wf(snl, inaccurate=False):
         connections[-4] = -5
 
         spec = {'task_type': 'VASP db insertion'}
+        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask({'parse_dos': True})], spec, fw_id=-6))
         connections[-5] = -6
