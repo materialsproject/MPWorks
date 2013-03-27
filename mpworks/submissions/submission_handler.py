@@ -46,7 +46,7 @@ class SubmissionHandler(FWSerializable):
 
     def process_submission(self, launchpad):
         # TODO: sort by date (FIFO), priority
-        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'checked out (test)'}})
+        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'waiting to run'}})
         if job:
             submission_id = str(job['_id'])
 
