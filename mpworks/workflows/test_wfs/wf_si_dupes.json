@@ -14,96 +14,24 @@
         "snl_id": 1
     }, 
     "links": {
-        "-4": [], 
-        "-2": [
-            -3
-        ], 
         "-1": [
             -2
         ], 
+        "-6": [], 
+        "-5": [
+            -6
+        ], 
+        "-4": [
+            -5
+        ], 
         "-3": [
             -4
+        ], 
+        "-2": [
+            -3
         ]
     }, 
     "fws": [
-        {
-            "fw_id": -4, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task", 
-                        "parameters": null
-                    }, 
-                    {
-                        "_fw_name": "Setup DOS Run Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": "", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
-                    }
-                ], 
-                "task_type": "GGA DOS", 
-                "snlgroupSG_id": 1, 
-                "snl_id": 1, 
-                "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
-                "snlgroup_id": 1, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-03-26T23:59:26.854955"
-        }, 
-        {
-            "fw_id": -2, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parameters": null
-                    }
-                ], 
-                "task_type": "VASP db insertion"
-            }, 
-            "created_on": "2013-03-26T23:59:26.853917"
-        }, 
         {
             "fw_id": -1, 
             "spec": {
@@ -218,7 +146,7 @@
                         "gamma": 60.000000024
                     }, 
                     "about": {
-                        "created_at": "2013-03-26T23:59:26.842297", 
+                        "created_at": "2013-03-27T00:09:51.389802", 
                         "_materialsproject": {
                             "snlgroupSG_id": 1, 
                             "snl_id": 1, 
@@ -434,7 +362,100 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-26T23:59:26.853187"
+            "created_on": "2013-03-27T00:09:51.401197"
+        }, 
+        {
+            "fw_id": -6, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp to Database Task", 
+                        "parameters": {
+                            "parse_dos": true
+                        }
+                    }
+                ], 
+                "task_type": "VASP db insertion", 
+                "vaspinputset_name": "MaterialsProjectGGAVaspInputSet"
+            }, 
+            "created_on": "2013-03-27T00:09:51.402885"
+        }, 
+        {
+            "fw_id": -5, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp Copy Task", 
+                        "parameters": null
+                    }, 
+                    {
+                        "_fw_name": "Setup DOS Run Task", 
+                        "parameters": {}
+                    }, 
+                    {
+                        "_fw_name": "Vasp Custodian Task", 
+                        "parameters": {
+                            "max_errors": 10, 
+                            "jobs": [
+                                {
+                                    "settings_override": null, 
+                                    "suffix": "", 
+                                    "vasp_command": "VASP_EXE", 
+                                    "output_file": "vasp.out", 
+                                    "@module": "custodian.vasp.jobs", 
+                                    "default_vasp_input_set": {
+                                        "user_incar_settings": null, 
+                                        "constrain_total_magmom": false, 
+                                        "name": "MIT", 
+                                        "@class": "MITVaspInputSet", 
+                                        "@module": "pymatgen.io.vaspio_set"
+                                    }, 
+                                    "gzipped": false, 
+                                    "backup": true, 
+                                    "final": true, 
+                                    "@class": "VaspJob"
+                                }
+                            ], 
+                            "handlers": [
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "VaspErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }, 
+                                {
+                                    "output_filename": "vasp.out", 
+                                    "@class": "PoscarErrorHandler", 
+                                    "@module": "custodian.vasp.handlers"
+                                }
+                            ]
+                        }
+                    }
+                ], 
+                "task_type": "GGA DOS", 
+                "snlgroupSG_id": 1, 
+                "snl_id": 1, 
+                "snlgroup_id": 1, 
+                "_dupefinder": {
+                    "_fw_name": "Dupe Finder Vasp"
+                }, 
+                "run_tags": [
+                    "auto generation v1.0"
+                ]
+            }, 
+            "created_on": "2013-03-27T00:09:51.402851"
+        }, 
+        {
+            "fw_id": -4, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp to Database Task", 
+                        "parameters": null
+                    }
+                ], 
+                "task_type": "VASP db insertion"
+            }, 
+            "created_on": "2013-03-27T00:09:51.402424"
         }, 
         {
             "fw_id": -3, 
@@ -500,7 +521,20 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-03-26T23:59:26.854527"
+            "created_on": "2013-03-27T00:09:51.402409"
+        }, 
+        {
+            "fw_id": -2, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp to Database Task", 
+                        "parameters": null
+                    }
+                ], 
+                "task_type": "VASP db insertion"
+            }, 
+            "created_on": "2013-03-27T00:09:51.401868"
         }
     ]
 }
