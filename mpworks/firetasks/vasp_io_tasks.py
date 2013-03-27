@@ -109,6 +109,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 s_file = os.path.join(s_dir, 'submission.yaml')
                 sh = SubmissionHandler.from_file(s_file)
                 sh.add_task(fw_spec['submission_id'], t_id)
+                task_type = fw_spec['prev_task_type']
+                sh.update_status(fw_spec['submission_id'], task_type)
+
 
         stored_data = {'task_id': t_id}  # TODO: decide what data to store (if any)
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': prev_dir}})

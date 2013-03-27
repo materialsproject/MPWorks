@@ -79,6 +79,10 @@ class SubmissionHandler(FWSerializable):
     def add_task(self, oid, tid):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$push': {'task_ids': tid}})
 
+    def update_status(self, oid, task_type):
+        status = 'finished ' + task_type
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
+
 if __name__ == '__main__':
 
     s_dir = os.environ['DB_LOC']
