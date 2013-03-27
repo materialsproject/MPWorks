@@ -62,7 +62,7 @@ class SubmissionHandler(FWSerializable):
             wf = snl_to_wf(snl)
             launchpad.add_wf(wf)
             print 'ADDED A JOB TO THE WORKFLOW!'
-            return int(job['_id'])
+            return submission_id
 
     def process_submissions(self, launchpad):
         last_id = -1
