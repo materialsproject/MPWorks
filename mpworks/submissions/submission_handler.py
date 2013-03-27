@@ -60,8 +60,7 @@ class SubmissionHandler(FWSerializable):
             snl.data['_materialsproject']['snlgroupSG_id'] = submission_id
 
             # create a workflow
-            # TODO: MAKE SURE INACCURATE IS OFF!!
-            wf = snl_to_wf(snl, inaccurate=True)
+            wf = snl_to_wf(snl)
             launchpad.add_wf(wf)
             print 'ADDED A JOB TO THE WORKFLOW!'
             return submission_id
