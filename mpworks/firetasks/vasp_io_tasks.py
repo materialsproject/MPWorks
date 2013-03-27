@@ -6,10 +6,12 @@
 import json
 import os
 import shutil
+import traceback
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from mpworks.drones.matproj_vaspdrone import MatprojVaspDrone
+from mpworks.submissions.submission_handler import SubmissionHandler
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -99,9 +101,15 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                                      user=db_creds['admin_user'], password=db_creds['admin_password'],
                                      collection=db_creds['collection'], parse_dos=self.parse_dos,
                                      additional_fields=self.additional_fields, update_duplicates=self.update_duplicates)
-            drone.assimilate(prev_dir)
+            t_id = drone.assimilate(prev_dir)
 
-        stored_data = {}  # TODO: decide what data to store (if any)
+            if 'submission_id' in fw_spec:
+                s_dir = os.environ['DB_LOC']
+                s_file = os.path.join(s_dir, 'submission.yaml')
+                sh = SubmissionHandler.from_file(s_file)
+                sh.add_task(fw_spec['submission_id'], t_id)
+
+        stored_data = {'task_id': t_id}  # TODO: decide what data to store (if any)
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': prev_dir}})
 
 

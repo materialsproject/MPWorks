@@ -1,4 +1,5 @@
 import os
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 import time
 from fireworks.core.fw_config import FWConfig
@@ -74,6 +75,9 @@ class SubmissionHandler(FWSerializable):
             self.process_submissions(launchpad)
             print 'looked for submissions, sleeping 60s'
             time.sleep(60)
+
+    def add_task(self, oid, tid):
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$push': {'task_ids': tid}})
 
 if __name__ == '__main__':
 
