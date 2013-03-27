@@ -42,7 +42,6 @@ class SubmissionHandler(FWSerializable):
 
     @classmethod
     def from_dict(cls, d):
-        lp = LaunchPad.from_dict(d['launchpad'])
         return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'])
 
     def process_submission(self, launchpad):
