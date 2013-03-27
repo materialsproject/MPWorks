@@ -23,14 +23,13 @@ class SubmissionHandler(FWSerializable):
         self.db = db
         self.username = username
         self.password = password
-        '''
+
         self.connection = MongoClient(host, port, j=False)
         self.database = self.connection[db]
         self.database.authenticate(username, password)
 
-
         self.jobs = self.database.jobs
-        '''
+
 
     def to_dict(self):
         """
