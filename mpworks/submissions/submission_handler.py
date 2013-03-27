@@ -45,12 +45,12 @@ class SubmissionHandler(FWSerializable):
 
     def process_submission(self, launchpad):
         # TODO: sort by date (FIFO), priority
-        job = self.jobs.find_and_modify({'status': 'queued'}, {'status': 'checked out (test)'})
+        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'checked out (test)'}})
         if job:
             submission_id = str(job['_id'])
 
             snl = StructureNL.from_dict(job)
-            snl.data['_materialsproject'] = snl.data.get(['materialsproject'], {})
+            snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
             snl.data['_materialsproject']['submission_id'] = submission_id
 
             # TODO: create a real SNL step
