@@ -17,6 +17,8 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
+# TODO: add duplicate checks for dupefinder - don't want to add the same dir twice!!
+# TODO: different walltime requirements for DB task
 
 def _get_custodian_task(spec):
     task_type = spec['task_type']
@@ -86,31 +88,48 @@ def snl_to_wf(snl, inaccurate=False):
     fws.append(FireWork(tasks, spec, fw_id=-1))
     wf_meta = _get_metadata(snl)
 
+    # add GGA insertion to DB
+    spec = {'task_type': 'VASP db insertion'}
+    fws.append(FireWork([VaspToDBTask()], spec, fw_id=-2))
+    connections[-1] = -2
+
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
+
     if 'LDAU' in incar and incar['LDAU']:
         spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=-2))
-        connections[-1] = -2
+        fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=-3))
+        connections[-2] = -3
+
+        spec = {'task_type': 'VASP db insertion'}
+        fws.append(
+            FireWork([VaspToDBTask()], spec, fw_id=-4))
+        connections[-3] = -4
 
         spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
-        connections[-2] = -3
+            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-5))
+        connections[-4] = -5
+
+        spec = {'task_type': 'VASP db insertion'}
+        fws.append(
+            FireWork([VaspToDBTask()], spec, fw_id=-6))
+        connections[-5] = -6
 
         spec = {'task_type': 'GGA+U DOS', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
-        connections[-3] = -4
-    else:
+        fws.append(FireWork([VaspCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-7))
+        connections[-6] = -7
+
         spec = {'task_type': 'VASP db insertion'}
         fws.append(
-            FireWork([VaspToDBTask()], spec, fw_id=-2))
-        connections[-1] = -2
+            FireWork([VaspToDBTask({'parse_dos': True})], spec, fw_id=-8))
+        connections[-7] = -8
 
+    else:
         spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
