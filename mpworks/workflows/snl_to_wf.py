@@ -72,6 +72,7 @@ def _get_metadata(snl, verbose=False):
         md['snl_id'] = sd['snl_id']
         md['snlgroup_id'] = sd['snlgroup_id']
         md['snlgroupSG_id'] = sd['snlgroupSG_id']
+        md['submission_id'] = sd.get('submission_id', None)
     except:
         raise ValueError("SNL must contain snl_id, snlgroup_id, snlgroupSG_id in data['_materialsproject']['snl_id']")
 
