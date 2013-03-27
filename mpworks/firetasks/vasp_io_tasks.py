@@ -40,7 +40,7 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
             s_dir = os.environ['DB_LOC']
             s_file = os.path.join(s_dir, 'submission.yaml')
             sh = SubmissionHandler.from_file(s_file)
-            status = 'running ' + fw_spec['prev_task_type']
+            status = 'running ' + fw_spec['task_type']
             sh.update_status(fw_spec['submission_id'], status)
 
 
@@ -81,7 +81,7 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             s_dir = os.environ['DB_LOC']
             s_file = os.path.join(s_dir, 'submission.yaml')
             sh = SubmissionHandler.from_file(s_file)
-            status = 'running ' + fw_spec['prev_task_type']
+            status = 'running ' + fw_spec['task_type']
             sh.update_status(fw_spec['submission_id'], status)
 
 
