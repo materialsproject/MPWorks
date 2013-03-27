@@ -80,6 +80,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         """
         self.parameters = parameters  # store the parameters explicitly set by the user
 
+        parameters = parameters if parameters else {}
         self.parse_dos = parameters.get('parse_dos', False)
         self.additional_fields = parameters.get('additional_fields', None)
         self.update_duplicates = parameters.get('update_duplicates', False)

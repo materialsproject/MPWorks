@@ -4,7 +4,7 @@ from fireworks.core.firework import FireWork
 from fireworks.core.workflow import Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import VaspCustodianTask
-from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask
+from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupDOSRunTask
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
@@ -106,11 +106,16 @@ def snl_to_wf(snl, inaccurate=False):
         fws.append(FireWork([VaspCopyTask(), SetupDOSRunTask(), _get_custodian_task(spec)], spec, fw_id=-4))
         connections[-3] = -4
     else:
+        spec = {'task_type': 'VASP db insertion'}
+        fws.append(
+            FireWork([VaspToDBTask()], spec, fw_id=-2))
+        connections[-1] = -2
+
         spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-3))
-        connections[-1] = -3
+        connections[-2] = -3
 
         spec = {'task_type': 'GGA DOS', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
