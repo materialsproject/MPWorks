@@ -20,6 +20,7 @@ __date__ = 'Mar 15, 2013'
 # TODO: add duplicate checks for dupefinder - don't want to add the same dir twice!!
 # TODO: different walltime requirements for DB task
 
+
 def _get_custodian_task(spec):
     task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
