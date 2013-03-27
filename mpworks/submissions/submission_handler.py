@@ -77,13 +77,12 @@ class SubmissionHandler(FWSerializable):
             print 'looked for submissions, sleeping 60s'
             time.sleep(60)
 
-    def add_task(self, oid, task_type, tid):
-        task_key = 'task_dict.' + task_type
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'set': {task_key: tid}})
-
-    def update_status(self, oid, task_type):
+    def update_status(self, oid, task_type, tid):
         status = 'finished ' + task_type
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
+
+        task_key = 'task_dict.' + task_type
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'set': {task_key: tid}})
 
 if __name__ == '__main__':
 
