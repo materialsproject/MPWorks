@@ -89,4 +89,4 @@ if __name__ == '__main__':
     l_file = os.path.join(l_dir, 'my_launchpad.yaml')
     lp = LaunchPad.from_file(l_file)
 
-    sh.process_submission(lp)
+    sh.sleep_and_process(lp)
