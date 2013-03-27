@@ -6,12 +6,10 @@
 import json
 import os
 import shutil
-import traceback
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from mpworks.drones.matproj_vaspdrone import MatprojVaspDrone
-from mpworks.submissions.submission_handler import SubmissionHandler
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -104,6 +102,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             t_id = drone.assimilate(prev_dir)
 
             if 'submission_id' in fw_spec:
+                # load this dynamically - else we have recursive import errors
+                # TODO: this probably indicates bad design
+                from mpworks.submissions.submission_handler import SubmissionHandler
                 s_dir = os.environ['DB_LOC']
                 s_file = os.path.join(s_dir, 'submission.yaml')
                 sh = SubmissionHandler.from_file(s_file)
