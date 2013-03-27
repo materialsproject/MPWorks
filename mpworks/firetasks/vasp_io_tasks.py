@@ -108,7 +108,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 s_dir = os.environ['DB_LOC']
                 s_file = os.path.join(s_dir, 'submission.yaml')
                 sh = SubmissionHandler.from_file(s_file)
-                sh.add_task(fw_spec['submission_id'], t_id)
+                sh.add_task(fw_spec['submission_id'], task_type, tid)
                 task_type = fw_spec['prev_task_type']
                 sh.update_status(fw_spec['submission_id'], task_type)
 
