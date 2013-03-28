@@ -107,8 +107,8 @@ class SubmissionHandler():
     def sleep_and_process(self):
         while True:
             self.process_submissions()
-            print 'looked for submissions, sleeping 60s'
-            time.sleep(60)
+            print 'looked for submissions, sleeping 30s'
+            time.sleep(30)
 
     def update_status(self, oid, status):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
