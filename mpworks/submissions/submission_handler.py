@@ -70,16 +70,31 @@ class SubmissionHandler():
             print 'ADDED A JOB TO THE WORKFLOW!'
             return submission_id
 
-    def _process_state(self, wf):
+    def _process_state(self, wf, s_id):
+        m_state = 'waiting'
         states = [fw.state for fw in wf.fws]
         if all([s == 'COMPLETED' for s in states]):
-            return 'completed'
+            m_state = 'completed'
         elif any([s == 'FIZZLED' for s in states]):
-            return 'fizzled'
+            m_state = 'fizzled'
         elif any([s == 'COMPLETED' for s in states]) or any([s == 'RUNNING' for s in states]):
-            return 'running'
+            m_state = 'running'
 
-        return 'waiting'
+        self.update_status(s_id, m_state)
+
+        m_taskdict = {}
+        if any([s == 'COMPLETED' for s in states]):
+            for fw in wf.fws:
+                if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
+                    for l in fw.launches:
+                        if l.state == 'COMPLETED':
+                            t_id = l.action.stored_data['task_id']
+                            m_taskdict[fw.spec['prev_task_type']] = t_id
+                            break
+
+        self.update_taskdict(s_id, m_taskdict)
+
+        return m_state, m_taskdict
 
     def _update_states(self):
         # find all submissions that are not completed and update the state
@@ -94,9 +109,8 @@ class SubmissionHandler():
             # get a workflow
             wf = self.launchpad.get_wf_by_fw_id(fw_id)
             # update workflow
-            new_state = self._process_state(wf)
-            self.update_status(s_id, new_state)
-            print 'UPDATED TO', new_state
+            new_state, new_dict = self._process_state(wf, s_id)
+            print 'UPDATED TO', new_state, new_dict
 
     def process_submissions(self):
         last_id = -1
@@ -113,12 +127,8 @@ class SubmissionHandler():
     def update_status(self, oid, status):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
 
-    def update_taskstatus(self, oid, task_type, tid):
-        status = 'finished ' + task_type
-        self.update_status(oid, status)
-
-        task_key = 'task_dict.' + task_type
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {task_key: tid}})
+    def update_taskdict(self, oid, task_dict):
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'task_dict': task_dict}})
 
     @classmethod
     def auto_load(cls):
