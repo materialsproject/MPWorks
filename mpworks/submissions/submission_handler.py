@@ -71,7 +71,7 @@ class SubmissionHandler():
             return submission_id
 
     def _process_state(self, wf):
-        states = [fw.state for fw in wf.id_fw.values]
+        states = [fw.state for fw in wf.fws]
         if all([s == 'COMPLETED' for s in states]):
             return 'completed'
         elif any([s == 'FIZZLED' for s in states]):
