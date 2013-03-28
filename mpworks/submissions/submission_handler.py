@@ -16,35 +16,40 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 27, 2013'
 
 
-class SubmissionHandler(FWSerializable):
+class SubmissionHandler():
+    class Submissions(FWSerializable):
 
-    def __init__(self, host, port, db, username, password):
-        self.host = host
-        self.port = port
-        self.db = db
-        self.username = username
-        self.password = password
+        def __init__(self, host, port, db, username, password):
+            self.host = host
+            self.port = port
+            self.db = db
+            self.username = username
+            self.password = password
 
-        self.connection = MongoClient(host, port, j=False)
-        self.database = self.connection[db]
-        self.database.authenticate(username, password)
+            self.connection = MongoClient(host, port, j=False)
+            self.database = self.connection[db]
+            self.database.authenticate(username, password)
 
-        self.jobs = self.database.jobs
+            self.jobs = self.database.jobs
 
 
-    def to_dict(self):
-        """
-        Note: usernames/passwords are exported as unencrypted Strings!
-        """
-        d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
-             'password': self.password}
-        return d
+        def to_dict(self):
+            """
+            Note: usernames/passwords are exported as unencrypted Strings!
+            """
+            d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
+                 'password': self.password}
+            return d
 
-    @classmethod
-    def from_dict(cls, d):
-        return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'])
+        @classmethod
+        def from_dict(cls, d):
+            return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'])
 
-    def process_submission(self, launchpad):
+    def __init__(self, submissions, launchpad):
+        self.jobs = submissions.jobs
+        self.launchpad = launchpad
+
+    def process_submission(self):
         # TODO: sort by date (FIFO), priority
         job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'waiting to run'}})
         if job:
@@ -61,18 +66,18 @@ class SubmissionHandler(FWSerializable):
 
             # create a workflow
             wf = snl_to_wf(snl)
-            launchpad.add_wf(wf)
+            self.launchpad.add_wf(wf)
             print 'ADDED A JOB TO THE WORKFLOW!'
             return submission_id
 
-    def process_submissions(self, launchpad):
+    def process_submissions(self):
         last_id = -1
         while last_id:
-            last_id = self.process_submission(launchpad)
+            last_id = self.process_submission()
 
-    def sleep_and_process(self, launchpad):
+    def sleep_and_process(self):
         while True:
-            self.process_submissions(launchpad)
+            self.process_submissions()
             print 'looked for submissions, sleeping 60s'
             time.sleep(60)
 
@@ -86,14 +91,18 @@ class SubmissionHandler(FWSerializable):
         task_key = 'task_dict.' + task_type
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {task_key: tid}})
 
+    @classmethod
+    def auto_load(cls):
+        s_dir = os.environ['DB_LOC']
+        s_file = os.path.join(s_dir, 'submission.yaml')
+        s = SubmissionHandler.Submissions.from_file(s_file)
+
+        l_dir = FWConfig().CONFIG_FILE_DIR
+        l_file = os.path.join(l_dir, 'my_launchpad.yaml')
+        lp = LaunchPad.from_file(l_file)
+
+        return SubmissionHandler(s, lp)
+
 if __name__ == '__main__':
-
-    s_dir = os.environ['DB_LOC']
-    s_file = os.path.join(s_dir, 'submission.yaml')
-    sh = SubmissionHandler.from_file(s_file)
-
-    l_dir = FWConfig().CONFIG_FILE_DIR
-    l_file = os.path.join(l_dir, 'my_launchpad.yaml')
-    lp = LaunchPad.from_file(l_file)
-
-    sh.sleep_and_process(lp)
+    sh = SubmissionHandler.auto_load()
+    sh.sleep_and_process()
