@@ -16,4 +16,4 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         VaspToDbTaskDrone.post_process(dir_name, d)
 
         # custom Materials Project post-processing
-        d['branding'] = 'MATERIALS PROJECT IS DA BEST PROJECT'
+        # (nothing for now)
