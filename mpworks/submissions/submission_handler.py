@@ -49,9 +49,9 @@ class SubmissionHandler():
         self.jobs = submissions.jobs
         self.launchpad = launchpad
 
-    def process_submission(self):
+    def _process_submission(self):
         # TODO: sort by date (FIFO), priority
-        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'waiting to run'}})
+        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'waiting'}})
         if job:
             submission_id = str(job['_id'])
 
@@ -70,10 +70,39 @@ class SubmissionHandler():
             print 'ADDED A JOB TO THE WORKFLOW!'
             return submission_id
 
+    def _process_state(self, wf):
+        states = [fw.state for fw in wf.id_fw.values]
+        if all([s == 'COMPLETED' for s in states]):
+            return 'completed'
+        elif any([s == 'FIZZLED' for s in states]):
+            return 'fizzled'
+        elif any([s == 'COMPLETED' for s in states]) or any([s == 'RUNNING' for s in states]):
+            return 'running'
+
+        return 'waiting'
+
+    def _update_states(self):
+        # find all submissions that are not completed and update the state
+        for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'_id': 1}):
+            s_id = str(s_id['_id'])
+            print 'PROCESSING', s_id
+            # get a fw_id with this submission id
+            # TODO: make this cleaner
+            # TODO: note this assumes each submission has 1 workflow only
+            fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
+            print 'GOT FW', fw_id
+            # get a workflow
+            wf = self.launchpad.get_wf_by_fw_id(fw_id)
+            # update workflow
+            new_state = self._process_state(wf)
+            self.update_status(s_id, new_state)
+            print 'UPDATED TO', new_state
+
     def process_submissions(self):
         last_id = -1
         while last_id:
-            last_id = self.process_submission()
+            last_id = self._process_submission()
+        self._update_states()
 
     def sleep_and_process(self):
         while True:
