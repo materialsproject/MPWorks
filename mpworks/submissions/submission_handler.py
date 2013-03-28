@@ -43,7 +43,7 @@ class SubmissionHandler():
 
         @classmethod
         def from_dict(cls, d):
-            return SubmissionHandler(d['host'], d['port'], d['db'], d['username'], d['password'])
+            return SubmissionHandler.Submissions(d['host'], d['port'], d['db'], d['username'], d['password'])
 
     def __init__(self, submissions, launchpad):
         self.jobs = submissions.jobs
