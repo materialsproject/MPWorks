@@ -71,6 +71,8 @@ class SubmissionHandler():
             return submission_id
 
     def _process_state(self, wf, s_id):
+
+        # get status
         m_state = 'waiting'
         states = [fw.state for fw in wf.fws]
         if all([s == 'COMPLETED' for s in states]):
@@ -81,6 +83,25 @@ class SubmissionHandler():
             m_state = 'running'
 
         self.update_status(s_id, m_state)
+
+        details = m_state
+        for fw in wf.fws:
+            if fw.state == 'READY':
+                details = 'waiting to run: {}'.format(fw.spec['task_type'])
+            elif fw.state in ['RESERVED', 'RUNNING', 'FIZZLED']:
+                machine_name = 'unknown'
+                for l in fw.launches:
+                    if l.state == fw.state:
+                        machine_name = '{}-{}'.format(l.host, l.ip)
+                        break
+                if fw.state == 'RESERVED':
+                    details = 'queued to run: {} on {}'.format(fw.spec['task_type'], machine_name)
+                if fw.state == 'RUNNING':
+                    details = 'running: {} on {}'.format(fw.spec['task_type'], machine_name)
+                if fw.state == 'FIZZLED':
+                    details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
+
+        self.update_detailed_status(s_id, details)
 
         m_taskdict = {}
         if any([s == 'COMPLETED' for s in states]):
@@ -126,6 +147,9 @@ class SubmissionHandler():
 
     def update_status(self, oid, status):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
+
+    def update_detailed_status(self, oid, status):
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'detailed_status': status}})
 
     def update_taskdict(self, oid, task_dict):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'task_dict': task_dict}})
