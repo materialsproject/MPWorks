@@ -1,6 +1,8 @@
 {
     "INCAR": {
-        "ICHARG":11
+        "ICHARG":11,
+        "NPAR":1,
+        "NEDOS":601
     },
     "KPOINTS": 1000
 }
