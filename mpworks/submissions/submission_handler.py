@@ -92,7 +92,7 @@ class SubmissionHandler():
                 machine_name = 'unknown'
                 for l in fw.launches:
                     if l.state == fw.state:
-                        machine_name = '{}-{}'.format(l.host, l.ip)
+                        machine_name = l.host
                         break
                 if fw.state == 'RESERVED':
                     details = 'queued to run: {} on {}'.format(fw.spec['task_type'], machine_name)
