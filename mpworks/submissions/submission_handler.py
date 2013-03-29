@@ -51,7 +51,7 @@ class SubmissionHandler():
 
     def _process_submission(self):
         # TODO: sort by date (FIFO), priority
-        job = self.jobs.find_and_modify({'status': 'queued'}, {'$set': {'status': 'waiting'}})
+        job = self.jobs.find_and_modify({'status': 'submitted'}, {'$set': {'status': 'waiting'}})
         if job:
             submission_id = str(job['_id'])
 
