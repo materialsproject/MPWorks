@@ -2,11 +2,13 @@ from json import load
 import os.path
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase,FWAction
-from pymatgen.io.vaspio.vasp_output import Vasprun
+from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.core.structure import Structure
+from pymatgen.symmetry.bandstructure import HighSymmKpath
+import numpy as np
 
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -34,7 +36,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
             vasp_param = load(vs)
-        for p,q in vasp_param["INCAR"].items():
+        for p, q in vasp_param["INCAR"].items():
             vasp_run['input']['incar'].__setitem__(p, q)
 
         #set POSCAR with the primitive relaxed structure
@@ -53,11 +55,11 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         #set INCAR with static run config
         with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
             vasp_param = load(vs)
-        for p,q in vasp_param["INCAR"].items():
+        for p, q in vasp_param["INCAR"].items():
             vasp_run['input']['incar'].__setitem__(p, q)
         Incar.from_dict(vasp_run['input']['incar']).write_file("INCAR")
 
-        return FWAction('CONTINUE', {'refined_struct':refined_relaxed_struct.to_dict})
+        return FWAction('CONTINUE', {'refined_struct': refined_relaxed_struct.to_dict})
 
 
 class SetupDOSRunTask(FireTaskBase, FWSerializable):
@@ -73,7 +75,7 @@ class SetupDOSRunTask(FireTaskBase, FWSerializable):
         except Exception as e:
             raise RuntimeError(e)
 
-        for p,q in vasp_param["INCAR"].items():
+        for p, q in vasp_param["INCAR"].items():
             incar.__setitem__(p, q)
         incar.write_file("INCAR")
 
@@ -83,6 +85,67 @@ class SetupDOSRunTask(FireTaskBase, FWSerializable):
         Kpoints.automatic_density(struct, num_kpoints*struct.num_sites).write_file("KPOINTS")
 
         return FWAction('CONTINUE')
+
+
+class SetupBSTask(FireTaskBase, FWSerializable):
+    """
+    Set up vasp inputs for bandstructure calculations
+    Specify KPOINTS scheme with fw_spec['BS']
+    fw_spec['BS'] = 'line': KPOINTS along symmetry lines
+    fw_spec['BS'] = 'uniform': KPOINTS with uniform grid
+    """
+    _fw_name = "Setup Bandstructure Run"
+
+    def run_task(self, fw_spec):
+
+        with open(os.path.join(os.path.dirname(__file__), "bandstructure.json")) as vs:
+            vasp_param = load(vs)
+
+        try:
+            incar = Incar.from_file("INCAR")
+        except Exception as e:
+            raise RuntimeError(e)
+
+        try:
+            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+                               parse_eigen=False).to_dict
+            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR")).to_dict
+        except Exception as e:
+            raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
+
+        #Set up INCAR (including set ISPIN and NBANDS)
+        for p,q in vasp_param["INCAR"].items():
+            incar.__setitem__(p, q)
+        site_magmon = np.array([i['tot'] for i in outcar['magnetization']])
+        ispin = 2 if np.any(site_magmon[np.abs(site_magmon) > 0.02]) else 1
+        incar.__setitem__("ISPIN", ispin)
+        nbands = int(np.ceil(vasp_run["input"]["parameters"]["NBANDS"] * 1.2))
+        incar.__setitem__("NBANDS", nbands)
+        incar.write_file("INCAR")
+
+        #Set up KPOINTS (make sure cart/reciprocal is correct!)
+        struct = Structure.from_dict(vasp_run['output']['crystal'])
+        kpath = HighSymmKpath(struct)
+        if fw_spec['BS'] == "line":
+            cart_k_points = kpath.get_kpoints()
+            kpoints = Kpoints(comment="Bandstructure along symmetry lines",
+                              style="Cartesian",
+                              num_kpts=len(cart_k_points), kpts=cart_k_points,
+                              kpts_weights=[1]*len(cart_k_points))
+        elif fw_spec['BS'] == "uniform":
+            kpoint_density = vasp_param["KPOINTS"]
+            num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
+            kpoints = Kpoints.automatic_density(struct, num_kpoints*struct.num_sites)
+            '''
+            ir_kpts = SymmetryFinder(struct, symprec=0.01).get_ir_kpoints(kpts)
+            kpoints = Kpoints (comment="Bandstructure on uniform grid",
+                               style="Reciprocal",
+                               num_kpts=len(ir_kpts), kpts=ir_kpts,
+                               kpt_weights=[1]*len(ir_kpts))
+            '''
+        kpoints.write_file("KPOINTS")
+
+        return FWAction("CONTINUE", {"kpath": kpath.kpath, "kpath_name":kpath.name})
 
 
 class SetupGGAUTask(FireTaskBase, FWSerializable):
