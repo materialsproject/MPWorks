@@ -92,7 +92,11 @@ class SubmissionHandler():
                 machine_name = 'unknown'
                 for l in fw.launches:
                     if l.state == fw.state:
-                        machine_name = l.host
+                        machine_name = 'unknown'
+                        if 'hopper' in l.host or 'nid' in l.host:
+                            machine_name = 'hopper'
+                        elif 'c' in l.host:
+                            machine_name = 'mendel/carver'
                         break
                 if fw.state == 'RESERVED':
                     details = 'queued to run: {} on {}'.format(fw.spec['task_type'], machine_name)
