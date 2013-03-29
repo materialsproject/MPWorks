@@ -115,7 +115,7 @@ class SubmissionHandler():
 
         self.update_taskdict(s_id, m_taskdict)
 
-        return m_state, m_taskdict
+        return m_state, details, m_taskdict
 
     def _update_states(self):
         # find all submissions that are not completed and update the state
@@ -126,12 +126,11 @@ class SubmissionHandler():
             # TODO: make this cleaner
             # TODO: note this assumes each submission has 1 workflow only
             fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
-            print 'GOT FW', fw_id
             # get a workflow
             wf = self.launchpad.get_wf_by_fw_id(fw_id)
             # update workflow
-            new_state, new_dict = self._process_state(wf, s_id)
-            print 'UPDATED TO', new_state, new_dict
+            new_state, details, new_dict = self._process_state(wf, s_id)
+            print 'UPDATED TO', new_state, details, new_dict
 
     def process_submissions(self):
         last_id = -1
