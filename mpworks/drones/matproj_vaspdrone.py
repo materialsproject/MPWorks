@@ -18,7 +18,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         VaspToDbTaskDrone.post_process(dir_name, d)
 
         # custom Materials Project post-processing
-        with open(os.path.join(dir_name, 'fw.json')) as f:
+        with open(os.path.join(dir_name, 'FW.json')) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['snl']
