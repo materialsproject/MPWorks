@@ -137,8 +137,7 @@ class SubmissionHandler():
             # get a workflow
             wf = self.launchpad.get_wf_by_fw_id(fw_id)
             # update workflow
-            new_state, details, new_dict = self._process_state(wf, s_id)
-            print 'UPDATED TO', new_state, details, new_dict
+            self._process_state(wf, s_id)
 
     def process_submissions(self):
         last_id = -1
