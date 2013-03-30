@@ -33,18 +33,6 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
         Potcar.from_dict(fw_spec['vasp']['potcar']).write_file('POTCAR')
         Kpoints.from_dict(fw_spec['vasp']['kpoints']).write_file('KPOINTS')
 
-        """
-        if 'submission_id' in fw_spec:
-        # load this dynamically - else we have recursive import errors
-        # TODO: this probably indicates bad design
-            from mpworks.submissions.submission_handler import SubmissionHandler
-            s_dir = os.environ['DB_LOC']
-            s_file = os.path.join(s_dir, 'submission.yaml')
-            sh = SubmissionHandler.from_file(s_file)
-            status = 'running ' + fw_spec['task_type']
-            sh.update_status(fw_spec['submission_id'], status)
-        """
-
 
 class VaspCopyTask(FireTaskBase, FWSerializable):
     """
@@ -75,17 +63,6 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
-        """
-        if 'submission_id' in fw_spec:
-            # load this dynamically - else we have recursive import errors
-            # TODO: this probably indicates bad design
-            from mpworks.submissions.submission_handler import SubmissionHandler
-            s_dir = os.environ['DB_LOC']
-            s_file = os.path.join(s_dir, 'submission.yaml')
-            sh = SubmissionHandler.from_file(s_file)
-            status = 'running ' + fw_spec['task_type']
-            sh.update_status(fw_spec['submission_id'], status)
-        """
 
 
         return FWAction('CONTINUE', {'copied_files': self.files})
@@ -124,17 +101,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                                      collection=db_creds['collection'], parse_dos=self.parse_dos,
                                      additional_fields=self.additional_fields, update_duplicates=self.update_duplicates)
             t_id = drone.assimilate(prev_dir)
-            """
-            if 'submission_id' in fw_spec:
-                # load this dynamically - else we have recursive import errors
-                # TODO: this probably indicates bad design
-                from mpworks.submissions.submission_handler import SubmissionHandler
-                s_dir = os.environ['DB_LOC']
-                s_file = os.path.join(s_dir, 'submission.yaml')
-                sh = SubmissionHandler.from_file(s_file)
-                task_type = fw_spec['prev_task_type']
-                sh.update_taskdict(fw_spec['submission_id'], task_type, t_id)
-            """
 
         stored_data = {'task_id': t_id}  # TODO: decide what data to store (if any)
         return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': prev_dir}})
