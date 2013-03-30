@@ -129,15 +129,18 @@ class SubmissionHandler():
         # find all submissions that are not completed and update the state
         for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'_id': 1}):
             s_id = str(s_id['_id'])
-            print 'PROCESSING', s_id
-            # get a fw_id with this submission id
-            # TODO: make this cleaner
-            # TODO: note this assumes each submission has 1 workflow only
-            fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
-            # get a workflow
-            wf = self.launchpad.get_wf_by_fw_id(fw_id)
-            # update workflow
-            self._process_state(wf, s_id)
+            try:
+                # get a fw_id with this submission id
+                # TODO: make this cleaner
+                # TODO: note this assumes each submission has 1 workflow only
+                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
+                # get a workflow
+                wf = self.launchpad.get_wf_by_fw_id(fw_id)
+                # update workflow
+                self._process_state(wf, s_id)
+            except:
+                print 'ERROR while processing s_id', s_id
+                traceback.format_exc()
 
     def process_submissions(self):
         last_id = -1
