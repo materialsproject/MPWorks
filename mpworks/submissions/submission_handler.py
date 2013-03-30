@@ -1,4 +1,5 @@
 import os
+import traceback
 from bson.objectid import ObjectId
 from pymongo import MongoClient
 import time
@@ -54,20 +55,23 @@ class SubmissionHandler():
         job = self.jobs.find_and_modify({'status': 'submitted'}, {'$set': {'status': 'waiting'}})
         if job:
             submission_id = str(job['_id'])
+            try:
+                snl = StructureNL.from_dict(job)
+                snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
+                snl.data['_materialsproject']['submission_id'] = submission_id
 
-            snl = StructureNL.from_dict(job)
-            snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
-            snl.data['_materialsproject']['submission_id'] = submission_id
+                # TODO: create a real SNL step
+                snl.data['_materialsproject']['snl_id'] = submission_id
+                snl.data['_materialsproject']['snlgroup_id'] = submission_id
+                snl.data['_materialsproject']['snlgroupSG_id'] = submission_id
 
-            # TODO: create a real SNL step
-            snl.data['_materialsproject']['snl_id'] = submission_id
-            snl.data['_materialsproject']['snlgroup_id'] = submission_id
-            snl.data['_materialsproject']['snlgroupSG_id'] = submission_id
-
-            # create a workflow
-            wf = snl_to_wf(snl)
-            self.launchpad.add_wf(wf)
-            print 'ADDED A JOB TO THE WORKFLOW!'
+                # create a workflow
+                wf = snl_to_wf(snl)
+                self.launchpad.add_wf(wf)
+                print 'ADDED A JOB TO THE WORKFLOW!'
+            except:
+                traceback.format_exc()
+                self.jobs.find_and_modify({'_id': ObjectId(submission_id)}, {'$set': {'status': 'error'}})
             return submission_id
 
     def _process_state(self, wf, s_id):
