@@ -30,8 +30,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            # TODO: make relax2 not be hard-coded
-            vasp_run = Vasprun("vasprun.xml.relax2", parse_dos=False,
+            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
         except:
             traceback.format_exc()
