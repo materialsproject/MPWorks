@@ -1,5 +1,6 @@
 from json import load
 import os.path
+import traceback
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase,FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
@@ -31,7 +32,8 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
-        except Exception as e:
+        except:
+            traceback.format_exc()
             raise RuntimeError("Can't get valid results from relaxed run")
 
         with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
@@ -58,6 +60,10 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         for p, q in vasp_param["INCAR"].items():
             vasp_run['input']['incar'].__setitem__(p, q)
         Incar.from_dict(vasp_run['input']['incar']).write_file("INCAR")
+
+        # redo POTCAR - this is necessary whenever you change a Structure because element order might change!!
+        # (learned the hard way...)
+        MaterialsProjectVaspInputSet().get_potcar(primitive_relaxed_struct).write_file("POTCAR")
 
         return FWAction('CONTINUE', {'refined_struct': refined_relaxed_struct.to_dict})
 
