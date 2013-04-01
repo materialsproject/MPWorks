@@ -19,6 +19,8 @@ __maintainer__ = 'Wei Chen'
 __email__ = 'weichen@lbl.gov'
 __date__ = 'Mar 20, 2013'
 
+module_dir = os.path.dirname(__file__)
+
 
 class SetupStaticRunTask(FireTaskBase, FWSerializable):
     """
@@ -29,7 +31,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Static Run Task"
 
     def run_task(self, fw_spec):
-        module_dir = os.path.dirname(__file__)
+
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
@@ -90,8 +92,7 @@ class SetupDOSRunTask(FireTaskBase, FWSerializable):
         except Exception as e:
             raise RuntimeError(e)
 
-        for p, q in vasp_param["INCAR"].items():
-            incar.__setitem__(p, q)
+        incar.update(vasp_param["INCAR"])
         incar.write_file("INCAR")
 
         kpoint_density = vasp_param["KPOINTS"]
@@ -113,7 +114,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
 
-        with open(os.path.join(os.path.dirname(__file__), "bandstructure.json")) as vs:
+        with open(os.path.join(module_dir, "bandstructure.json")) as vs:
             vasp_param = load(vs)
 
         try:
@@ -132,9 +133,9 @@ class SetupBSTask(FireTaskBase, FWSerializable):
         incar.update(vasp_param["INCAR"].items())
         site_magmon = np.array([i['tot'] for i in outcar['magnetization']])
         ispin = 2 if np.any(site_magmon[np.abs(site_magmon) > 0.02]) else 1
-        incar.__setitem__("ISPIN", ispin)
+        incar["ISPIN"] = ispin
         nbands = int(np.ceil(vasp_run["input"]["parameters"]["NBANDS"] * 1.2))
-        incar.__setitem__("NBANDS", nbands)
+        incar["NBANDS"] = nbands
         incar.write_file("INCAR")
 
         #Set up KPOINTS (make sure cart/reciprocal is correct!)
