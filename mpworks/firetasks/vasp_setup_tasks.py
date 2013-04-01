@@ -52,7 +52,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         #set KPOINTS
         kpoint_density = vasp_param["KPOINTS"]
         num_kpoints = kpoint_density * \
-                      primitive_relaxed_struct.lattice.reciprocal_lattice.volume
+            primitive_relaxed_struct.lattice.reciprocal_lattice.volume
         kpoints = Kpoints.automatic_density(
             primitive_relaxed_struct,
             num_kpoints * primitive_relaxed_struct.num_sites)
