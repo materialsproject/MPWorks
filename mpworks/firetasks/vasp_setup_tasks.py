@@ -66,9 +66,12 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...)
-        MaterialsProjectVaspInputSet().get_potcar(primitive_relaxed_struct).write_file("POTCAR")
+        potcar = MaterialsProjectVaspInputSet().get_potcar(
+            primitive_relaxed_struct)
+        potcar.write_file("POTCAR")
 
-        return FWAction('CONTINUE', {'refined_struct': refined_relaxed_struct.to_dict})
+        return FWAction('CONTINUE',
+                        {'refined_struct': refined_relaxed_struct.to_dict})
 
 
 class SetupDOSRunTask(FireTaskBase, FWSerializable):

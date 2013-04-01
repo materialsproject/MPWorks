@@ -1,3 +1,4 @@
+distribute>=0.6.35
 pymatgen>=2.5
 fireworks>=0.1dev1.7
 custodian>=0.2
