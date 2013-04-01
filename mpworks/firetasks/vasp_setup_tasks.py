@@ -126,8 +126,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
         #Set up INCAR (including set ISPIN and NBANDS)
-        for p,q in vasp_param["INCAR"].items():
-            incar.__setitem__(p, q)
+        incar.update(vasp_param["INCAR"].items())
         site_magmon = np.array([i['tot'] for i in outcar['magnetization']])
         ispin = 2 if np.any(site_magmon[np.abs(site_magmon) > 0.02]) else 1
         incar.__setitem__("ISPIN", ispin)
