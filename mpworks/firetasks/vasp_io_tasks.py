@@ -47,7 +47,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         """
         self.parameters = parameters  # store the parameters explicitly set by the user
 
-        default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR', 'vasprun.xml', 'CHGCAR', 'OSZICAR']
+        default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
+                         'vasprun.xml', 'CHGCAR', 'OSZICAR']
         parameters = parameters if parameters else {}
         self.files = parameters.get('files', default_files)  # files to move
         self.extension = parameters.get('extension', '')  # e.g., 'relax2' means to move relax2 files
@@ -96,15 +97,16 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_path = os.path.join(db_dir, 'db.json')
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MatprojVaspDrone(host=db_creds['host'], port=db_creds['port'], database=db_creds['database'],
-                                     user=db_creds['admin_user'], password=db_creds['admin_password'],
-                                     collection=db_creds['collection'], parse_dos=self.parse_dos,
-                                     additional_fields=self.additional_fields, update_duplicates=self.update_duplicates)
+            drone = MatprojVaspDrone(
+                host=db_creds['host'], port=db_creds['port'],
+                database=db_creds['database'], user=db_creds['admin_user'],
+                password=db_creds['admin_password'],
+                collection=db_creds['collection'], parse_dos=self.parse_dos,
+                additional_fields=self.additional_fields,
+                update_duplicates=self.update_duplicates)
             t_id = drone.assimilate(prev_dir)
 
-        stored_data = {'task_id': t_id}  # TODO: decide what data to store (if any)
-        return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': prev_dir}})
-
-
-
-
+        # TODO: decide what data to store (if any)
+        stored_data = {'task_id': t_id}
+        return FWAction('MODIFY', stored_data,
+                        {'dict_update': {'prev_vasp_dir': prev_dir}})

@@ -48,4 +48,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         stored_data = {'error_list': list(all_errors)}
 
-        return FWAction('MODIFY', stored_data, {'dict_update': {'prev_vasp_dir': os.getcwd(), 'prev_task_type': fw_spec['task_type']}})
+        return FWAction(
+            'MODIFY', stored_data,
+            {'dict_update': {'prev_vasp_dir': os.getcwd(),
+                             'prev_task_type': fw_spec['task_type']}})

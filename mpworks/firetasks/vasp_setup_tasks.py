@@ -22,13 +22,14 @@ __date__ = 'Mar 20, 2013'
 
 class SetupStaticRunTask(FireTaskBase, FWSerializable):
     """
-    Set VASP input sets for static runs, assuming vasp Inputs/Outputs from relax runs are already in the directory
+    Set VASP input sets for static runs, assuming vasp Inputs/Outputs from
+    relax runs are already in the directory
     """
 
     _fw_name = "Setup Static Run Task"
 
     def run_task(self, fw_spec):
-
+        module_dir = os.path.dirname(__file__)
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
@@ -36,33 +37,35 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
             traceback.format_exc()
             raise RuntimeError("Can't get valid results from relaxed run")
 
-        with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
+        with open(os.path.join(module_dir, "bs_static.json")) as vs:
             vasp_param = load(vs)
-        for p, q in vasp_param["INCAR"].items():
-            vasp_run['input']['incar'].__setitem__(p, q)
+        vasp_run['input']['incar'].update(vasp_param["INCAR"])
 
         #set POSCAR with the primitive relaxed structure
         relaxed_struct = vasp_run['output']['crystal']
-        sym_finder = SymmetryFinder(Structure.from_dict(relaxed_struct), symprec=0.01)
+        sym_finder = SymmetryFinder(Structure.from_dict(relaxed_struct),
+                                    symprec=0.01)
         refined_relaxed_struct = sym_finder.get_refined_structure()
         primitive_relaxed_struct = sym_finder.get_primitive_standard_structure()
         Poscar(primitive_relaxed_struct).write_file("POSCAR")
 
         #set KPOINTS
         kpoint_density = vasp_param["KPOINTS"]
-        num_kpoints = kpoint_density * primitive_relaxed_struct.lattice.reciprocal_lattice.volume
-        Kpoints.automatic_density(primitive_relaxed_struct, num_kpoints *
-                                                            primitive_relaxed_struct.num_sites).write_file("KPOINTS")
+        num_kpoints = kpoint_density * \
+                      primitive_relaxed_struct.lattice.reciprocal_lattice.volume
+        kpoints = Kpoints.automatic_density(
+            primitive_relaxed_struct,
+            num_kpoints * primitive_relaxed_struct.num_sites)
+        kpoints.write_file("KPOINTS")
 
         #set INCAR with static run config
-        with open(os.path.join(os.path.dirname(__file__), "bs_static.json")) as vs:
+        with open(os.path.join(module_dir, "bs_static.json")) as vs:
             vasp_param = load(vs)
-        for p, q in vasp_param["INCAR"].items():
-            vasp_run['input']['incar'].__setitem__(p, q)
-        Incar.from_dict(vasp_run['input']['incar']).write_file("INCAR")
+        vasp_run['input']['incar'].update(vasp_param["INCAR"])
+        Incar(vasp_run['input']['incar']).write_file("INCAR")
 
-        # redo POTCAR - this is necessary whenever you change a Structure because element order might change!!
-        # (learned the hard way...)
+        # redo POTCAR - this is necessary whenever you change a Structure
+        # because element order might change!! (learned the hard way...)
         MaterialsProjectVaspInputSet().get_potcar(primitive_relaxed_struct).write_file("POTCAR")
 
         return FWAction('CONTINUE', {'refined_struct': refined_relaxed_struct.to_dict})
