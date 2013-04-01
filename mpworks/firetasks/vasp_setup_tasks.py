@@ -98,7 +98,9 @@ class SetupDOSRunTask(FireTaskBase, FWSerializable):
         kpoint_density = vasp_param["KPOINTS"]
         struct = poscar.structure
         num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
-        Kpoints.automatic_density(struct, num_kpoints*struct.num_sites).write_file("KPOINTS")
+        kpoints = Kpoints.automatic_density(struct,
+                                            num_kpoints*struct.num_sites)
+        kpoints.write_file("KPOINTS")
 
         return FWAction('CONTINUE')
 
