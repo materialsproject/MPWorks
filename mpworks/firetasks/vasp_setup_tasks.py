@@ -66,6 +66,9 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...)
+
+        # TODO: FIXME: if order of POSCAR atoms changes, the MAGMOMs in INCAR might be incorrect
+        # TODO: FIXME: if order of POSCAR atoms changes, the LDAU in INCAR might be incorrect
         potcar = MaterialsProjectVaspInputSet().get_potcar(
             primitive_relaxed_struct)
         potcar.write_file("POTCAR")
