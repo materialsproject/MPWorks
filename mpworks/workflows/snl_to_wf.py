@@ -24,12 +24,10 @@ __date__ = 'Mar 15, 2013'
 def _get_custodian_task(spec):
     task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
-    if 'static' in task_type or 'DOS' in task_type:
-        jobs = [VaspJob(v_exe)]
-    elif 'optimize structure (2x)' in task_type:
+    if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
     else:
-        raise ValueError('Unrecognized task type!')
+        jobs = [VaspJob(v_exe)]
 
     handlers = [VaspErrorHandler(), PoscarErrorHandler()]
     params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
