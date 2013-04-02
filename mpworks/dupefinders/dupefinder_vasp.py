@@ -16,7 +16,7 @@ class DupeFinderVasp(DupeFinderBase):
     _fw_name = 'Dupe Finder Vasp'
 
     def verify(self, spec1, spec2):
-        # TODO: check snlgroupSG_id for DOS/static/BS runs
+        # TODO: check snlgroupSG_id for uniform/static/BS runs
         # assert: task_type and snlgroup_id have already been checked
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 

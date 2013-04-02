@@ -33,7 +33,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+            vasp_run = Vasprun("vasprun.xml", parse_uniform=False,
                                parse_eigen=False).to_dict
         except:
             traceback.format_exc()
@@ -79,11 +79,11 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
                         {'refined_struct': refined_relaxed_struct.to_dict})
 
 
-class SetupDOSRunTask(FireTaskBase, FWSerializable):
-    _fw_name = "Setup DOS Run Task"
+class SetupUniformRunTask(FireTaskBase, FWSerializable):
+    _fw_name = "Setup Uniform Run Task"
 
     def run_task(self, fw_spec):
-        with open(os.path.join(os.path.dirname(__file__), "dos.json")) as vs:
+        with open(os.path.join(os.path.dirname(__file__), "uniform.json")) as vs:
             vasp_param = load(vs)
 
         try:
@@ -125,7 +125,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
             raise RuntimeError(e)
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+            vasp_run = Vasprun("vasprun.xml", parse_uniform=False,
                                parse_eigen=False).to_dict
             outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR")).to_dict
         except Exception as e:

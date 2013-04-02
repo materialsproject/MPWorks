@@ -78,12 +78,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters=None):
         """
-        :param parameters: (dict) Potential keys are 'parse_dos', 'additional_fields', and 'update_duplicates'
+        :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
         """
         self.parameters = parameters  # store the parameters explicitly set by the user
 
         parameters = parameters if parameters else {}
-        self.parse_dos = parameters.get('parse_dos', False)
+        self.parse_uniform = parameters.get('parse_uniform', False)
         self.additional_fields = parameters.get('additional_fields', None)
         self.update_duplicates = parameters.get('update_duplicates', False)
 
@@ -101,7 +101,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_dos=self.parse_dos,
+                collection=db_creds['collection'], parse_uniform=self.parse_uniform,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
             t_id = drone.assimilate(prev_dir)
