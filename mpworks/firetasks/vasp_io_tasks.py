@@ -101,7 +101,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_uniform=self.parse_uniform,
+                collection=db_creds['collection'], parse_dos=self.parse_uniform,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
             t_id = drone.assimilate(prev_dir)
