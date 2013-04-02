@@ -33,7 +33,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_uniform=False,
+            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
         except:
             traceback.format_exc()
@@ -134,7 +134,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
             raise RuntimeError(e)
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_uniform=False,
+            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False).to_dict
             outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR")).to_dict
         except Exception as e:
