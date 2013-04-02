@@ -78,7 +78,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         return FWAction('CONTINUE',
                         {'refined_struct': refined_relaxed_struct.to_dict})
 
-
+"""
 class SetupUniformRunTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Uniform Run Task"
 
@@ -103,7 +103,7 @@ class SetupUniformRunTask(FireTaskBase, FWSerializable):
         kpoints.write_file("KPOINTS")
 
         return FWAction('CONTINUE')
-
+"""
 
 class SetupBSTask(FireTaskBase, FWSerializable):
     """
@@ -113,6 +113,15 @@ class SetupBSTask(FireTaskBase, FWSerializable):
     fw_spec['BS'] = 'uniform': KPOINTS with uniform grid
     """
     _fw_name = "Setup Bandstructure Run"
+
+    def __init__(self, parameters=None):
+        """
+        :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
+        """
+        self.parameters = parameters  # store the parameters explicitly set by the user
+
+        parameters = parameters if parameters else {}
+        self.line = parameters.get('line', True)
 
     def run_task(self, fw_spec):
 
@@ -143,13 +152,13 @@ class SetupBSTask(FireTaskBase, FWSerializable):
         #Set up KPOINTS (make sure cart/reciprocal is correct!)
         struct = Structure.from_dict(vasp_run['output']['crystal'])
         kpath = HighSymmKpath(struct)
-        if fw_spec['BS'] == "line":
+        if self.line:
             cart_k_points = kpath.get_kpoints()
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
                               style="Cartesian",
                               num_kpts=len(cart_k_points), kpts=cart_k_points,
                               kpts_weights=[1]*len(cart_k_points))
-        elif fw_spec['BS'] == "uniform":
+        else:
             kpoint_density = vasp_param["KPOINTS"]
             num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
             kpoints = Kpoints.automatic_density(struct, num_kpoints*struct.num_sites)

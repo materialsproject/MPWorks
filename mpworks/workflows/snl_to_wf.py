@@ -122,7 +122,7 @@ def snl_to_wf(snl, inaccurate=False):
 
         spec = {'task_type': 'GGA+U Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupUniformRunTask(), _get_custodian_task(spec)], spec, fw_id=-7))
+        fws.append(FireWork([VaspCopyTask(), SetupBSTask({"line": False}), _get_custodian_task(spec)], spec, fw_id=-7))
         connections[-6] = -7
 
         spec = {'task_type': 'VASP db insertion'}
@@ -157,7 +157,7 @@ def snl_to_wf(snl, inaccurate=False):
 
         spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupUniformRunTask(), _get_custodian_task(spec)], spec, fw_id=-5))
+        fws.append(FireWork([VaspCopyTask(), SetupBSTask({"line": False}), _get_custodian_task(spec)], spec, fw_id=-5))
         connections[-4] = -5
 
         spec = {'task_type': 'VASP db insertion'}
