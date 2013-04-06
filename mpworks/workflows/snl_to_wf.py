@@ -1,7 +1,6 @@
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
-from fireworks.core.firework import FireWork
-from fireworks.core.workflow import Workflow
+from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import VaspCustodianTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
@@ -17,8 +16,8 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
-# TODO: add duplicate checks for dupefinder - don't want to add the same dir twice!!
-# TODO: different walltime requirements for DB task
+# TODO: add duplicate checks for DB task - don't want to add the same dir twice!!
+# TODO: different walltime requirements and priority for DB task
 
 
 def _get_custodian_task(spec):
@@ -35,7 +34,7 @@ def _get_custodian_task(spec):
     return VaspCustodianTask(params)
 
 
-def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
+def _snl_to_spec(snl, enforce_gga=True):
     spec = {}
 
     mpvis = MaterialsProjectGGAVaspInputSet() if enforce_gga else MaterialsProjectVaspInputSet()
@@ -52,10 +51,6 @@ def _snl_to_spec(snl, enforce_gga=True, inaccurate=False):
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
     spec.update(_get_metadata(snl))
-
-    #  override parameters for testing
-    if inaccurate:
-        spec['vasp']['incar']['EDIFF'] *= 10
 
     return spec
 
@@ -75,13 +70,13 @@ def _get_metadata(snl):
     return md
 
 
-def snl_to_wf(snl, inaccurate=False):
+def snl_to_wf(snl):
     # TODO: clean this up once we're out of testing mode
     # TODO: add WF metadata
     fws = []
     connections = {}
     # add the root FW (GGA)
-    spec = _snl_to_spec(snl, enforce_gga=True, inaccurate=inaccurate)
+    spec = _snl_to_spec(snl, enforce_gga=True)
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=1))
     wf_meta = _get_metadata(snl)
@@ -194,5 +189,5 @@ if __name__ == '__main__':
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
     snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2, 'snlgroupSG_id': 2}
 
-    snl_to_wf(snl1, inaccurate=True).to_file('test_wfs/wf_si_dupes.json', indent=4)
-    snl_to_wf(snl2, inaccurate=True).to_file('test_wfs/wf_feo_dupes.json', indent=4)
+    snl_to_wf(snl1).to_file('test_wfs/wf_si_dupes.json', indent=4)
+    snl_to_wf(snl2).to_file('test_wfs/wf_feo_dupes.json', indent=4)

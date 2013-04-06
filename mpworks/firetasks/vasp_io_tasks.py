@@ -45,11 +45,11 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         """
         :param parameters: (dict) Potential keys are 'extension', 'use_CONTCAR', and 'files'
         """
-        self.parameters = parameters  # store the parameters explicitly set by the user
+        parameters = parameters if parameters else {}
+        self.update(parameters)  # store the parameters explicitly set by the user
 
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
                          'vasprun.xml', 'CHGCAR', 'OSZICAR']
-        parameters = parameters if parameters else {}
         self.files = parameters.get('files', default_files)  # files to move
         self.extension = parameters.get('extension', '')  # e.g., 'relax2' means to move relax2 files
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
@@ -65,8 +65,7 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
 
-
-        return FWAction('CONTINUE', {'copied_files': self.files})
+        return FWAction(stored_data={'copied_files': self.files})
 
 
 class VaspToDBTask(FireTaskBase, FWSerializable):
@@ -80,17 +79,17 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         """
         :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
         """
-        self.parameters = parameters  # store the parameters explicitly set by the user
-
         parameters = parameters if parameters else {}
-        self.parse_uniform = parameters.get('parse_uniform', False)
-        self.additional_fields = parameters.get('additional_fields', None)
-        self.update_duplicates = parameters.get('update_duplicates', False)
+        self.update(parameters)
+
+        self.parse_uniform = self.get('parse_uniform', False)
+        self.additional_fields = self.get('additional_fields', None)
+        self.update_duplicates = self.get('update_duplicates', False)
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
 
-        # TODO: should the PATH point to the file not the dir? probably...
+        # TODO: should the PATH of DB_LOC point to the file not the dir? probably...
 
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
@@ -108,5 +107,4 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         # TODO: decide what data to store (if any)
         stored_data = {'task_id': t_id}
-        return FWAction('MODIFY', stored_data,
-                        {'dict_update': {'prev_vasp_dir': prev_dir}})
+        return FWAction(stored_data=stored_data, update_spec={'prev_vasp_dir': prev_dir})

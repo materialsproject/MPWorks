@@ -7,6 +7,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 22, 2013'
 
+# TODO: add Launchpad indices that make this query efficient
 
 class DupeFinderVasp(DupeFinderBase):
     """
@@ -16,8 +17,7 @@ class DupeFinderVasp(DupeFinderBase):
     _fw_name = 'Dupe Finder Vasp'
 
     def verify(self, spec1, spec2):
-        # TODO: check snlgroupSG_id for uniform/static/BS runs
-        # assert: task_type and snlgroup_id have already been checked
+        # assert: task_type and snlgroup_id have already been checked through query
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 
     def query(self, spec):

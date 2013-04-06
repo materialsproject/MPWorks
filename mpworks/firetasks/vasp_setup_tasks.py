@@ -2,7 +2,7 @@ from json import load
 import os.path
 import traceback
 from fireworks.utilities.fw_serializers import FWSerializable
-from fireworks.core.firework import FireTaskBase,FWAction
+from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
@@ -75,8 +75,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
             primitive_relaxed_struct)
         potcar.write_file("POTCAR")
 
-        return FWAction('CONTINUE',
-                        {'refined_struct': refined_relaxed_struct.to_dict})
+        return FWAction(stored_data= {'refined_struct': refined_relaxed_struct.to_dict})
 
 """
 class SetupUniformRunTask(FireTaskBase, FWSerializable):
@@ -118,9 +117,9 @@ class SetupBSTask(FireTaskBase, FWSerializable):
         """
         :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
         """
-        self.parameters = parameters  # store the parameters explicitly set by the user
-
         parameters = parameters if parameters else {}
+        self.update(parameters)  # store the parameters explicitly set by the user
+
         self.line = parameters.get('line', True)
 
     def run_task(self, fw_spec):
@@ -171,7 +170,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
             '''
         kpoints.write_file("KPOINTS")
 
-        return FWAction("CONTINUE", {"kpath": kpath.kpath, "kpath_name":kpath.name})
+        return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
 
 
 class SetupGGAUTask(FireTaskBase, FWSerializable):
@@ -181,6 +180,8 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup GGAU Task"
 
     def run_task(self, fw_spec):
+
+        chgcar_start = False
 
         vi = VaspInput.from_directory(".")  # read the VaspInput from the previous run
 
@@ -193,7 +194,8 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
             vi['INCAR']['ICHARG'] = 1
+            chgcar_start=True
 
-        vi["INCAR"].write_file("INCAR")  # write back the new INCAR to the current directory
+        vi['INCAR'].write_file('INCAR')  # write back the new INCAR to the current directory
 
-        return FWAction('CONTINUE')
+        return FWAction(stored_data={'chgcar_start': chgcar_start})

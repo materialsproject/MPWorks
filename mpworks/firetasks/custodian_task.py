@@ -20,14 +20,14 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     _fw_name = "Vasp Custodian Task"
 
     def __init__(self, parameters):
-        self.parameters = parameters
-        self.jobs = [VaspJob.from_dict(d) for d in parameters['jobs']]
+        self.update(parameters)
+        self.jobs = [VaspJob.from_dict(d) for d in self['jobs']]
         self.handlers = [VaspErrorHandler.from_dict(d)
-                         for d in parameters['handlers']]
-        self.max_errors = parameters['max_errors']
+                         for d in self['handlers']]
+        self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
-        # TODO: make this better
+        # TODO: make this better - is there a way to load an environment variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
             v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
         elif 'c' in socket.gethostname():  # carver / mendel compute nodes
@@ -37,7 +37,6 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         for job in self.jobs:
             job.vasp_command = v_exe
-
 
         c = Custodian(self.handlers, self.jobs, self.max_errors)
         custodian_out = c.run()

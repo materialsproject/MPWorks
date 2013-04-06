@@ -16,6 +16,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 27, 2013'
 
+# TODO: make this more object-oriented, especially the modifications to the submissions DB
 
 class SubmissionHandler():
     class Submissions(FWSerializable):
