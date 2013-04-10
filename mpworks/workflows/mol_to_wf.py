@@ -22,6 +22,7 @@ def mol_to_wf(mol):
     spec['route_parameters'] = {'Opt':'', 'SCF':'Tight'}
     spec['input_parameters'] = None
     spec['link0_parameters'] = {'%mem': '100MW', '%chk':'molecule'}
+    spec['_category'] = 'Molecules'
 
     fw = FireWork([GaussianTask()], spec)
 
@@ -38,4 +39,4 @@ if __name__ == '__main__':
 
     wf = mol_to_wf(mol)
 
-    pprint(wf.fws[0].spec)
+    wf.to_file('CH3.yaml')
