@@ -122,9 +122,9 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
 
         #Set up KPOINTS (make sure cart/reciprocal is correct!)
         struct = Structure.from_dict(vasp_run['output']['crystal'])
-        kpath = HighSymmKpath(struct)
 
         if self.line:
+            kpath = HighSymmKpath(struct)
             cart_k_points, k_points_labels = kpath.get_kpoints()
             print k_points_labels
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
