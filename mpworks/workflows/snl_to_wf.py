@@ -47,6 +47,7 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
+    spec['_category'] = 'VASP'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
@@ -180,6 +181,28 @@ def snl_to_wf(snl):
 
     return Workflow(fws, connections, wf_meta)
 
+
+def snl_to_wf_ggau(snl):
+    fws = []
+    connections = {}
+
+    # add the root FW (GGA+U)
+    spec = _snl_to_spec(snl)
+    tasks = [VaspWriterTask(), _get_custodian_task(spec)]
+    fws.append(FireWork(tasks, spec, fw_id=1))
+    wf_meta = _get_metadata(snl)
+
+    # add GGA insertion to DB
+    spec = {'task_type': 'VASP db insertion', '_priority': 2, '_category': 'VASP'}
+    spec.update(_get_metadata(snl))
+    fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
+    connections[1] = 2
+    mpvis = MaterialsProjectGGAVaspInputSet()
+
+    spec['vaspinputset_name'] = mpvis.__class__.__name__
+    wf_meta['vaspinputset'] = mpvis.to_dict
+
+    return Workflow(fws, connections, wf_meta)
 
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
