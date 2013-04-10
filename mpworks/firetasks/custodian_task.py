@@ -16,7 +16,6 @@ __date__ = 'Mar 15, 2013'
 
 
 class VaspCustodianTask(FireTaskBase, FWSerializable):
-
     _fw_name = "Vasp Custodian Task"
 
     def __init__(self, parameters):
@@ -48,7 +47,5 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         stored_data = {'error_list': list(all_errors)}
 
-        return FWAction(
-            'MODIFY', stored_data,
-            {'dict_update': {'prev_vasp_dir': os.getcwd(),
-                             'prev_task_type': fw_spec['task_type']}})
+        return FWAction(stored_data=stored_data,
+                        update_spec={'prev_vasp_dir': os.getcwd(), 'prev_task_type': fw_spec['task_type']})
