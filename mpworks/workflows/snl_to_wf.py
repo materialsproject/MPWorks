@@ -46,6 +46,7 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
+    spec['_priority'] = 2
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
@@ -82,7 +83,7 @@ def snl_to_wf(snl):
     wf_meta = _get_metadata(snl)
 
     # add GGA insertion to DB
-    spec = {'task_type': 'VASP db insertion'}
+    spec = {'task_type': 'VASP db insertion', '_priority': 2}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
@@ -92,12 +93,12 @@ def snl_to_wf(snl):
     incar = mpvis.get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict()}
+        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=3))
         connections[2] = 3
 
-        spec = {'task_type': 'VASP db insertion'}
+        spec = {'task_type': 'VASP db insertion', '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=4))
