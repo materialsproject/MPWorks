@@ -6,7 +6,7 @@ import time
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
-from mpworks.workflows.snl_to_wf import snl_to_wf
+from mpworks.workflows.snl_to_wf import snl_to_wf, snl_to_wf_ggau
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
