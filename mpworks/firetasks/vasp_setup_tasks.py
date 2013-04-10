@@ -10,6 +10,7 @@ from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 import numpy as np
+import itertools
 
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -118,7 +119,7 @@ class SetupBSTask(FireTaskBase, FWSerializable):
         :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
         """
         parameters = parameters if parameters else {}
-        self.update(parameters)  # store the parameters explicitly set by the user
+        #self.update(parameters)  # store the parameters explicitly set by the user
 
         self.line = parameters.get('line', True)
 
@@ -151,23 +152,38 @@ class SetupBSTask(FireTaskBase, FWSerializable):
         #Set up KPOINTS (make sure cart/reciprocal is correct!)
         struct = Structure.from_dict(vasp_run['output']['crystal'])
         kpath = HighSymmKpath(struct)
+
         if self.line:
-            cart_k_points = kpath.get_kpoints()
+            cart_k_points, k_points_labels = kpath.get_kpoints()
+            print k_points_labels
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
-                              style="Cartesian",
-                              num_kpts=len(cart_k_points), kpts=cart_k_points,
+                              style="Line_mode",
+                              num_kpts=1, kpts=cart_k_points,
+                              labels=k_points_labels,
                               kpts_weights=[0]*len(cart_k_points))
         else:
             kpoint_density = vasp_param["KPOINTS"]
             num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
             kpoints = Kpoints.automatic_density(struct, num_kpoints*struct.num_sites)
-            '''
-            ir_kpts = SymmetryFinder(struct, symprec=0.01).get_ir_kpoints(kpts)
-            kpoints = Kpoints (comment="Bandstructure on uniform grid",
-                               style="Reciprocal",
-                               num_kpts=len(ir_kpts), kpts=ir_kpts,
-                               kpt_weights=[1]*len(ir_kpts))
-            '''
+            mesh = kpoints.kpts[0]
+            x, y, z = np.meshgrid(np.linspace(0, 1, mesh[0], False),
+                                  np.linspace(0, 1, mesh[1], False),
+                                  np.linspace(0, 1, mesh[2], False))
+            k_grid = np.vstack([x.ravel(), y.ravel(), z.ravel()]).transpose()
+
+            ir_kpts_mapping = SymmetryFinder(struct, symprec=0.01).get_ir_kpoints_mapping(k_grid)
+            kpts_mapping = itertools.groupby(sorted(ir_kpts_mapping))
+            ir_kpts = []
+            weights = []
+            for i in kpts_mapping:
+                ir_kpts.append(k_grid[i[0]])
+                weights.append(len(list(i[1])))
+
+            kpoints = Kpoints(comment="Bandstructure on uniform grid",
+                              style="Reciprocal",
+                              num_kpts=len(ir_kpts), kpts=ir_kpts,
+                              kpts_weights=weights)
+
         kpoints.write_file("KPOINTS")
 
         return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
