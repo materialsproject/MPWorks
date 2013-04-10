@@ -187,7 +187,7 @@ def snl_to_wf_ggau(snl):
     connections = {}
 
     # add the root FW (GGA+U)
-    spec = _snl_to_spec(snl)
+    spec = _snl_to_spec(snl, enforce_gga=False)
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=1))
     wf_meta = _get_metadata(snl)
@@ -197,7 +197,7 @@ def snl_to_wf_ggau(snl):
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
-    mpvis = MaterialsProjectGGAVaspInputSet()
+    mpvis = MaterialsProjectVaspInputSet()
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     wf_meta['vaspinputset'] = mpvis.to_dict
