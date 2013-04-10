@@ -4,7 +4,7 @@ from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import VaspCustodianTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupBSTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupNonSCFTask
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -117,7 +117,7 @@ def snl_to_wf(snl):
 
         spec = {'task_type': 'GGA+U Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupBSTask({"line": False}), _get_custodian_task(spec)], spec, fw_id=7))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=7))
         connections[6] = 7
 
         spec = {'task_type': 'VASP db insertion'}
@@ -128,7 +128,7 @@ def snl_to_wf(snl):
 
         spec = {'task_type': 'GGA+U band structure', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupBSTask(), _get_custodian_task(spec)], spec, fw_id=9))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=9))
         connections[8] = 9
 
         spec = {'task_type': 'VASP db insertion'}
@@ -152,7 +152,7 @@ def snl_to_wf(snl):
 
         spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupBSTask({"line": False}), _get_custodian_task(spec)], spec, fw_id=5))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
         connections[4] = 5
 
         spec = {'task_type': 'VASP db insertion'}
@@ -163,7 +163,7 @@ def snl_to_wf(snl):
 
         spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupBSTask(), _get_custodian_task(spec)], spec, fw_id=7))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
         connections[6] = 7
 
         spec = {'task_type': 'VASP db insertion'}

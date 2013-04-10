@@ -29,7 +29,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     relax runs are already in the directory
     """
 
-    _fw_name = "Setup Static Run Task"
+    _fw_name = "Setup Static Task"
 
     def run_task(self, fw_spec):
 
@@ -78,50 +78,21 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         return FWAction(stored_data= {'refined_struct': refined_relaxed_struct.to_dict})
 
-"""
-class SetupUniformRunTask(FireTaskBase, FWSerializable):
-    _fw_name = "Setup Uniform Run Task"
 
-    def run_task(self, fw_spec):
-        with open(os.path.join(os.path.dirname(__file__), "uniform.json")) as vs:
-            vasp_param = load(vs)
-
-        try:
-            incar = Incar.from_file("INCAR")
-            poscar = Poscar.from_file("POSCAR")
-        except Exception as e:
-            raise RuntimeError(e)
-
-        incar.update(vasp_param["INCAR"])
-        incar.write_file("INCAR")
-
-        kpoint_density = vasp_param["KPOINTS"]
-        struct = poscar.structure
-        num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
-        kpoints = Kpoints.automatic_density(struct,
-                                            num_kpoints*struct.num_sites)
-        kpoints.write_file("KPOINTS")
-
-        return FWAction('CONTINUE')
-"""
-
-class SetupBSTask(FireTaskBase, FWSerializable):
+class SetupNonSCFTask(FireTaskBase, FWSerializable):
     """
-    Set up vasp inputs for bandstructure calculations
-    Specify KPOINTS scheme with fw_spec['BS']
-    fw_spec['BS'] = 'line': KPOINTS along symmetry lines
-    fw_spec['BS'] = 'uniform': KPOINTS with uniform grid
+    Set up vasp inputs for non-SCF calculations (Uniform [DOS] or band structure)
     """
-    _fw_name = "Setup Bandstructure Run"
+    _fw_name = "Setup non-SCF Task"
 
     def __init__(self, parameters=None):
         """
-        :param parameters: (dict) Potential keys are 'parse_uniform', 'additional_fields', and 'update_duplicates'
+
+        :param parameters:
         """
         parameters = parameters if parameters else {}
-        #self.update(parameters)  # store the parameters explicitly set by the user
-
-        self.line = parameters.get('line', True)
+        self.update(parameters)  # store the parameters explicitly set by the user
+        self.line = parameters.get('mode', 'line').lower() == 'line'
 
     def run_task(self, fw_spec):
 
