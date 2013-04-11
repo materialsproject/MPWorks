@@ -17,7 +17,7 @@ module_dir = os.path.dirname(os.path.abspath(__file__))
 if __name__ == "__main__":
     setup(name='MPWorks',
           version=__version__,
-          description='FireWorks workflow software',
+          description='Materials Project codes',
           long_description=open(os.path.join(module_dir, 'README.rst')).read(),
           url='https://github.com/materialsproject/MPWorks',
           author='Anubhav Jain',
