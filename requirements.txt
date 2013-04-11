@@ -1,5 +1,5 @@
 numpy>=1.7.0
 pymatgen>=2.5
-fireworks>=0.1dev2.13
+fireworks>=0.1
 custodian>=0.3
 pymongo>=2.4.2
