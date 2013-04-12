@@ -128,8 +128,8 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
             cart_k_points, k_points_labels = kpath.get_kpoints()
             #print k_points_labels
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
-                              style="Line_mode",
-                              num_kpts=1, kpts=cart_k_points,
+                              style="Cartesian",
+                              num_kpts=len(cart_k_points), kpts=cart_k_points,
                               labels=k_points_labels,
                               kpts_weights=[0]*len(cart_k_points))
         else:
