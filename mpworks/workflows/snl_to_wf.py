@@ -47,7 +47,7 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
-    spec['_category'] = 'VASP'
+    # spec['_category'] = 'VASP'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
