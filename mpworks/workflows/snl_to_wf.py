@@ -42,11 +42,15 @@ def _snl_to_spec(snl, enforce_gga=True):
 
     spec['vasp'] = {}
     spec['vasp']['incar'] = mpvis.get_incar(structure).to_dict
+    spec['vasp']['incar']['NPAR'] = 2
     spec['vasp']['poscar'] = mpvis.get_poscar(structure).to_dict
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
+    spec['elements'] = [e.symbol for e in snl.structure.composition.elements]
+    spec['formula_abc'] = snl.structure.composition.alphabetical_formula
+    spec['formula_red'] = snl.structure.composition.reduced_formula
     # spec['_category'] = 'VASP'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 

@@ -28,9 +28,9 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         # TODO: make this better - is there a way to load an environment variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 24 vasp')  # TODO: make ncores dynamic!
+            v_exe = shlex.split('aprun -n 48 vasp')  # TODO: make ncores dynamic!
         elif 'c' in socket.gethostname():  # carver / mendel compute nodes
-            v_exe = shlex.split('mpirun -n 16 vasp')  # TODO: make ncores dynamic!
+            v_exe = shlex.split('mpirun -n 32 vasp')  # TODO: make ncores dynamic!
         else:
             raise ValueError('Unrecognized host!')
 
