@@ -126,7 +126,7 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         if self.line:
             kpath = HighSymmKpath(struct)
             cart_k_points, k_points_labels = kpath.get_kpoints()
-            print k_points_labels
+            #print k_points_labels
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
                               style="Line_mode",
                               num_kpts=1, kpts=cart_k_points,
@@ -156,8 +156,10 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
                               kpts_weights=weights)
 
         kpoints.write_file("KPOINTS")
-
-        return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
+        if self.line:
+            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
+        else:
+            return FWAction()
 
 
 class SetupGGAUTask(FireTaskBase, FWSerializable):
