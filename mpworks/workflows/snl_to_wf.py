@@ -49,6 +49,7 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
     spec['elements'] = [e.symbol for e in snl.structure.composition.elements]
+    spec['nelements'] = len(spec['elements'])
     spec['formula_abc'] = snl.structure.composition.alphabetical_formula
     spec['formula_red'] = snl.structure.composition.reduced_formula
     # spec['_category'] = 'VASP'
