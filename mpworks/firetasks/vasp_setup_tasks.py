@@ -131,7 +131,7 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
                               style="Cartesian",
                               num_kpts=len(cart_k_points), kpts=cart_k_points,
                               labels=k_points_labels,
-                              kpts_weights=[0]*len(cart_k_points))
+                              kpts_weights=[1]*len(cart_k_points))
         else:
             kpoint_density = vasp_param["KPOINTS"]
             num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
