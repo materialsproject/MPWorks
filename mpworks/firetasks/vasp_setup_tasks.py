@@ -5,7 +5,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet
+from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.bandstructure import HighSymmKpath
@@ -61,17 +61,20 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
             num_kpoints * primitive_relaxed_struct.num_sites)
         kpoints.write_file("KPOINTS")
 
-        #set INCAR with static run config
+        #Regenerate INCAR with new structure and static run config
         with open(os.path.join(module_dir, "bs_static.json")) as vs:
             vasp_param = load(vs)
-        vasp_run['input']['incar'].update(vasp_param["INCAR"])
-        Incar(vasp_run['input']['incar']).write_file("INCAR")
+        if vasp_run['input']['incar'].get('LDAU', False):
+            mpvis = MaterialsProjectVaspInputSet()
+        else:
+            mpvis = MaterialsProjectGGAVaspInputSet()
+        incar = mpvis.get_incar(primitive_relaxed_struct)
+        incar.update(vasp_param["INCAR"])
+        incar.write_file("INCAR")
 
         # redo POTCAR - this is necessary whenever you change a Structure
-        # because element order might change!! (learned the hard way...)
+        # because element order might change!! (learned the hard way...) -AJ
 
-        # TODO: FIXME: if order of POSCAR atoms changes, the MAGMOMs in INCAR might be incorrect
-        # TODO: FIXME: if order of POSCAR atoms changes, the LDAU in INCAR might be incorrect
         potcar = MaterialsProjectVaspInputSet().get_potcar(
             primitive_relaxed_struct)
         potcar.write_file("POTCAR")
