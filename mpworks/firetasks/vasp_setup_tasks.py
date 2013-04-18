@@ -129,10 +129,11 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         if self.line:
             kpath = HighSymmKpath(struct)
             cart_k_points, k_points_labels = kpath.get_kpoints()
+            frac_k_points = [kpath._prim_rec.get_fractional_coords(k) for k in cart_k_points]
             #print k_points_labels
             kpoints = Kpoints(comment="Bandstructure along symmetry lines",
-                              style="Cartesian",
-                              num_kpts=len(cart_k_points), kpts=cart_k_points,
+                              style="Reciprocal",
+                              num_kpts=len(frac_k_points), kpts=frac_k_points,
                               labels=k_points_labels,
                               kpts_weights=[1]*len(cart_k_points))
         else:
