@@ -67,7 +67,7 @@ class SubmissionHandler():
                 snl.data['_materialsproject']['snlgroupSG_id'] = submission_id
 
                 # create a workflow
-                wf = snl_to_wf(snl)
+                wf = snl_to_wf_ggau(snl)
                 self.launchpad.add_wf(wf)
                 print 'ADDED A JOB TO THE WORKFLOW!'
             except:
