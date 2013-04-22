@@ -42,7 +42,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
             traceback.format_exc()
             raise RuntimeError("Can't get valid results from relaxed run")
 
-        mpsvip = MaterialsProjectStaticVaspInputSet()
+        mpsvip = MaterialsProjectStaticVaspInputSet(user_incar_settings={"NPAR":2})
         structure = mpsvip.get_structure(vasp_run, outcar, initial_structure=False, refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
@@ -81,12 +81,12 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         structure = MaterialsProjectNonSCFInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Line")
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings.update({"NPAR":2}), mode="Line")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Uniform")
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings.update({"NPAR":2}), mode="Uniform")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
