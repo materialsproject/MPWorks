@@ -5,7 +5,8 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
+from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet, \
+    MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFInputSet
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.core.structure import Structure
 from pymatgen.symmetry.bandstructure import HighSymmKpath
@@ -35,51 +36,21 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
-                               parse_eigen=False).to_dict
+                               parse_eigen=False)
+            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
         except:
             traceback.format_exc()
             raise RuntimeError("Can't get valid results from relaxed run")
 
-        with open(os.path.join(module_dir, "bs_static.json")) as vs:
-            vasp_param = load(vs)
-        vasp_run['input']['incar'].update(vasp_param["INCAR"])
-
-        #set POSCAR with the primitive relaxed structure
-        relaxed_struct = vasp_run['output']['crystal']
-        sym_finder = SymmetryFinder(Structure.from_dict(relaxed_struct),
-                                    symprec=0.01)
-        refined_relaxed_struct = sym_finder.get_refined_structure()
-        primitive_relaxed_struct = sym_finder.get_primitive_standard_structure()
-        Poscar(primitive_relaxed_struct).write_file("POSCAR")
-
-        #set KPOINTS
-        kpoint_density = vasp_param["KPOINTS"]
-        num_kpoints = kpoint_density * \
-            primitive_relaxed_struct.lattice.reciprocal_lattice.volume
-        kpoints = Kpoints.automatic_density(
-            primitive_relaxed_struct,
-            num_kpoints * primitive_relaxed_struct.num_sites)
-        kpoints.write_file("KPOINTS")
-
-        #Regenerate INCAR with new structure and static run config
-        with open(os.path.join(module_dir, "bs_static.json")) as vs:
-            vasp_param = load(vs)
-        if vasp_run['input']['incar'].get('LDAU', False):
-            mpvis = MaterialsProjectVaspInputSet()
-        else:
-            mpvis = MaterialsProjectGGAVaspInputSet()
-        incar = mpvis.get_incar(primitive_relaxed_struct)
-        incar.update(vasp_param["INCAR"])
-        incar.write_file("INCAR")
-
+        mpsvip = MaterialsProjectStaticVaspInputSet()
+        structure = mpsvip.get_structure(vasp_run, outcar, initial_structure=False, refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
 
-        potcar = MaterialsProjectVaspInputSet().get_potcar(
-            primitive_relaxed_struct)
-        potcar.write_file("POTCAR")
+        for k,v in mpsvip.get_all_vasp_input(structure[0], generate_potcar=True).items():
+            v.write_file(os.path.join(os.getcwd(), k))
 
-        return FWAction(stored_data= {'refined_struct': refined_relaxed_struct.to_dict})
+        return FWAction(stored_data= {'refined_struct': structure[1].to_dict})
 
 
 class SetupNonSCFTask(FireTaskBase, FWSerializable):
@@ -99,67 +70,26 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
 
-        with open(os.path.join(module_dir, "bandstructure.json")) as vs:
-            vasp_param = load(vs)
-
-        try:
-            incar = Incar.from_file("INCAR")
-        except Exception as e:
-            raise RuntimeError(e)
-
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
-                               parse_eigen=False).to_dict
-            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR")).to_dict
+                               parse_eigen=False)
+            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
-        #Set up INCAR (including set ISPIN and NBANDS)
-        incar.update(vasp_param["INCAR"].items())
-        site_magmon = np.array([i['tot'] for i in outcar['magnetization']])
-        ispin = 2 if np.any(site_magmon[np.abs(site_magmon) > 0.02]) else 1
-        incar["ISPIN"] = ispin
-        nbands = int(np.ceil(vasp_run["input"]["parameters"]["NBANDS"] * 1.2))
-        incar["NBANDS"] = nbands
-        incar.write_file("INCAR")
-
-        #Set up KPOINTS (make sure cart/reciprocal is correct!)
-        struct = Structure.from_dict(vasp_run['output']['crystal'])
+        user_incar_settings= MaterialsProjectNonSCFInputSet.get_incar_settings(vasp_run, outcar)
+        structure = MaterialsProjectNonSCFInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
-            kpath = HighSymmKpath(struct)
-            cart_k_points, k_points_labels = kpath.get_kpoints()
-            frac_k_points = [kpath._prim_rec.get_fractional_coords(k) for k in cart_k_points]
-            #print k_points_labels
-            kpoints = Kpoints(comment="Bandstructure along symmetry lines",
-                              style="Reciprocal",
-                              num_kpts=len(frac_k_points), kpts=frac_k_points,
-                              labels=k_points_labels,
-                              kpts_weights=[1]*len(cart_k_points))
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Line")
+            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+                v.write_file(os.path.join(os.getcwd(), k))
+            kpath = HighSymmKpath(structure)
         else:
-            kpoint_density = vasp_param["KPOINTS"]
-            num_kpoints = kpoint_density * struct.lattice.reciprocal_lattice.volume
-            kpoints = Kpoints.automatic_density(struct, num_kpoints*struct.num_sites)
-            mesh = kpoints.kpts[0]
-            x, y, z = np.meshgrid(np.linspace(0, 1, mesh[0], False),
-                                  np.linspace(0, 1, mesh[1], False),
-                                  np.linspace(0, 1, mesh[2], False))
-            k_grid = np.vstack([x.ravel(), y.ravel(), z.ravel()]).transpose()
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Uniform")
+            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+                v.write_file(os.path.join(os.getcwd(), k))
 
-            ir_kpts_mapping = SymmetryFinder(struct, symprec=0.01).get_ir_kpoints_mapping(k_grid)
-            kpts_mapping = itertools.groupby(sorted(ir_kpts_mapping))
-            ir_kpts = []
-            weights = []
-            for i in kpts_mapping:
-                ir_kpts.append(k_grid[i[0]])
-                weights.append(len(list(i[1])))
-
-            kpoints = Kpoints(comment="Bandstructure on uniform grid",
-                              style="Reciprocal",
-                              num_kpts=len(ir_kpts), kpts=ir_kpts,
-                              kpts_weights=weights)
-
-        kpoints.write_file("KPOINTS")
         if self.line:
             return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
         else:
