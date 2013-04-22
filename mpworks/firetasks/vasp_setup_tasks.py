@@ -78,15 +78,16 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
         user_incar_settings= MaterialsProjectNonSCFInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings.update({"NPAR":2})
         structure = MaterialsProjectNonSCFInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings.update({"NPAR":2}), mode="Line")
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Line")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings.update({"NPAR":2}), mode="Uniform")
+            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Uniform")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
