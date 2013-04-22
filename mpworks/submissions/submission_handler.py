@@ -141,7 +141,7 @@ class SubmissionHandler():
                 self._process_state(wf, s_id)
             except:
                 print 'ERROR while processing s_id', s_id
-                traceback.format_exc()
+                traceback.print_exc()
 
     def process_submissions(self):
         last_id = -1
