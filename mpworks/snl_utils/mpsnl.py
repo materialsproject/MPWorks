@@ -89,14 +89,11 @@ class SNLGroup():
 
         self.all_snl_ids = all_snl_ids if all_snl_ids else []
         if self.canonical_snl.snl_id not in self.all_snl_ids:
-            self.all_mps_ids.append(canonical_snl.snl_id)
+            self.all_snl_ids.append(canonical_snl.snl_id)
 
         # Convenience fields
         self.canonical_structure = canonical_snl.structure
         self.autometa = get_meta_from_structure(self.canonical_structure)
-
-    def switch_canonical_mps(self, new_canonical_mps):
-        raise NotImplementedError()
 
     def to_dict(self):
         d = {}
@@ -117,7 +114,7 @@ class SNLGroup():
     def add_if_belongs(self, cand_snl):
 
         # no need to compare if different formulas or spacegroups
-        if not cand_snl.mpsgroup_key != self.canonical_snl.mpsgroup_key:
+        if not cand_snl.snlgroup_key != self.canonical_snl.snlgroup_key:
             return False
 
         # no need to compare if one is ordered, the other disordered
