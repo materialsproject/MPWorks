@@ -37,12 +37,10 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         user_incar_settings={"NPAR":2}
 
         MaterialsProjectStaticVaspInputSet.from_previous_vasp_run(os.getcwd(), user_incar_settings=user_incar_settings)
-        structure = mpsvip.get_structure(vasp_run, outcar, initial_structure=False, refined_structure=True)
+        structure = MaterialsProjectStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
+                                                                     initial_structure=False, refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
-
-        for k,v in mpsvip.get_all_vasp_input(structure[0], generate_potcar=True).items():
-            v.write_file(os.path.join(os.getcwd(), k))
 
         return FWAction(stored_data= {'refined_struct': structure[1].to_dict})
 
