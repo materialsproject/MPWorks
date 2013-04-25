@@ -1,8 +1,12 @@
 import datetime
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
-from mpworks.snl_utils.mpsnl import MPStructureNL
+from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
+from pymatgen import Structure
+from pymatgen.matproj.snl import StructureNL
 from pymatgen.symmetry.finder import SymmetryFinder
+
+import numpy as np
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -18,7 +22,7 @@ SPACEGROUP_TOLERANCE = 0.1  # as suggested by Shyue, 6/19/2012
 
 class SNLMongoAdapter(FWSerializable):
 
-    def __init__(self, host, port, db, username, password):
+    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None, reset=False):
         self.host = host
         self.port = port
         self.db = db
@@ -27,7 +31,8 @@ class SNLMongoAdapter(FWSerializable):
 
         self.connection = MongoClient(host, port, j=False)
         self.database = self.connection[db]
-        self.database.authenticate(username, password)
+        if self.username:
+            self.database.authenticate(username, password)
 
         self.snl = self.database.snl
         self.snlgroups = self.database.snlgroups
@@ -35,15 +40,20 @@ class SNLMongoAdapter(FWSerializable):
 
         self._update_indices()
 
+        if reset:
+            self.restart_id_assigner_at(1, 1)
+            self.snl.remove()
+            self.snlgroups.remove()
+
     def _update_indices(self):
         self.snl.ensure_index('snl_id', unique=True)
-        self.snl_coll.ensure_index('autometa.nsites')
-        self.snl_coll.ensure_index('autometa.nelements')
-        self.snl_coll.ensure_index('autometa.nlements')
-        self.snl_coll.ensure_index('autometa.formula')
-        self.snl_coll.ensure_index('autometa.formula_abc_red')
-        self.snl_coll.ensure_index('autometa.formula_red')
-        self.snl_coll.ensure_index('autometa.is_ordered')
+        self.snl.ensure_index('autometa.nsites')
+        self.snl.ensure_index('autometa.nelements')
+        self.snl.ensure_index('autometa.nlements')
+        self.snl.ensure_index('autometa.formula')
+        self.snl.ensure_index('autometa.formula_abc_red')
+        self.snl.ensure_index('autometa.formula_red')
+        self.snl.ensure_index('autometa.is_ordered')
 
         self.snlgroups.ensure_index('snlgroup_id', unique=True)
         self.snlgroups.ensure_index('all_snl_ids')
@@ -70,22 +80,36 @@ class SNLMongoAdapter(FWSerializable):
 
     def add_snl(self, snl, build_groups=True):
         snl_id = self._get_next_snl_id()
-        sf = SymmetryFinder(self.structure, SPACEGROUP_TOLERANCE)
+        sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(), sf.get_spacegroup_symbol())
+        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(), sf.get_spacegroup_symbol(), sf.get_hall(), sf.get_crystal_system(), sf.get_lattice_type())
         self.add_mpsnl(mpsnl, build_groups)
 
     def add_mpsnl(self, mpsnl, build_groups=True):
         snl_d = mpsnl.to_dict
-        snl_d['mp_timestamp'] = datetime.datetime.utcnow().isoformat()
-        self.snl.insert(mpsnl.to_dict)
+        snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
+        self.snl.insert(snl_d)
         if build_groups:
-            self.build_groups(mpsnl.snl_id)
+            self.build_groups(mpsnl)
 
-    def build_groups(self, snl_id):
-        # TODO: implement me
-        pass
+    def build_groups(self, mpsnl):
+        add_new = True
 
+        for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key}, sort=[("num_snl", DESCENDING)]):
+            snlgroup = SNLGroup.from_dict(entry)
+            if snlgroup.add_if_belongs(mpsnl):
+                add_new = False
+                print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
+                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
+                break
+
+        if add_new:
+            # add a new SNLGroup
+            snlgroup_id = self._get_next_snlgroup_id()
+            snlgroup = SNLGroup(snlgroup_id, mpsnl)
+            self.snlgroups.insert(snlgroup.to_dict)
+
+        return snlgroup, add_new
 
     def to_dict(self):
         """
@@ -94,3 +118,20 @@ class SNLMongoAdapter(FWSerializable):
         d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
              'password': self.password}
         return d
+
+if __name__ == '__main__':
+    sma = SNLMongoAdapter(reset=True)
+    s1 = Structure(np.eye(3, 3) * 3, ["Fe"], [[0, 0, 0]])
+    s2 = Structure(np.eye(3, 3) * 3, ["Al"], [[0, 0, 0]])
+
+    snl1 = StructureNL(s1, 'Anubhav Jain <ajain@lbl.gov>')
+    sma.add_snl(snl1)
+
+    snl2 = StructureNL(s1, 'Captain America <ajain@lbl.gov>')
+    sma.add_snl(snl2)
+
+    snl3 = StructureNL(s2, 'Captain America <ajain@lbl.gov>')
+    sma.add_snl(snl3)
+
+    snl4 = StructureNL(s2, 'Anubhav Jain <ajain@lbl.gov>')
+    sma.add_snl(snl4)

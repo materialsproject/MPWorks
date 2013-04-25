@@ -11,7 +11,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Apr 24, 2013'
 
-# TODO: add more spacegroup info - hall symbol, etc.
+# TODO: document
 
 def get_meta_from_structure(structure):
     # TODO: this won't work for molecules
@@ -38,24 +38,29 @@ def get_meta_from_structure(structure):
 class MPStructureNL(StructureNL):
     # adds snl_id, spacegroup, and autometa properties to StructureNL.
 
-    def __init__(self, snl_id, sg_num, sg_symbol, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(MPStructureNL, self).__init__(*args, **kwargs)
-        self.snl_id = snl_id
-        self.sg_num = sg_num
-        self.sg_symbol = sg_symbol
-        self.autometa = get_meta_from_structure(self.structure)
+        if not self.sg_num:
+            raise ValueError('An MPStructureNL must have a spacegroup assigned!')
+        self.snl_autometa = get_meta_from_structure(self.structure)
+
+    @property
+    def snl_id(self):
+        return self.data['_materialsproject']['snl_id']
+
+    @property
+    def sg_num(self):
+        return self.data['_materialsproject']['sg_num']
 
     @property
     def snlgroup_key(self):
-        return self.autometa['formula_abc_red'] + "--" + str(self.sg_num)
+        return self.snl_autometa['formula_abc_red'] + "--" + str(self.sg_num)
 
     @property
     def to_dict(self):
         m_dict = super(MPStructureNL, self).to_dict
         m_dict['snl_id'] = self.snl_id
-        m_dict['sg_num'] = self.sg_num
-        m_dict['sg_symbol'] = self.sg_symbol
-        m_dict['autometa'] = self.autometa
+        m_dict['snl_autometa'] = self.snl_autometa
         m_dict['snlgroup_key'] = self.snlgroup_key
         return m_dict
 
@@ -72,7 +77,7 @@ class MPStructureNL(StructureNL):
 
         structure = Structure.from_dict(d) if "lattice" in d \
             else Molecule.from_dict(d)
-        return MPStructureNL(d['snl_id'], d['sg_num'], d['sg_symbol'], structure, a["authors"],
+        return MPStructureNL(structure, a["authors"],
                            projects=a.get("projects", None),
                            references=a.get("references", ""),
                            remarks=a.get("remarks", None), data=data,
@@ -80,12 +85,19 @@ class MPStructureNL(StructureNL):
                            created_at=created_at)
 
     @staticmethod
-    def from_snl(snl, snl_id, sg_num, sg_symbol):
-        snl_d = snl.to_dict
-        snl_d['snl_id'] = snl_id
-        snl_d['sg_num'] = sg_num
-        snl_d['sg_symbol'] = sg_symbol
-        return MPStructureNL.from_dict(snl_d)
+    def from_snl(snl, snl_id, sg_num, sg_symbol, hall, xtal_system, lattice_type):
+        # make a copy of SNL
+        snl2 = StructureNL.from_dict(snl.to_dict)
+        if '_materialsproject' not in snl2.data:
+            snl2.data['_materialsproject'] = {}
+        snl2.data['_materialsproject']['snl_id'] = snl_id
+        snl2.data['_materialsproject']['sg_num'] = sg_num
+        snl2.data['_materialsproject']['sg_symbol'] = sg_symbol
+        snl2.data['_materialsproject']['hall'] = hall
+        snl2.data['_materialsproject']['xtal_system'] = xtal_system
+        snl2.data['_materialsproject']['lattice_type'] = lattice_type
+
+        return MPStructureNL.from_dict(snl2.to_dict)
 
 
 class SNLGroup():
@@ -104,8 +116,9 @@ class SNLGroup():
 
         # Convenience fields
         self.canonical_structure = canonical_snl.structure
-        self.autometa = get_meta_from_structure(self.canonical_structure)
+        self.snl_autometa = get_meta_from_structure(self.canonical_structure)
 
+    @property
     def to_dict(self):
         d = {}
         d['created_at'] = self.created_at
@@ -114,8 +127,8 @@ class SNLGroup():
         d['canonical_snl'] = self.canonical_snl.to_dict
         d['all_snl_ids'] = self.all_snl_ids
         d['num_snl'] = len(self.all_snl_ids)
-        d['autometa'] = self.autometa
-        d['snlgroup_key'] = self.snlgroup_key
+        d['snl_autometa'] = self.snl_autometa
+        d['snlgroup_key'] = self.canonical_snl.snlgroup_key
         return d
 
     @staticmethod
@@ -125,7 +138,7 @@ class SNLGroup():
     def add_if_belongs(self, cand_snl):
 
         # no need to compare if different formulas or spacegroups
-        if not cand_snl.snlgroup_key != self.canonical_snl.snlgroup_key:
+        if cand_snl.snlgroup_key != self.canonical_snl.snlgroup_key:
             return False
 
         # no need to compare if one is ordered, the other disordered
