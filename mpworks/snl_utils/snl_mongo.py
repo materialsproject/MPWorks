@@ -2,6 +2,7 @@ import datetime
 from pymongo import MongoClient
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL
+from pymatgen.symmetry.finder import SymmetryFinder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -69,9 +70,9 @@ class SNLMongoAdapter(FWSerializable):
 
     def add_snl(self, snl, build_groups=True):
         snl_id = self._get_next_snl_id()
-        # TODO: get real sg_num
-        sg_num = -1
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sg_num)
+        sf = SymmetryFinder(self.structure, SPACEGROUP_TOLERANCE)
+        sf.get_spacegroup()
+        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(), sf.get_spacegroup_symbol())
         self.add_mpsnl(mpsnl, build_groups)
 
     def add_mpsnl(self, mpsnl, build_groups=True):
@@ -82,6 +83,7 @@ class SNLMongoAdapter(FWSerializable):
             self.build_groups(mpsnl.snl_id)
 
     def build_groups(self, snl_id):
+        # TODO: implement me
         pass
 
 
@@ -92,69 +94,3 @@ class SNLMongoAdapter(FWSerializable):
         d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
              'password': self.password}
         return d
-"""
-    def post_process_mps_groups(self, update_all=True):
-        self.logger.info("beginning post-process of MPSGroups collection")
-        query = {} if update_all else {"autometa.icsd_ids": {"$exists":False}}
-        for mpsgroup in self._mpsgroups_coll.find(query, {"mpsgroup_id":1, "all_mps_ids":1}, timeout=False):
-            self.logger.info("processing mpsgroup_id: {}".format(mpsgroup['mpsgroup_id']))
-            icsd_ids = []
-            for mps_id in mpsgroup['all_mps_ids']:
-                result = self._mps_coll.find_one({"mps_id":mps_id, "mps_autometa.icsd_id":{"$exists":True}}, {"mps_autometa.icsd_id"})
-                if result:
-                    icsd_ids.append(result['mps_autometa']['icsd_id'])
-
-            self.logger.info("mpsgroup_id: {} has {} ICSD entries.".format(mpsgroup['mpsgroup_id'], len(icsd_ids)))
-            self._mpsgroups_coll.update({"mpsgroup_id": mpsgroup['mpsgroup_id']}, {"$set": {"autometa.icsd_ids": icsd_ids}})
-            self._mpsgroups_coll.update({"mpsgroup_id": mpsgroup['mpsgroup_id']}, {"$set": {"autometa.num_icsd": len(icsd_ids)}})
-
-    def clear(self):
-        self._mps_coll.remove()
-
-    def _add_spacegroups(self, update_all):
-        query = {} if update_all else {"mps_autometa.spacegroup.number":{"$exists":False}, "mps_id": {'$gte':286260}}  # BLAH this is a hack!
-        for mp_dict in self._mps_coll.find(query, timeout=False):
-            mps_id = mp_dict['mps_id']
-
-            if mp_dict['about']['metadata']['info'].get('mps_assert_spacegroup', None):
-                sgroup_num = mp_dict['about']['metadata']['info']['mps_assert_spacegroup']
-                self.logger.info("getting spacegroup from metadata assertion: {} for mps_id: {}".format(sgroup_num, mps_id))
-                self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup': {}}})
-                self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup.number': sgroup_num}})
-            else:
-                try:
-                    structure = Structure.from_dict(mp_dict)
-                    self.logger.info("processing spacegroup for mps_id: {}".format(mps_id))
-                    sg = SymmetryFinder(structure, SPACEGROUP_TOLERANCE).get_spacegroup()
-                    self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup': {}}})
-                    self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup.number': sg.int_number}})
-                    self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup.symbol': sg.int_symbol}})
-                    self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup.parameters': {"tolerance": SPACEGROUP_TOLERANCE}}})
-                    self._mps_coll.find_and_modify(query={"mps_id":mps_id}, update={'$set': {'mps_autometa.spacegroup.assigner': "spglib/pymatgen"}})
-                except:
-                    self.logger.error("Could not determine the spacegroup for mps_id: {}".format(mps_id))
-                    self.logger.error(traceback.format_exc())
-
-
-
-    def change_canonical_mps(self, mpsgroup_id, mps_id):
-        self.logger.info("Changing the representative for mpsgroup_id: {} to mps_id: {}".format(mpsgroup_id, mps_id))
-
-        if self._mpsgroups_coll.find({"mpsgroup_id": mpsgroup_id, "all_mps_ids": mps_id}).count() == 0:
-            self.logger.error("Cannot update the representative. mps_id: {} does not exist as a part of mpsgroup_id: {} !".format(mps_id, mpsgroup_id))
-            raise ValueError("Invalid mps id")
-
-        mps = MaterialsProjectSource.from_dict(self._mps_coll.find_one({"mps_id":mps_id}))
-        # Update the canonical MPS
-        self._mpsgroups_coll.update({"mpsgroup_id": mpsgroup_id}, {"$set": {"canonical_mps": mps.to_dict()}})
-
-
-    def clear_mpsgroup_key(self, mpsgroup_key):
-        self.logger.info("Clearing mpsgroup: {}".format(mpsgroup_key))
-
-        # clear the mpsgroup collection
-        self._mpsgroups_coll.remove({'mpsgroup_key': mpsgroup_key})
-
-        # clear the mps collection
-        self._mps_coll.update({"mps_autometa.mpsgroup.mpsgroup_key": mpsgroup_key}, {"$unset": {"mps_autometa.mpsgroup":1}}, multi=True)
-"""

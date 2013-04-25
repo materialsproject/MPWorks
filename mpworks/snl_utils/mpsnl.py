@@ -11,6 +11,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Apr 24, 2013'
 
+# TODO: add more spacegroup info - hall symbol, etc.
 
 def get_meta_from_structure(structure):
     # TODO: this won't work for molecules
@@ -34,14 +35,14 @@ def get_meta_from_structure(structure):
 
     return meta
 
-
 class MPStructureNL(StructureNL):
     # adds snl_id, spacegroup, and autometa properties to StructureNL.
 
-    def __init__(self, snl_id, sg_num, *args, **kwargs):
+    def __init__(self, snl_id, sg_num, sg_symbol, *args, **kwargs):
         super(MPStructureNL, self).__init__(*args, **kwargs)
         self.snl_id = snl_id
         self.sg_num = sg_num
+        self.sg_symbol = sg_symbol
         self.autometa = get_meta_from_structure(self.structure)
 
     @property
@@ -53,6 +54,7 @@ class MPStructureNL(StructureNL):
         m_dict = super(MPStructureNL, self).to_dict
         m_dict['snl_id'] = self.snl_id
         m_dict['sg_num'] = self.sg_num
+        m_dict['sg_symbol'] = self.sg_symbol
         m_dict['autometa'] = self.autometa
         m_dict['snlgroup_key'] = self.snlgroup_key
         return m_dict
@@ -70,7 +72,7 @@ class MPStructureNL(StructureNL):
 
         structure = Structure.from_dict(d) if "lattice" in d \
             else Molecule.from_dict(d)
-        return MPStructureNL(d['snl_id'], d['sg_num'], structure, a["authors"],
+        return MPStructureNL(d['snl_id'], d['sg_num'], d['sg_symbol'], structure, a["authors"],
                            projects=a.get("projects", None),
                            references=a.get("references", ""),
                            remarks=a.get("remarks", None), data=data,
@@ -78,10 +80,11 @@ class MPStructureNL(StructureNL):
                            created_at=created_at)
 
     @staticmethod
-    def from_snl(snl, snl_id, sg_num):
+    def from_snl(snl, snl_id, sg_num, sg_symbol):
         snl_d = snl.to_dict
         snl_d['snl_id'] = snl_id
         snl_d['sg_num'] = sg_num
+        snl_d['sg_symbol'] = sg_symbol
         return MPStructureNL.from_dict(snl_d)
 
 
