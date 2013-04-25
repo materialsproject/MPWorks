@@ -36,7 +36,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         user_incar_settings={"NPAR":2}
 
-        MaterialsProjectStaticVaspInputSet.from_previous_vasp_run(os.getcwd(), user_incar_settings=user_incar_settings)
+        MaterialsProjectStaticVaspInputSet.from_previous_vasp_run(fw_spec["prev_vasp_dir"], user_incar_settings=user_incar_settings)
         structure = MaterialsProjectStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
                                                                      initial_structure=False, refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
