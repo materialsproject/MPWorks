@@ -1,7 +1,7 @@
 import itertools
 import datetime
 from pymatgen import Structure, PMGJSONDecoder, Molecule, SiteCollection, Composition
-from pymatgen.analysis.structure_matcher import StructureMatcher, SpeciesComparator, ElementComparator
+from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -76,6 +76,14 @@ class MPStructureNL(StructureNL):
                            remarks=a.get("remarks", None), data=data,
                            history=a.get("history", None),
                            created_at=created_at)
+
+    @staticmethod
+    def from_snl(snl, snl_id, sg_num):
+        snl_d = snl.to_dict
+        snl_d['snl_id'] = snl_id
+        snl_d['sg_num'] = sg_num
+        return MPStructureNL.from_dict(snl_d)
+
 
 class SNLGroup():
     def __init__(self, snlgroup_id, canonical_snl, all_snl_ids=None):
