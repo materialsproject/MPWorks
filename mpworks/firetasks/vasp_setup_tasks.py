@@ -26,7 +26,7 @@ module_dir = os.path.dirname(__file__)
 
 class SetupStaticRunTask(FireTaskBase, FWSerializable):
     """
-    Set VASP input sets for static runs, assuming vasp Inputs/Outputs from
+    Set VASP input sets for static runs, assuming vasp Outputs (vasprun.xml and OUTCAR) from
     relax runs are already in the directory
     """
 
@@ -34,15 +34,9 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
 
-        try:
-            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
-                               parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
-        except:
-            traceback.format_exc()
-            raise RuntimeError("Can't get valid results from relaxed run")
+        user_incar_settings={"NPAR":2}
 
-        mpsvip = MaterialsProjectStaticVaspInputSet(user_incar_settings={"NPAR":2})
+        MaterialsProjectStaticVaspInputSet.from_previous_vasp_run(os.getcwd(), user_incar_settings=user_incar_settings)
         structure = mpsvip.get_structure(vasp_run, outcar, initial_structure=False, refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
