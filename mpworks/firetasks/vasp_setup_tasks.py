@@ -3,7 +3,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import VaspInput
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFInputSet
+from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -61,17 +61,17 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
-        user_incar_settings= MaterialsProjectNonSCFInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings= MaterialsProjectNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
         user_incar_settings.update({"NPAR":2})
-        structure = MaterialsProjectNonSCFInputSet.get_structure(vasp_run, outcar, initial_structure=True)
+        structure = MaterialsProjectNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Line")
+            mpnscfvip = MaterialsProjectNonSCFVaspInputSet(user_incar_settings, mode="Line")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Uniform")
+            mpnscfvip = MaterialsProjectNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
             for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
