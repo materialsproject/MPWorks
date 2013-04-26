@@ -1,3 +1,4 @@
+import os
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from fireworks.core.firework import FireWork, Workflow
@@ -49,13 +50,8 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
-    spec['elements'] = [e.symbol for e in snl.structure.composition.elements]
-    spec['nelements'] = len(spec['elements'])
-    spec['formula_abc'] = snl.structure.composition.alphabetical_formula
-    spec['formula_red'] = snl.structure.composition.reduced_formula
-    # spec['_category'] = 'VASP'
+    spec['_category'] = 'Materials Project'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
     spec.update(_get_metadata(snl))
@@ -76,6 +72,18 @@ def _get_metadata(snl):
 
     return md
 
+
+def add_snl(snl):
+    # get the SNL mongo adapter
+    db_dir = os.environ['DB_LOC']
+    db_path = os.path.join(db_dir, 'snl_db.json')
+    sma = SNLMongoAdapter.from_file(db_path)
+
+    # get the SNL
+    snl = StructureNL.from_dict(fw_spec['snl'])
+
+    # add snl
+    mpsnl, snlgroup_id = sma.add_snl(snl)
 
 def snl_to_wf(snl):
     # TODO: clean this up once we're out of testing mode
