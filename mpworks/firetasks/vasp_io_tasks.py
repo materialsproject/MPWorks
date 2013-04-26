@@ -91,7 +91,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         update_spec={'prev_vasp_dir': prev_dir}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
-        db_path = os.path.join(db_dir, 'db.json')
+        db_path = os.path.join(db_dir, 'tasks_db.json')
 
         # update additional fields
         if 'mpsnl' in fw_spec:

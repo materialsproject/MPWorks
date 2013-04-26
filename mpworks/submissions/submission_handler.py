@@ -166,7 +166,7 @@ class SubmissionHandler():
     @classmethod
     def auto_load(cls):
         s_dir = os.environ['DB_LOC']
-        s_file = os.path.join(s_dir, 'submission.yaml')
+        s_file = os.path.join(s_dir, 'submission_db.yaml')
         s = SubmissionHandler.Submissions.from_file(s_file)
 
         l_dir = FWConfig().CONFIG_FILE_DIR

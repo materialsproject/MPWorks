@@ -122,6 +122,8 @@ class SNLMongoAdapter(FWSerializable):
 
 if __name__ == '__main__':
     sma = SNLMongoAdapter(reset=True)
+    print sma.to_format('yaml')
+    """
     s1 = Structure(np.eye(3, 3) * 3, ["Fe"], [[0, 0, 0]])
     s2 = Structure(np.eye(3, 3) * 3, ["Al"], [[0, 0, 0]])
 
@@ -136,3 +138,4 @@ if __name__ == '__main__':
 
     snl4 = StructureNL(s2, 'Anubhav Jain <ajain@lbl.gov>')
     sma.add_snl(snl4)
+    """

@@ -22,7 +22,7 @@ class AddSNLTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         # get the SNL mongo adapter
         db_dir = os.environ['DB_LOC']
-        db_path = os.path.join(db_dir, 'snl_db.json')
+        db_path = os.path.join(db_dir, 'snl_db.yaml')
         sma = SNLMongoAdapter.from_file(db_path)
 
         # get the SNL
