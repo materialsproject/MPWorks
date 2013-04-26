@@ -1,4 +1,5 @@
 import datetime
+import os
 from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
@@ -6,7 +7,6 @@ from pymatgen import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.symmetry.finder import SymmetryFinder
 
-import numpy as np
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -119,6 +119,12 @@ class SNLMongoAdapter(FWSerializable):
         d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
              'password': self.password}
         return d
+
+    @classmethod
+    def auto_load(cls):
+        s_dir = os.environ['DB_LOC']
+        s_file = os.path.join(s_dir, 'snl_db.yaml')
+        return SNLMongoAdapter.from_file(s_file)
 
 if __name__ == '__main__':
     sma = SNLMongoAdapter(reset=True)
