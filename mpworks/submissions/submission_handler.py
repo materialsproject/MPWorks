@@ -64,7 +64,6 @@ class SubmissionHandler():
                 # TODO: create a real SNL step
                 snl.data['_materialsproject']['snl_id'] = submission_id
                 snl.data['_materialsproject']['snlgroup_id'] = submission_id
-                snl.data['_materialsproject']['snlgroupSG_id'] = submission_id
 
                 # create a workflow
                 wf = snl_to_wf(snl)

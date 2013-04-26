@@ -24,6 +24,5 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             d['snl'] = fw_dict['spec']['snl']
             d['snl_id'] = fw_dict['spec']['snl_id']
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
-            d['snlgroupSG_id'] = fw_dict['spec']['snlgroupSG_id']
             d['submission_id'] = fw_dict['spec'].get('submission_id', None)
             # d['task_type'] = fw_dict['spec']['prev_task_type']

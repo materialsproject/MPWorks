@@ -3,6 +3,7 @@ from custodian.vasp.handlers import VaspErrorHandler, PoscarErrorHandler
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import VaspCustodianTask
+from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupNonSCFTask
 from pymatgen.io.cifio import CifParser
@@ -81,6 +82,12 @@ def snl_to_wf(snl):
     # TODO: add WF metadata
     fws = []
     connections = {}
+
+    # add the SNL to the SNL DB and figure out duplicate group
+    tasks = [AddSNLTask()]
+    fws.append(FireWork(tasks, {'snl': snl.to_dict}, fw_id=0))
+    connections[0] = 1
+
     # add the root FW (GGA)
     spec = _snl_to_spec(snl, enforce_gga=True)
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
