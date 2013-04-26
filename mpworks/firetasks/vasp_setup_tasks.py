@@ -1,18 +1,10 @@
-from json import load
-import os.path
-import traceback
+import os
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet, \
-    MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFInputSet
-from pymatgen.symmetry.finder import SymmetryFinder
-from pymatgen.core.structure import Structure
+from pymatgen.io.vaspio.vasp_input import VaspInput
+from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
-import numpy as np
-import itertools
-
 
 __author__ = 'Wei Chen, Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
