@@ -65,7 +65,7 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
+            outcar = Outcar(os.path.join(fw_spec["prev_vasp_dir"],"OUTCAR"))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
