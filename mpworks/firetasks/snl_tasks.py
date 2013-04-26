@@ -1,4 +1,4 @@
-
+import os
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
@@ -20,6 +20,15 @@ class AddSNLTask(FireTaskBase, FWSerializable):
     _fw_name = "Add SNL Task"
 
     def run_task(self, fw_spec):
-Ω
+        # get the SNL mongo adapter
+        db_dir = os.environ['DB_LOC']
+        db_path = os.path.join(db_dir, 'snl_db.json')
+        sma = SNLMongoAdapter.from_file(db_path)
+
+        # get the SNL
+        snl = StructureNL.from_dict(fw_spec['snl'])
+
+        # add snl
+        mpsnl, snlgroup_id = sma.add_snl(snl)
 
         return FWAction(update_spec={'mpsnl': mpsnl.to_dict, 'snlgroup_id': snlgroup_id})

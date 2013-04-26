@@ -50,7 +50,8 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['_priority'] = 2
-    spec['_category'] = 'Materials Project'
+    # TODO: restore category
+    # spec['_category'] = 'Materials Project'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
@@ -60,34 +61,17 @@ def _snl_to_spec(snl, enforce_gga=True):
 
 
 def _get_metadata(snl):
-    md = {'run_tags': ['auto generation v1.0'], 'snl': snl.to_dict}
-
-    try:
-        sd = snl.data['_materialsproject']
-        md['snl_id'] = sd['snl_id']
-        md['snlgroup_id'] = sd['snlgroup_id']
-        md['submission_id'] = sd.get('submission_id', None)
-    except:
-        raise ValueError("SNL must contain snl_id, snlgroup_id, in data['_materialsproject']['snl_id']")
+    md = {'run_tags': ['auto generation v1.0']}
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+        md['submission_id'] = snl.data['_materialsproject']['submission_id']
 
     return md
 
 
-def add_snl(snl):
-    # get the SNL mongo adapter
-    db_dir = os.environ['DB_LOC']
-    db_path = os.path.join(db_dir, 'snl_db.json')
-    sma = SNLMongoAdapter.from_file(db_path)
-
-    # get the SNL
-    snl = StructureNL.from_dict(fw_spec['snl'])
-
-    # add snl
-    mpsnl, snlgroup_id = sma.add_snl(snl)
-
 def snl_to_wf(snl):
     # TODO: clean this up once we're out of testing mode
     # TODO: add WF metadata
+    # TODO: ADD BACK GGA+U
     fws = []
     connections = {}
 
@@ -96,18 +80,58 @@ def snl_to_wf(snl):
     fws.append(FireWork(tasks, {'snl': snl.to_dict}, fw_id=0))
     connections[0] = 1
 
-    # add the root FW (GGA)
+    # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=1))
-    wf_meta = _get_metadata(snl)
 
-    # add GGA insertion to DB
+    # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': 2}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
 
+    # run GGA static
+    spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
+    spec.update(_get_metadata(snl))
+    fws.append(
+        FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
+    connections[2] = 3
+
+    # insert into DB - GGA static
+    spec = {'task_type': 'VASP db insertion'}
+    spec.update(_get_metadata(snl))
+    fws.append(
+        FireWork([VaspToDBTask()], spec, fw_id=4))
+    connections[3] = 4
+
+    # run GGA Uniform
+    spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
+    spec.update(_get_metadata(snl))
+    fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
+    connections[4] = 5
+
+    # insert into DB - GGA Uniform
+    spec = {'task_type': 'VASP db insertion'}
+    spec.update(_get_metadata(snl))
+    fws.append(
+        FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=6))
+    connections[5] = 6
+
+    # run GGA Band structure
+    spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
+    spec.update(_get_metadata(snl))
+    fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
+    connections[6] = 7
+
+    # insert into DB - GGA Band structure
+    spec = {'task_type': 'VASP db insertion'}
+    spec.update(_get_metadata(snl))
+    fws.append(
+        FireWork([VaspToDBTask({})], spec, fw_id=8))
+    connections[7] = 8
+
+    """
     # determine if GGA+U FW is needed
     mpvis = MaterialsProjectVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
@@ -158,47 +182,11 @@ def snl_to_wf(snl):
             FireWork([VaspToDBTask({})], spec, fw_id=10))
         connections[9] = 10
 
-    else:
-        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
-        connections[2] = 3
-
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask()], spec, fw_id=4))
-        connections[3] = 4
-
-        spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
-        connections[4] = 5
-
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=6))
-        connections[5] = 6
-
-        spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
-        connections[6] = 7
-
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask({})], spec, fw_id=8))
-        connections[7] = 8
-
-        mpvis = MaterialsProjectGGAVaspInputSet()
-
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-    wf_meta['vaspinputset'] = mpvis.to_dict
+    """
 
-    return Workflow(fws, connections, wf_meta)
+
+    return Workflow(fws, connections)
 
 
 def snl_to_wf_ggau(snl):
@@ -228,9 +216,7 @@ if __name__ == '__main__':
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
 
     snl1 = StructureNL(s1, "Anubhav Jain <ajain@lbl.gov>")
-    snl1.data['_materialsproject'] = {'snl_id': 1, 'snlgroup_id': 1}
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
-    snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2}
 
     snl_to_wf(snl1).to_file('test_wfs/wf_si_dupes.json', indent=4)
     snl_to_wf(snl2).to_file('test_wfs/wf_feo_dupes.json', indent=4)

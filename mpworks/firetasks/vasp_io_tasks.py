@@ -83,17 +83,22 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.parse_uniform = self.get('parse_uniform', False)
-        self.additional_fields = self.get('additional_fields', None)
+        self.additional_fields = self.get('additional_fields', {})
         self.update_duplicates = self.get('update_duplicates', False)
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-
-        # TODO: should the PATH of DB_LOC point to the file not the dir? probably...
-
+        update_spec={'prev_vasp_dir': prev_dir}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'db.json')
+
+        # update additional fields
+        if 'mpsnl' in fw_spec:
+            self.additional_fields['mpsnl'] = fw_spec['mpsnl']
+            self.additional_fields['snlgroup_id'] = fw_spec['snlgroup_id']
+            update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
+
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MatprojVaspDrone(
@@ -107,4 +112,4 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         # TODO: decide what data to store (if any)
         stored_data = {'task_id': t_id}
-        return FWAction(stored_data=stored_data, update_spec={'prev_vasp_dir': prev_dir})
+        return FWAction(stored_data=stored_data, update_spec=update_spec)

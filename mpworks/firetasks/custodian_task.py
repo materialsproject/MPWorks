@@ -46,6 +46,9 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
                 all_errors.update(correction['errors'])
 
         stored_data = {'error_list': list(all_errors)}
+        update_spec = {'prev_vasp_dir': os.getcwd(), 'prev_task_type': fw_spec['task_type']}
 
-        return FWAction(stored_data=stored_data,
-                        update_spec={'prev_vasp_dir': os.getcwd(), 'prev_task_type': fw_spec['task_type']})
+        if 'mpsnl' in fw_spec:
+            update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
+
+        return FWAction(stored_data=stored_data, update_spec=update_spec)

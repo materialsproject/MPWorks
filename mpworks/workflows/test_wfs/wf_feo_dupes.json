@@ -1,231 +1,41 @@
 {
-    "metadata": {
-        "submission_id": null, 
-        "snlgroupSG_id": 2, 
-        "snl": {
-            "lattice": {
-                "a": 3.0525137003499996, 
-                "gamma": 60.000000058, 
-                "c": 3.0525137, 
-                "b": 3.05251369966, 
-                "matrix": [
-                    [
-                        2.6435544100096924, 
-                        0.0, 
-                        1.5262568499904452
-                    ], 
-                    [
-                        0.8811847999763114, 
-                        2.4923669999994655, 
-                        1.5262568500145548
-                    ], 
-                    [
-                        0.0, 
-                        0.0, 
-                        3.0525137
-                    ]
-                ], 
-                "volume": 20.112120746076236, 
-                "alpha": 59.999999996, 
-                "beta": 60.000000004, 
-                "@class": "Lattice", 
-                "@module": "pymatgen.core.lattice"
-            }, 
-            "about": {
-                "created_at": "2013-04-02T21:28:51.435397", 
-                "_materialsproject": {
-                    "snlgroupSG_id": 2, 
-                    "snl_id": 2, 
-                    "snlgroup_id": 2
-                }, 
-                "references": "", 
-                "authors": [
-                    {
-                        "name": "Anubhav Jain", 
-                        "email": "ajain@lbl.gov"
-                    }
-                ], 
-                "remarks": [], 
-                "projects": [], 
-                "history": []
-            }, 
-            "sites": [
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.0, 
-                        0.0, 
-                        0.0
-                    ], 
-                    "xyz": [
-                        0.0, 
-                        0.0, 
-                        0.0
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "Fe", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "Fe"
-                }, 
-                {
-                    "properties": {}, 
-                    "abc": [
-                        0.499999, 
-                        0.500001, 
-                        0.499999
-                    ], 
-                    "xyz": [
-                        1.7623678426233917, 
-                        1.2461859923667329, 
-                        3.0525106474888
-                    ], 
-                    "species": [
-                        {
-                            "occu": 1.0, 
-                            "element": "O", 
-                            "@class": "Element", 
-                            "@module": "pymatgen.core.periodic_table"
-                        }
-                    ], 
-                    "label": "O"
-                }
-            ], 
-            "@class": "StructureNL", 
-            "@module": "pymatgen.matproj.snl"
-        }, 
-        "snl_id": 2, 
-        "snlgroup_id": 2, 
-        "vaspinputset": {
-            "user_incar_settings": null, 
-            "constrain_total_magmom": false, 
-            "@class": "MaterialsProjectVaspInputSet", 
-            "@module": "pymatgen.io.vaspio_set"
-        }, 
-        "run_tags": [
-            "auto generation v1.0"
-        ]
-    }, 
+    "metadata": {}, 
     "links": {
-        "-1": [
-            -2
+        "0": [
+            1
         ], 
-        "-10": [], 
-        "-9": [
-            -10
+        "1": [
+            2
         ], 
-        "-8": [
-            -9
+        "2": [
+            3
         ], 
-        "-7": [
-            -8
+        "3": [
+            4
         ], 
-        "-6": [
-            -7
+        "4": [
+            5
         ], 
-        "-5": [
-            -6
+        "5": [
+            6
         ], 
-        "-4": [
-            -5
+        "6": [
+            7
         ], 
-        "-3": [
-            -4
+        "7": [
+            8
         ], 
-        "-2": [
-            -3
-        ]
+        "8": []
     }, 
     "fws": [
         {
-            "fw_id": -1, 
+            "fw_id": 0, 
             "spec": {
-                "submission_id": null, 
-                "task_type": "GGA optimize structure (2x)", 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp Writer Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": ".relax1", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": false, 
-                                    "@class": "VaspJob"
-                                }, 
-                                {
-                                    "settings_override": [
-                                        {
-                                            "action": {
-                                                "_set": {
-                                                    "ISTART": 1
-                                                }
-                                            }, 
-                                            "dict": "INCAR"
-                                        }, 
-                                        {
-                                            "action": {
-                                                "_file_copy": {
-                                                    "dest": "POSCAR"
-                                                }
-                                            }, 
-                                            "filename": "CONTCAR"
-                                        }
-                                    ], 
-                                    "suffix": ".relax2", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": false, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
+                        "_fw_name": "Add SNL Task"
                     }
                 ], 
-                "snlgroupSG_id": 2, 
                 "snl": {
                     "lattice": {
                         "a": 3.0525137003499996, 
@@ -250,18 +60,13 @@
                         ], 
                         "@module": "pymatgen.core.lattice", 
                         "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
+                        "beta": 60.00000000399999, 
                         "@class": "Lattice", 
-                        "alpha": 59.999999996, 
+                        "alpha": 59.999999996000014, 
                         "gamma": 60.000000058
                     }, 
                     "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
+                        "created_at": "2013-04-26T04:42:11.013773", 
                         "references": "", 
                         "authors": [
                             {
@@ -321,10 +126,95 @@
                     ], 
                     "@class": "StructureNL", 
                     "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
+                }
+            }, 
+            "created_on": "2013-04-26T04:42:11.030828"
+        }, 
+        {
+            "fw_id": 1, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp Writer Task"
+                    }, 
+                    {
+                        "jobs": [
+                            {
+                                "settings_override": null, 
+                                "suffix": ".relax1", 
+                                "vasp_command": "VASP_EXE", 
+                                "output_file": "vasp.out", 
+                                "@module": "custodian.vasp.jobs", 
+                                "default_vasp_input_set": {
+                                    "user_incar_settings": null, 
+                                    "constrain_total_magmom": false, 
+                                    "name": "MIT", 
+                                    "@class": "MITVaspInputSet", 
+                                    "@module": "pymatgen.io.vaspio_set"
+                                }, 
+                                "gzipped": false, 
+                                "backup": true, 
+                                "final": false, 
+                                "@class": "VaspJob"
+                            }, 
+                            {
+                                "settings_override": [
+                                    {
+                                        "action": {
+                                            "_set": {
+                                                "ISTART": 1
+                                            }
+                                        }, 
+                                        "dict": "INCAR"
+                                    }, 
+                                    {
+                                        "action": {
+                                            "_file_copy": {
+                                                "dest": "POSCAR"
+                                            }
+                                        }, 
+                                        "filename": "CONTCAR"
+                                    }
+                                ], 
+                                "suffix": ".relax2", 
+                                "vasp_command": "VASP_EXE", 
+                                "output_file": "vasp.out", 
+                                "@module": "custodian.vasp.jobs", 
+                                "default_vasp_input_set": {
+                                    "user_incar_settings": null, 
+                                    "constrain_total_magmom": false, 
+                                    "name": "MIT", 
+                                    "@class": "MITVaspInputSet", 
+                                    "@module": "pymatgen.io.vaspio_set"
+                                }, 
+                                "gzipped": false, 
+                                "backup": false, 
+                                "final": true, 
+                                "@class": "VaspJob"
+                            }
+                        ], 
+                        "max_errors": 10, 
+                        "_fw_name": "Vasp Custodian Task", 
+                        "handlers": [
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "VaspErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "PoscarErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }
+                        ]
+                    }
+                ], 
+                "task_type": "GGA optimize structure (2x)", 
                 "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
-                "snlgroup_id": 2, 
+                "_priority": 2, 
+                "run_tags": [
+                    "auto generation v1.0"
+                ], 
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
@@ -345,9 +235,9 @@
                         "LREAL": "Auto", 
                         "ISMEAR": -5, 
                         "ISPIN": 2, 
-                        "EDIFF": 0.001, 
+                        "EDIFF": 0.0001, 
                         "LWAVE": "False", 
-                        "NPAR": 1, 
+                        "NPAR": 2, 
                         "SIGMA": 0.2, 
                         "LORBIT": "11", 
                         "@class": "Incar", 
@@ -403,9 +293,9 @@
                                 ], 
                                 "@module": "pymatgen.core.lattice", 
                                 "volume": 20.112120746076236, 
-                                "beta": 60.000000004, 
+                                "beta": 60.00000000399999, 
                                 "@class": "Lattice", 
-                                "alpha": 59.999999996, 
+                                "alpha": 59.999999996000014, 
                                 "gamma": 60.000000058
                             }, 
                             "sites": [
@@ -468,1278 +358,245 @@
                         "@class": "Potcar", 
                         "@module": "pymatgen.io.vaspio.vasp_input"
                     }
-                }, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
+                }
             }, 
-            "created_on": "2013-04-02T21:28:51.479037"
+            "created_on": "2013-04-26T04:42:11.050382"
         }, 
         {
-            "fw_id": -10, 
+            "fw_id": 2, 
             "spec": {
-                "submission_id": null, 
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp to Database Task"
+                    }
+                ], 
+                "_priority": 2, 
                 "task_type": "VASP db insertion", 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parameters": {}
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "vaspinputset_name": "MaterialsProjectVaspInputSet", 
-                "snlgroup_id": 2, 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-02T21:28:51.484552"
+            "created_on": "2013-04-26T04:42:11.050404"
         }, 
         {
-            "fw_id": -9, 
+            "fw_id": 3, 
             "spec": {
-                "submission_id": null, 
-                "task_type": "GGA+U band structure", 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task", 
-                        "parameters": null
-                    }, 
-                    {
-                        "_fw_name": "Setup Bandstructure Run", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": "", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-02T21:28:51.484291"
-        }, 
-        {
-            "fw_id": -8, 
-            "spec": {
-                "submission_id": null, 
-                "task_type": "VASP db insertion", 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parameters": {
-                            "parse_uniform": true
-                        }
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-02T21:28:51.483598"
-        }, 
-        {
-            "fw_id": -7, 
-            "spec": {
-                "submission_id": null, 
-                "task_type": "GGA+U Uniform",
                 "_tasks": [
                     {
                         "_fw_name": "Vasp Copy Task", 
-                        "parameters": null
+                        "extension": ".relax2"
                     }, 
                     {
-                        "_fw_name": "Setup Uniform Run Task",
-                        "parameters": {}
+                        "_fw_name": "Setup Static Task"
                     }, 
                     {
-                        "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": "", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
+                        "jobs": [
                             {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
+                                "settings_override": null, 
+                                "suffix": "", 
+                                "vasp_command": "VASP_EXE", 
+                                "output_file": "vasp.out", 
+                                "@module": "custodian.vasp.jobs", 
+                                "default_vasp_input_set": {
+                                    "user_incar_settings": null, 
+                                    "constrain_total_magmom": false, 
+                                    "name": "MIT", 
+                                    "@class": "MITVaspInputSet", 
+                                    "@module": "pymatgen.io.vaspio_set"
+                                }, 
+                                "gzipped": false, 
+                                "backup": true, 
+                                "final": true, 
+                                "@class": "VaspJob"
                             }
                         ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
+                        "max_errors": 10, 
+                        "_fw_name": "Vasp Custodian Task", 
+                        "handlers": [
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "VaspErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "PoscarErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }
+                        ]
+                    }
+                ], 
+                "task_type": "GGA static", 
+                "run_tags": [
+                    "auto generation v1.0"
+                ]
+            }, 
+            "created_on": "2013-04-26T04:42:11.050805"
+        }, 
+        {
+            "fw_id": 4, 
+            "spec": {
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp to Database Task"
+                    }
+                ], 
+                "task_type": "VASP db insertion", 
+                "run_tags": [
+                    "auto generation v1.0"
+                ]
+            }, 
+            "created_on": "2013-04-26T04:42:11.050823"
+        }, 
+        {
+            "fw_id": 5, 
+            "spec": {
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
+                "_tasks": [
+                    {
+                        "_fw_name": "Vasp Copy Task"
+                    }, 
+                    {
+                        "_fw_name": "Setup non-SCF Task", 
+                        "mode": "uniform"
+                    }, 
+                    {
+                        "jobs": [
+                            {
+                                "settings_override": null, 
+                                "suffix": "", 
+                                "vasp_command": "VASP_EXE", 
+                                "output_file": "vasp.out", 
+                                "@module": "custodian.vasp.jobs", 
+                                "default_vasp_input_set": {
+                                    "user_incar_settings": null, 
+                                    "constrain_total_magmom": false, 
+                                    "name": "MIT", 
+                                    "@class": "MITVaspInputSet", 
+                                    "@module": "pymatgen.io.vaspio_set"
+                                }, 
+                                "gzipped": false, 
+                                "backup": true, 
+                                "final": true, 
+                                "@class": "VaspJob"
+                            }
+                        ], 
+                        "max_errors": 10, 
+                        "_fw_name": "Vasp Custodian Task", 
+                        "handlers": [
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "VaspErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "PoscarErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }
+                        ]
+                    }
+                ], 
+                "task_type": "GGA Uniform", 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-02T21:28:51.483349"
+            "created_on": "2013-04-26T04:42:11.051227"
         }, 
         {
-            "fw_id": -6, 
+            "fw_id": 6, 
             "spec": {
-                "submission_id": null, 
-                "task_type": "VASP db insertion", 
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task", 
-                        "parameters": null
+                        "parse_uniform": true
                     }
                 ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
+                "task_type": "VASP db insertion", 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-02T21:28:51.482721"
+            "created_on": "2013-04-26T04:42:11.051247"
         }, 
         {
-            "fw_id": -5, 
+            "fw_id": 7, 
             "spec": {
-                "submission_id": null, 
-                "task_type": "GGA+U static", 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task", 
-                        "parameters": {
-                            "extension": ".relax2"
-                        }
-                    }, 
-                    {
-                        "_fw_name": "Setup Static Run Task", 
-                        "parameters": {}
-                    }, 
-                    {
-                        "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": "", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-02T21:28:51.482470"
-        }, 
-        {
-            "fw_id": -4, 
-            "spec": {
-                "submission_id": null, 
-                "task_type": "VASP db insertion", 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parameters": null
-                    }
-                ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
+                        "_fw_name": "Vasp Copy Task"
                     }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
+                    {
+                        "_fw_name": "Setup non-SCF Task", 
+                        "mode": "line"
+                    }, 
+                    {
+                        "jobs": [
                             {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
+                                "settings_override": null, 
+                                "suffix": "", 
+                                "vasp_command": "VASP_EXE", 
+                                "output_file": "vasp.out", 
+                                "@module": "custodian.vasp.jobs", 
+                                "default_vasp_input_set": {
+                                    "user_incar_settings": null, 
+                                    "constrain_total_magmom": false, 
+                                    "name": "MIT", 
+                                    "@class": "MITVaspInputSet", 
+                                    "@module": "pymatgen.io.vaspio_set"
+                                }, 
+                                "gzipped": false, 
+                                "backup": true, 
+                                "final": true, 
+                                "@class": "VaspJob"
                             }
                         ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-02T21:28:51.481816"
-        }, 
-        {
-            "fw_id": -3, 
-            "spec": {
-                "submission_id": null, 
-                "task_type": "GGA+U optimize structure (2x)", 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task", 
-                        "parameters": {
-                            "extension": ".relax2"
-                        }
-                    }, 
-                    {
-                        "_fw_name": "Setup GGAU Task", 
-                        "parameters": {}
-                    }, 
-                    {
+                        "max_errors": 10, 
                         "_fw_name": "Vasp Custodian Task", 
-                        "parameters": {
-                            "max_errors": 10, 
-                            "jobs": [
-                                {
-                                    "settings_override": null, 
-                                    "suffix": ".relax1", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": true, 
-                                    "final": false, 
-                                    "@class": "VaspJob"
-                                }, 
-                                {
-                                    "settings_override": [
-                                        {
-                                            "action": {
-                                                "_set": {
-                                                    "ISTART": 1
-                                                }
-                                            }, 
-                                            "dict": "INCAR"
-                                        }, 
-                                        {
-                                            "action": {
-                                                "_file_copy": {
-                                                    "dest": "POSCAR"
-                                                }
-                                            }, 
-                                            "filename": "CONTCAR"
-                                        }
-                                    ], 
-                                    "suffix": ".relax2", 
-                                    "vasp_command": "VASP_EXE", 
-                                    "output_file": "vasp.out", 
-                                    "@module": "custodian.vasp.jobs", 
-                                    "default_vasp_input_set": {
-                                        "user_incar_settings": null, 
-                                        "constrain_total_magmom": false, 
-                                        "name": "MIT", 
-                                        "@class": "MITVaspInputSet", 
-                                        "@module": "pymatgen.io.vaspio_set"
-                                    }, 
-                                    "gzipped": false, 
-                                    "backup": false, 
-                                    "final": true, 
-                                    "@class": "VaspJob"
-                                }
-                            ], 
-                            "handlers": [
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "VaspErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }, 
-                                {
-                                    "output_filename": "vasp.out", 
-                                    "@class": "PoscarErrorHandler", 
-                                    "@module": "custodian.vasp.handlers"
-                                }
-                            ]
-                        }
+                        "handlers": [
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "VaspErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "PoscarErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }
+                        ]
                     }
                 ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
+                "task_type": "GGA band structure", 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-02T21:28:51.481567"
+            "created_on": "2013-04-26T04:42:11.051647"
         }, 
         {
-            "fw_id": -2, 
+            "fw_id": 8, 
             "spec": {
-                "submission_id": null, 
-                "task_type": "VASP db insertion", 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parameters": null
+                        "_fw_name": "Vasp to Database Task"
                     }
                 ], 
-                "snlgroupSG_id": 2, 
-                "snl": {
-                    "lattice": {
-                        "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
-                        "matrix": [
-                            [
-                                2.6435544100096924, 
-                                0.0, 
-                                1.5262568499904452
-                            ], 
-                            [
-                                0.8811847999763114, 
-                                2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
-                            ]
-                        ], 
-                        "@module": "pymatgen.core.lattice", 
-                        "volume": 20.112120746076236, 
-                        "beta": 60.000000004, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996, 
-                        "gamma": 60.000000058
-                    }, 
-                    "about": {
-                        "created_at": "2013-04-02T21:28:51.435397", 
-                        "_materialsproject": {
-                            "snlgroupSG_id": 2, 
-                            "snl_id": 2, 
-                            "snlgroup_id": 2
-                        }, 
-                        "references": "", 
-                        "authors": [
-                            {
-                                "name": "Anubhav Jain", 
-                                "email": "ajain@lbl.gov"
-                            }
-                        ], 
-                        "remarks": [], 
-                        "projects": [], 
-                        "history": []
-                    }, 
-                    "sites": [
-                        {
-                            "label": "Fe", 
-                            "xyz": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "abc": [
-                                0.0, 
-                                0.0, 
-                                0.0
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "Fe"
-                                }
-                            ]
-                        }, 
-                        {
-                            "label": "O", 
-                            "xyz": [
-                                1.7623678426233917, 
-                                1.2461859923667329, 
-                                3.0525106474888
-                            ], 
-                            "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
-                            ], 
-                            "properties": {}, 
-                            "species": [
-                                {
-                                    "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
-                                    "element": "O"
-                                }
-                            ]
-                        }
-                    ], 
-                    "@class": "StructureNL", 
-                    "@module": "pymatgen.matproj.snl"
-                }, 
-                "snl_id": 2, 
-                "snlgroup_id": 2, 
+                "task_type": "VASP db insertion", 
                 "run_tags": [
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-02T21:28:51.479558"
+            "created_on": "2013-04-26T04:42:11.051665"
         }
     ]
 }
