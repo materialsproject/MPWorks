@@ -78,19 +78,20 @@ class SNLMongoAdapter(FWSerializable):
         self.id_assigner.remove()
         self.id_assigner.insert({"next_snl_id": next_snl_id, "next_snlgroup_id":next_snlgroup_id})
 
-    def add_snl(self, snl, build_groups=True):
+    def add_snl(self, snl):
         snl_id = self._get_next_snl_id()
         sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
         mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(), sf.get_spacegroup_symbol(), sf.get_hall(), sf.get_crystal_system(), sf.get_lattice_type())
-        self.add_mpsnl(mpsnl, build_groups)
+        snlgroup, add_new = self.add_mpsnl(mpsnl)
+        return mpsnl, snlgroup.snlgroup_id
 
-    def add_mpsnl(self, mpsnl, build_groups=True):
+    def add_mpsnl(self, mpsnl):
         snl_d = mpsnl.to_dict
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
         self.snl.insert(snl_d)
-        if build_groups:
-            self.build_groups(mpsnl)
+        return self.build_groups(mpsnl)
+
 
     def build_groups(self, mpsnl):
         add_new = True
