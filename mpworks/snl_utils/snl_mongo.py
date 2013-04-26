@@ -121,6 +121,10 @@ class SNLMongoAdapter(FWSerializable):
         return d
 
     @classmethod
+    def from_dict(cls, d):
+        return SNLMongoAdapter(d['host'], d['port'], d['db'], d['username'], d['password'])
+
+    @classmethod
     def auto_load(cls):
         s_dir = os.environ['DB_LOC']
         s_file = os.path.join(s_dir, 'snl_db.yaml')

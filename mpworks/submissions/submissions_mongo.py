@@ -1,52 +1,96 @@
 import os
 import traceback
-from bson.objectid import ObjectId
 from pymongo import MongoClient
 import time
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
-from mpworks.workflows.snl_to_wf import snl_to_wf, snl_to_wf_ggau
-from pymatgen.matproj.snl import StructureNL
+from mpworks.submissions.submission_handler import SubmissionHandler
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
 __version__ = '0.1'
 __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
-__date__ = 'Mar 27, 2013'
+__date__ = 'Apr 26, 2013'
 
-# TODO: make this more object-oriented, especially the modifications to the submissions DB
 
-class SubmissionHandler():
-    class Submissions(FWSerializable):
+class SubmissionMongoAdapter(FWSerializable):
+    # This is the user interface to submissions
 
-        def __init__(self, host, port, db, username, password):
-            self.host = host
-            self.port = port
-            self.db = db
-            self.username = username
-            self.password = password
+    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):
+        self.host = host
+        self.port = port
+        self.db = db
+        self.username = username
+        self.password = password
 
-            self.connection = MongoClient(host, port, j=False)
-            self.database = self.connection[db]
+        self.connection = MongoClient(host, port, j=False)
+        self.database = self.connection[db]
+        if self.username:
             self.database.authenticate(username, password)
 
-            self.jobs = self.database.jobs
+        self.jobs = self.database.jobs
+        self.id_assigner = self.database.id_assigner
+
+        self._update_indices()
+
+    def _reset(self):
+        self._restart_id_assigner_at(1, 1)
+        self.jobs.remove()
+
+    def _update_indices(self):
+        self.snl.ensure_index('submission_id', unique=True)
+        self.snl.ensure_index('state')
+        self.snl.ensure_index('submitter_email')
+
+    def _get_next_submission_id(self):
+        return self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_submission_id': 1}})['next_submission_id']
+
+    def _restart_id_assigner_at(self, next_submission_id):
+        self.id_assigner.remove()
+        self.id_assigner.insert({"next_submission_id": next_submission_id})
+
+    def submit_snl(self, snl, submitter_email, parameters=None):
+        parameters = parameters if parameters else {}
+
+        d = snl.to_dict
+        d['submitter_email'] = submitter_email
+        d['parameters'] = parameters
+        d['state'] = 'submitted'
+        d['state_details'] = {}
+        d['submission_id'] = self._get_next_submission_id()
+        self.jobs.insert(d)
+
+        return d['submission_id']
+
+    def cancel_submission(self, submission_id):
+        # TODO: implement me
+        # set state to 'cancelled'
+        # in the SubmissionProcessor, detect this state and defuse the FW
+        raise NotImplementedError()
+
+    def to_dict(self):
+        """
+        Note: usernames/passwords are exported as unencrypted Strings!
+        """
+        d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
+             'password': self.password}
+        return d
+
+    @classmethod
+    def from_dict(cls, d):
+        return SubmissionMongoAdapter(d['host'], d['port'], d['db'], d['username'], d['password'])
+
+    @classmethod
+    def auto_load(cls):
+        s_dir = os.environ['DB_LOC']
+        s_file = os.path.join(s_dir, 'submission_db.yaml')
+        return SubmissionMongoAdapter.from_file(s_file)
 
 
-        def to_dict(self):
-            """
-            Note: usernames/passwords are exported as unencrypted Strings!
-            """
-            d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
-                 'password': self.password}
-            return d
-
-        @classmethod
-        def from_dict(cls, d):
-            return SubmissionHandler.Submissions(d['host'], d['port'], d['db'], d['username'], d['password'])
-
+class SubmissionProcessor():
+    # This is run on the server end
     def __init__(self, submissions, launchpad):
         self.jobs = submissions.jobs
         self.launchpad = launchpad
@@ -166,16 +210,10 @@ class SubmissionHandler():
 
     @classmethod
     def auto_load(cls):
-        s_dir = os.environ['DB_LOC']
-        s_file = os.path.join(s_dir, 'submission_db.yaml')
-        s = SubmissionHandler.Submissions.from_file(s_file)
+        sma = SubmissionMongoAdapter.auto_load()
 
         l_dir = FWConfig().CONFIG_FILE_DIR
         l_file = os.path.join(l_dir, 'my_launchpad.yaml')
         lp = LaunchPad.from_file(l_file)
 
-        return SubmissionHandler(s, lp)
-
-if __name__ == '__main__':
-    sh = SubmissionHandler.auto_load()
-    sh.sleep_and_process()
+        return SubmissionHandler(sma, lp)
