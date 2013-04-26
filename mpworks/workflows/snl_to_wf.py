@@ -69,10 +69,9 @@ def _get_metadata(snl):
         sd = snl.data['_materialsproject']
         md['snl_id'] = sd['snl_id']
         md['snlgroup_id'] = sd['snlgroup_id']
-        md['snlgroupSG_id'] = sd['snlgroupSG_id']
         md['submission_id'] = sd.get('submission_id', None)
     except:
-        raise ValueError("SNL must contain snl_id, snlgroup_id, snlgroupSG_id in data['_materialsproject']['snl_id']")
+        raise ValueError("SNL must contain snl_id, snlgroup_id, in data['_materialsproject']['snl_id']")
 
     return md
 
@@ -214,9 +213,9 @@ if __name__ == '__main__':
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
 
     snl1 = StructureNL(s1, "Anubhav Jain <ajain@lbl.gov>")
-    snl1.data['_materialsproject'] = {'snl_id': 1, 'snlgroup_id': 1, 'snlgroupSG_id': 1}
+    snl1.data['_materialsproject'] = {'snl_id': 1, 'snlgroup_id': 1}
     snl2 = StructureNL(s2, "Anubhav Jain <ajain@lbl.gov>")
-    snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2, 'snlgroupSG_id': 2}
+    snl2.data['_materialsproject'] = {'snl_id': 2, 'snlgroup_id': 2}
 
     snl_to_wf(snl1).to_file('test_wfs/wf_si_dupes.json', indent=4)
     snl_to_wf(snl2).to_file('test_wfs/wf_feo_dupes.json', indent=4)
