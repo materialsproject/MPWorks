@@ -106,7 +106,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 collection=db_creds['collection'], parse_dos=self.parse_uniform,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
-            t_id = drone.assimilate(prev_dir)
+            t_id, d = drone.assimilate(prev_dir)
 
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
