@@ -93,10 +93,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
 
-        # update additional fields
-        if 'mpsnl' in fw_spec:
-            update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
-
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MatprojVaspDrone(
@@ -107,6 +103,10 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir)
+
+        mpsnl = d['mpsnl_final'] if 'mpsnl_final' in d else d['mpsnl']
+        snlgroup_id = d['snlgroup_id_final'] if 'snlgroup_id_final' in d else d['snlgroup_id']
+        update_spec.update({'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id})
 
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
