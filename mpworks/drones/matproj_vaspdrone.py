@@ -26,15 +26,12 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             If in simulate_mode, the entire doc is returned for debugging
             purposes. Else, only the task_id of the inserted doc is returned.
         """
-        try:
-            d = self.get_task_doc(path, self.parse_dos,
-                                  self.additional_fields)
-            if self.mapi_key is not None and d["state"] == "successful":
-                self.calculate_stability(d)
-            tid = self._insert_doc(d)
-            return tid, d
-        except:
-            traceback.print_exc()
+        d = self.get_task_doc(path, self.parse_dos,
+                              self.additional_fields)
+        if self.mapi_key is not None and d["state"] == "successful":
+            self.calculate_stability(d)
+        tid = self._insert_doc(d)
+        return tid, d
 
     @classmethod
     def post_process(cls, dir_name, d):
