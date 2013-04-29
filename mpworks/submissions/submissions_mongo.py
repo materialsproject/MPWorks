@@ -20,6 +20,7 @@ __date__ = 'Apr 26, 2013'
 # TODO: support priority as a parameter
 # TODO: vary the workflow depending on params
 
+
 class SubmissionMongoAdapter(FWSerializable):
     # This is the user interface to submissions
 
@@ -64,6 +65,7 @@ class SubmissionMongoAdapter(FWSerializable):
         d['parameters'] = parameters
         d['state'] = 'submitted'
         d['state_details'] = {}
+        d['task_dict'] = {}
         d['submission_id'] = self._get_next_submission_id()
         d['submitted_at'] = datetime.datetime.utcnow().isoformat()
         self.jobs.insert(d)
@@ -76,6 +78,10 @@ class SubmissionMongoAdapter(FWSerializable):
         # in the SubmissionProcessor, detect this state and defuse the FW
         raise NotImplementedError()
 
+    def get_state(self, submission_id):
+        info = self.jobs.find_one({'submission_id': submission_id}, {'state': 1, 'state_details': 1, 'task_dict': 1})
+        return info['state'], info['state_details'], info['task_dict']
+
     def to_dict(self):
         """
         Note: usernames/passwords are exported as unencrypted Strings!
@@ -83,6 +89,9 @@ class SubmissionMongoAdapter(FWSerializable):
         d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
              'password': self.password}
         return d
+
+    def update_state(self, submission_id, state, state_details, task_dict):
+        self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': state}})
 
     @classmethod
     def from_dict(cls, d):
@@ -97,8 +106,9 @@ class SubmissionMongoAdapter(FWSerializable):
 
 class SubmissionProcessor():
     # This is run on the server end
-    def __init__(self, submissions, launchpad):
-        self.jobs = submissions.jobs
+    def __init__(self, sma, launchpad):
+        self.sma = sma
+        self.jobs = sma.jobs
         self.launchpad = launchpad
 
     def run(self):
@@ -134,35 +144,23 @@ class SubmissionProcessor():
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
-            s_id = str(s_id['submission_id'])
+        for submission_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+            submission_id = str(submission_id['submission_id'])
             try:
                 # get a fw_id with this submission id
-                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
+                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': submission_id})[0]
                 # get a workflow
                 wf = self.launchpad.get_wf_by_fw_id(fw_id)
                 # update workflow
-                self._process_state(wf, s_id)
+                self.update_wf_state(wf, submission_id)
             except:
-                print 'ERROR while processing s_id', s_id
+                print 'ERROR while processing s_id', submission_id
                 traceback.print_exc()
 
-    def _process_state(self, wf, s_id):
-        # TODO: move a lot of this code into FW (FW should tell you the status of a Workflow)
+    def update_wf_state(self, wf, submission_id):
+        # state of the workflow
 
-        # get status
-        m_state = 'waiting'
-        states = [fw.state for fw in wf.fws]
-        if all([s == 'COMPLETED' for s in states]):
-            m_state = 'completed'
-        elif any([s == 'FIZZLED' for s in states]):
-            m_state = 'fizzled'
-        elif any([s == 'COMPLETED' for s in states]) or any([s == 'RUNNING' for s in states]):
-            m_state = 'running'
-
-        self.update_status(s_id, m_state)
-
-        details = m_state
+        details = '(none available)'
         for fw in wf.fws:
             if fw.state == 'READY':
                 details = 'waiting to run: {}'.format(fw.spec['task_type'])
@@ -183,9 +181,9 @@ class SubmissionProcessor():
                 if fw.state == 'FIZZLED':
                     details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
 
-        self.update_detailed_status(s_id, details)
 
         m_taskdict = {}
+        states = [fw.state for fw in self.fws]
         if any([s == 'COMPLETED' for s in states]):
             for fw in wf.fws:
                 if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
@@ -195,19 +193,8 @@ class SubmissionProcessor():
                             m_taskdict[fw.spec['prev_task_type']] = t_id
                             break
 
-        self.update_taskdict(s_id, m_taskdict)
-
-        return m_state, details, m_taskdict
-
-
-    def update_status(self, oid, status):
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
-
-    def update_detailed_status(self, oid, status):
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'detailed_status': status}})
-
-    def update_taskdict(self, oid, task_dict):
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'task_dict': task_dict}})
+        self.sma.update_state(wf.state, details, m_taskdict)
+        return wf.state, details, m_taskdict
 
     @classmethod
     def auto_load(cls):
