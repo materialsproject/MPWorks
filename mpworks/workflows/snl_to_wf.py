@@ -68,7 +68,7 @@ def _get_metadata(snl):
     return md
 
 
-def snl_to_wf(snl):
+def snl_to_wf(snl, do_bandstructure=True):
     # TODO: clean this up once we're out of testing mode
     # TODO: add WF metadata
     # TODO: ADD BACK GGA+U
@@ -91,100 +91,96 @@ def snl_to_wf(snl):
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
 
-    # run GGA static
-    spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
-    spec.update(_get_metadata(snl))
-    fws.append(
-        FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
-    connections[2] = 3
-
-    # insert into DB - GGA static
-    spec = {'task_type': 'VASP db insertion'}
-    spec.update(_get_metadata(snl))
-    fws.append(
-        FireWork([VaspToDBTask()], spec, fw_id=4))
-    connections[3] = 4
-
-    # run GGA Uniform
-    spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
-    spec.update(_get_metadata(snl))
-    fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
-    connections[4] = 5
-
-    # insert into DB - GGA Uniform
-    spec = {'task_type': 'VASP db insertion'}
-    spec.update(_get_metadata(snl))
-    fws.append(
-        FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=6))
-    connections[5] = 6
-
-    # run GGA Band structure
-    spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
-    spec.update(_get_metadata(snl))
-    fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
-    connections[6] = 7
-
-    # insert into DB - GGA Band structure
-    spec = {'task_type': 'VASP db insertion'}
-    spec.update(_get_metadata(snl))
-    fws.append(
-        FireWork([VaspToDBTask({})], spec, fw_id=8))
-    connections[7] = 8
-
-    """
-    # determine if GGA+U FW is needed
-    mpvis = MPVaspInputSet()
-    incar = mpvis.get_incar(snl.structure).to_dict
-
-    if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
+    if do_bandstructure:
+        # run GGA static
+        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=3))
+        fws.append(
+            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
         connections[2] = 3
 
-        spec = {'task_type': 'VASP db insertion', '_priority': 2}
+        # insert into DB - GGA static
+        spec = {'task_type': 'VASP db insertion'}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=4))
         connections[3] = 4
 
-        spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVasp().to_dict()}
+        # run GGA Uniform
+        spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=5))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
         connections[4] = 5
 
+        # insert into DB - GGA Uniform
         spec = {'task_type': 'VASP db insertion'}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspToDBTask()], spec, fw_id=6))
+            FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=6))
         connections[5] = 6
 
-        spec = {'task_type': 'GGA+U Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
+        # run GGA Band structure
+        spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=7))
+        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
         connections[6] = 7
 
+        # insert into DB - GGA Band structure
         spec = {'task_type': 'VASP db insertion'}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=8))
+            FireWork([VaspToDBTask({})], spec, fw_id=8))
         connections[7] = 8
 
-        spec = {'task_type': 'GGA+U band structure', '_dupefinder': DupeFinderVasp().to_dict()}
+    # determine if GGA+U FW is needed
+    incar = MPVaspInputSet().get_incar(snl.structure).to_dict
+
+    if 'LDAU' in incar and incar['LDAU']:
+        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=9))
-        connections[8] = 9
+        fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=10))
+        connections[2] = 10
 
         spec = {'task_type': 'VASP db insertion'}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspToDBTask({})], spec, fw_id=10))
-        connections[9] = 10
+            FireWork([VaspToDBTask()], spec, fw_id=11))
+        connections[10] = 11
 
-    spec['vaspinputset_name'] = mpvis.__class__.__name__
-    """
+        if do_bandstructure:
+            spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVasp().to_dict()}
+            spec.update(_get_metadata(snl))
+            fws.append(
+                FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=12))
+            connections[11] = 12
 
+            spec = {'task_type': 'VASP db insertion'}
+            spec.update(_get_metadata(snl))
+            fws.append(
+                FireWork([VaspToDBTask()], spec, fw_id=13))
+            connections[12] = 13
+
+            spec = {'task_type': 'GGA+U Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
+            spec.update(_get_metadata(snl))
+            fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=14))
+            connections[13] = 14
+
+            spec = {'task_type': 'VASP db insertion'}
+            spec.update(_get_metadata(snl))
+            fws.append(
+                FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=15))
+            connections[14] = 15
+
+            spec = {'task_type': 'GGA+U band structure', '_dupefinder': DupeFinderVasp().to_dict()}
+            spec.update(_get_metadata(snl))
+            fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=16))
+            connections[15] = 16
+
+            spec = {'task_type': 'VASP db insertion'}
+            spec.update(_get_metadata(snl))
+            fws.append(
+                FireWork([VaspToDBTask({})], spec, fw_id=17))
+            connections[16] = 17
 
     return Workflow(fws, connections)
 
