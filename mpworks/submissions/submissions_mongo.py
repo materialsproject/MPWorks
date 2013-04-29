@@ -1,11 +1,14 @@
 import os
 import traceback
-from pymongo import MongoClient
+import datetime
+from pymongo import MongoClient, ASCENDING
 import time
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.submissions.submission_handler import SubmissionHandler
+from mpworks.workflows.snl_to_wf import snl_to_wf
+from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -14,6 +17,8 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Apr 26, 2013'
 
+# TODO: support priority as a parameter
+# TODO: vary the workflow depending on params
 
 class SubmissionMongoAdapter(FWSerializable):
     # This is the user interface to submissions
@@ -60,6 +65,7 @@ class SubmissionMongoAdapter(FWSerializable):
         d['state'] = 'submitted'
         d['state_details'] = {}
         d['submission_id'] = self._get_next_submission_id()
+        d['submitted_at'] = datetime.datetime.utcnow().isoformat()
         self.jobs.insert(d)
 
         return d['submission_id']
@@ -95,19 +101,27 @@ class SubmissionProcessor():
         self.jobs = submissions.jobs
         self.launchpad = launchpad
 
-    def _process_submission(self):
-        # TODO: sort by date (FIFO), priority
+    def run(self):
+        while True:
+            self.submit_all_new_workflows()
+            self.update_existing_workflows()
+            print 'sleeping 30s'
+            time.sleep(30)
+
+    def submit_all_new_workflows(self):
+        last_id = -1
+        while last_id:
+            last_id = self.submit_new_workflow()
+
+    def submit_new_workflow(self):
+        # finds a submitted job, creates a workflow, and submits it to FireWorks
         job = self.jobs.find_and_modify({'status': 'submitted'}, {'$set': {'status': 'waiting'}})
         if job:
-            submission_id = str(job['_id'])
+            submission_id = job['submission_id']
             try:
                 snl = StructureNL.from_dict(job)
                 snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                 snl.data['_materialsproject']['submission_id'] = submission_id
-
-                # TODO: create a real SNL step
-                snl.data['_materialsproject']['snl_id'] = submission_id
-                snl.data['_materialsproject']['snlgroup_id'] = submission_id
 
                 # create a workflow
                 wf = snl_to_wf(snl)
@@ -115,8 +129,23 @@ class SubmissionProcessor():
                 print 'ADDED A JOB TO THE WORKFLOW!'
             except:
                 traceback.format_exc()
-                self.jobs.find_and_modify({'_id': ObjectId(submission_id)}, {'$set': {'status': 'error'}})
+                self.jobs.find_and_modify({'snl_id': submission_id}, {'$set': {'status': 'error'}})
             return submission_id
+
+    def update_existing_workflows(self):
+        # updates the state of existing workflows by querying the FireWorks database
+        for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+            s_id = str(s_id['submission_id'])
+            try:
+                # get a fw_id with this submission id
+                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
+                # get a workflow
+                wf = self.launchpad.get_wf_by_fw_id(fw_id)
+                # update workflow
+                self._process_state(wf, s_id)
+            except:
+                print 'ERROR while processing s_id', s_id
+                traceback.print_exc()
 
     def _process_state(self, wf, s_id):
         # TODO: move a lot of this code into FW (FW should tell you the status of a Workflow)
@@ -170,34 +199,6 @@ class SubmissionProcessor():
 
         return m_state, details, m_taskdict
 
-    def _update_states(self):
-        # find all submissions that are not completed and update the state
-        for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'_id': 1}):
-            s_id = str(s_id['_id'])
-            try:
-                # get a fw_id with this submission id
-                # TODO: make this cleaner
-                # TODO: note this assumes each submission has 1 workflow only
-                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': s_id})[0]
-                # get a workflow
-                wf = self.launchpad.get_wf_by_fw_id(fw_id)
-                # update workflow
-                self._process_state(wf, s_id)
-            except:
-                print 'ERROR while processing s_id', s_id
-                traceback.print_exc()
-
-    def process_submissions(self):
-        last_id = -1
-        while last_id:
-            last_id = self._process_submission()
-        self._update_states()
-
-    def sleep_and_process(self):
-        while True:
-            self.process_submissions()
-            print 'looked for submissions, sleeping 30s'
-            time.sleep(30)
 
     def update_status(self, oid, status):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
