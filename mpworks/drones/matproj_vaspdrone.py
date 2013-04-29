@@ -66,6 +66,6 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
 
                 # add snl
                 mpsnl, snlgroup_id = sma.add_snl(new_snl)
-                d['snl_final'] = mpsnl
+                d['snl_final'] = mpsnl.to_dict
                 d['snlgroup_id_final'] = snlgroup_id
                 d['snlgroup_changed'] = (d['snlgroup_id'] == d['snlgroup_id_final'])
