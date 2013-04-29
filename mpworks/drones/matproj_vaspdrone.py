@@ -2,6 +2,10 @@ import json
 import os
 import traceback
 from matgendb.creator import VaspToDbTaskDrone
+from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
+from pymatgen.analysis.structure_matcher import StructureMatcher
+from pymatgen.core.structure import Structure
+from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -47,3 +51,21 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             d['run_tags'] = fw_dict['spec'].get('run_tags', [])
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name', None)
             d['task_type'] = fw_dict['spec']['task_type']
+
+            if 'optimize structure' in d['task_type']:
+                # create a new SNL based on optimized structure
+                new_s = Structure.from_dict(d['output']['crystal'])
+                old_snl = StructureNL.from_dict(d['snl'])
+                history = old_snl.history
+                history.append({'name':'Materials Project structure optimization', 'url':'http://www.materialsproject.org', 'description':{'task_type': d['task_type']}})
+                new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects, old_snl.references, old_snl.remarks, old_snl.data, history)
+
+                # enter new SNL into SNL db
+                # get the SNL mongo adapter
+                sma = SNLMongoAdapter.auto_load()
+
+                # add snl
+                mpsnl, snlgroup_id = sma.add_snl(new_snl)
+                d['snl_final'] = mpsnl
+                d['snlgroup_id_final'] = snlgroup_id
+                d['snlgroup_changed'] = (d['snlgroup_id'] == d['snlgroup_id_final'])
