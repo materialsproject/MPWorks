@@ -22,7 +22,8 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
-            # d['snl_id'] = fw_dict['spec']['snl_id']
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
             d['submission_id'] = fw_dict['spec'].get('submission_id', None)
-            d['task_type'] = fw_dict['spec']['prev_task_type']
+            d['run_tags'] = fw_dict['spec'].get('run_tags', [])
+            d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name', None)
+            d['task_type'] = fw_dict['spec']['task_type']
