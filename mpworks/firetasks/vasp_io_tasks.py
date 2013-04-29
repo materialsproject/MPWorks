@@ -95,8 +95,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         # update additional fields
         if 'mpsnl' in fw_spec:
-            self.additional_fields['mpsnl'] = fw_spec['mpsnl']
-            self.additional_fields['snlgroup_id'] = fw_spec['snlgroup_id']
             update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
 
         with open(db_path) as f:
@@ -110,6 +108,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 update_duplicates=self.update_duplicates)
             t_id = drone.assimilate(prev_dir)
 
-        # TODO: decide what data to store (if any)
+        print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
         return FWAction(stored_data=stored_data, update_spec=update_spec)
