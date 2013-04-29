@@ -66,7 +66,7 @@
                         "gamma": 60.000000058
                     }, 
                     "about": {
-                        "created_at": "2013-04-26T04:42:11.013773", 
+                        "created_at": "2013-04-29T21:34:01.544959", 
                         "references": "", 
                         "authors": [
                             {
@@ -128,7 +128,7 @@
                     "@module": "pymatgen.matproj.snl"
                 }
             }, 
-            "created_on": "2013-04-26T04:42:11.030828"
+            "created_on": "2013-04-29T21:34:01.570249"
         }, 
         {
             "fw_id": 1, 
@@ -210,7 +210,7 @@
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
-                "vaspinputset_name": "MaterialsProjectGGAVaspInputSet", 
+                "vaspinputset_name": "MPGGAVaspInputSet", 
                 "_priority": 2, 
                 "run_tags": [
                     "auto generation v1.0"
@@ -236,10 +236,10 @@
                         "ISMEAR": -5, 
                         "ISPIN": 2, 
                         "EDIFF": 0.0001, 
-                        "LWAVE": "False", 
+                        "LWAVE": false, 
                         "NPAR": 2, 
                         "SIGMA": 0.2, 
-                        "LORBIT": "11", 
+                        "LORBIT": 11, 
                         "@class": "Incar", 
                         "NSW": 99
                     }, 
@@ -360,7 +360,7 @@
                     }
                 }
             }, 
-            "created_on": "2013-04-26T04:42:11.050382"
+            "created_on": "2013-04-29T21:34:01.595197"
         }, 
         {
             "fw_id": 2, 
@@ -376,7 +376,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.050404"
+            "created_on": "2013-04-29T21:34:01.595220"
         }, 
         {
             "fw_id": 3, 
@@ -434,7 +434,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.050805"
+            "created_on": "2013-04-29T21:34:01.595642"
         }, 
         {
             "fw_id": 4, 
@@ -449,7 +449,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.050823"
+            "created_on": "2013-04-29T21:34:01.595658"
         }, 
         {
             "fw_id": 5, 
@@ -507,7 +507,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.051227"
+            "created_on": "2013-04-29T21:34:01.596210"
         }, 
         {
             "fw_id": 6, 
@@ -523,7 +523,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.051247"
+            "created_on": "2013-04-29T21:34:01.596243"
         }, 
         {
             "fw_id": 7, 
@@ -581,7 +581,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.051647"
+            "created_on": "2013-04-29T21:34:01.596636"
         }, 
         {
             "fw_id": 8, 
@@ -596,7 +596,7 @@
                     "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-26T04:42:11.051665"
+            "created_on": "2013-04-29T21:34:01.596652"
         }
     ]
 }
