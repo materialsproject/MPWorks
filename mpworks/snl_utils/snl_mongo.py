@@ -22,7 +22,7 @@ SPACEGROUP_TOLERANCE = 0.1  # as suggested by Shyue, 6/19/2012
 
 class SNLMongoAdapter(FWSerializable):
 
-    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None, reset=False):
+    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):
         self.host = host
         self.port = port
         self.db = db
@@ -40,10 +40,10 @@ class SNLMongoAdapter(FWSerializable):
 
         self._update_indices()
 
-        if reset:
-            self.restart_id_assigner_at(1, 1)
-            self.snl.remove()
-            self.snlgroups.remove()
+    def _reset(self):
+        self.restart_id_assigner_at(1, 1)
+        self.snl.remove()
+        self.snlgroups.remove()
 
     def _update_indices(self):
         self.snl.ensure_index('snl_id', unique=True)
@@ -131,21 +131,5 @@ class SNLMongoAdapter(FWSerializable):
         return SNLMongoAdapter.from_file(s_file)
 
 if __name__ == '__main__':
-    sma = SNLMongoAdapter(reset=True)
-    print sma.to_format('yaml')
-    """
-    s1 = Structure(np.eye(3, 3) * 3, ["Fe"], [[0, 0, 0]])
-    s2 = Structure(np.eye(3, 3) * 3, ["Al"], [[0, 0, 0]])
-
-    snl1 = StructureNL(s1, 'Anubhav Jain <ajain@lbl.gov>')
-    sma.add_snl(snl1)
-
-    snl2 = StructureNL(s1, 'Captain America <ajain@lbl.gov>')
-    sma.add_snl(snl2)
-
-    snl3 = StructureNL(s2, 'Captain America <ajain@lbl.gov>')
-    sma.add_snl(snl3)
-
-    snl4 = StructureNL(s2, 'Anubhav Jain <ajain@lbl.gov>')
-    sma.add_snl(snl4)
-    """
+    sma = SNLMongoAdapter('mongodb01.nersc.gov', 27017, 'snl', 'FireWriter', 'tmd2tPC!')
+    sma._reset()

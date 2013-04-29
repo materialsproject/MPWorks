@@ -8,7 +8,7 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupNonSCFTask
 from pymatgen.io.cifio import CifParser
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectGGAVaspInputSet
+from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -39,7 +39,7 @@ def _get_custodian_task(spec):
 def _snl_to_spec(snl, enforce_gga=True):
     spec = {}
 
-    mpvis = MaterialsProjectGGAVaspInputSet() if enforce_gga else MaterialsProjectVaspInputSet()
+    mpvis = MPGGAVaspInputSet() if enforce_gga else MPVaspInputSet()
     structure = snl.structure
 
     spec['vasp'] = {}
@@ -133,7 +133,7 @@ def snl_to_wf(snl):
 
     """
     # determine if GGA+U FW is needed
-    mpvis = MaterialsProjectVaspInputSet()
+    mpvis = MPVaspInputSet()
     incar = mpvis.get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
@@ -204,7 +204,7 @@ def snl_to_wf_ggau(snl):
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
-    mpvis = MaterialsProjectVaspInputSet()
+    mpvis = MPVaspInputSet()
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     wf_meta['vaspinputset'] = mpvis.to_dict
