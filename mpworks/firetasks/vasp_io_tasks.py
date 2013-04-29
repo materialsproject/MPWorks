@@ -104,7 +104,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir)
 
-        mpsnl = d['mpsnl_final'] if 'mpsnl_final' in d else d['mpsnl']
+        mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
         snlgroup_id = d['snlgroup_id_final'] if 'snlgroup_id_final' in d else d['snlgroup_id']
         update_spec.update({'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id})
 
