@@ -155,9 +155,6 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                            "WALLTIME_EXCEEDED", "ATOMS_TOO_CLOSE",
                            "DISK_SPACE_EXCEEDED"]
 
-        MAX_FORCE_THRESHOLD = 0.5  # 500 meV
-        INSANE_ENERGY_CUTOFF = -15  # should be sufficiently insane
-
         # get the last relaxation dir
         # the order is relax2, current dir, then relax1. This is because
         # after completing relax1, the job happens in the current dir. Finally
@@ -207,20 +204,6 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                                 .detect(os.path.join(dir_name, "relax1")))
         signals = signals.union(StopcarExistsSignal()
                                 .detect(os.path.join(dir_name, "relax2")))
-
-        if d['state'] == 'successful':
-            # handle the max force and max force error
-            max_force = max([math.sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2])
-                             for a in d['calculations'][-1]['output']
-                             ['ionic_steps'][-1]['forces']])
-            d['analysis']['max_force'] = max_force
-
-            if max_force > MAX_FORCE_THRESHOLD:
-                signals.add("HIGH_RESIDUAL_FORCE")
-
-            # handle insane energies
-            if d['output']['final_energy_per_atom'] <= INSANE_ENERGY_CUTOFF:
-                signals.add("INSANE_ENERGY")
 
         if len(d.get("calculations", [])) > 0:
             ismear = d['calculations'][0]["input"]["incar"]["ISMEAR"]
