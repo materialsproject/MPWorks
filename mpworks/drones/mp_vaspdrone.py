@@ -36,7 +36,7 @@ def is_valid_vasp_dir(mydir):
     return True
 
 
-class MatprojVaspDrone(VaspToDbTaskDrone):
+class MPVaspDrone(VaspToDbTaskDrone):
     def assimilate(self, path):
         """
         Parses vasp runs. Then insert the result into the db. and return the

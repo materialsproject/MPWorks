@@ -9,7 +9,7 @@ import shutil
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from mpworks.drones.matproj_vaspdrone import MatprojVaspDrone
+from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -95,7 +95,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MatprojVaspDrone(
+            drone = MPVaspDrone(
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
