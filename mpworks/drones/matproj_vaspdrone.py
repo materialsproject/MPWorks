@@ -8,9 +8,7 @@ import gridfs
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals_vasp import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
-    VASPStartedCompletedSignal, PositiveEnergySignal, \
-    ChargeUnconvergedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
-    StopcarExistsSignal
+    VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
@@ -144,28 +142,29 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 d['snlgroup_changed'] = d['snlgroup_id'] != d['snlgroup_id_final']
 
         # custom processing for detecting errors
+        new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
         vasp_signals = {}
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
-                           "STOPCAR_EXISTS", "POSITIVE_ENERGY",
                            "CHARGE_UNCONVERGED", "NETWORK_QUIESCED", "HARD_KILLED", "WALLTIME_EXCEEDED",
                            "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
 
-        # get the last relaxation dir
-        # the order is relax2, current dir, then relax1. This is because
-        # after completing relax1, the job happens in the current dir. Finally
-        # it gets moved to relax2.
-        # There are some weird cases where both the current dir and relax2
-        # contain data. The relax2 is good, but the current dir is bad.
-        # This should not really happen, but trust relax2 in this case.
         last_relax_dir = dir_name
-        if is_valid_vasp_dir(os.path.join(dir_name, "relax2")):
-            last_relax_dir = os.path.join(dir_name, "relax2")
-        elif is_valid_vasp_dir(dir_name):
-            pass
-        elif is_valid_vasp_dir(os.path.join(dir_name, "relax1")):
-            last_relax_dir = os.path.join(dir_name, "relax1")
+
+        if not new_style:
+            # get the last relaxation dir
+            # the order is relax2, current dir, then relax1. This is because
+            # after completing relax1, the job happens in the current dir. Finally
+            # it gets moved to relax2.
+            # There are some weird cases where both the current dir and relax2
+            # contain data. The relax2 is good, but the current dir is bad.
+            if is_valid_vasp_dir(os.path.join(dir_name, "relax2")):
+                last_relax_dir = os.path.join(dir_name, "relax2")
+            elif is_valid_vasp_dir(dir_name):
+                pass
+            elif is_valid_vasp_dir(os.path.join(dir_name, "relax1")):
+                last_relax_dir = os.path.join(dir_name, "relax1")
 
         vasp_signals['last_relax_dir'] = last_relax_dir
         ## see what error signals are present
@@ -179,28 +178,18 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         sl.append(HitAMemberSignal())
         sl.append(SegFaultSignal())
         sl.append(VASPStartedCompletedSignal())
-        sl.append(PositiveEnergySignal())
-        sl.append(ChargeUnconvergedSignal())
 
         signals = sl.detect_all(last_relax_dir)
 
-        # try detecting walltime in two directories - dir_name and one level above
         signals = signals.union(WallTimeSignal().detect(dir_name))
-        root_dir = os.path.dirname(dir_name)  # one level above dir_name
-        signals = signals.union(WallTimeSignal().detect(root_dir))
+        if not new_style:
+            root_dir = os.path.dirname(dir_name)  # one level above dir_name
+            signals = signals.union(WallTimeSignal().detect(root_dir))
 
-        # try detecting disk space error in dir_name and root dir
         signals = signals.union(DiskSpaceExceededSignal().detect(dir_name))
-        root_dir = os.path.dirname(dir_name)  # one level above dir_name
-        signals = signals.union(DiskSpaceExceededSignal().detect(root_dir))
-
-        # try detecting stopcar in many dirs - root, relax1, relax2
-        # note that only doing the 'last_relax_dir' does not seem to work
-        signals = signals.union(StopcarExistsSignal().detect(dir_name))
-        signals = signals.union(StopcarExistsSignal()
-        .detect(os.path.join(dir_name, "relax1")))
-        signals = signals.union(StopcarExistsSignal()
-        .detect(os.path.join(dir_name, "relax2")))
+        if not new_style:
+            root_dir = os.path.dirname(dir_name)  # one level above dir_name
+            signals = signals.union(DiskSpaceExceededSignal().detect(root_dir))
 
         signals = list(signals)
 
