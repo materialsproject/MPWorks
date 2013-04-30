@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals_vasp import VASPInputsExistSignal, \
-    VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal,\
+    VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
     VASPStartedCompletedSignal, PositiveEnergySignal, \
     ChargeUnconvergedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
     StopcarExistsSignal
@@ -23,7 +23,6 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 26, 2013'
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -34,13 +33,12 @@ def is_valid_vasp_dir(mydir):
     for f in files:
         m_file = os.path.join(mydir, f)
         if not (os.path.exists(m_file) and
-                os.stat(m_file).st_size > 0):
+                        os.stat(m_file).st_size > 0):
             return False
     return True
 
 
 class MatprojVaspDrone(VaspToDbTaskDrone):
-
     def assimilate(self, path):
         """
         Parses vasp runs. Then insert the result into the db. and return the
@@ -86,7 +84,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                             update={"$inc": {"c": 1}}
                         )["c"]
                     logger.info("Inserting {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
 
                     #Fireworks processing
                     self.process_fw(path, d)
@@ -95,7 +93,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
                     #Fireworks processing
                     self.process_fw(path, d)
                     coll.update({"dir_name": d["dir_name"]}, {"$set": d})
@@ -105,7 +103,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-                        .format(d["dir_name"], d["task_id"]))
+            .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):
@@ -126,11 +124,11 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 old_snl = StructureNL.from_dict(d['snl'])
                 history = old_snl.history
                 history.append(
-                    {'name':'Materials Project structure optimization',
-                     'url':'http://www.materialsproject.org',
-                     'description':{'task_type': d['task_type'],
-                                    'fw_id': d['fw_id'],
-                                    'task_id': d['task_id']}})
+                    {'name': 'Materials Project structure optimization',
+                     'url': 'http://www.materialsproject.org',
+                     'description': {'task_type': d['task_type'],
+                                     'fw_id': d['fw_id'],
+                                     'task_id': d['task_id']}})
                 new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
                                       old_snl.references, old_snl.remarks,
                                       old_snl.data, history)
@@ -151,10 +149,8 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
                            "STOPCAR_EXISTS", "POSITIVE_ENERGY",
-                           "CHARGE_UNCONVERGED", "TOO_MANY_ELECTRONIC_STEPS",
-                           "NETWORK_QUIESCED", "HARD_KILLED",
-                           "WALLTIME_EXCEEDED", "ATOMS_TOO_CLOSE",
-                           "DISK_SPACE_EXCEEDED"]
+                           "CHARGE_UNCONVERGED", "NETWORK_QUIESCED", "HARD_KILLED", "WALLTIME_EXCEEDED",
+                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
 
         # get the last relaxation dir
         # the order is relax2, current dir, then relax1. This is because
@@ -202,19 +198,9 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         # note that only doing the 'last_relax_dir' does not seem to work
         signals = signals.union(StopcarExistsSignal().detect(dir_name))
         signals = signals.union(StopcarExistsSignal()
-                                .detect(os.path.join(dir_name, "relax1")))
+        .detect(os.path.join(dir_name, "relax1")))
         signals = signals.union(StopcarExistsSignal()
-                                .detect(os.path.join(dir_name, "relax2")))
-
-        if len(d.get("calculations", [])) > 0:
-            ismear = d['calculations'][0]["input"]["incar"]["ISMEAR"]
-            if ismear == 1:
-                signals.add("ISMEAR_1_ERROR")
-
-            max_steps = d['calculations'][-1]["input"]["incar"]["NSW"]
-            total_steps = len(d['calculations'][-1]["output"]["ionic_steps"])
-            if total_steps >= max_steps:
-                signals.add("TOO_MANY_IONIC_STEPS")
+        .detect(os.path.join(dir_name, "relax2")))
 
         signals = list(signals)
 
