@@ -1,12 +1,11 @@
 import os
 import traceback
 import datetime
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient
 import time
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
-from mpworks.submissions.submission_handler import SubmissionHandler
 from mpworks.workflows.snl_to_wf import snl_to_wf
 from pymatgen.matproj.snl import StructureNL
 
@@ -46,9 +45,9 @@ class SubmissionMongoAdapter(FWSerializable):
         self.jobs.remove()
 
     def _update_indices(self):
-        self.snl.ensure_index('submission_id', unique=True)
-        self.snl.ensure_index('state')
-        self.snl.ensure_index('submitter_email')
+        self.jobs.ensure_index('submission_id', unique=True)
+        self.jobs.ensure_index('state')
+        self.jobs.ensure_index('submitter_email')
 
     def _get_next_submission_id(self):
         return self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_submission_id': 1}})['next_submission_id']
