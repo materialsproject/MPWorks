@@ -22,4 +22,4 @@ class DupeFinderVasp(DupeFinderBase):
 
     def query(self, spec):
         return {'spec.task_type': spec['task_type'],
-                'spec.snlgroup_id': spec['snlgroup_id']}
+                '$or': [{'spec.snlgroup_id': spec['snlgroup_id']}, {'spec.snlgroup_id_final': spec['snlgroup_id']}]}
