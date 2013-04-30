@@ -41,7 +41,7 @@ class SubmissionMongoAdapter(FWSerializable):
         self._update_indices()
 
     def _reset(self):
-        self._restart_id_assigner_at(1, 1)
+        self._restart_id_assigner_at(1)
         self.jobs.remove()
 
     def _update_indices(self):
@@ -124,7 +124,7 @@ class SubmissionProcessor():
 
     def submit_new_workflow(self):
         # finds a submitted job, creates a workflow, and submits it to FireWorks
-        job = self.jobs.find_and_modify({'status': 'submitted'}, {'$set': {'status': 'waiting'}})
+        job = self.jobs.find_and_modify({'state': 'submitted'}, {'$set': {'state': 'waiting'}})
         if job:
             submission_id = job['submission_id']
             try:

@@ -71,13 +71,13 @@ class SubmissionHandler():
                 print 'ADDED A JOB TO THE WORKFLOW!'
             except:
                 traceback.format_exc()
-                self.jobs.find_and_modify({'_id': ObjectId(submission_id)}, {'$set': {'status': 'error'}})
+                self.jobs.find_and_modify({'_id': ObjectId(submission_id)}, {'$set': {'state': 'error'}})
             return submission_id
 
     def _process_state(self, wf, s_id):
-        # TODO: move a lot of this code into FW (FW should tell you the status of a Workflow)
+        # TODO: move a lot of this code into FW (FW should tell you the state of a Workflow)
 
-        # get status
+        # get state
         m_state = 'waiting'
         states = [fw.state for fw in wf.fws]
         if all([s == 'COMPLETED' for s in states]):
@@ -87,7 +87,7 @@ class SubmissionHandler():
         elif any([s == 'COMPLETED' for s in states]) or any([s == 'RUNNING' for s in states]):
             m_state = 'running'
 
-        self.update_status(s_id, m_state)
+        self.update_state(s_id, m_state)
 
         details = m_state
         for fw in wf.fws:
@@ -110,7 +110,7 @@ class SubmissionHandler():
                 if fw.state == 'FIZZLED':
                     details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
 
-        self.update_detailed_status(s_id, details)
+        self.update_detailed_state(s_id, details)
 
         m_taskdict = {}
         if any([s == 'COMPLETED' for s in states]):
@@ -128,7 +128,7 @@ class SubmissionHandler():
 
     def _update_states(self):
         # find all submissions that are not completed and update the state
-        for s_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'_id': 1}):
+        for s_id in self.jobs.find({'state': {'$in': ['waiting', 'running']}}, {'_id': 1}):
             s_id = str(s_id['_id'])
             try:
                 # get a fw_id with this submission id
@@ -155,11 +155,11 @@ class SubmissionHandler():
             print 'looked for submissions, sleeping 30s'
             time.sleep(30)
 
-    def update_status(self, oid, status):
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'status': status}})
+    def update_state(self, oid, state):
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'state': state}})
 
-    def update_detailed_status(self, oid, status):
-        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'detailed_status': status}})
+    def update_detailed_state(self, oid, state):
+        self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'detailed_state': state}})
 
     def update_taskdict(self, oid, task_dict):
         self.jobs.find_and_modify({'_id': ObjectId(oid)}, {'$set': {'task_dict': task_dict}})
