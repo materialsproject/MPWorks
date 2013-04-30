@@ -1,5 +1,6 @@
 import json
 import os
+from pymongo import MongoClient
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen.core.structure import Structure
@@ -24,6 +25,14 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             If in simulate_mode, the entire doc is returned for debugging
             purposes. Else, only the task_id of the inserted doc is returned.
         """
+
+        # set the task_id in advance, because it's needed by post-process
+        conn = MongoClient(self.host, self.port)
+        db = conn[self.database]
+        task_id = db.counter.find_and_modify(query={"_id": "taskid"}, update={"$inc": {"c": 1}})["c"]
+        self.additional_fields = self.additional_fields if self.additional_fields else {}
+        self.additional_fields.update({'task_id': task_id})
+
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
         tid = self._insert_doc(d)
@@ -53,7 +62,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 history.append(
                     {'name':'Materials Project structure optimization',
                      'url':'http://www.materialsproject.org',
-                     'description':{'task_type': d['task_type'], 'fw_id': d['fw_id']}})
+                     'description':{'task_type': d['task_type'], 'fw_id': d['fw_id'], 'task_id': d['task_id']}})
                 new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
                                       old_snl.references, old_snl.remarks,
                                       old_snl.data, history)
