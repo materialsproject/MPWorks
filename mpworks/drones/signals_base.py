@@ -34,7 +34,7 @@ def string_list_in_file(s_list, filename, ignore_case=True):
 
     return list(matches)
 
-class SignalDetector():
+class SignalDetector(object):
     '''
     A SignalDetector is an abstract class that takes in a directory name and returns a set of Strings.
     Each String represents an error code that was detected during the run

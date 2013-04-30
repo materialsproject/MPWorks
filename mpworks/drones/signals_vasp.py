@@ -113,7 +113,7 @@ class VASPInputsExistSignal(SignalDetector):
 
     def detect(self, dir_name):
         names = [os.path.join(dir_name, last_file(x)) for x in ['POSCAR', 'INCAR', 'KPOINTS', 'POTCAR']]
-        return set() if all([os.path.exists(file_name) for file_name in names])  and all([os.stat(file_name).st_size > 0 for file_name in names]) else set(["INPUTS_DONT_EXIST"])
+        return set() if all([os.path.exists(file_name) for file_name in names]) and all([os.stat(file_name).st_size > 0 for file_name in names]) else set(["INPUTS_DONT_EXIST"])
 
 
 class VASPOutputsExistSignal(SignalDetector):
