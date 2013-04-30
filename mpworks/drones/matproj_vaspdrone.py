@@ -26,9 +26,12 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        # set the task_id in advance, because it's needed by post-process
+        # set the task_id in advance, because it's needed by post-process in order to auto-link SNL history
         conn = MongoClient(self.host, self.port)
         db = conn[self.database]
+        if self.user:
+            db.authenticate(self.user, self.password)
+        coll = db[self.collection]
         task_id = db.counter.find_and_modify(query={"_id": "taskid"}, update={"$inc": {"c": 1}})["c"]
         self.additional_fields = self.additional_fields if self.additional_fields else {}
         self.additional_fields.update({'task_id': task_id})
