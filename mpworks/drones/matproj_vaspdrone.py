@@ -118,7 +118,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
 
-            if 'optimize structure' in d['task_type']:
+            if 'optimize structure' in d['task_type'] and 'output' in d:
                 # create a new SNL based on optimized structure
                 new_s = Structure.from_dict(d['output']['crystal'])
                 old_snl = StructureNL.from_dict(d['snl'])
@@ -213,6 +213,6 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         vasp_signals['num_critical'] = len(critical_signals)
 
         if len(critical_signals) > 0 and d['state'] == "successful":
-            d.update({"state": "rejected"})
+            d.update({"state": "error"})
 
         d.update({'vasp_signals': vasp_signals})
