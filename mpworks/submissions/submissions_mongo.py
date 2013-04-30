@@ -181,7 +181,6 @@ class SubmissionProcessor():
                 if fw.state == 'FIZZLED':
                     details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
 
-
         m_taskdict = {}
         states = [fw.state for fw in self.fws]
         if any([s == 'COMPLETED' for s in states]):
@@ -204,4 +203,8 @@ class SubmissionProcessor():
         l_file = os.path.join(l_dir, 'my_launchpad.yaml')
         lp = LaunchPad.from_file(l_file)
 
-        return SubmissionHandler(sma, lp)
+        return SubmissionProcessor(sma, lp)
+
+if __name__ == '__main__':
+    sp = SubmissionProcessor.auto_load()
+    sp.run()
