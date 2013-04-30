@@ -1,9 +1,16 @@
 import json
 import os
 import math
+import datetime
+import logging
 from pymongo import MongoClient
+import gridfs
 from matgendb.creator import VaspToDbTaskDrone
-from mpworks.drones.signals_vasp import VASPInputsExistSignal, VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, VASPStartedCompletedSignal, PositiveEnergySignal, ChargeUnconvergedSignal, WallTimeSignal, DiskSpaceExceededSignal, StopcarExistsSignal
+from mpworks.drones.signals_vasp import VASPInputsExistSignal, \
+    VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal,\
+    VASPStartedCompletedSignal, PositiveEnergySignal, \
+    ChargeUnconvergedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
+    StopcarExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
@@ -17,6 +24,9 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 26, 2013'
 
 
+logger = logging.getLogger(__name__)
+
+
 def is_valid_vasp_dir(mydir):
     # note that the OUTCAR and POSCAR are known to be empty in some
     # situations
@@ -27,6 +37,7 @@ def is_valid_vasp_dir(mydir):
                 os.stat(m_file).st_size > 0):
             return False
     return True
+
 
 class MatprojVaspDrone(VaspToDbTaskDrone):
 
@@ -40,26 +51,62 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        # set the task_id in advance, because it's needed by post-process in order to auto-link SNL history
-        conn = MongoClient(self.host, self.port)
-        db = conn[self.database]
-        if self.user:
-            db.authenticate(self.user, self.password)
-        coll = db[self.collection]
-        task_id = db.counter.find_and_modify(query={"_id": "taskid"}, update={"$inc": {"c": 1}})["c"]
-        self.additional_fields = self.additional_fields if self.additional_fields else {}
-        self.additional_fields.update({'task_id': task_id})
-
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
-        tid = self._insert_doc(d)
-        return tid, d
+        if not self.simulate:
+            # Perform actual insertion into db. Because db connections cannot
+            # be pickled, every insertion needs to create a new connection
+            # to the db.
+            conn = MongoClient(self.host, self.port)
+            db = conn[self.database]
+            if self.user:
+                db.authenticate(self.user, self.password)
+            coll = db[self.collection]
 
-    @classmethod
-    def post_process(cls, dir_name, d):
-        # run the post-process of the superclass
-        VaspToDbTaskDrone.post_process(dir_name, d)
+            # Insert dos data into gridfs and then remove it from the dict.
+            # DOS data tends to be above the 4Mb limit for mongo docs. A ref
+            # to the dos file is in the dos_fs_id.
+            result = coll.find_one({"dir_name": d["dir_name"]},
+                                   fields=["dir_name", "task_id"])
+            if result is None or self.update_duplicates:
+                if self.parse_dos and "calculations" in d:
+                    for calc in d["calculations"]:
+                        if "dos" in calc:
+                            dos = json.dumps(calc["dos"])
+                            fs = gridfs.GridFS(db, "dos_fs")
+                            dosid = fs.put(dos)
+                            calc["dos_fs_id"] = dosid
+                            del calc["dos"]
 
+                d["last_updated"] = datetime.datetime.today()
+                if result is None:
+                    if ("task_id" not in d) or (not d["task_id"]):
+                        d["task_id"] = db.counter.find_and_modify(
+                            query={"_id": "taskid"},
+                            update={"$inc": {"c": 1}}
+                        )["c"]
+                    logger.info("Inserting {} with taskid = {}"
+                                .format(d["dir_name"], d["task_id"]))
+
+                    #Fireworks processing
+                    self.process_fw(path, d)
+
+                    coll.insert(d, safe=True)
+                elif self.update_duplicates:
+                    d["task_id"] = result["task_id"]
+                    logger.info("Updating {} with taskid = {}"
+                                .format(d["dir_name"], d["task_id"]))
+                    coll.update({"dir_name": d["dir_name"]}, {"$set": d})
+                return d["task_id"], d
+            else:
+                logger.info("Skipping duplicate {}".format(d["dir_name"]))
+        else:
+            d["task_id"] = 0
+            logger.info("Simulated insert into database for {} with task_id {}"
+                        .format(d["dir_name"], d["task_id"]))
+            return 0, d
+
+    def process_fw(self, dir_name, d):
         # custom Materials Project post-processing for FireWorks
         with open(os.path.join(dir_name, 'FW.json')) as f:
             fw_dict = json.load(f)
@@ -79,7 +126,9 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 history.append(
                     {'name':'Materials Project structure optimization',
                      'url':'http://www.materialsproject.org',
-                     'description':{'task_type': d['task_type'], 'fw_id': d['fw_id'], 'task_id': d['task_id']}})
+                     'description':{'task_type': d['task_type'],
+                                    'fw_id': d['fw_id'],
+                                    'task_id': d['task_id']}})
                 new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
                                       old_snl.references, old_snl.remarks,
                                       old_snl.data, history)
@@ -103,7 +152,8 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                            "CHARGE_UNCONVERGED", "TOO_MANY_ELECTRONIC_STEPS",
                            "NETWORK_QUIESCED", "HARD_KILLED",
                            "HIGH_RESIDUAL_FORCE", "INSANE_ENERGY",
-                           "WALLTIME_EXCEEDED", "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
+                           "WALLTIME_EXCEEDED", "ATOMS_TOO_CLOSE",
+                           "DISK_SPACE_EXCEEDED"]
 
         MAX_FORCE_THRESHOLD = 0.5  # 500 meV
         INSANE_ENERGY_CUTOFF = -15  # should be sufficiently insane
@@ -153,7 +203,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
         # try detecting stopcar in many dirs - root, relax1, relax2
         # note that only doing the 'last_relax_dir' does not seem to work
         signals = signals.union(StopcarExistsSignal().detect(dir_name))
-        signals = signals.union(StopscarExistsSignal()
+        signals = signals.union(StopcarExistsSignal()
                                 .detect(os.path.join(dir_name, "relax1")))
         signals = signals.union(StopcarExistsSignal()
                                 .detect(os.path.join(dir_name, "relax2")))
