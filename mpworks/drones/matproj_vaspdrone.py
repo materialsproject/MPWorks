@@ -151,7 +151,6 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                            "STOPCAR_EXISTS", "POSITIVE_ENERGY",
                            "CHARGE_UNCONVERGED", "TOO_MANY_ELECTRONIC_STEPS",
                            "NETWORK_QUIESCED", "HARD_KILLED",
-                           "HIGH_RESIDUAL_FORCE", "INSANE_ENERGY",
                            "WALLTIME_EXCEEDED", "ATOMS_TOO_CLOSE",
                            "DISK_SPACE_EXCEEDED"]
 
