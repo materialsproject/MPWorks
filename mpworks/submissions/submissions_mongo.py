@@ -6,6 +6,7 @@ import time
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
+from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.snl_to_wf import snl_to_wf
 from pymatgen.matproj.snl import StructureNL
 
@@ -67,6 +68,7 @@ class SubmissionMongoAdapter(FWSerializable):
         d['task_dict'] = {}
         d['submission_id'] = self._get_next_submission_id()
         d['submitted_at'] = datetime.datetime.utcnow().isoformat()
+        d.update(get_meta_from_structure(snl.structure))
         self.jobs.insert(d)
 
         return d['submission_id']
