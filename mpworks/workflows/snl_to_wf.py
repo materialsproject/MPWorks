@@ -97,7 +97,7 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
-        connections[2] = 3
+        connections[2] = [3]
 
         # insert into DB - GGA static
         spec = {'task_type': 'VASP db insertion'}
@@ -139,7 +139,7 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=10))
-        connections[2] = 10
+        connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion'}
         spec.update(_get_metadata(snl))
