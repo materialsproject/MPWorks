@@ -96,6 +96,8 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
                                 .format(d["dir_name"], d["task_id"]))
+                    #Fireworks processing
+                    self.process_fw(path, d)
                     coll.update({"dir_name": d["dir_name"]}, {"$set": d})
                 return d["task_id"], d
             else:
