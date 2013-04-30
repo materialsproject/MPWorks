@@ -110,4 +110,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
-        return FWAction(stored_data=stored_data, update_spec=update_spec)
+        if d['state'] == 'successful':
+            return FWAction(stored_data=stored_data, update_spec=update_spec)
+        return FWAction(stored_data=stored_data, defuse_children=True)
