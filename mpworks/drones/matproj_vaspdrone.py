@@ -53,7 +53,7 @@ class MatprojVaspDrone(VaspToDbTaskDrone):
                 history.append(
                     {'name':'Materials Project structure optimization',
                      'url':'http://www.materialsproject.org',
-                     'description':{'task_type': d['task_type'], 'task_id': d['task_id']}})
+                     'description':{'task_type': d['task_type'], 'fw_id': d['fw_id']}})
                 new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
                                       old_snl.references, old_snl.remarks,
                                       old_snl.data, history)
