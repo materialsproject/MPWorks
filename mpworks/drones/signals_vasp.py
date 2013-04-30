@@ -15,11 +15,13 @@ from mpworks.drones.signals_base import SignalDetector, SignalDetectorSimple, st
 
 
 def last_file(filename):
+
+    dirname = os.path.dirname(filename)
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
-        return relaxations[-1]
+        return os.path.join(dirname, relaxations[-1])
     else:
-        return filename
+        return os.path.join(dirname, filename)
 
 
 class VASPOutSignal(SignalDetectorSimple):
