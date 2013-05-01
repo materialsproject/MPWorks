@@ -58,7 +58,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def _write_formula_file(self, fw_spec):
         valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-        filename = 'META--'+fw_spec['mpsnl']['formula_abc_red'] + '--' + fw_spec['task_type']
+        filename = 'JOB--'+fw_spec['mpsnl']['formula_abc_red'] + '--' + fw_spec['task_type']
         valid_filename = ''.join(c for c in filename if c in valid_chars)
         valid_filename = valid_filename.replace(' ', '_')
         with open(valid_filename, 'w+') as f:
