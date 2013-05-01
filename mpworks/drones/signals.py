@@ -92,14 +92,14 @@ class SignalDetectorSimple(SignalDetector):
         self.ignore_nonexistent_file = ignore_nonexistent_file
         self.invert_search = invert_search
 
-    def detect(self, dir_name, last_file=True):
+    def detect(self, dir_name):
 
         signals = set()
 
         for filename in self.filename_list:
             #find the strings that match in the file
             if not self.ignore_nonexistent_file or os.path.exists(os.path.join(dir_name, filename)):
-                f = last_file(os.path.join(dir_name, filename)) if last_file else os.path.join(dir_name, filename)
+                f = last_file(os.path.join(dir_name, filename))
                 errors = string_list_in_file(self.signames_targetstrings.values(), f, ignore_case=self.ignore_case)
                 if self.invert_search:
                     errors_inverted = [item for item in self.targetstrings_signames.keys() if item not in errors]
