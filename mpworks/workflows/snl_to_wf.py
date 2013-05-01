@@ -3,6 +3,7 @@ from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.custodian_task import VaspCustodianTask
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
@@ -92,45 +93,11 @@ def snl_to_wf(snl, do_bandstructure=True):
     connections[1] = 2
 
     if do_bandstructure:
-        # run GGA static
-        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
+        spec = {'task_type': 'Controller: add Electronic Structure'}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=3))
-        connections[2] = [3]
-
-        # insert into DB - GGA static
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask()], spec, fw_id=4))
-        connections[3] = 4
-
-        # run GGA Uniform
-        spec = {'task_type': 'GGA Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=5))
-        connections[4] = 5
-
-        # insert into DB - GGA Uniform
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=6))
-        connections[5] = 6
-
-        # run GGA Band structure
-        spec = {'task_type': 'GGA band structure', '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=7))
-        connections[6] = 7
-
-        # insert into DB - GGA Band structure
-        spec = {'task_type': 'VASP db insertion'}
-        spec.update(_get_metadata(snl))
-        fws.append(
-            FireWork([VaspToDBTask({})], spec, fw_id=8))
-        connections[7] = 8
+            FireWork([AddEStructureTask()], spec, fw_id=3))
+        connections[2] = 3
 
     # determine if GGA+U FW is needed
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
