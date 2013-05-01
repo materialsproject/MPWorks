@@ -1,4 +1,5 @@
 import socket
+import string
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -26,6 +27,9 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
+        # write a file containing the formula and task_type for somewhat easier file system browsing
+        self._write_formula_file(fw_spec)
+
         # TODO: make this better - is there a way to load an environment variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
             v_exe = shlex.split('aprun -n 48 vasp')  # TODO: make ncores dynamic!
@@ -48,7 +52,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         stored_data = {'error_list': list(all_errors)}
         update_spec = {'prev_vasp_dir': os.getcwd(), 'prev_task_type': fw_spec['task_type']}
 
-        if 'mpsnl' in fw_spec:
-            update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
+        update_spec.update({'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id']})
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
+
+    def _write_formula_file(self, fw_spec):
+        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+        filename = fw_spec['mpsnl']['formula_abc_red'] + '--' + fw_spec['task_type'] + '.json'
+        valid_filename = ''.join(c for c in filename if c in valid_chars)
+        with open(valid_filename, 'w+') as f:
+            f.write('')
