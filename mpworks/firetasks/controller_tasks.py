@@ -3,7 +3,6 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, SetupNonSCFTask
-from mpworks.workflows.snl_to_wf import _get_metadata, _get_custodian_task
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -19,6 +18,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
     _fw_name = "Add Electronic Structure Task"
 
     def run_task(self, fw_spec):
+        from mpworks.workflows.snl_to_wf import _get_metadata, _get_custodian_task
         # TODO: only add the workflow if the gap is > 1.0 eV
         # TODO: add stored data?
         # TODO: switch between GGA and GGA+U tags depending on prev task type
