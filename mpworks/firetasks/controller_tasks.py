@@ -29,14 +29,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         connections = {}
 
         # run GGA static
-        spec = {'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()}
+        spec = fw_spec  # pass all the items from the current spec to the new one
+        spec.update({'task_type': 'GGA static', '_dupefinder': DupeFinderVasp().to_dict()})
         spec.update(_get_metadata(snl))
-        spec.update(fw_spec)  # pass all the items from the current spec to the new one
         fws.append(
             FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=-10))
 
         # insert into DB - GGA static
-        spec = {'task_type': 'VASP db insertion'}
+        spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=-9))
@@ -49,7 +49,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         connections[-9] = -8
 
         # insert into DB - GGA Uniform
-        spec = {'task_type': 'VASP db insertion'}
+        spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=-7))
@@ -62,7 +62,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         connections[-7] = -6
 
         # insert into DB - GGA Band structure
-        spec = {'task_type': 'VASP db insertion'}
+        spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
         spec.update(_get_metadata(snl))
         fws.append(FireWork([VaspToDBTask({})], spec, fw_id=-5))
         connections[-6] = -5
