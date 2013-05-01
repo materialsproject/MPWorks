@@ -88,7 +88,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-        update_spec={'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['previous_task_type']}
+        update_spec={'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
