@@ -87,7 +87,7 @@ def snl_to_wf(snl, do_bandstructure=True):
     fws.append(FireWork(tasks, spec, fw_id=1))
 
     # insert into DB - GGA structure optimization
-    spec = {'task_type': 'VASP db insertion', '_priority': 2}
+    spec = {'task_type': 'VASP db insertion', '_priority': 2, '_allow_fizzled_parents': True}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
@@ -108,7 +108,7 @@ def snl_to_wf(snl, do_bandstructure=True):
         fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=10))
         connections[2].append(10)
 
-        spec = {'task_type': 'VASP db insertion'}
+        spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=11))
@@ -121,7 +121,7 @@ def snl_to_wf(snl, do_bandstructure=True):
                 FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=12))
             connections[11] = 12
 
-            spec = {'task_type': 'VASP db insertion'}
+            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork([VaspToDBTask()], spec, fw_id=13))
@@ -132,7 +132,7 @@ def snl_to_wf(snl, do_bandstructure=True):
             fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=14))
             connections[13] = 14
 
-            spec = {'task_type': 'VASP db insertion'}
+            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=15))
@@ -143,7 +143,7 @@ def snl_to_wf(snl, do_bandstructure=True):
             fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=16))
             connections[15] = 16
 
-            spec = {'task_type': 'VASP db insertion'}
+            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork([VaspToDBTask({})], spec, fw_id=17))
