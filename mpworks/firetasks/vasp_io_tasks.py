@@ -88,7 +88,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-        update_spec={'prev_vasp_dir': prev_dir}
+        update_spec={'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['previous_task_type']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
@@ -111,5 +111,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
         if d['state'] == 'successful':
+            update_spec['analysis'] = d['analysis']
             return FWAction(stored_data=stored_data, update_spec=update_spec)
         return FWAction(stored_data=stored_data, defuse_children=True)

@@ -6,8 +6,10 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.custodian_task import VaspCustodianTask
 from mpworks.firetasks.snl_tasks import AddSNLTask
-from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupStaticRunTask, SetupNonSCFTask
+from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
+    VaspToDBTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, \
+    SetupStaticRunTask, SetupNonSCFTask
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -19,7 +21,8 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
-# TODO: add duplicate checks for DB task - don't want to add the same dir twice!!
+# TODO: add duplicate checks for DB task - don't want to add the same dir
+# twice!!
 # TODO: different walltime requirements and priority for DB task
 
 
@@ -32,7 +35,8 @@ def _get_custodian_task(spec):
         jobs = [VaspJob(v_exe)]
 
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler()]
-    params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+    params = {'jobs': [j.to_dict for j in jobs],
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
 
     return VaspCustodianTask(params)
 
@@ -54,7 +58,8 @@ def _snl_to_spec(snl, enforce_gga=True):
     # TODO: restore category
     # spec['_category'] = 'Materials Project'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-    spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp']['incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
+    spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp'][
+        'incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
     spec.update(_get_metadata(snl))
 
@@ -63,7 +68,8 @@ def _snl_to_spec(snl, enforce_gga=True):
 
 def _get_metadata(snl):
     md = {'run_tags': ['auto generation v1.0']}
-    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data[
+        '_materialsproject']:
         md['submission_id'] = snl.data['_materialsproject']['submission_id']
 
     return md
@@ -87,7 +93,8 @@ def snl_to_wf(snl, do_bandstructure=True):
     fws.append(FireWork(tasks, spec, fw_id=1))
 
     # insert into DB - GGA structure optimization
-    spec = {'task_type': 'VASP db insertion', '_priority': 2, '_allow_fizzled_parents': True}
+    spec = {'task_type': 'VASP db insertion', '_priority': 2,
+            '_allow_fizzled_parents': True}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
@@ -103,51 +110,26 @@ def snl_to_wf(snl, do_bandstructure=True):
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)', '_dupefinder': DupeFinderVasp().to_dict()}
+        spec = {'task_type': 'GGA+U optimize structure (2x)',
+                '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
-        fws.append(FireWork([VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(), _get_custodian_task(spec)], spec, fw_id=10))
+        fws.append(FireWork(
+            [VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(),
+             _get_custodian_task(spec)], spec, fw_id=10))
         connections[2].append(10)
 
-        spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
+        spec = {'task_type': 'VASP db insertion',
+                '_allow_fizzled_parents': True}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, fw_id=11))
         connections[10] = 11
 
         if do_bandstructure:
-            spec = {'task_type': 'GGA+U static', '_dupefinder': DupeFinderVasp().to_dict()}
+            spec = {'task_type': 'Controller: add Electronic Structure'}
             spec.update(_get_metadata(snl))
-            fws.append(
-                FireWork([VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(), _get_custodian_task(spec)], spec, fw_id=12))
+            fws.append(FireWork([AddEStructureTask()], spec, fw_id=12))
             connections[11] = 12
-
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
-            spec.update(_get_metadata(snl))
-            fws.append(
-                FireWork([VaspToDBTask()], spec, fw_id=13))
-            connections[12] = 13
-
-            spec = {'task_type': 'GGA+U Uniform', '_dupefinder': DupeFinderVasp().to_dict()}
-            spec.update(_get_metadata(snl))
-            fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}), _get_custodian_task(spec)], spec, fw_id=14))
-            connections[13] = 14
-
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
-            spec.update(_get_metadata(snl))
-            fws.append(
-                FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=15))
-            connections[14] = 15
-
-            spec = {'task_type': 'GGA+U band structure', '_dupefinder': DupeFinderVasp().to_dict()}
-            spec.update(_get_metadata(snl))
-            fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}), _get_custodian_task(spec)], spec, fw_id=16))
-            connections[15] = 16
-
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
-            spec.update(_get_metadata(snl))
-            fws.append(
-                FireWork([VaspToDBTask({})], spec, fw_id=17))
-            connections[16] = 17
 
     return Workflow(fws, connections)
 
@@ -163,7 +145,8 @@ def snl_to_wf_ggau(snl):
     wf_meta = _get_metadata(snl)
 
     # add GGA insertion to DB
-    spec = {'task_type': 'VASP db insertion', '_priority': 2, '_category': 'VASP'}
+    spec = {'task_type': 'VASP db insertion', '_priority': 2,
+            '_category': 'VASP'}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
@@ -173,6 +156,7 @@ def snl_to_wf_ggau(snl):
     wf_meta['vaspinputset'] = mpvis.to_dict
 
     return Workflow(fws, connections, wf_meta)
+
 
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
