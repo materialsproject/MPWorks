@@ -8,11 +8,10 @@ import gridfs
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
-    VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal
+    VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, SignalDetectorList
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
-from mpworks.drones.signals_base import SignalDetectorList
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
