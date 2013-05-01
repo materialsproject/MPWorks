@@ -1,6 +1,5 @@
 import json
 import os
-import math
 import datetime
 import logging
 from pymongo import MongoClient
@@ -8,7 +7,8 @@ import gridfs
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
-    VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, SignalDetectorList
+    VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
+    SignalDetectorList
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
@@ -29,8 +29,7 @@ def is_valid_vasp_dir(mydir):
     files = ["OUTCAR", "POSCAR", "INCAR", "KPOINTS"]
     for f in files:
         m_file = os.path.join(mydir, f)
-        if not (os.path.exists(m_file) and
-                        os.stat(m_file).st_size > 0):
+        if not (os.path.exists(m_file) and os.stat(m_file).st_size > 0):
             return False
     return True
 
@@ -81,26 +80,23 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             update={"$inc": {"c": 1}}
                         )["c"]
                     logger.info("Inserting {} with taskid = {}"
-                    .format(d["dir_name"], d["task_id"]))
-
-                    #Fireworks processing
-                    self.process_fw(path, d)
-
-                    coll.insert(d, safe=True)
+                                .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                    .format(d["dir_name"], d["task_id"]))
-                    #Fireworks processing
-                    self.process_fw(path, d)
-                    coll.update({"dir_name": d["dir_name"]}, {"$set": d})
+                                .format(d["dir_name"], d["task_id"]))
+
+                #Fireworks processing
+                self.process_fw(path, d)
+                coll.update({"dir_name": d["dir_name"]}, {"$set": d},
+                            upsert=True)
                 return d["task_id"], d
             else:
                 logger.info("Skipping duplicate {}".format(d["dir_name"]))
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-            .format(d["dir_name"], d["task_id"]))
+                        .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):
@@ -138,7 +134,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 mpsnl, snlgroup_id = sma.add_snl(new_snl)
                 d['snl_final'] = mpsnl.to_dict
                 d['snlgroup_id_final'] = snlgroup_id
-                d['snlgroup_changed'] = d['snlgroup_id'] != d['snlgroup_id_final']
+                d['snlgroup_changed'] = (d['snlgroup_id'] !=
+                                         d['snlgroup_id_final'])
 
         # custom processing for detecting errors
         new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
@@ -146,7 +143,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
-                           "CHARGE_UNCONVERGED", "NETWORK_QUIESCED", "HARD_KILLED", "WALLTIME_EXCEEDED",
+                           "CHARGE_UNCONVERGED", "NETWORK_QUIESCED",
+                           "HARD_KILLED", "WALLTIME_EXCEEDED",
                            "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
 
         last_relax_dir = dir_name
