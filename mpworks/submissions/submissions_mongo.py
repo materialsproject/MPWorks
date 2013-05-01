@@ -139,8 +139,9 @@ class SubmissionProcessor():
                 self.launchpad.add_wf(wf)
                 print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
-                traceback.format_exc()
-                self.jobs.find_and_modify({'snl_id': submission_id}, {'$set': {'status': 'error'}})
+                self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'error'}})
+                traceback.print_exc()
+
             return submission_id
 
     def update_existing_workflows(self):
