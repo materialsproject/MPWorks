@@ -78,13 +78,12 @@ def _get_metadata(snl):
 def snl_to_wf(snl, do_bandstructure=True):
     # TODO: clean this up once we're out of testing mode
     # TODO: add WF metadata
-    # TODO: ADD BACK GGA+U
     fws = []
     connections = {}
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    fws.append(FireWork(tasks, {'snl': snl.to_dict}, fw_id=0))
+    fws.append(FireWork(tasks, {'task_type': 'Add to SNL database', 'snl': snl.to_dict}, fw_id=0))
     connections[0] = 1
 
     # run GGA structure optimization
