@@ -6,7 +6,7 @@ import logging
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
-from mpworks.drones.signals_vasp import VASPInputsExistSignal, \
+from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
