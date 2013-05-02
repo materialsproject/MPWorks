@@ -152,8 +152,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
         if not new_style:
             # get the last relaxation dir
             # the order is relax2, current dir, then relax1. This is because
-            # after completing relax1, the job happens in the current dir. Finally
-            # it gets moved to relax2.
+            # after completing relax1, the job happens in the current dir.
+            # Finally, it gets moved to relax2.
             # There are some weird cases where both the current dir and relax2
             # contain data. The relax2 is good, but the current dir is bad.
             if is_valid_vasp_dir(os.path.join(dir_name, "relax2")):
@@ -199,6 +199,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
         vasp_signals['num_critical'] = len(critical_signals)
 
         if len(critical_signals) > 0 and d['state'] == "successful":
-            d.update({"state": "error"})
+            d["state"] = "error"
 
-        d.update({'vasp_signals': vasp_signals})
+        d['vasp_signals'] = vasp_signals
