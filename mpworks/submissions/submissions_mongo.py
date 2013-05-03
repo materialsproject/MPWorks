@@ -74,9 +74,9 @@ class SubmissionMongoAdapter(FWSerializable):
 
         return d['submission_id']
 
-    def resubmit_submission(self, submission_id):
+    def resubmit(self, submission_id):
         self.jobs.update(
-            {'submission_id': submission_id}, {'$set': {'state': 'submitted'}, 'state_details': {}, 'task_dict': {}})
+            {'submission_id': submission_id}, {'$set': {'state': 'submitted', 'state_details': {}, 'task_dict': {}}})
 
 
     def cancel_submission(self, submission_id):
