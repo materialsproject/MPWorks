@@ -1,6 +1,6 @@
 import os
 from custodian.vasp.jobs import VaspJob
-from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler
+from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.controller_tasks import AddEStructureTask
@@ -34,7 +34,7 @@ def _get_custodian_task(spec):
     else:
         jobs = [VaspJob(v_exe)]
 
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler()]
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
     params = {'jobs': [j.to_dict for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False, 'auto_gamma': False}
 
