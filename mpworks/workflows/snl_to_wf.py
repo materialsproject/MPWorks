@@ -36,7 +36,7 @@ def _get_custodian_task(spec):
 
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler()]
     params = {'jobs': [j.to_dict for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False, 'auto_gamma': False}
 
     return VaspCustodianTask(params)
 
