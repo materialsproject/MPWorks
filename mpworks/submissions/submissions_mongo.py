@@ -51,7 +51,8 @@ class SubmissionMongoAdapter(FWSerializable):
         self.jobs.ensure_index('submitter_email')
 
     def _get_next_submission_id(self):
-        return self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_submission_id': 1}})['next_submission_id']
+        return self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_submission_id': 1}})[
+            'next_submission_id']
 
     def _restart_id_assigner_at(self, next_submission_id):
         self.id_assigner.remove()
@@ -72,6 +73,11 @@ class SubmissionMongoAdapter(FWSerializable):
         self.jobs.insert(d)
 
         return d['submission_id']
+
+    def resubmit_submission(self, submission_id):
+        self.jobs.update(
+            {'submission_id': submission_id}, {'$set': {'state': 'submitted'}, 'state_details': {}, 'task_dict': {}})
+
 
     def cancel_submission(self, submission_id):
         # TODO: implement me
@@ -206,6 +212,7 @@ class SubmissionProcessor():
         lp = LaunchPad.from_file(l_file)
 
         return SubmissionProcessor(sma, lp)
+
 
 if __name__ == '__main__':
     sp = SubmissionProcessor.auto_load()
