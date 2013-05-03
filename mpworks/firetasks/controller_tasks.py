@@ -49,14 +49,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(
                 FireWork(
                     [VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(),
-                     _get_custodian_task(spec)], spec, fw_id=-10))
+                     _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-10))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion',
                     '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
-                FireWork([VaspToDBTask()], spec, fw_id=-9))
+                FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=-9))
             connections[-10] = -9
 
             # run GGA Uniform
@@ -65,7 +65,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec.update(_get_metadata(snl))
             fws.append(FireWork(
                 [VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}),
-                 _get_custodian_task(spec)], spec, fw_id=-8))
+                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-8))
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
@@ -73,7 +73,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
-                FireWork([VaspToDBTask({'parse_uniform': True})], spec, fw_id=-7))
+                FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=spec['task_type'], fw_id=-7))
             connections[-8] = -7
 
             # run GGA Band structure
@@ -81,14 +81,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict()}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}),
-                                 _get_custodian_task(spec)], spec, fw_id=-6))
+                                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-6))
             connections[-7] = -6
 
             # insert into DB - GGA Band structure
             spec = {'task_type': 'VASP db insertion',
                     '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
-            fws.append(FireWork([VaspToDBTask({})], spec, fw_id=-5))
+            fws.append(FireWork([VaspToDBTask({})], spec, name=spec['task_type'], fw_id=-5))
             connections[-6] = -5
 
             wf = Workflow(fws, connections)
