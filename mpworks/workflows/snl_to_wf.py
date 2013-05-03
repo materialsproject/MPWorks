@@ -130,10 +130,13 @@ def snl_to_wf(snl, do_bandstructure=True):
             fws.append(FireWork([AddEStructureTask()], spec, fw_id=12))
             connections[11] = 12
 
-    return Workflow(fws, connections)
+    return Workflow(fws, connections, name=snl.structure.composition.alphabetical_formula)
 
 
 def snl_to_wf_ggau(snl):
+
+    # TODO: add WF meta
+
     fws = []
     connections = {}
 
@@ -141,7 +144,6 @@ def snl_to_wf_ggau(snl):
     spec = _snl_to_spec(snl, enforce_gga=False)
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, fw_id=1))
-    wf_meta = _get_metadata(snl)
 
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
@@ -152,9 +154,8 @@ def snl_to_wf_ggau(snl):
     mpvis = MPVaspInputSet()
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
-    wf_meta['vaspinputset'] = mpvis.to_dict
 
-    return Workflow(fws, connections, wf_meta)
+    return Workflow(fws, connections, name=snl.structure.composition.alphabetical_formula)
 
 
 if __name__ == '__main__':
