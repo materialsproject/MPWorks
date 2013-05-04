@@ -10,6 +10,7 @@ from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, \
     SetupStaticRunTask, SetupNonSCFTask
+from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
 from pymatgen.matproj.snl import StructureNL
@@ -131,7 +132,7 @@ def snl_to_wf(snl, do_bandstructure=True):
             fws.append(FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=12))
             connections[11] = 12
 
-    return Workflow(fws, connections, name=snl.structure.composition.alphabetical_formula)
+    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 
 
 def snl_to_wf_ggau(snl):
@@ -156,7 +157,7 @@ def snl_to_wf_ggau(snl):
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
-    return Workflow(fws, connections, name=snl.structure.composition.alphabetical_formula)
+    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 
 
 if __name__ == '__main__':
