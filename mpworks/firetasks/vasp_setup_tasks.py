@@ -62,6 +62,7 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
+<<<<<<< HEAD
         user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
         user_incar_settings.update({"NPAR": 2})
         structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
@@ -74,6 +75,20 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         else:
             mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
             for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+=======
+        user_incar_settings= MaterialsProjectNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings.update({"NPAR":2})
+        structure = MaterialsProjectNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
+
+        if self.line:
+            mpnscfvip = MaterialsProjectNonSCFVaspInputSet(user_incar_settings, mode="Line")
+            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+                v.write_file(os.path.join(os.getcwd(), k))
+            kpath = HighSymmKpath(structure)
+        else:
+            mpnscfvip = MaterialsProjectNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
+            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+>>>>>>> 45582525ed6da99d77ea8432d396f09bbd45045a
                 v.write_file(os.path.join(os.getcwd(), k))
 
         if self.line:
