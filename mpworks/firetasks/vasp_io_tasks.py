@@ -9,7 +9,7 @@ import shutil
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from mpworks.drones.matproj_vaspdrone import MatprojVaspDrone
+from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -51,7 +51,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
                          'vasprun.xml', 'CHGCAR', 'OSZICAR']
         self.files = parameters.get('files', default_files)  # files to move
-        self.extension = parameters.get('extension', '')  # e.g., 'relax2' means to move relax2 files
+        self.extension = parameters.get('extension',
+                                        '')  # e.g., 'relax2' means to move relax2 files
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
 
     def run_task(self, fw_spec):
@@ -60,7 +61,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = os.path.join(prev_dir, file + self.extension)
             if file == 'POTCAR':
-                prev_filename = os.path.join(prev_dir, file)  # no extension gets added to POTCAR files
+                prev_filename = os.path.join(prev_dir,
+                                             file)  # no extension gets added to POTCAR files
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
@@ -83,28 +85,34 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.parse_uniform = self.get('parse_uniform', False)
-        self.additional_fields = self.get('additional_fields', None)
+        self.additional_fields = self.get('additional_fields', {})
         self.update_duplicates = self.get('update_duplicates', False)
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-
-        # TODO: should the PATH of DB_LOC point to the file not the dir? probably...
-
+        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
-        db_path = os.path.join(db_dir, 'db.json')
+        db_path = os.path.join(db_dir, 'tasks_db.json')
+
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MatprojVaspDrone(
+            drone = MPVaspDrone(
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
                 collection=db_creds['collection'], parse_dos=self.parse_uniform,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
-            t_id = drone.assimilate(prev_dir)
+            t_id, d = drone.assimilate(prev_dir)
 
-        # TODO: decide what data to store (if any)
+        mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
+        snlgroup_id = d['snlgroup_id_final'] if 'snlgroup_id_final' in d else d['snlgroup_id']
+        update_spec.update({'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id})
+
+        print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
-        return FWAction(stored_data=stored_data, update_spec={'prev_vasp_dir': prev_dir})
+        if d['state'] == 'successful':
+            update_spec['analysis'] = d['analysis']
+            return FWAction(stored_data=stored_data, update_spec=update_spec)
+        return FWAction(stored_data=stored_data, defuse_children=True)

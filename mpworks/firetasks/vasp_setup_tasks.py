@@ -2,8 +2,8 @@ import os
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import VaspInput
-from pymatgen.io.vaspio_set import MaterialsProjectVaspInputSet, MaterialsProjectStaticVaspInputSet, MaterialsProjectNonSCFInputSet
+from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
+from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -25,16 +25,17 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Static Task"
 
     def run_task(self, fw_spec):
+        user_incar_settings = {"NPAR": 2}
 
-        user_incar_settings={"NPAR":2}
-
-        MaterialsProjectStaticVaspInputSet.from_previous_vasp_run(os.getcwd(), user_incar_settings=user_incar_settings)
-        structure = MaterialsProjectStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
-                                                                     initial_structure=False, refined_structure=True)
+        MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
+                                                    user_incar_settings=user_incar_settings)
+        structure = MPStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
+                                                       initial_structure=False,
+                                                       refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
 
-        return FWAction(stored_data= {'refined_struct': structure[1].to_dict})
+        return FWAction(stored_data={'refined_struct': structure[1].to_dict})
 
 
 class SetupNonSCFTask(FireTaskBase, FWSerializable):
@@ -57,26 +58,26 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
+            outcar = Outcar(os.path.join(os.getcwd(), "OUTCAR"))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
-        user_incar_settings= MaterialsProjectNonSCFInputSet.get_incar_settings(vasp_run, outcar)
-        user_incar_settings.update({"NPAR":2})
-        structure = MaterialsProjectNonSCFInputSet.get_structure(vasp_run, outcar, initial_structure=True)
+        user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings.update({"NPAR": 2})
+        structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Line")
-            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Line")
+            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
-            mpnscfvip = MaterialsProjectNonSCFInputSet(user_incar_settings, mode="Uniform")
-            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
+            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
         if self.line:
-            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
+            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name": kpath.name})
         else:
             return FWAction()
 
@@ -88,13 +89,12 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup GGAU Task"
 
     def run_task(self, fw_spec):
-
         chgcar_start = False
 
         vi = VaspInput.from_directory(".")  # read the VaspInput from the previous run
 
         # figure out what GGA+U values to use and override them
-        mpvis = MaterialsProjectVaspInputSet()
+        mpvis = MPVaspInputSet()
         incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
         incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}  # LDAU values to use
         vi['INCAR'].update(incar_updates)  # override the +U keys
@@ -102,7 +102,7 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
             vi['INCAR']['ICHARG'] = 1
-            chgcar_start=True
+            chgcar_start = True
 
         vi['INCAR'].write_file('INCAR')  # write back the new INCAR to the current directory
 

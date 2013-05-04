@@ -59,8 +59,8 @@ class MPStructureNL(StructureNL):
     @property
     def to_dict(self):
         m_dict = super(MPStructureNL, self).to_dict
+        m_dict.update(self.snl_autometa)
         m_dict['snl_id'] = self.snl_id
-        m_dict['snl_autometa'] = self.snl_autometa
         m_dict['snlgroup_key'] = self.snlgroup_key
         return m_dict
 
@@ -120,14 +120,14 @@ class SNLGroup():
 
     @property
     def to_dict(self):
-        d = {}
+        d = self.snl_autometa
         d['created_at'] = self.created_at
         d['updated_at'] = self.updated_at
         d['snlgroup_id'] = self.snlgroup_id
         d['canonical_snl'] = self.canonical_snl.to_dict
         d['all_snl_ids'] = self.all_snl_ids
         d['num_snl'] = len(self.all_snl_ids)
-        d['snl_autometa'] = self.snl_autometa
+
         d['snlgroup_key'] = self.canonical_snl.snlgroup_key
         return d
 
