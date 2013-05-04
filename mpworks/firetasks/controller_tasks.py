@@ -73,7 +73,8 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_allow_fizzled_parents': True}
             spec.update(_get_metadata(snl))
             fws.append(
-                FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=spec['task_type'], fw_id=-7))
+                FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=spec['task_type'],
+                         fw_id=-7))
             connections[-8] = -7
 
             # run GGA Band structure
@@ -81,7 +82,8 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict()}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}),
-                                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-6))
+                                 _get_custodian_task(spec)], spec, name=spec['task_type'],
+                                fw_id=-6))
             connections[-7] = -6
 
             # insert into DB - GGA Band structure

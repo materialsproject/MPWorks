@@ -21,7 +21,6 @@ SPACEGROUP_TOLERANCE = 0.1  # as suggested by Shyue, 6/19/2012
 # TODO: add logging
 
 class SNLMongoAdapter(FWSerializable):
-
     def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):
         self.host = host
         self.port = port
@@ -67,7 +66,8 @@ class SNLMongoAdapter(FWSerializable):
         self.snlgroups.ensure_index('autometa.is_ordered')
 
     def _get_next_snl_id(self):
-        snl_id = self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_snl_id': 1}})['next_snl_id']
+        snl_id = self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_snl_id': 1}})[
+            'next_snl_id']
         return snl_id
 
     def _get_next_snlgroup_id(self):
@@ -76,13 +76,15 @@ class SNLMongoAdapter(FWSerializable):
 
     def restart_id_assigner_at(self, next_snl_id, next_snlgroup_id):
         self.id_assigner.remove()
-        self.id_assigner.insert({"next_snl_id": next_snl_id, "next_snlgroup_id":next_snlgroup_id})
+        self.id_assigner.insert({"next_snl_id": next_snl_id, "next_snlgroup_id": next_snlgroup_id})
 
     def add_snl(self, snl):
         snl_id = self._get_next_snl_id()
         sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(), sf.get_spacegroup_symbol(), sf.get_hall(), sf.get_crystal_system(), sf.get_lattice_type())
+        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(),
+                                       sf.get_spacegroup_symbol(), sf.get_hall(),
+                                       sf.get_crystal_system(), sf.get_lattice_type())
         snlgroup, add_new = self.add_mpsnl(mpsnl)
         return mpsnl, snlgroup.snlgroup_id
 
@@ -96,11 +98,13 @@ class SNLMongoAdapter(FWSerializable):
         # testing mode is used to see if something already exists in DB w/o adding it to the db
         add_new = True
 
-        for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key}, sort=[("num_snl", DESCENDING)]):
+        for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key},
+                                         sort=[("num_snl", DESCENDING)]):
             snlgroup = SNLGroup.from_dict(entry)
             if snlgroup.add_if_belongs(mpsnl):
                 add_new = False
-                print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
+                print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format(
+                    (mpsnl.snl_id, snlgroup.snlgroup_id))
                 if not testing_mode:
                     self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
                 break
@@ -110,7 +114,7 @@ class SNLMongoAdapter(FWSerializable):
             snlgroup_id = self._get_next_snlgroup_id()
             snlgroup = SNLGroup(snlgroup_id, mpsnl)
             if not testing_mode:
-                    self.snlgroups.insert(snlgroup.to_dict)
+                self.snlgroups.insert(snlgroup.to_dict)
 
         return snlgroup, add_new
 
@@ -131,7 +135,3 @@ class SNLMongoAdapter(FWSerializable):
         s_dir = os.environ['DB_LOC']
         s_file = os.path.join(s_dir, 'snl_db.yaml')
         return SNLMongoAdapter.from_file(s_file)
-
-if __name__ == '__main__':
-    sma = SNLMongoAdapter('mongodb01.nersc.gov', 27017, 'snl', 'FireWriter', 'tmd2tPC!')
-    sma._reset()

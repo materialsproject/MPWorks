@@ -51,7 +51,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
                          'vasprun.xml', 'CHGCAR', 'OSZICAR']
         self.files = parameters.get('files', default_files)  # files to move
-        self.extension = parameters.get('extension', '')  # e.g., 'relax2' means to move relax2 files
+        self.extension = parameters.get('extension',
+                                        '')  # e.g., 'relax2' means to move relax2 files
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
 
     def run_task(self, fw_spec):
@@ -60,7 +61,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = os.path.join(prev_dir, file + self.extension)
             if file == 'POTCAR':
-                prev_filename = os.path.join(prev_dir, file)  # no extension gets added to POTCAR files
+                prev_filename = os.path.join(prev_dir,
+                                             file)  # no extension gets added to POTCAR files
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
@@ -88,7 +90,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-        update_spec={'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
+        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')

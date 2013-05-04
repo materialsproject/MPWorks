@@ -33,16 +33,17 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Static Task"
 
     def run_task(self, fw_spec):
+        user_incar_settings = {"NPAR": 2}
 
-        user_incar_settings={"NPAR":2}
-
-        MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(), user_incar_settings=user_incar_settings)
+        MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
+                                                    user_incar_settings=user_incar_settings)
         structure = MPStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
-                                                                     initial_structure=False, refined_structure=True)
+                                                       initial_structure=False,
+                                                       refined_structure=True)
         # redo POTCAR - this is necessary whenever you change a Structure
         # because element order might change!! (learned the hard way...) -AJ
 
-        return FWAction(stored_data= {'refined_struct': structure[1].to_dict})
+        return FWAction(stored_data={'refined_struct': structure[1].to_dict})
 
 
 class SetupNonSCFTask(FireTaskBase, FWSerializable):
@@ -65,26 +66,26 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         try:
             vasp_run = Vasprun("vasprun.xml", parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(),"OUTCAR"))
+            outcar = Outcar(os.path.join(os.getcwd(), "OUTCAR"))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
 
-        user_incar_settings= MPNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
-        user_incar_settings.update({"NPAR":2})
+        user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings.update({"NPAR": 2})
         structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
 
         if self.line:
             mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Line")
-            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
             mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
-            for k,v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
         if self.line:
-            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name":kpath.name})
+            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name": kpath.name})
         else:
             return FWAction()
 
@@ -96,7 +97,6 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup GGAU Task"
 
     def run_task(self, fw_spec):
-
         chgcar_start = False
 
         vi = VaspInput.from_directory(".")  # read the VaspInput from the previous run
@@ -110,7 +110,7 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
             vi['INCAR']['ICHARG'] = 1
-            chgcar_start=True
+            chgcar_start = True
 
         vi['INCAR'].write_file('INCAR')  # write back the new INCAR to the current directory
 
