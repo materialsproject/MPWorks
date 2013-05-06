@@ -1,7 +1,7 @@
 import glob
 import os
 import re
-from mpworks.workflows.wf_utils import last_relaxation
+from mpworks.workflows.wf_utils import last_relax
 from pymatgen import zopen
 
 __author__ = 'Anubhav Jain'
@@ -92,7 +92,7 @@ class SignalDetectorSimple(SignalDetector):
         for filename in self.filename_list:
             #find the strings that match in the file
             if not self.ignore_nonexistent_file or os.path.exists(os.path.join(dir_name, filename)):
-                f = last_relaxation(os.path.join(dir_name, filename))
+                f = last_relax(os.path.join(dir_name, filename))
                 errors = string_list_in_file(self.signames_targetstrings.values(), f, ignore_case=self.ignore_case)
                 if self.invert_search:
                     errors_inverted = [item for item in self.targetstrings_signames.keys() if item not in errors]
@@ -194,14 +194,14 @@ class SegFaultSignal(SignalDetector):
 class VASPInputsExistSignal(SignalDetector):
 
     def detect(self, dir_name):
-        names = [last_relaxation(os.path.join(dir_name, x)) for x in ['POSCAR', 'INCAR', 'KPOINTS', 'POTCAR']]
+        names = [last_relax(os.path.join(dir_name, x)) for x in ['POSCAR', 'INCAR', 'KPOINTS', 'POTCAR']]
         return set() if all([os.path.exists(file_name) for file_name in names]) and all([os.stat(file_name).st_size > 0 for file_name in names]) else set(["INPUTS_DONT_EXIST"])
 
 
 class VASPOutputsExistSignal(SignalDetector):
 
     def detect(self, dir_name):
-        names = [last_relaxation(os.path.join(dir_name, x)) for x in ['OUTCAR', 'CONTCAR', 'OSZICAR', 'vasprun.xml', 'CHGCAR', 'vasp.out']]
+        names = [last_relax(os.path.join(dir_name, x)) for x in ['OUTCAR', 'CONTCAR', 'OSZICAR', 'vasprun.xml', 'CHGCAR', 'vasp.out']]
         return set() if all([os.path.exists(file_name) for file_name in names]) and os.stat(names[0]).st_size > 0 else set(["OUTPUTS_DONT_EXIST"])
 
 

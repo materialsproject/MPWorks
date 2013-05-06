@@ -10,13 +10,14 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
+
 def _get_metadata(snl):
     md = {'run_tags': ['auto generation v1.0']}
-    if '_materialsproject' in snl.data and 'submission_id' in snl.data[
-        '_materialsproject']:
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         md['submission_id'] = snl.data['_materialsproject']['submission_id']
 
     return md
+
 
 def _get_custodian_task(spec):
     task_type = spec['task_type']
@@ -28,12 +29,13 @@ def _get_custodian_task(spec):
 
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
     params = {'jobs': [j.to_dict for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False, 'auto_gamma': False}
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False,
+              'auto_gamma': False}
 
     return VaspCustodianTask(params)
 
-def last_relaxation(filename):
 
+def last_relax(filename):
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
         return relaxations[-1]
