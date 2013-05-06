@@ -12,6 +12,7 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
+from mpworks.workflows.wf_utils import last_relaxation
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 
 __author__ = 'Anubhav Jain'
@@ -45,7 +46,7 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters=None):
         """
-        :param parameters: (dict) Potential keys are 'extension', 'use_CONTCAR', and 'files'
+        :param parameters: (dict) Potential keys are 'use_CONTCAR', and 'files'
         """
         parameters = parameters if parameters else {}
         self.update(parameters)  # store the parameters explicitly set by the user
@@ -53,18 +54,15 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
                          'vasprun.xml', 'CHGCAR', 'OSZICAR']
         self.files = parameters.get('files', default_files)  # files to move
-        self.extension = parameters.get('extension',
-                                        '')  # e.g., 'relax2' means to move relax2 files
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
+        if self.use_contcar:
+            default_files.append('CONTCAR')
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
 
         for file in self.files:
-            prev_filename = os.path.join(prev_dir, file + self.extension)
-            if file == 'POTCAR':
-                prev_filename = os.path.join(prev_dir,
-                                             file)  # no extension gets added to POTCAR files
+            prev_filename = last_relaxation(os.path.join(prev_dir, file))
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
             shutil.copy2(prev_filename, dest_file)
@@ -120,10 +118,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
-        output_dir = os.path.join(prev_dir, 'vasprun.xml')
-        relaxations = glob.glob('%s.relax*' % output_dir)
-        if relaxations:
-            output_dir = relaxations[-1]
+        output_dir = last_relaxation(os.path.join(prev_dir, 'vasprun.xml'))
 
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
         if ueh.check():

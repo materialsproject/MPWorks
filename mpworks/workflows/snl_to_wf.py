@@ -87,7 +87,7 @@ def snl_to_wf(snl, do_bandstructure=True):
                 '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
         fws.append(FireWork(
-            [VaspCopyTask({'extension': '.relax2'}), SetupGGAUTask(),
+            [VaspCopyTask(), SetupGGAUTask(),
              _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=10))
         connections[2].append(10)
 

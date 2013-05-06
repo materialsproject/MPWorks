@@ -47,7 +47,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork(
-                    [VaspCopyTask({'extension': '.relax2'}), SetupStaticRunTask(),
+                    [VaspCopyTask(), SetupStaticRunTask(),
                      _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-10))
 
             # insert into DB - GGA static
