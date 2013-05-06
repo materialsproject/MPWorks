@@ -86,7 +86,7 @@ def snl_to_wf(snl, do_bandstructure=True):
     tasks = [AddSNLTask()]
     spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict}
     fws.append(FireWork(tasks, spec, name=spec['task_type'], fw_id=0))
-    connections[0] = 1
+    connections[0] = [1]
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
@@ -98,14 +98,14 @@ def snl_to_wf(snl, do_bandstructure=True):
             '_allow_fizzled_parents': True}
     spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=2))
-    connections[1] = 2
+    connections[1] = [2]
 
     if do_bandstructure:
         spec = {'task_type': 'Controller: add Electronic Structure'}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=3))
-        connections[2] = 3
+        connections[2] = [3]
 
     # determine if GGA+U FW is needed
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
@@ -124,13 +124,13 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=11))
-        connections[10] = 11
+        connections[10] = [11]
 
         if do_bandstructure:
             spec = {'task_type': 'Controller: add Electronic Structure'}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=12))
-            connections[11] = 12
+            connections[11] = [12]
 
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 
