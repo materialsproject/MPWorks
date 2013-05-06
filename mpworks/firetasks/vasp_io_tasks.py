@@ -90,7 +90,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
-        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
+        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'], 'run_tags': fw_spec['run_tags']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
@@ -122,7 +122,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
         if ueh.check():
-            # TODO: add detour!
+            # TODO: add detour! make sure run_tags is put along with the spec...see controller task
             pass
 
         # not successful and not due to convergence problem - DEFUSE
