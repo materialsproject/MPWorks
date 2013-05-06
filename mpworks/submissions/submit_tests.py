@@ -38,7 +38,6 @@ def clear_env():
         if 'testing' not in db_creds['database']:
             raise ValueError('{} is not a testing database'.format(db_creds['database']))
 
-
     sma._reset()
     lp.reset('', require_password=False)
     snl._reset()
@@ -57,13 +56,16 @@ def submit_tests():
     if 'testing' not in str(sma.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
 
-    compounds={"Si": 149, "Al": 134}
+    # note: TiO2 is duplicated twice purposely, duplicate check should catch this
+    compounds = {"TiO2": 554278, "TiO2": 554439, "Si": 149, "Al": 134, "ZnO": 2133, "FeO": 18905,
+                 "LiCoO2": 561934, "LiFePO4": 585433, "GaAs": 2534, "Ge": 32, "PbTe": 19717,
+                 "YbO": 1216, "SiC": 567551, "Fe3C": 510623, "SiO2": 547211, "Na2O": 2352}
 
     sids = compounds.values()
     mpr = MPRester(api_key="flebb3pU1yfExlOc", host="www.materialsproject.org")
 
     for sid in sids:
-        s = mpr.get_structure_by_material_id(sid)
+        s = mpr.get_structure_by_material_id(sid, final=False)
 
         snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
         sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=None)
