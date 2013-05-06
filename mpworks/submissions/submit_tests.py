@@ -1,6 +1,7 @@
 import json
 import os
 from pymongo import MongoClient
+from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.submissions.submissions_mongo import SubmissionMongoAdapter
@@ -20,7 +21,9 @@ def clear_env():
     if 'testing' not in str(sma.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
 
-    lp = LaunchPad.auto_load()
+    l_dir = FWConfig().CONFIG_FILE_DIR
+    l_file = os.path.join(l_dir, 'my_launchpad.yaml')
+    lp = LaunchPad.from_file(l_file)
     if 'testing' not in str(lp.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
 
