@@ -1,0 +1,4 @@
+from mpworks.scripts.submissions_run import go_submissions
+
+if __name__ == '__main__':
+    go_submissions()
