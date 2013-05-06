@@ -25,7 +25,7 @@ def go_testing():
     m_description = 'This program is used to clear and submit jobs from the database'
 
     parser = ArgumentParser(description=m_description)
-    parser.add_argument('--clear', help='clear old databases', default=False, type=bool)
+    parser.add_argument('--clear', help='clear old databases', action='store_true')
     args = parser.parse_args()
     
     clear_and_submit(args.clear)
