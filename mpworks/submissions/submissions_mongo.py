@@ -118,12 +118,13 @@ class SubmissionProcessor():
         self.jobs = sma.jobs
         self.launchpad = launchpad
 
-    def run(self):
+    def run(self, sleep_time=None):
+        sleep_time = sleep_time if sleep_time else 30
         while True:
             self.submit_all_new_workflows()
             self.update_existing_workflows()
-            print 'sleeping 30s'
-            time.sleep(30)
+            print 'sleeping', sleep_time
+            time.sleep(sleep_time)
 
     def submit_all_new_workflows(self):
         last_id = -1

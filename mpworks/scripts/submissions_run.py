@@ -24,13 +24,12 @@ __date__ = "Jan 14, 2013"
 def go_submissions():
     m_description = 'This program is used to pull jobs from the Submissions database, create FireWorks workflows from those submissions, and then monitor all previous submissions for updates to state (so that the submission database can be updated)'
 
-    # no options yet ...
-    # TODO: add sleep time as arg
     parser = ArgumentParser(description=m_description)
+    parser.add_argument('--sleep', help='sleep time between loops', default=None, type=int)
     args = parser.parse_args()
 
     sp = SubmissionProcessor.auto_load()
-    sp.run()
+    sp.run(args.sleep)
 
 if __name__ == '__main__':
     go_submissions()
