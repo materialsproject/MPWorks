@@ -4,6 +4,7 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
+from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -27,8 +28,6 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         self.gap_cutoff = parameters.get('gap_cutoff', 0.5)  # see e-mail from Geoffroy, 5/1/2013
 
     def run_task(self, fw_spec):
-        from mpworks.workflows.snl_to_wf import _get_metadata, \
-            _get_custodian_task
         # TODO: only add the workflow if the gap is > 1.0 eV
         # TODO: add stored data?
 

@@ -1,15 +1,11 @@
-import os
-from custodian.vasp.jobs import VaspJob
-from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.controller_tasks import AddEStructureTask
-from mpworks.firetasks.custodian_task import VaspCustodianTask
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, \
-    SetupStaticRunTask, SetupNonSCFTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
+from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
@@ -25,21 +21,6 @@ __date__ = 'Mar 15, 2013'
 # TODO: add duplicate checks for DB task - don't want to add the same dir
 # twice!!
 # TODO: different walltime requirements and priority for DB task
-
-
-def _get_custodian_task(spec):
-    task_type = spec['task_type']
-    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
-    if 'optimize structure (2x)' in task_type:
-        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-    else:
-        jobs = [VaspJob(v_exe)]
-
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
-    params = {'jobs': [j.to_dict for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False, 'auto_gamma': False}
-
-    return VaspCustodianTask(params)
 
 
 def _snl_to_spec(snl, enforce_gga=True):
@@ -65,15 +46,6 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec.update(_get_metadata(snl))
 
     return spec
-
-
-def _get_metadata(snl):
-    md = {'run_tags': ['auto generation v1.0']}
-    if '_materialsproject' in snl.data and 'submission_id' in snl.data[
-        '_materialsproject']:
-        md['submission_id'] = snl.data['_materialsproject']['submission_id']
-
-    return md
 
 
 def snl_to_wf(snl, do_bandstructure=True):

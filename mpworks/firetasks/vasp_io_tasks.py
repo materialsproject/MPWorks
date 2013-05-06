@@ -3,9 +3,11 @@
 """
 
 """
+import glob
 import json
 import os
 import shutil
+from custodian.vasp.handlers import UnconvergedErrorHandler
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
@@ -113,6 +115,20 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
         if d['state'] == 'successful':
+            #TODO: make sure unconverged jobs are not marked successful
             update_spec['analysis'] = d['analysis']
             return FWAction(stored_data=stored_data, update_spec=update_spec)
+
+        # not successful - first test to see if UnconvergedHandler is needed
+        output_dir = os.path.join(prev_dir, 'vasprun.xml')
+        relaxations = glob.glob('%s.relax*' % output_dir)
+        if relaxations:
+            output_dir = relaxations[-1]
+
+        ueh = UnconvergedErrorHandler(output_filename=output_dir)
+        if ueh.check():
+            # TODO: add detour!
+            pass
+
+        # not successful and not due to convergence problem - DEFUSE
         return FWAction(stored_data=stored_data, defuse_children=True)
