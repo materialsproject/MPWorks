@@ -1,0 +1,4 @@
+from mpworks.scripts.submit_tests_run import go_testing()
+
+if __name__ == '__main__':
+    go_testing()
