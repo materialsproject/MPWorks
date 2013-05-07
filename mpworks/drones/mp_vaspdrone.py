@@ -107,7 +107,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
             d['snl'] = fw_dict['spec']['mpsnl']
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
             d['submission_id'] = fw_dict['spec'].get('submission_id')
-            d['run_tags'] = fw_dict['spec'].get('run_tags', [])
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
 
