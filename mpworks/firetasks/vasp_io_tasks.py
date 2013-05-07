@@ -124,7 +124,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         # not successful - first test to see if UnconvergedHandler is needed
         output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check() and 'unconverged handler' not in fw_spec['run_tags']:
+        if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags']:
             print 'Unconverged run! Creating dynamic FW...'
 
             spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
