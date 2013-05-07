@@ -1,6 +1,6 @@
 import itertools
 import datetime
-from pymatgen import Structure, PMGJSONDecoder, Molecule, SiteCollection, Composition
+from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from pymatgen.matproj.snl import StructureNL
 
@@ -30,7 +30,7 @@ def get_meta_from_structure(structure):
     #promixity warning:
     meta['proximity_warning'] = False
     for (s1, s2) in itertools.combinations(structure._sites, 2):
-        if s1.distance(s2) < SiteCollection.DISTANCE_TOLERANCE:
+        if s1.distance(s2) < Structure.DISTANCE_TOLERANCE:
             meta['proximity_warning'] = True
 
     return meta
