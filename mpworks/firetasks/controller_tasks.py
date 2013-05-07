@@ -92,6 +92,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(FireWork([VaspToDBTask({})], spec, name=spec['task_type'], fw_id=-5))
             connections[-6] = -5
 
+            # TODO: add WF meta
             wf = Workflow(fws, connections)
 
             return FWAction(additions=wf)
