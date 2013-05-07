@@ -1,4 +1,5 @@
 import glob
+import os
 from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from custodian.vasp.jobs import VaspJob
 from mpworks.firetasks.custodian_task import VaspCustodianTask
@@ -36,8 +37,17 @@ def _get_custodian_task(spec):
 
 
 def last_relax(filename):
+    if os.path.exists(filename):
+        return filename
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
         return relaxations[-1]
+    raise ValueError('Could not determine last relaxation of {}'.format(filename))
+
+
+def orig(filename):
+    orig = glob.glob('%s.orig' % filename)
+    if orig:
+        return orig[0]
     else:
         return filename
