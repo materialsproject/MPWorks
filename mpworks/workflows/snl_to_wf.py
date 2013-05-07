@@ -32,7 +32,6 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp'] = {}
     spec['vasp']['incar'] = mpvis.get_incar(structure).to_dict
     spec['vasp']['incar']['NPAR'] = 2
-    spec['vasp']['incar']['NELM'] = 10  # TODO: REMOVE ME!!!
     spec['vasp']['poscar'] = mpvis.get_poscar(structure).to_dict
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
