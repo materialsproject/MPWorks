@@ -1,4 +1,5 @@
 import os
+from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
@@ -36,6 +37,19 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         # because element order might change!! (learned the hard way...) -AJ
 
         return FWAction(stored_data={'refined_struct': structure[1].to_dict})
+
+
+class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
+    """
+    Assumes the current directory contains an unconverged job. Fixes it and runs it
+    """
+
+    _fw_name = "Unconverged Handler Task"
+
+    def run_task(self, fw_spec):
+        ueh = UnconvergedErrorHandler()
+        custodian_out = ueh.correct()
+        return FWAction(stored_data={'error_list': custodian_out['errors']})
 
 
 class SetupNonSCFTask(FireTaskBase, FWSerializable):

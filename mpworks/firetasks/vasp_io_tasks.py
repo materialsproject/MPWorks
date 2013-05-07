@@ -13,6 +13,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -62,6 +63,9 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = fw_spec['prev_vasp_dir']
+
+        if '$ALL' in self.files:
+            self.files = os.listdir(prev_dir)
 
         for file in self.files:
             prev_filename = last_relax(os.path.join(prev_dir, file))
@@ -123,10 +127,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
         if ueh.check() and 'unconverged handler' not in fw_spec['run_tags']:
             print 'Unconverged run! Creating dynamic FW...'
-            spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
+
+            spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
                     'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                     'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
                     '_dupefinder': DupeFinderVasp().to_dict()}
+
             snl = StructureNL.from_dict(spec['mpsnl'])
             spec.update(_get_metadata(snl))
             spec['run_tags'].append('unconverged_handler')
@@ -134,9 +140,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fws = []
             connections = {}
 
-            fws.append(
-                FireWork([VaspCopyTask(), SetupStaticRunTask(), _get_custodian_task(spec)], spec,
-                         name=spec['task_type'], fw_id=-2))
+            fws.append(FireWork(
+                [VaspCopyTask(spec={'files': {'$ALL'}}), SetupUnconvergedHandlerTask(),
+                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-2))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
@@ -150,7 +156,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             wf = Workflow(fws, connections)
 
             return FWAction(detours=wf)
-
 
         # not successful and not due to convergence problem - DEFUSE
         return FWAction(stored_data=stored_data, defuse_children=True)
