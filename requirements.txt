@@ -2,5 +2,5 @@ numpy>=1.7.0
 pymatgen>=2.5
 pymatgen-db>=0.3.4
 fireworks>=0.1
-custodian>=0.3
+custodian>=0.4
 pymongo>=2.4.2
