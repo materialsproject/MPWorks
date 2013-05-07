@@ -200,4 +200,5 @@ class MPVaspDrone(VaspToDbTaskDrone):
         if len(critical_signals) > 0 and d['state'] == "successful":
             d["state"] = "error"
 
+        d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
