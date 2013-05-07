@@ -36,7 +36,6 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
     spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
-    spec['_priority'] = 2
     # TODO: restore category
     # spec['_category'] = 'Materials Project'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
@@ -62,6 +61,7 @@ def snl_to_wf(snl, do_bandstructure=True):
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
+    spec['_priority'] = 2
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=spec['task_type'], fw_id=1))
 
@@ -73,7 +73,7 @@ def snl_to_wf(snl, do_bandstructure=True):
     connections[1] = [2]
 
     if do_bandstructure:
-        spec = {'task_type': 'Controller: add Electronic Structure'}
+        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=3))
@@ -86,20 +86,21 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec = {'task_type': 'GGA+U optimize structure (2x)',
                 '_dupefinder': DupeFinderVasp().to_dict()}
         spec.update(_get_metadata(snl))
+        spec['_priority'] = 2
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
              _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=10))
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion',
-                '_allow_fizzled_parents': True}
+                '_allow_fizzled_parents': True, '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=11))
         connections[10] = [11]
 
         if do_bandstructure:
-            spec = {'task_type': 'Controller: add Electronic Structure'}
+            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=12))
             connections[11] = [12]

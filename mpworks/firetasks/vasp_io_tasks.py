@@ -131,7 +131,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
                     'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                     'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
-                    '_dupefinder': DupeFinderVasp().to_dict()}
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 4}
 
             snl = StructureNL.from_dict(spec['mpsnl'])
             spec.update(_get_metadata(snl))
@@ -145,7 +145,8 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                  _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-2))
 
             # insert into DB - GGA static
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
+            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
+                    '_priority': 4}
             spec.update(_get_metadata(snl))
             spec['run_tags'].append('unconverged_handler')
             fws.append(

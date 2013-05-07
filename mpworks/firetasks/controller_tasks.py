@@ -1,3 +1,4 @@
+import time
 from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
@@ -28,8 +29,10 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         self.gap_cutoff = parameters.get('gap_cutoff', 0.5)  # see e-mail from Geoffroy, 5/1/2013
 
     def run_task(self, fw_spec):
-        # TODO: only add the workflow if the gap is > 1.0 eV
         # TODO: add stored data?
+        print 'sleeping 10s for Mongo'
+        time.sleep(10)
+        print 'done sleeping'
 
         if fw_spec['analysis']['bandgap'] >= self.gap_cutoff:
             type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
@@ -43,7 +46,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec = fw_spec  # pass all the items from the current spec to the new
             #  one
             spec.update({'task_type': '{} static'.format(type_name),
-                         '_dupefinder': DupeFinderVasp().to_dict()})
+                         '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2})
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork(
@@ -52,7 +55,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion',
-                    '_allow_fizzled_parents': True}
+                    '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=-9))
@@ -60,7 +63,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # run GGA Uniform
             spec = {'task_type': '{} Uniform'.format(type_name),
-                    '_dupefinder': DupeFinderVasp().to_dict()}
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork(
                 [VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}),
@@ -69,7 +72,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Uniform
             spec = {'task_type': 'VASP db insertion',
-                    '_allow_fizzled_parents': True}
+                    '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=spec['task_type'],
@@ -78,7 +81,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # run GGA Band structure
             spec = {'task_type': '{} band structure'.format(type_name),
-                    '_dupefinder': DupeFinderVasp().to_dict()}
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}),
                                  _get_custodian_task(spec)], spec, name=spec['task_type'],
@@ -87,7 +90,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Band structure
             spec = {'task_type': 'VASP db insertion',
-                    '_allow_fizzled_parents': True}
+                    '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([VaspToDBTask({})], spec, name=spec['task_type'], fw_id=-5))
             connections[-6] = -5
