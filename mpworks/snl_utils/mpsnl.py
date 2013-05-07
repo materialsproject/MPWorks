@@ -1,6 +1,6 @@
 import itertools
 import datetime
-from pymatgen import Structure, PMGJSONDecoder, Molecule, SiteCollection, Composition
+from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from pymatgen.matproj.snl import StructureNL
 
