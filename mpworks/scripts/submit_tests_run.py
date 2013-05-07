@@ -25,10 +25,11 @@ def go_testing():
     m_description = 'This program is used to clear and submit jobs from the database'
 
     parser = ArgumentParser(description=m_description)
-    parser.add_argument('--clear', help='clear old databases', action='store_true')
+    parser.add_argument('-c', '--clear', help='clear old databases', action='store_true')
+    parser.add_argument('-m', '--max', help='maximum number of compounds', type=int, default=None)
     args = parser.parse_args()
     
-    clear_and_submit(args.clear)
+    clear_and_submit(args.clear, args.max)
 
 if __name__ == '__main__':
     go_testing()
