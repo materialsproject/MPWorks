@@ -10,10 +10,12 @@ import shutil
 from custodian.vasp.handlers import UnconvergedErrorHandler
 
 from fireworks.utilities.fw_serializers import FWSerializable
-from fireworks.core.firework import FireTaskBase, FWAction
+from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
-from mpworks.workflows.wf_utils import last_relax
+from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
+from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -113,17 +115,42 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         print 'ENTERED task id:', t_id
         stored_data = {'task_id': t_id}
         if d['state'] == 'successful':
-            #TODO: make sure unconverged jobs are not marked successful
             update_spec['analysis'] = d['analysis']
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
         output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
-
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check():
-            # TODO: add detour! make sure run_tags is put along with the spec...see controller task
-            pass
+        if ueh.check() and 'unconverged handler' not in fw_spec['run_tags']:
+            print 'Unconverged run! Creating dynamic FW...'
+            spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
+                    'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
+                    'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
+                    '_dupefinder': DupeFinderVasp().to_dict()}
+            snl = StructureNL.from_dict(spec['mpsnl'])
+            spec.update(_get_metadata(snl))
+            spec['run_tags'].append('unconverged_handler')
+
+            fws = []
+            connections = {}
+
+            fws.append(
+                FireWork([VaspCopyTask(), SetupStaticRunTask(), _get_custodian_task(spec)], spec,
+                         name=spec['task_type'], fw_id=-2))
+
+            # insert into DB - GGA static
+            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True}
+            spec.update(_get_metadata(snl))
+            spec['run_tags'].append('unconverged_handler')
+            fws.append(
+                FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=-1))
+            connections[-2] = -1
+
+            # TODO: add WF meta
+            wf = Workflow(fws, connections)
+
+            return FWAction(detours=wf)
+
 
         # not successful and not due to convergence problem - DEFUSE
         return FWAction(stored_data=stored_data, defuse_children=True)
