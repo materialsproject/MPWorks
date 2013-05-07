@@ -1,6 +1,6 @@
 import glob
 import os
-from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
+from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
 from custodian.vasp.jobs import VaspJob
 from mpworks.firetasks.custodian_task import VaspCustodianTask
 
@@ -28,7 +28,7 @@ def _get_custodian_task(spec):
     else:
         jobs = [VaspJob(v_exe)]
 
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
     params = {'jobs': [j.to_dict for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False,
               'auto_gamma': False}
