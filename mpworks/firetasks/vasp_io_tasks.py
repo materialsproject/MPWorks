@@ -140,7 +140,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             connections = {}
 
             fws.append(FireWork(
-                [VaspCopyTask({'files': {'$ALL'}}), SetupUnconvergedHandlerTask(),
+                [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'], 'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
                  _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-2))
 
             # insert into DB - GGA static
