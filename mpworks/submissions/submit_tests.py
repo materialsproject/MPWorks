@@ -51,7 +51,7 @@ def clear_env():
     db['dos_fs.files'].remove()
 
 
-def submit_tests(ncompounds=None):
+def submit_tests(names=None):
     sma = SubmissionMongoAdapter.auto_load()
     if 'testing' not in str(sma.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
@@ -61,23 +61,19 @@ def submit_tests(ncompounds=None):
                  "LiCoO2": 561934, "LiFePO4": 585433, "GaAs": 2534, "Ge": 32, "PbTe": 19717,
                  "YbO": 1216, "SiC": 567551, "Fe3C": 510623, "SiO2": 547211, "Na2O": 2352,
                  "InSb (unstable)": 10148, "Sb2O5": 1705, "N2O5": 554368, "BaTiO3": 5020,
-                 "Rb2O": 1394, "TiO2": 554278, "TiO2": 554439}
+                 "Rb2O": 1394, "TiO2": 554278, "TiO2 (2)": 554439}
 
-    sids = compounds.values()
     mpr = MPRester(api_key="flebb3pU1yfExlOc", host="www.materialsproject.org")
 
-    compounds = 0
-    for sid in sids:
-        if ncompounds and compounds == ncompounds:
-            break
-        s = mpr.get_structure_by_material_id(sid, final=False)
+    for name, sid in compounds.iteritems():
+        if not names or name in names:
+            s = mpr.get_structure_by_material_id(sid, final=False)
 
-        snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
-        sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=None)
-        compounds += 1
+            snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
+            sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=None)
 
 
-def clear_and_submit(clear=False, ncompounds=None):
+def clear_and_submit(clear=False, names=None):
     if clear:
         clear_env()
-    submit_tests(ncompounds=ncompounds)
+    submit_tests(names=names)
