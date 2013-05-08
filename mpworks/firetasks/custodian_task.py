@@ -22,7 +22,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         self.update(parameters)
         self.jobs = [VaspJob.from_dict(d) for d in self['jobs']]
-        self.handlers = [PMGJSONDecoder.decode(d) for d in self['handlers']]
+        dec = PMGJSONDecoder()
+        self.handlers = [dec.process_decoded(d) for d in self['handlers']]
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):

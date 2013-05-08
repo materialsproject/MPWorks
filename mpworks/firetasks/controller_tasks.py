@@ -50,7 +50,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec.update(_get_metadata(snl))
             fws.append(
                 FireWork(
-                    [VaspCopyTask(), SetupStaticRunTask(),
+                    [VaspCopyTask({'use_CONTCAR': True}), SetupStaticRunTask(),
                      _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-10))
 
             # insert into DB - GGA static
@@ -66,7 +66,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork(
-                [VaspCopyTask(), SetupNonSCFTask({'mode': 'uniform'}),
+                [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
                  _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-8))
             connections[-9] = -8
 
@@ -83,7 +83,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec = {'task_type': '{} band structure'.format(type_name),
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
             spec.update(_get_metadata(snl))
-            fws.append(FireWork([VaspCopyTask(), SetupNonSCFTask({'mode': 'line'}),
+            fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
                                  _get_custodian_task(spec)], spec, name=spec['task_type'],
                                 fw_id=-6))
             connections[-7] = -6
