@@ -37,4 +37,4 @@ if __name__ == '__main__':
                 snldb.add_snl(snl)
         except:
             traceback.print_exc()
-            print mps['mps_id']
+            print 'ERROR - mps id:', mps['mps_id']

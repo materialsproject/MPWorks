@@ -41,3 +41,5 @@ nosetests.xml
 
 # Pycharm
 .idea/*
+mpworks/legacy/actions/automation.yaml
+mpworks/legacy/actions/snl.yaml
