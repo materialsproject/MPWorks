@@ -1,4 +1,3 @@
-import itertools
 import datetime
 from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
@@ -94,8 +93,8 @@ class MPStructureNL(StructureNL):
             snl2.data['_materialsproject'] = {}
 
         snl2.data['_materialsproject']['snl_id'] = snl_id
-
-        sg = snl2.data['materialsproject']['spacegroup']
+        snl2.data['_materialsproject']['spacegroup'] = {}
+        sg = snl2.data['_materialsproject']['spacegroup']
         sg['symbol'] = sg_symbol
         sg['number'] = sg_num
         sg['point_group'] = pointgroup
