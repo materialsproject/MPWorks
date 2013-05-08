@@ -1,3 +1,4 @@
+import os
 import traceback
 from pymongo import MongoClient
 import yaml
@@ -14,7 +15,11 @@ __date__ = 'May 08, 2013'
 
 if __name__ == '__main__':
 
-    with open('automation.yaml') as f:
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    automation_f = os.path.join(module_dir, 'automation.yaml')
+    snl_f = os.path.join(module_dir, 'snl.yaml')
+
+    with open(automation_f) as f:
         y = yaml.load(f)
 
     mc = MongoClient(y['host'], y['port'])
@@ -22,7 +27,7 @@ if __name__ == '__main__':
 
     db.authenticate(y['username'], y['password'])
 
-    snldb = SNLMongoAdapter.from_file('snl.yaml')
+    snldb = SNLMongoAdapter.from_file(snl_f)
     snldb._reset()
 
     for mps in db.mps.find():
