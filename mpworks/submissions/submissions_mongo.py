@@ -24,7 +24,8 @@ __date__ = 'Apr 26, 2013'
 class SubmissionMongoAdapter(FWSerializable):
     # This is the user interface to submissions
 
-    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):
+    def __init__(self, host='localhost', port=27017, db='snl', username=None,
+                 password=None):
         self.host = host
         self.port = port
         self.db = db
@@ -51,7 +52,8 @@ class SubmissionMongoAdapter(FWSerializable):
         self.jobs.ensure_index('submitter_email')
 
     def _get_next_submission_id(self):
-        return self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_submission_id': 1}})[
+        return self.id_assigner.find_and_modify(
+            query={}, update={'$inc': {'next_submission_id': 1}})[
             'next_submission_id']
 
     def _restart_id_assigner_at(self, next_submission_id):
@@ -76,7 +78,9 @@ class SubmissionMongoAdapter(FWSerializable):
 
     def resubmit(self, submission_id):
         self.jobs.update(
-            {'submission_id': submission_id}, {'$set': {'state': 'submitted', 'state_details': {}, 'task_dict': {}}})
+            {'submission_id': submission_id},
+            {'$set': {'state': 'submitted', 'state_details': {},
+                      'task_dict': {}}})
 
 
     def cancel_submission(self, submission_id):
@@ -86,23 +90,27 @@ class SubmissionMongoAdapter(FWSerializable):
         raise NotImplementedError()
 
     def get_state(self, submission_id):
-        info = self.jobs.find_one({'submission_id': submission_id}, {'state': 1, 'state_details': 1, 'task_dict': 1})
+        info = self.jobs.find_one(
+            {'submission_id': submission_id},
+            {'state': 1, 'state_details': 1, 'task_dict': 1})
         return info['state'], info['state_details'], info['task_dict']
 
     def to_dict(self):
         """
         Note: usernames/passwords are exported as unencrypted Strings!
         """
-        d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
+        d = {'host': self.host, 'port': self.port, 'db': self.db,
+             'username': self.username,
              'password': self.password}
         return d
 
     def update_state(self, submission_id, state, state_details, task_dict):
-        self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': state}})
+        self.jobs.find_and_modify({'submission_id': submission_id},
+                                  {'$set': {'state': state}})
 
     @classmethod
     def from_dict(cls, d):
-        return SubmissionMongoAdapter(d['host'], d['port'], d['db'], d['username'], d['password'])
+        return cls(d['host'], d['port'], d['db'], d['username'], d['password'])
 
     @classmethod
     def auto_load(cls):
@@ -133,7 +141,8 @@ class SubmissionProcessor():
 
     def submit_new_workflow(self):
         # finds a submitted job, creates a workflow, and submits it to FireWorks
-        job = self.jobs.find_and_modify({'state': 'submitted'}, {'$set': {'state': 'waiting'}})
+        job = self.jobs.find_and_modify({'state': 'submitted'},
+                                        {'$set': {'state': 'waiting'}})
         if job:
             submission_id = job['submission_id']
             try:
@@ -146,14 +155,17 @@ class SubmissionProcessor():
                 self.launchpad.add_wf(wf)
                 print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
-                self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'error'}})
+                self.jobs.find_and_modify({'submission_id': submission_id},
+                                          {'$set': {'state': 'error'}})
                 traceback.print_exc()
 
             return submission_id
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+        for submission_id in self.jobs.find(
+                {'status': {'$in': ['waiting', 'running']}},
+                {'submission_id': 1}):
             submission_id = str(submission_id['submission_id'])
             try:
                 # get a fw_id with this submission id
@@ -184,17 +196,21 @@ class SubmissionProcessor():
                             machine_name = 'mendel/carver'
                         break
                 if fw.state == 'RESERVED':
-                    details = 'queued to run: {} on {}'.format(fw.spec['task_type'], machine_name)
+                    details = 'queued to run: {} on {}'.format(
+                        fw.spec['task_type'], machine_name)
                 if fw.state == 'RUNNING':
-                    details = 'running: {} on {}'.format(fw.spec['task_type'], machine_name)
+                    details = 'running: {} on {}'.format(
+                        fw.spec['task_type'], machine_name)
                 if fw.state == 'FIZZLED':
-                    details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
+                    details = 'fizzled while running: {} on {}'.format(
+                        fw.spec['task_type'], machine_name)
 
         m_taskdict = {}
         states = [fw.state for fw in self.fws]
         if any([s == 'COMPLETED' for s in states]):
             for fw in wf.fws:
-                if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
+                if fw.state == 'COMPLETED' and \
+                        fw.spec['task_type'] == 'VASP db insertion':
                     for l in fw.launches:
                         if l.state == 'COMPLETED':
                             t_id = l.action.stored_data['task_id']
