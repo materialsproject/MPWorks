@@ -1,4 +1,6 @@
 import datetime
+import traceback
+from pymongo import MongoClient
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 
@@ -14,10 +16,9 @@ def mps_dict_to_snl(mps_dict):
     m = mps_dict
 
     if 'deprecated' in m['about']['metadata']['info'] and m['about']['metadata']['info']['deprecated']:
-        print 'SKIP - deprecated structure'
         return None
 
-    mps_ids = mps_dict[m['mps_id']]
+    mps_ids = [m['mps_id']]
 
     remarks = []
     for remark in m['about']['metadata']['remarks']:
@@ -51,7 +52,10 @@ def mps_dict_to_snl(mps_dict):
     for a in m['about']['acknowledgements']:
         authors.append({'name': a['name'], 'email': a['email']})
 
-    references = '\n'.join([m['please_cite']['bibtex'], m['supporting_info']['bibtex']])
+    cites = m['about']['please_cite']['bibtex']
+    if m['about']['supporting_info']:
+        cites.append(m['about']['supporting_info']['bibtex'])
+    references = '\n'.join(cites)
 
     history = []
     for h in m['about']['links']:
@@ -64,10 +68,6 @@ def mps_dict_to_snl(mps_dict):
     created_at = datetime.datetime.strptime(m['about']['created_at'], "%Y-%m-%d %H:%M:%S")
 
     return StructureNL(struct, authors, projects, references, remarks, data, history, created_at)
-
-
-
-
 
 
 
