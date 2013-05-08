@@ -1,4 +1,4 @@
-from mpworks.submissions.submissions_mongo import SubmissionProcessor
+from mpworks.processors.process_submissions import SubmissionProcessor
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
