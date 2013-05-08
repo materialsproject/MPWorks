@@ -202,17 +202,9 @@ def get_meta_from_structure(structure):
             'composition_dict': comp.to_dict,
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
-            'is_ordered': structure.is_ordered}
+            'is_ordered': structure.is_ordered,
+            'is_valid': structure.is_valid()}
     # the complex logic set/list is to prevent duplicates if there are
     # multiple oxidation states
-
-    #TODO: restore me
-    """
-    #promixity warning:
-    meta['proximity_warning'] = False
-    for (s1, s2) in itertools.combinations(structure._sites, 2):
-        if s1.distance(s2) < Structure.DISTANCE_TOLERANCE:
-            meta['proximity_warning'] = True
-    """
 
     return meta
