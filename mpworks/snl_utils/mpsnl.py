@@ -55,7 +55,7 @@ class MPStructureNL(StructureNL):
 
     @property
     def snlgroup_key(self):
-        return self.snl_autometa['formula_abc_red'] + "--" + str(self.sg_num)
+        return self.snl_autometa['reduced_cell_formula_abc'] + "--" + str(self.sg_num)
 
     @property
     def to_dict(self):
