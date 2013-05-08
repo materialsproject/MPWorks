@@ -14,6 +14,7 @@ __date__ = 'May 06, 2013'
 def j_decorate(m_dict):
     m_dict['auto_npar'] = False
     m_dict['auto_gamma'] = False
+    return m_dict
 
 
 def _get_metadata(snl):
