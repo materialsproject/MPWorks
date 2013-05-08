@@ -52,7 +52,7 @@ def mps_dict_to_snl(mps_dict):
     for a in m['about']['acknowledgements']:
         authors.append({'name': a['name'], 'email': a['email']})
 
-    cites = m['about']['please_cite']['bibtex']
+    cites = [m['about']['please_cite']['bibtex']]
     if m['about']['supporting_info']:
         cites.append(m['about']['supporting_info']['bibtex'])
     references = '\n'.join(cites)
