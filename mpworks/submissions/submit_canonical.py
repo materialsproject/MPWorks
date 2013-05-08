@@ -63,7 +63,10 @@ def submit_tests(names=None):
                  "InSb (unstable)": 10148, "Sb2O5": 1705, "N2O5": 554368, "BaTiO3": 5020,
                  "Rb2O": 1394, "TiO2": 554278, "TiO2 (2)": 554439, 'BaNbTePO8': 560794,
                  "AgCl": 22922, "AgCl (2)": 570858, "SiO2": 586074, "Mg2SiO4": 2895, "CO2": 20066,
-                 "PbSO4": 22298, "SrTiO3": 5532, "FeAl": 2658, "AlFeCo2": 10884}
+                 "PbSO4": 22298, "SrTiO3": 5532, "FeAl": 2658, "AlFeCo2": 10884, "NaCoO2": 554427,
+                 "ReO3": 547271, "LaH2": 24153, "SiH3I": 28538, "LiBH4": 30209, "H8S5N2": 28143,
+                 "LiOH": 23856, "LiO2": 546422, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
+                 "PdF4": 13868, "Gd2WO6": 565757}
 
     mpr = MPRester(api_key="flebb3pU1yfExlOc", host="www.materialsproject.org")
 
