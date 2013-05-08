@@ -11,6 +11,11 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
+def j_decorate(m_dict):
+    m_dict['max_errors'] = 10
+    m_dict['auto_npar'] = False
+    m_dict['auto_gamma'] = False
+
 
 def _get_metadata(snl):
     md = {'run_tags': ['auto generation v1.0']}
@@ -29,9 +34,8 @@ def _get_custodian_task(spec):
         jobs = [VaspJob(v_exe)]
 
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
-    params = {'jobs': [j.to_dict for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10, 'auto_npar': False,
-              'auto_gamma': False}
+    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
 
     return VaspCustodianTask(params)
 
