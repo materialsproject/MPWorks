@@ -1,12 +1,11 @@
 import socket
-import string
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
-from custodian.custodian import Custodian, ErrorHandler
+from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 import shlex
 import os
-from mpworks.workflows.wf_utils import get_slug
+from fireworks.utilities.fw_utilities import get_slug
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'

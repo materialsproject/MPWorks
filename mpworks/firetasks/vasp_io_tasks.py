@@ -10,10 +10,11 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
+from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task, get_slug
+from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL

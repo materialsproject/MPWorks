@@ -56,9 +56,3 @@ def orig(filename):
         return orig[0]
     else:
         return filename
-
-
-def get_slug(m_str):
-    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-    m_str = ''.join(c for c in m_str if c in valid_chars)
-    return m_str.replace(' ', '_')

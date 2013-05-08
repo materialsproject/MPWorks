@@ -1,11 +1,12 @@
 from fireworks.core.firework import FireWork, Workflow
+from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
-from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task, get_slug
+from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
