@@ -112,6 +112,9 @@ class SubmissionMongoAdapter(FWSerializable):
 
 
 class SubmissionProcessor():
+
+    MAX_SITES = 200
+
     # This is run on the server end
     def __init__(self, sma, launchpad):
         self.sma = sma
@@ -138,13 +141,17 @@ class SubmissionProcessor():
             submission_id = job['submission_id']
             try:
                 snl = StructureNL.from_dict(job)
-                snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
-                snl.data['_materialsproject']['submission_id'] = submission_id
+                if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
+                    self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'rejected'}})
+                    print 'REJECTED WORKFLOW FOR {} with {} sites'.format(snl.structure.formula, len(snl.structure.sites))
+                else:
+                    snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
+                    snl.data['_materialsproject']['submission_id'] = submission_id
 
-                # create a workflow
-                wf = snl_to_wf(snl)
-                self.launchpad.add_wf(wf)
-                print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
+                    # create a workflow
+                    wf = snl_to_wf(snl)
+                    self.launchpad.add_wf(wf)
+                    print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
                 self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'error'}})
                 traceback.print_exc()
