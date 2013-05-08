@@ -47,8 +47,11 @@ class SubmissionProcessor():
             try:
                 snl = StructureNL.from_dict(job)
                 if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
-                    self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'rejected'}})
-                    print 'REJECTED WORKFLOW FOR {} with {} sites'.format(snl.structure.formula, len(snl.structure.sites))
+                    self.sma.update_state(submission_id, 'rejected', 'too many sites', {})
+                    print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(snl.structure.formula, len(snl.structure.sites))
+                if not snl.structure.is_valid():
+                    self.sma.update_state(submission_id, 'rejected', 'invalid structure (atoms too close)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(snl.structure.formula)
                 else:
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
