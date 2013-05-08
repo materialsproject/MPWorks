@@ -27,11 +27,14 @@ def get_meta_from_structure(structure):
     meta['chemsystem'] = '-'.join(sorted(list(set([e.symbol for e in structure.composition.elements]))))  # the complex logic set/list is to prevent duplicates if there are multiple oxidation states
     meta['is_ordered'] = structure.is_ordered
 
+    #TODO: restore me
+    """
     #promixity warning:
     meta['proximity_warning'] = False
     for (s1, s2) in itertools.combinations(structure._sites, 2):
         if s1.distance(s2) < Structure.DISTANCE_TOLERANCE:
             meta['proximity_warning'] = True
+    """
 
     return meta
 
