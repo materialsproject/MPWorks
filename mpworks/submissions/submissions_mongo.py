@@ -1,7 +1,10 @@
 import json
 import os
 import datetime
+
 from pymongo import MongoClient
+from pymatgen import Composition
+
 import yaml
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 
@@ -52,7 +55,7 @@ class SubmissionMongoAdapter(object):
     def _get_next_submission_id(self):
         return self.id_assigner.find_and_modify(
             query={}, update={'$inc': {'next_submission_id': 1}})[
-            'next_submission_id']
+                'next_submission_id']
 
     def _restart_id_assigner_at(self, next_submission_id):
         self.id_assigner.remove()
@@ -184,11 +187,32 @@ def _reconstitute_dates(obj_dict):
 
     return obj_dict
 
-if __name__ == '__main__':
-    pass
-    # mpr = MPRester()
-    # s = mpr.get_structure_by_material_id(100)
-    # snl = StructureNL(s, 'John Doe <johndoe@host.com>')
-    # sma = SubmissionMongoAdapter.auto_load()
-    # submission_id = sma.submit_snl(snl, 'johndoe@host.com', parameters=None)
-    # sma.get_state(submission_id)
+
+def get_meta_from_structure(structure):
+    comp = structure.composition
+    elsyms = sorted(set([e.symbol for e in comp.elements]))
+    # TODO: this won't work for molecules
+    meta = {'nsites': len(structure.sites),
+            'elements': elsyms,
+            'nelements': len(elsyms),
+            'formula': comp.formula,
+            'reduced_cell_formula': comp.reduced_formula,
+            'reduced_cell_formula_abc': Composition.from_formula(comp
+                .reduced_formula).alphabetical_formula,
+            'composition_dict': comp.to_dict,
+            'anonymized_formula': comp.anonymized_formula,
+            'chemsystem': '-'.join(elsyms),
+            'is_ordered': structure.is_ordered}
+    # the complex logic set/list is to prevent duplicates if there are
+    # multiple oxidation states
+
+    #TODO: restore me
+    """
+    #promixity warning:
+    meta['proximity_warning'] = False
+    for (s1, s2) in itertools.combinations(structure._sites, 2):
+        if s1.distance(s2) < Structure.DISTANCE_TOLERANCE:
+            meta['proximity_warning'] = True
+    """
+
+    return meta
