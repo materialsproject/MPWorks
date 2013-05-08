@@ -12,7 +12,6 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
 def j_decorate(m_dict):
-    m_dict['max_errors'] = 10
     m_dict['auto_npar'] = False
     m_dict['auto_gamma'] = False
 
