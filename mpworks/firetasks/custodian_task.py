@@ -2,8 +2,7 @@ import socket
 import string
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
-from custodian.custodian import Custodian
-from custodian.vasp.handlers import VaspErrorHandler
+from custodian.custodian import Custodian, ErrorHandler
 from custodian.vasp.jobs import VaspJob
 import shlex
 import os
@@ -22,8 +21,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         self.update(parameters)
         self.jobs = [VaspJob.from_dict(d) for d in self['jobs']]
-        self.handlers = [VaspErrorHandler.from_dict(d)
-                         for d in self['handlers']]
+        self.handlers = [ErrorHandler.from_dict(d) for d in self['handlers']]
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
