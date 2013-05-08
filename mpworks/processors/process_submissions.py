@@ -49,7 +49,7 @@ class SubmissionProcessor():
                 if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
                     self.sma.update_state(submission_id, 'rejected', 'too many sites', {})
                     print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(snl.structure.formula, len(snl.structure.sites))
-                if not snl.structure.is_valid():
+                elif not snl.structure.is_valid():
                     self.sma.update_state(submission_id, 'rejected', 'invalid structure (atoms too close)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(snl.structure.formula)
                 else:
