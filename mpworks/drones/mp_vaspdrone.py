@@ -136,16 +136,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                          d['snlgroup_id_final'])
 
-        """
-        # reverse the max_force error for runs that are not structure optimizations
-        if 'optimize structure' not in d['task_type'] and 'analysis' in d:
-            print 'overriding any potential max_force errors'
-            new_errors = [e for e in d['analysis']['errors'] if 'Final max force exceeds' not in e]
-            d['analysis']['errors'] = new_errors
-            if d['state'] == 'error' and len(new_errors) == 0:
-                d['state'] = 'successful'
-        """
-
         # custom processing for detecting errors
         new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
         vasp_signals = {}
