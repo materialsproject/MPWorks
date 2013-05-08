@@ -82,9 +82,13 @@ class SNLMongoAdapter(FWSerializable):
         snl_id = self._get_next_snl_id()
         sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sf.get_spacegroup_number(),
-                                       sf.get_spacegroup_symbol(), sf.get_hall(),
-                                       sf.get_crystal_system(), sf.get_lattice_type())
+        sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() else -1
+        sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() else 'unknown'
+        sghall = sf.get_hall() if sf.get_hall() else 'unknown'
+        sgxtal = sf.get_crystal_system() if sf.get_crystal_system() else 'unknown'
+        sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
+
+        mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall, sgxtal, sglatt)
         snlgroup, add_new = self.add_mpsnl(mpsnl)
         return mpsnl, snlgroup.snlgroup_id
 

@@ -35,7 +35,7 @@ def get_meta_from_structure(structure):
         if s1.distance(s2) < Structure.DISTANCE_TOLERANCE:
             meta['proximity_warning'] = True
     """
-    
+
     return meta
 
 class MPStructureNL(StructureNL):
