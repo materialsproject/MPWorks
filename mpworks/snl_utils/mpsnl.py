@@ -18,6 +18,9 @@ def get_meta_from_structure(structure):
     comp = structure.composition
     elsyms = sorted(set([e.symbol for e in comp.elements]))
     # TODO: this won't work for molecules
+
+    # the complex logic set/list is to prevent duplicates if there are
+    # multiple oxidation states
     meta = {'nsites': len(structure.sites),
             'elements': elsyms,
             'nelements': len(elsyms),
@@ -30,11 +33,9 @@ def get_meta_from_structure(structure):
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
             'is_valid': structure.is_valid()}
-    # the complex logic set/list is to prevent duplicates if there are
-    # multiple oxidation states
-
 
     return meta
+
 
 class MPStructureNL(StructureNL):
     # adds snl_id, spacegroup, and autometa properties to StructureNL.
@@ -51,7 +52,7 @@ class MPStructureNL(StructureNL):
 
     @property
     def sg_num(self):
-        return self.data['_materialsproject']['sg_num']
+        return self.data['_materialsproject']['spacegroup']['number']
 
     @property
     def snlgroup_key(self):
@@ -86,17 +87,21 @@ class MPStructureNL(StructureNL):
                            created_at=created_at)
 
     @staticmethod
-    def from_snl(snl, snl_id, sg_num, sg_symbol, hall, xtal_system, lattice_type):
+    def from_snl(snl, snl_id, sg_num, sg_symbol, hall, xtal_system, lattice_type, pointgroup):
         # make a copy of SNL
         snl2 = StructureNL.from_dict(snl.to_dict)
         if '_materialsproject' not in snl2.data:
             snl2.data['_materialsproject'] = {}
+
         snl2.data['_materialsproject']['snl_id'] = snl_id
-        snl2.data['_materialsproject']['sg_num'] = sg_num
-        snl2.data['_materialsproject']['sg_symbol'] = sg_symbol
-        snl2.data['_materialsproject']['hall'] = hall
-        snl2.data['_materialsproject']['xtal_system'] = xtal_system
-        snl2.data['_materialsproject']['lattice_type'] = lattice_type
+
+        sg = snl2.data['materialsproject']['spacegroup']
+        sg['symbol'] = sg_symbol
+        sg['number'] = sg_num
+        sg['point_group'] = pointgroup
+        sg['crystal_system'] = xtal_system
+        sg['hall'] = hall
+        sg['lattice_type'] = lattice_type
 
         return MPStructureNL.from_dict(snl2.to_dict)
 
