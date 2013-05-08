@@ -43,6 +43,8 @@ def mps_dict_to_snl(mps_dict):
             data['_materialsproject']['ordering_remark'] = v
         elif 'deprecated' in k or 'original_structure' in k or 'mp_duplicates' in k:
             data['_materialsproject']['deprecated'][k] = v
+        elif 'assert' in k or 'universe' in k:
+            pass
         else:
             data['_materialsproject'][k] = v
 
