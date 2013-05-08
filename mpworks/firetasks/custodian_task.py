@@ -6,6 +6,7 @@ from custodian.custodian import Custodian, ErrorHandler
 from custodian.vasp.jobs import VaspJob
 import shlex
 import os
+from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -21,7 +22,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         self.update(parameters)
         self.jobs = [VaspJob.from_dict(d) for d in self['jobs']]
-        self.handlers = [ErrorHandler.from_dict(d) for d in self['handlers']]
+        self.handlers = [PMGJSONDecoder.decode(d) for d in self['handlers']]
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
