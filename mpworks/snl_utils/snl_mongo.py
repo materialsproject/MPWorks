@@ -50,8 +50,8 @@ class SNLMongoAdapter(FWSerializable):
         self.snl.ensure_index('autometa.nelements')
         self.snl.ensure_index('autometa.nlements')
         self.snl.ensure_index('autometa.formula')
-        self.snl.ensure_index('autometa.formula_abc_red')
-        self.snl.ensure_index('autometa.formula_red')
+        self.snl.ensure_index('autometa.reduced_cell_formula')
+        self.snl.ensure_index('autometa.reduced_cell_formula_abc')
         self.snl.ensure_index('autometa.is_ordered')
 
         self.snlgroups.ensure_index('snlgroup_id', unique=True)
@@ -61,8 +61,8 @@ class SNLMongoAdapter(FWSerializable):
         self.snlgroups.ensure_index('autometa.nelements')
         self.snlgroups.ensure_index('autometa.nlements')
         self.snlgroups.ensure_index('autometa.formula')
-        self.snlgroups.ensure_index('autometa.formula_abc_red')
-        self.snlgroups.ensure_index('autometa.formula_red')
+        self.snlgroups.ensure_index('autometa.reduced_cell_formula')
+        self.snlgroups.ensure_index('autometa.reduced_cell_formula_abc')
         self.snlgroups.ensure_index('autometa.is_ordered')
 
     def _get_next_snl_id(self):

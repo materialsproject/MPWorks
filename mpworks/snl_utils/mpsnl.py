@@ -20,8 +20,8 @@ def get_meta_from_structure(structure):
     meta['elements'] = list(set([el.symbol for el in structure.composition.elements]))
     meta['nelements'] = len(meta['elements'])
     meta['formula'] = structure.composition.formula
-    meta['formula_red'] = structure.composition.reduced_formula
-    meta['formula_abc_red'] = Composition.from_formula(structure.composition.reduced_formula).alphabetical_formula
+    meta['reduced_cell_formula'] = structure.composition.reduced_formula
+    meta['reduced_cell_formula_abc'] = Composition.from_formula(structure.composition.reduced_formula).alphabetical_formula
     meta['composition_dict'] = structure.composition.to_dict
     meta['anonymized_formula'] = structure.composition.anonymized_formula
     meta['chemsystem'] = '-'.join(sorted(list(set([e.symbol for e in structure.composition.elements]))))  # the complex logic set/list is to prevent duplicates if there are multiple oxidation states
