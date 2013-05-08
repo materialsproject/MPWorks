@@ -5,7 +5,8 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
-from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
+from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task, get_slug
+from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -38,6 +39,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
 
             snl = StructureNL.from_dict(fw_spec['mpsnl'])
+            f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
 
             fws = []
             connections = {}
@@ -51,14 +53,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(
                 FireWork(
                     [VaspCopyTask({'use_CONTCAR': True}), SetupStaticRunTask(),
-                     _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-10))
+                     _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion',
                     '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(
-                FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=-9))
+                FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
             connections[-10] = -9
 
             # run GGA Uniform
@@ -67,7 +69,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec.update(_get_metadata(snl))
             fws.append(FireWork(
                 [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
-                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-8))
+                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-8))
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
@@ -75,7 +77,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(
-                FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=spec['task_type'],
+                FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
                          fw_id=-7))
             connections[-8] = -7
 
@@ -84,7 +86,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
             spec.update(_get_metadata(snl))
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
-                                 _get_custodian_task(spec)], spec, name=spec['task_type'],
+                                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                                 fw_id=-6))
             connections[-7] = -6
 
@@ -92,7 +94,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec = {'task_type': 'VASP db insertion',
                     '_allow_fizzled_parents': True, '_priority': 2}
             spec.update(_get_metadata(snl))
-            fws.append(FireWork([VaspToDBTask({})], spec, name=spec['task_type'], fw_id=-5))
+            fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
             # TODO: add WF meta

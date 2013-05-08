@@ -6,6 +6,7 @@ from custodian.custodian import Custodian, ErrorHandler
 from custodian.vasp.jobs import VaspJob
 import shlex
 import os
+from mpworks.workflows.wf_utils import get_slug
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
@@ -55,9 +56,6 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
     def _write_formula_file(self, fw_spec):
-        valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
-        filename = 'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--' + fw_spec['task_type']
-        valid_filename = ''.join(c for c in filename if c in valid_chars)
-        valid_filename = valid_filename.replace(' ', '_')
-        with open(valid_filename, 'w+') as f:
+        filename = get_slug('JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--' + fw_spec['task_type'])
+        with open(filename, 'w+') as f:
             f.write('')

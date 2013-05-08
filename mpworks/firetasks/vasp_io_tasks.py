@@ -13,7 +13,8 @@ from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task
+from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task, get_slug
+from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
 
@@ -139,9 +140,11 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fws = []
             connections = {}
 
+            f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+
             fws.append(FireWork(
                 [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'], 'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
-                 _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=-2))
+                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-2))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
@@ -149,7 +152,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             spec.update(_get_metadata(snl))
             spec['run_tags'].append('unconverged_handler')
             fws.append(
-                FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=-1))
+                FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))
             connections[-2] = -1
 
             # TODO: add WF meta

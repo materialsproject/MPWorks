@@ -5,7 +5,7 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
-from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
+from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task, get_slug
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
@@ -53,30 +53,32 @@ def snl_to_wf(snl, do_bandstructure=True):
     fws = []
     connections = {}
 
+    f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
     spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict}
-    fws.append(FireWork(tasks, spec, name=spec['task_type'], fw_id=0))
+    fws.append(FireWork(tasks, spec, name=get_slug(f+'--'+spec['task_type']), fw_id=0))
     connections[0] = [1]
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
     spec['_priority'] = 2
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=spec['task_type'], fw_id=1))
+    fws.append(FireWork(tasks, spec, name=get_slug(f+'--'+spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
             '_allow_fizzled_parents': True}
     spec.update(_get_metadata(snl))
-    fws.append(FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=2))
+    fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if do_bandstructure:
         spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=3))
+            FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=3))
         connections[2] = [3]
 
     # determine if GGA+U FW is needed
@@ -89,20 +91,20 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec['_priority'] = 2
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
-             _get_custodian_task(spec)], spec, name=spec['task_type'], fw_id=10))
+             _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=10))
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion',
                 '_allow_fizzled_parents': True, '_priority': 2}
         spec.update(_get_metadata(snl))
         fws.append(
-            FireWork([VaspToDBTask()], spec, name=spec['task_type'], fw_id=11))
+            FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if do_bandstructure:
             spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
             spec.update(_get_metadata(snl))
-            fws.append(FireWork([AddEStructureTask()], spec, name=spec['task_type'], fw_id=12))
+            fws.append(FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=12))
             connections[11] = [12]
 
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
