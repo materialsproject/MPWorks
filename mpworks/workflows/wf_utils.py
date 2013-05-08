@@ -42,7 +42,7 @@ def last_relax(filename):
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
         return relaxations[-1]
-    raise ValueError('Could not determine last relaxation of {}'.format(filename))
+    return filename
 
 
 def orig(filename):

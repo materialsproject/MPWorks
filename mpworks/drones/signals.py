@@ -201,7 +201,8 @@ class VASPInputsExistSignal(SignalDetector):
 class VASPOutputsExistSignal(SignalDetector):
 
     def detect(self, dir_name):
-        names = [last_relax(os.path.join(dir_name, x)) for x in ['OUTCAR', 'CONTCAR', 'OSZICAR', 'vasprun.xml', 'CHGCAR', 'vasp.out']]
+
+        names = [last_relax(os.path.join(dir_name, x)) for x in ['OUTCAR', 'OSZICAR', 'vasprun.xml', 'CHGCAR', 'vasp.out']]
         return set() if all([os.path.exists(file_name) for file_name in names]) and os.stat(names[0]).st_size > 0 else set(["OUTPUTS_DONT_EXIST"])
 
 
