@@ -13,19 +13,24 @@ __date__ = 'Apr 24, 2013'
 
 # TODO: document
 
+
 def get_meta_from_structure(structure):
+    comp = structure.composition
+    elsyms = sorted(set([e.symbol for e in comp.elements]))
     # TODO: this won't work for molecules
-    meta = {}
-    meta['nsites'] = len(structure.sites)
-    meta['elements'] = list(set([el.symbol for el in structure.composition.elements]))
-    meta['nelements'] = len(meta['elements'])
-    meta['formula'] = structure.composition.formula
-    meta['reduced_cell_formula'] = structure.composition.reduced_formula
-    meta['reduced_cell_formula_abc'] = Composition.from_formula(structure.composition.reduced_formula).alphabetical_formula
-    meta['composition_dict'] = structure.composition.to_dict
-    meta['anonymized_formula'] = structure.composition.anonymized_formula
-    meta['chemsystem'] = '-'.join(sorted(list(set([e.symbol for e in structure.composition.elements]))))  # the complex logic set/list is to prevent duplicates if there are multiple oxidation states
-    meta['is_ordered'] = structure.is_ordered
+    meta = {'nsites': len(structure.sites),
+            'elements': elsyms,
+            'nelements': len(elsyms),
+            'formula': comp.formula,
+            'reduced_cell_formula': comp.reduced_formula,
+            'reduced_cell_formula_abc': Composition.from_formula(comp
+                .reduced_formula).alphabetical_formula,
+            'composition_dict': comp.to_dict,
+            'anonymized_formula': comp.anonymized_formula,
+            'chemsystem': '-'.join(elsyms),
+            'is_ordered': structure.is_ordered}
+    # the complex logic set/list is to prevent duplicates if there are
+    # multiple oxidation states
 
     #TODO: restore me
     """
