@@ -224,7 +224,7 @@
                 "task_type": "GGA optimize structure (2x)", 
                 "vaspinputset_name": "MPGGAVaspInputSet", 
                 "_priority": 2, 
-                "user_run_tags": [],
+                "run_tags": [],
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
@@ -379,7 +379,7 @@
                 "_allow_fizzled_parents": true, 
                 "_priority": 2, 
                 "task_type": "VASP db insertion", 
-                "user_run_tags": [],
+                "run_tags": [],
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
@@ -399,7 +399,7 @@
                 ], 
                 "_priority": 2, 
                 "task_type": "Controller: add Electronic Structure", 
-                "user_run_tags": []
+                "run_tags": []
             }, 
             "created_on": "2013-05-09T16:47:18.941586", 
             "name": "Fe1_O1--Controller_add_Electronic_Structure"
@@ -506,7 +506,7 @@
                 ], 
                 "_priority": 2, 
                 "task_type": "GGA+U optimize structure (2x)", 
-                "user_run_tags": []
+                "run_tags": []
             }, 
             "created_on": "2013-05-09T16:47:18.943232", 
             "name": "Fe1_O1--GGAU_optimize_structure_(2x)"
@@ -517,7 +517,7 @@
                 "_allow_fizzled_parents": true, 
                 "_priority": 2, 
                 "task_type": "VASP db insertion", 
-                "user_run_tags": [],
+                "run_tags": [],
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
@@ -537,7 +537,7 @@
                 ], 
                 "_priority": 2, 
                 "task_type": "Controller: add Electronic Structure", 
-                "user_run_tags": []
+                "run_tags": []
             }, 
             "created_on": "2013-05-09T16:47:18.943343", 
             "name": "Fe1_O1--Controller_add_Electronic_Structure"

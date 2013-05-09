@@ -19,7 +19,7 @@ def j_decorate(m_dict):
 
 
 def _get_metadata(snl):
-    md = {'user_run_tags': []}
+    md = {'run_tags': []}
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         md['submission_id'] = snl.data['_materialsproject']['submission_id']
 

@@ -35,7 +35,15 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vasp']['incar']['NPAR'] = 2
     spec['vasp']['poscar'] = mpvis.get_poscar(structure).to_dict
     spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
-    spec['vasp']['potcar'] = mpvis.get_potcar(structure).to_dict
+    potcar = mpvis.get_potcar(structure)
+    spec['vasp']['potcar'] = potcar.to_dict
+
+    spec['run_tags'] = spec.get('run_tags', [potcar.functional])
+    spec['run_tags'].extend(potcar.symbols)
+
+    # TODO: add INCAR +U tags
+
+
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     # TODO: restore category
     # spec['_category'] = 'Materials Project'
