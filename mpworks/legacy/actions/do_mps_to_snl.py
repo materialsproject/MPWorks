@@ -32,9 +32,14 @@ if __name__ == '__main__':
 
     for mps in db.mps.find(timeout=False):
         try:
-            snl = mps_dict_to_snl(mps)
-            if snl:
-                snldb.add_snl(snl)
+            if not snldb.snl.find_one({"about._materialsproject.deprecated.mps_ids": mps['mps_id']}):
+                snl = mps_dict_to_snl(mps)
+                if snl:
+                    snldb.add_snl(snl)
+            else:
+                print 'SKIPPING', mps['mps_id']
         except:
             traceback.print_exc()
             print 'ERROR - mps id:', mps['mps_id']
+
+    print 'DONE'
