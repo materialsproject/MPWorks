@@ -34,7 +34,7 @@ def _snl_to_spec(snl, enforce_gga=False):
 
     incar = mpvis.get_incar(structure)
     poscar = mpvis.get_poscar(structure)
-    kpoints = mpvis.get_poscar(structure)
+    kpoints = mpvis.get_kpoints(structure)
     potcar = mpvis.get_potcar(structure)
 
     spec['vasp'] = {}
