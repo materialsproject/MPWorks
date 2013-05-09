@@ -18,14 +18,6 @@ def j_decorate(m_dict):
     return m_dict
 
 
-def _get_metadata(snl):
-    md = {'run_tags': []}
-    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
-        md['submission_id'] = snl.data['_materialsproject']['submission_id']
-
-    return md
-
-
 def _get_custodian_task(spec):
     task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node

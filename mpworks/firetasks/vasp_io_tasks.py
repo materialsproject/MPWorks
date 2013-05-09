@@ -14,7 +14,7 @@ from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_utils import last_relax, _get_metadata, _get_custodian_task
+from mpworks.workflows.wf_utils import last_relax, _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -135,7 +135,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 4}
 
             snl = StructureNL.from_dict(spec['mpsnl'])
-            spec.update(_get_metadata(snl))
             spec['run_tags'].append('unconverged_handler')
 
             fws = []
@@ -150,7 +149,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
                     '_priority': 4}
-            spec.update(_get_metadata(snl))
             spec['run_tags'].append('unconverged_handler')
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))

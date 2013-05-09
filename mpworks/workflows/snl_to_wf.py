@@ -6,7 +6,8 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
-from mpworks.workflows.wf_utils import _get_metadata, _get_custodian_task
+from mpworks.snl_utils.mpsnl import get_meta_from_structure
+from mpworks.workflows.wf_utils import _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
@@ -24,25 +25,31 @@ __date__ = 'Mar 15, 2013'
 # TODO: different walltime requirements and priority for DB task
 
 
-def _snl_to_spec(snl, enforce_gga=True):
+def _snl_to_spec(snl, enforce_gga=False):
     spec = {}
 
-    mpvis = MPGGAVaspInputSet() if enforce_gga else MPVaspInputSet()
+    incar_enforce = {'NPAR': 2}
     structure = snl.structure
+    mpvis = MPGGAVaspInputSet(incar_enforce) if enforce_gga else MPVaspInputSet(incar_enforce)
+
+    incar = mpvis.get_incar(structure)
+    poscar = mpvis.get_poscar(structure)
+    kpoints = mpvis.get_poscar(structure)
+    potcar = mpvis.get_potcar(structure)
 
     spec['vasp'] = {}
-    spec['vasp']['incar'] = mpvis.get_incar(structure).to_dict
-    spec['vasp']['incar']['NPAR'] = 2
-    spec['vasp']['poscar'] = mpvis.get_poscar(structure).to_dict
-    spec['vasp']['kpoints'] = mpvis.get_kpoints(structure).to_dict
-    potcar = mpvis.get_potcar(structure)
+    spec['vasp']['incar'] = incar.to_dict
+    spec['vasp']['poscar'] = poscar.to_dict
+    spec['vasp']['kpoints'] = kpoints.to_dict
     spec['vasp']['potcar'] = potcar.to_dict
 
+    # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [potcar.functional])
     spec['run_tags'].extend(potcar.symbols)
 
-    # TODO: add INCAR +U tags
-
+    # Add run tags of +U
+    u_tags = ['%s=%s' % t for t in zip(poscar.site_symbols, incar.get('LDAUU', [0] * len(poscar.site_symbols)))]
+    spec['run_tags'].extend(u_tags)
 
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     # TODO: restore category
@@ -50,8 +57,6 @@ def _snl_to_spec(snl, enforce_gga=True):
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp'][
         'incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
-
-    spec.update(_get_metadata(snl))
 
     return spec
 
@@ -79,13 +84,11 @@ def snl_to_wf(snl, do_bandstructure=True):
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
             '_allow_fizzled_parents': True}
-    spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if do_bandstructure:
         spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
-        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=3))
         connections[2] = [3]
@@ -94,9 +97,8 @@ def snl_to_wf(snl, do_bandstructure=True):
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = {'task_type': 'GGA+U optimize structure (2x)',
-                '_dupefinder': DupeFinderVasp().to_dict()}
-        spec.update(_get_metadata(snl))
+        spec = _snl_to_spec(snl, enforce_gga=False)
+        del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = 2
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
@@ -105,20 +107,21 @@ def snl_to_wf(snl, do_bandstructure=True):
 
         spec = {'task_type': 'VASP db insertion',
                 '_allow_fizzled_parents': True, '_priority': 2}
-        spec.update(_get_metadata(snl))
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if do_bandstructure:
             spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
-            spec.update(_get_metadata(snl))
             fws.append(FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=12))
             connections[11] = [12]
 
-    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
+    wf_meta = get_meta_from_structure(snl.structure)
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+        wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
+    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
 
-
+"""
 def snl_to_wf_ggau(snl):
 
     # TODO: add WF meta
@@ -134,7 +137,6 @@ def snl_to_wf_ggau(snl):
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
             '_category': 'VASP'}
-    spec.update(_get_metadata(snl))
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
     mpvis = MPVaspInputSet()
@@ -142,6 +144,7 @@ def snl_to_wf_ggau(snl):
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
+"""
 
 
 if __name__ == '__main__':
