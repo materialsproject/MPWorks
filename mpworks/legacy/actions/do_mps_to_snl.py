@@ -30,7 +30,7 @@ if __name__ == '__main__':
     snldb = SNLMongoAdapter.from_file(snl_f)
     snldb._reset()
 
-    for mps in db.mps.find():
+    for mps in db.mps.find(timeout=False):
         try:
             snl = mps_dict_to_snl(mps)
             if snl:
