@@ -68,7 +68,7 @@ def submit_tests(names=None):
                  "LiOH": 23856, "LiO2": 546422, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
                  "PdF4": 13868, "Gd2WO6": 565757}
 
-    mpr = MPRester(api_key="flebb3pU1yfExlOc", host="www.materialsproject.org")
+    mpr = MPRester()
 
     for name, sid in compounds.iteritems():
         if not names or name in names:

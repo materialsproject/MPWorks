@@ -126,17 +126,17 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         # not successful - first test to see if UnconvergedHandler is needed
         output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags']:
+        if ueh.check() and 'unconverged_handler' not in fw_spec['user_run_tags']:
             print 'Unconverged run! Creating dynamic FW...'
 
             spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
                     'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
-                    'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
+                    'task_type': fw_spec['prev_task_type'], 'user_run_tags': list(fw_spec['user_run_tags']),
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 4}
 
             snl = StructureNL.from_dict(spec['mpsnl'])
             spec.update(_get_metadata(snl))
-            spec['run_tags'].append('unconverged_handler')
+            spec['user_run_tags'].append('unconverged_handler')
 
             fws = []
             connections = {}
@@ -151,7 +151,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
                     '_priority': 4}
             spec.update(_get_metadata(snl))
-            spec['run_tags'].append('unconverged_handler')
+            spec['user_run_tags'].append('unconverged_handler')
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))
             connections[-2] = -1

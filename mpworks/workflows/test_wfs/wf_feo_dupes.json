@@ -1,54 +1,26 @@
 {
+    "updated_on": "2013-05-09T16:47:18.943623", 
     "metadata": {}, 
+    "name": "Fe1 O1", 
     "links": {
-        "0": [
-            1
-        ], 
-        "1": [
-            2
-        ], 
-        "2": [
-            3, 
-            10
-        ], 
-        "3": [
-            4
-        ], 
-        "4": [
-            5
-        ], 
-        "5": [
-            6
-        ], 
-        "6": [
-            7
-        ], 
-        "7": [
-            8
-        ], 
-        "8": [], 
-        "10": [
-            11
-        ], 
         "11": [
             12
         ], 
-        "12": [
-            13
+        "10": [
+            11
         ], 
-        "13": [
-            14
+        "12": [], 
+        "1": [
+            2
         ], 
-        "14": [
-            15
+        "0": [
+            1
         ], 
-        "15": [
-            16
-        ], 
-        "16": [
-            17
-        ], 
-        "17": []
+        "3": [], 
+        "2": [
+            3, 
+            10
+        ]
     }, 
     "fws": [
         {
@@ -89,7 +61,7 @@
                         "gamma": 60.000000058
                     }, 
                     "about": {
-                        "created_at": "2013-04-30T00:10:50.618736", 
+                        "created_at": "2013-05-09T16:47:18.910093", 
                         "references": "", 
                         "authors": [
                             {
@@ -149,9 +121,11 @@
                     ], 
                     "@class": "StructureNL", 
                     "@module": "pymatgen.matproj.snl"
-                }
+                }, 
+                "task_type": "Add to SNL database"
             }, 
-            "created_on": "2013-04-30T00:10:50.637031"
+            "created_on": "2013-05-09T16:47:18.923964", 
+            "name": "Fe1_O1--Add_to_SNL_database"
         }, 
         {
             "fw_id": 1, 
@@ -166,7 +140,9 @@
                                 "settings_override": null, 
                                 "suffix": ".relax1", 
                                 "vasp_command": "VASP_EXE", 
+                                "auto_gamma": false, 
                                 "output_file": "vasp.out", 
+                                "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
                                     "user_incar_settings": null, 
@@ -201,7 +177,9 @@
                                 ], 
                                 "suffix": ".relax2", 
                                 "vasp_command": "VASP_EXE", 
+                                "auto_gamma": false, 
                                 "output_file": "vasp.out", 
+                                "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
                                     "user_incar_settings": null, 
@@ -225,8 +203,19 @@
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "timeout": 3600, 
                                 "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
+                                "@class": "FrozenJobErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "MeshSymmetryErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "OSZICAR", 
+                                "@class": "NonConvergingErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
                             }
                         ]
@@ -235,9 +224,7 @@
                 "task_type": "GGA optimize structure (2x)", 
                 "vaspinputset_name": "MPGGAVaspInputSet", 
                 "_priority": 2, 
-                "run_tags": [
-                    "auto generation v1.0"
-                ], 
+                "user_run_tags": [],
                 "_dupefinder": {
                     "_fw_name": "Dupe Finder Vasp"
                 }, 
@@ -383,243 +370,39 @@
                     }
                 }
             }, 
-            "created_on": "2013-04-30T00:10:50.659237"
+            "created_on": "2013-05-09T16:47:18.941500", 
+            "name": "Fe1_O1--GGA_optimize_structure_(2x)"
         }, 
         {
             "fw_id": 2, 
             "spec": {
+                "_allow_fizzled_parents": true, 
+                "_priority": 2, 
+                "task_type": "VASP db insertion", 
+                "user_run_tags": [],
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
                     }
-                ], 
-                "_priority": 2, 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-30T00:10:50.659264"
+            "created_on": "2013-05-09T16:47:18.941544", 
+            "name": "Fe1_O1--VASP_db_insertion"
         }, 
         {
             "fw_id": 3, 
             "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp Copy Task", 
-                        "extension": ".relax2"
-                    }, 
-                    {
-                        "_fw_name": "Setup Static Task"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
+                        "_fw_name": "Add Electronic Structure Task"
                     }
                 ], 
-                "task_type": "GGA static", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
+                "_priority": 2, 
+                "task_type": "Controller: add Electronic Structure", 
+                "user_run_tags": []
             }, 
-            "created_on": "2013-04-30T00:10:50.659749"
-        }, 
-        {
-            "fw_id": 4, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task"
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.659767"
-        }, 
-        {
-            "fw_id": 5, 
-            "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task"
-                    }, 
-                    {
-                        "_fw_name": "Setup non-SCF Task", 
-                        "mode": "uniform"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
-                    }
-                ], 
-                "task_type": "GGA Uniform", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.660129"
-        }, 
-        {
-            "fw_id": 6, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parse_uniform": true
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.660147"
-        }, 
-        {
-            "fw_id": 7, 
-            "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task"
-                    }, 
-                    {
-                        "_fw_name": "Setup non-SCF Task", 
-                        "mode": "line"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
-                    }
-                ], 
-                "task_type": "GGA band structure", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.660566"
-        }, 
-        {
-            "fw_id": 8, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task"
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.660581"
+            "created_on": "2013-05-09T16:47:18.941586", 
+            "name": "Fe1_O1--Controller_add_Electronic_Structure"
         }, 
         {
             "fw_id": 10, 
@@ -629,8 +412,7 @@
                 }, 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp Copy Task", 
-                        "extension": ".relax2"
+                        "_fw_name": "Vasp Copy Task"
                     }, 
                     {
                         "_fw_name": "Setup GGAU Task"
@@ -641,7 +423,9 @@
                                 "settings_override": null, 
                                 "suffix": ".relax1", 
                                 "vasp_command": "VASP_EXE", 
+                                "auto_gamma": false, 
                                 "output_file": "vasp.out", 
+                                "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
                                     "user_incar_settings": null, 
@@ -676,7 +460,9 @@
                                 ], 
                                 "suffix": ".relax2", 
                                 "vasp_command": "VASP_EXE", 
+                                "auto_gamma": false, 
                                 "output_file": "vasp.out", 
+                                "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
                                     "user_incar_settings": null, 
@@ -700,254 +486,61 @@
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "timeout": 3600, 
                                 "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
+                                "@class": "FrozenJobErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "vasp.out", 
+                                "@class": "MeshSymmetryErrorHandler", 
+                                "@module": "custodian.vasp.handlers"
+                            }, 
+                            {
+                                "output_filename": "OSZICAR", 
+                                "@class": "NonConvergingErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
                             }
                         ]
                     }
                 ], 
+                "_priority": 2, 
                 "task_type": "GGA+U optimize structure (2x)", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
+                "user_run_tags": []
             }, 
-            "created_on": "2013-04-30T00:10:50.661874"
+            "created_on": "2013-05-09T16:47:18.943232", 
+            "name": "Fe1_O1--GGAU_optimize_structure_(2x)"
         }, 
         {
             "fw_id": 11, 
             "spec": {
+                "_allow_fizzled_parents": true, 
+                "_priority": 2, 
+                "task_type": "VASP db insertion", 
+                "user_run_tags": [],
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
                     }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
                 ]
             }, 
-            "created_on": "2013-04-30T00:10:50.661892"
+            "created_on": "2013-05-09T16:47:18.943284", 
+            "name": "Fe1_O1--VASP_db_insertion"
         }, 
         {
             "fw_id": 12, 
             "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
                 "_tasks": [
                     {
-                        "_fw_name": "Vasp Copy Task", 
-                        "extension": ".relax2"
-                    }, 
-                    {
-                        "_fw_name": "Setup Static Task"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
+                        "_fw_name": "Add Electronic Structure Task"
                     }
                 ], 
-                "task_type": "GGA+U static", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
+                "_priority": 2, 
+                "task_type": "Controller: add Electronic Structure", 
+                "user_run_tags": []
             }, 
-            "created_on": "2013-04-30T00:10:50.662364"
-        }, 
-        {
-            "fw_id": 13, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task"
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.662385"
-        }, 
-        {
-            "fw_id": 14, 
-            "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task"
-                    }, 
-                    {
-                        "_fw_name": "Setup non-SCF Task", 
-                        "mode": "uniform"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
-                    }
-                ], 
-                "task_type": "GGA+U Uniform", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.662962"
-        }, 
-        {
-            "fw_id": 15, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task", 
-                        "parse_uniform": true
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.663047"
-        }, 
-        {
-            "fw_id": 16, 
-            "spec": {
-                "_dupefinder": {
-                    "_fw_name": "Dupe Finder Vasp"
-                }, 
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp Copy Task"
-                    }, 
-                    {
-                        "_fw_name": "Setup non-SCF Task", 
-                        "mode": "line"
-                    }, 
-                    {
-                        "jobs": [
-                            {
-                                "settings_override": null, 
-                                "suffix": "", 
-                                "vasp_command": "VASP_EXE", 
-                                "output_file": "vasp.out", 
-                                "@module": "custodian.vasp.jobs", 
-                                "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
-                                    "constrain_total_magmom": false, 
-                                    "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
-                                }, 
-                                "gzipped": false, 
-                                "backup": true, 
-                                "final": true, 
-                                "@class": "VaspJob"
-                            }
-                        ], 
-                        "max_errors": 10, 
-                        "_fw_name": "Vasp Custodian Task", 
-                        "handlers": [
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "VaspErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }, 
-                            {
-                                "output_filename": "vasp.out", 
-                                "@class": "PoscarErrorHandler", 
-                                "@module": "custodian.vasp.handlers"
-                            }
-                        ]
-                    }
-                ], 
-                "task_type": "GGA+U band structure", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.663614"
-        }, 
-        {
-            "fw_id": 17, 
-            "spec": {
-                "_tasks": [
-                    {
-                        "_fw_name": "Vasp to Database Task"
-                    }
-                ], 
-                "task_type": "VASP db insertion", 
-                "run_tags": [
-                    "auto generation v1.0"
-                ]
-            }, 
-            "created_on": "2013-04-30T00:10:50.663636"
+            "created_on": "2013-05-09T16:47:18.943343", 
+            "name": "Fe1_O1--Controller_add_Electronic_Structure"
         }
     ]
 }
