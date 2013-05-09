@@ -1,6 +1,5 @@
 import glob
 import os
-import string
 from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
 from custodian.vasp.jobs import VaspJob
 from mpworks.firetasks.custodian_task import VaspCustodianTask
@@ -48,3 +47,16 @@ def orig(filename):
         return orig[0]
     else:
         return filename
+
+
+def get_loc(m_dir):
+    if os.path.exists(m_dir):
+        return m_dir
+    block_part = m_dir[m_dir.find('block_'):]
+    garden_part = '/project/projectdirs/matgen/garden'
+    new_loc = os.path.join(garden_part, block_part)
+
+    if os.path.exists(new_loc):
+        return new_loc
+
+    raise ValueError('get_loc() -- dir does not exist!!')

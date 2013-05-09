@@ -14,7 +14,7 @@ from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_utils import last_relax, _get_custodian_task
+from mpworks.workflows.wf_utils import last_relax, _get_custodian_task, get_loc
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -63,7 +63,7 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             default_files.append('CONTCAR')
 
     def run_task(self, fw_spec):
-        prev_dir = fw_spec['prev_vasp_dir']
+        prev_dir = get_loc(fw_spec['prev_vasp_dir'])
 
         if '$ALL' in self.files:
             self.files = os.listdir(prev_dir)
@@ -96,7 +96,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update_duplicates = self.get('update_duplicates', False)
 
     def run_task(self, fw_spec):
-        prev_dir = fw_spec['prev_vasp_dir']
+        prev_dir = get_loc(fw_spec['prev_vasp_dir'])
         update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
