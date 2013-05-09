@@ -48,7 +48,8 @@ def _snl_to_spec(snl, enforce_gga=False):
     spec['run_tags'].extend(potcar.symbols)
 
     # Add run tags of +U
-    u_tags = ['%s=%s' % t for t in zip(poscar.site_symbols, incar.get('LDAUU', [0] * len(poscar.site_symbols)))]
+    u_tags = ['%s=%s' % t for t in
+              zip(poscar.site_symbols, incar.get('LDAUU', [0] * len(poscar.site_symbols)))]
     spec['run_tags'].extend(u_tags)
 
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
@@ -72,25 +73,27 @@ def snl_to_wf(snl, do_bandstructure=True):
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
     spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict}
-    fws.append(FireWork(tasks, spec, name=get_slug(f+'--'+spec['task_type']), fw_id=0))
+    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
     spec['_priority'] = 2
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=get_slug(f+'--'+spec['task_type']), fw_id=1))
+    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
             '_allow_fizzled_parents': True}
-    fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=2))
+    fws.append(
+        FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if do_bandstructure:
         spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
         fws.append(
-            FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=3))
+            FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                     fw_id=3))
         connections[2] = [3]
 
     # determine if GGA+U FW is needed
@@ -102,24 +105,29 @@ def snl_to_wf(snl, do_bandstructure=True):
         spec['_priority'] = 2
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
-             _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=10))
+             _get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
+            fw_id=10))
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion',
                 '_allow_fizzled_parents': True, '_priority': 2}
         fws.append(
-            FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=11))
+            FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if do_bandstructure:
             spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
-            fws.append(FireWork([AddEStructureTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=12))
+            fws.append(
+                FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                         fw_id=12))
             connections[11] = [12]
 
     wf_meta = get_meta_from_structure(snl.structure)
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
-    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
+    return Workflow(fws, connections, name=Composition.from_formula(
+        snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
+
 
 """
 def snl_to_wf_ggau(snl):
@@ -145,7 +153,6 @@ def snl_to_wf_ggau(snl):
 
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 """
-
 
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
