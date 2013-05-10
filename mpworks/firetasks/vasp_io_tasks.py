@@ -97,7 +97,8 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
+        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
+                       'run_tags': fw_spec['run_tags']}
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
@@ -140,18 +141,22 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fws = []
             connections = {}
 
-            f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+            f = Composition.from_formula(
+                snl.structure.composition.reduced_formula).alphabetical_formula
 
             fws.append(FireWork(
-                [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'], 'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
-                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-2))
+                [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
+                               'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
+                 _get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
+                fw_id=-2))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
                     '_priority': 4, '_queueadapter': {'_nnodes': 1}}
             spec['run_tags'].append('unconverged_handler')
             fws.append(
-                FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))
+                FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                         fw_id=-1))
             connections[-2] = -1
 
             wf = Workflow(fws, connections)
