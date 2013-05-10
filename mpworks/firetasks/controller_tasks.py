@@ -35,8 +35,10 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         print 'sleeping 10s for Mongo'
         time.sleep(10)
         print 'done sleeping'
+        print 'the gap is {}, the cutoff is {}'.format(fw_spec['analysis']['bandgap'], self.gap_cutoff)
 
         if fw_spec['analysis']['bandgap'] >= self.gap_cutoff:
+            print 'Adding more runs...'
             type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
 
             snl = StructureNL.from_dict(fw_spec['mpsnl'])
@@ -56,7 +58,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                      _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static
-            spec = {'task_type': 'VASP db insertion',
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'_nnodes': 1},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
@@ -71,7 +73,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
-            spec = {'task_type': 'VASP db insertion',
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'_nnodes': 1},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
@@ -87,13 +89,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-7] = -6
 
             # insert into DB - GGA Band structure
-            spec = {'task_type': 'VASP db insertion',
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'_nnodes': 1},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
-            # TODO: add WF meta
             wf = Workflow(fws, connections)
+
+            print 'Done adding more runs...'
 
             return FWAction(additions=wf)
         return FWAction()

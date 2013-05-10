@@ -20,10 +20,6 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
-# TODO: add duplicate checks for DB task - don't want to add the same dir
-# twice!!
-# TODO: different walltime requirements and priority for DB task
-
 
 def _snl_to_spec(snl, enforce_gga=False):
     spec = {}
@@ -84,13 +80,14 @@ def snl_to_wf(snl, do_bandstructure=True):
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
-            '_allow_fizzled_parents': True}
+            '_allow_fizzled_parents': True, '_queueadapter': {'_nnodes': 1}}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if do_bandstructure:
-        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
+        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
+                '_queueadapter': {'_nnodes': 1}}
         fws.append(
             FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
@@ -109,20 +106,22 @@ def snl_to_wf(snl, do_bandstructure=True):
             fw_id=10))
         connections[2].append(10)
 
-        spec = {'task_type': 'VASP db insertion',
+        spec = {'task_type': 'VASP db insertion', '_queueadapter': {'_nnodes': 1},
                 '_allow_fizzled_parents': True, '_priority': 2}
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if do_bandstructure:
-            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2}
+            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
+                    '_queueadapter': {'_nnodes': 1}}
             fws.append(
                 FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                          fw_id=12))
             connections[11] = [12]
 
     wf_meta = get_meta_from_structure(snl.structure)
+
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
     return Workflow(fws, connections, name=Composition.from_formula(
@@ -144,7 +143,7 @@ def snl_to_wf_ggau(snl):
 
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
-            '_category': 'VASP'}
+            '_category': 'VASP', '_queueadapter': {'_nnodes': 1}}
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
     mpvis = MPVaspInputSet()

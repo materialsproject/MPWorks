@@ -148,7 +148,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
-                    '_priority': 4}
+                    '_priority': 4, '_queueadapter': {'_nnodes': 1}}
             spec['run_tags'].append('unconverged_handler')
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))
