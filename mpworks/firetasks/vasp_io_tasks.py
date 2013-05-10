@@ -155,7 +155,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 fw_id=-2))
 
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
-                    '_priority': fw_spec['_priority'], '_queueadapter': QA_DB}
+                    '_priority': fw_spec['_priority'], '_queueadapter': QA_DB, 'run_tags': list(fw_spec['run_tags'])}
             spec['run_tags'].append('unconverged_handler')
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
