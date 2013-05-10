@@ -18,6 +18,10 @@ def mps_dict_to_snl(mps_dict):
     if 'deprecated' in m['about']['metadata']['info'] and m['about']['metadata']['info']['deprecated']:
         return None
 
+    if 'Carbon Capture Storage Initiative (CCSI)' in m['about']['metadata']['project_names']:
+        print 'rejected old CCSI'
+        return None
+
     mps_ids = [m['mps_id']]
 
     remarks = []
