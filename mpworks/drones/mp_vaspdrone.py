@@ -47,6 +47,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
+        d["dir_name"] = d["dir_name"].split(":")[1]  # don't include hostname (compute node!)
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
             # be pickled, every insertion needs to create a new connection
@@ -60,8 +61,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             # Insert dos data into gridfs and then remove it from the dict.
             # DOS data tends to be above the 4Mb limit for mongo docs. A ref
             # to the dos file is in the dos_fs_id.
-            result = coll.find_one({"dir_name": d["dir_name"]},
-                                   fields=["dir_name", "task_id"])
+            result = coll.find_one({"dir_name": d["dir_name"]})
             if result is None or self.update_duplicates:
                 if self.parse_dos and "calculations" in d:
                     for calc in d["calculations"]:
@@ -80,11 +80,11 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             update={"$inc": {"c": 1}}
                         )["c"]
                     logger.info("Inserting {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
 
                 #Fireworks processing
                 self.process_fw(path, d)
@@ -96,7 +96,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-                        .format(d["dir_name"], d["task_id"]))
+            .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):
