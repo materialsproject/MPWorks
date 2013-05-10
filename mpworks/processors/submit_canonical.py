@@ -75,7 +75,9 @@ def submit_tests(names=None):
             s = mpr.get_structure_by_material_id(sid, final=False)
 
             snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
-            sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=None)
+
+            parameters = {'priority': 10} if name == 'Si' else None
+            sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=parameters)
 
 
 def clear_and_submit(clear=False, names=None):
