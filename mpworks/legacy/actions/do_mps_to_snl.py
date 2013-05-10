@@ -1,6 +1,7 @@
 import os
 import traceback
 from pymongo import MongoClient
+import time
 import yaml
 from mpworks.legacy.mps_to_snl import mps_dict_to_snl
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
@@ -32,6 +33,7 @@ if __name__ == '__main__':
     snldb = SNLMongoAdapter.from_file(snl_f)
     if RESET:
         snldb._reset()
+        time.sleep(10)  # makes me sleep better at night
 
     for mps in db.mps.find(timeout=False):
         try:
