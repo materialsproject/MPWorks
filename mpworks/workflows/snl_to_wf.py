@@ -7,6 +7,7 @@ from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
+from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from mpworks.workflows.wf_utils import _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
@@ -61,11 +62,14 @@ def snl_to_wf(snl, parameters=None):
     connections = {}
     parameters = parameters if parameters else {}
 
+    snl_priority = parameters.get('priority', 1)
+    priority = snl_priority * 2  # once we start a job, keep going!
+
     f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': {'nnodes': 1, 'walltime': '12:00:00'}}
+    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
         spec['force_mpsnl'] = snl.to_dict
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
@@ -74,20 +78,21 @@ def snl_to_wf(snl, parameters=None):
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
-    spec['_priority'] = 2
+    spec['_priority'] = priority
+    spec['_queueadapter'] = QA_VASP
     tasks = [VaspWriterTask(), _get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
-    spec = {'task_type': 'VASP db insertion', '_priority': 2,
-            '_allow_fizzled_parents': True, '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'}}
+    spec = {'task_type': 'VASP db insertion', '_priority': priority,
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if not parameters.get('skip_bandstructure', False):
-        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
-                '_queueadapter': {'nnodes': 1, 'walltime': '00:30:00'}}
+        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+                '_queueadapter': QA_CONTROL}
         fws.append(
             FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
@@ -99,22 +104,23 @@ def snl_to_wf(snl, parameters=None):
     if 'LDAU' in incar and incar['LDAU']:
         spec = _snl_to_spec(snl, enforce_gga=False)
         del spec['vasp']  # we are stealing all VASP params and such from previous run
-        spec['_priority'] = 2
+        spec['_priority'] = priority
+        spec['_queueadapter'] = QA_VASP
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
              _get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
             fw_id=10))
         connections[2].append(10)
 
-        spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
-                '_allow_fizzled_parents': True, '_priority': 2}
+        spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
+                '_allow_fizzled_parents': True, '_priority': priority}
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if not parameters.get('skip_bandstructure', False):
-            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
-                    '_queueadapter': {'nnodes': 1, 'walltime': '00:30:00'}}
+            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+                    '_queueadapter': QA_CONTROL}
             fws.append(
                 FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                          fw_id=12))
@@ -144,7 +150,7 @@ def snl_to_wf_ggau(snl):
 
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
-            '_category': 'VASP', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'}}
+            '_category': 'VASP', '_queueadapter': QA_VASP}
     fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
     mpvis = MPVaspInputSet()

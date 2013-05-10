@@ -6,6 +6,7 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
+from mpworks.workflows.wf_settings import QA_VASP, QA_DB
 from mpworks.workflows.wf_utils import _get_custodian_task
 from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
@@ -46,50 +47,52 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws = []
             connections = {}
 
+            priority = fw_spec['_priority']
+
             # run GGA static
             spec = fw_spec  # pass all the items from the current spec to the new
             #  one
-            spec.update({'task_type': '{} static'.format(type_name),
-                         '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2})
+            spec.update({'task_type': '{} static'.format(type_name), '_queueadapter': QA_VASP,
+                         '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
             fws.append(
                 FireWork(
                     [VaspCopyTask({'use_CONTCAR': True}), SetupStaticRunTask(),
                      _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
-                    '_allow_fizzled_parents': True, '_priority': 2}
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
+                    '_allow_fizzled_parents': True, '_priority': priority}
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
             connections[-10] = -9
 
             # run GGA Uniform
-            spec = {'task_type': '{} Uniform'.format(type_name),
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
+            spec = {'task_type': '{} Uniform'.format(type_name), '_queueadapter': QA_VASP,
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork(
                 [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
                  _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-8))
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
-                    '_allow_fizzled_parents': True, '_priority': 2}
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
+                    '_allow_fizzled_parents': True, '_priority': priority}
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
                          fw_id=-7))
             connections[-8] = -7
 
             # run GGA Band structure
-            spec = {'task_type': '{} band structure'.format(type_name),
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': 2}
+            spec = {'task_type': '{} band structure'.format(type_name), '_queueadapter': QA_VASP,
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
                                  _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                                 fw_id=-6))
             connections[-7] = -6
 
             # insert into DB - GGA Band structure
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
-                    '_allow_fizzled_parents': True, '_priority': 2}
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
+                    '_allow_fizzled_parents': True, '_priority': priority}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
