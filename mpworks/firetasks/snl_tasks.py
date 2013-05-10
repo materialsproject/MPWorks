@@ -20,13 +20,12 @@ class AddSNLTask(FireTaskBase, FWSerializable):
     _fw_name = "Add SNL Task"
 
     def run_task(self, fw_spec):
-        # get the SNL mongo adapter
+        # pass-through option for when we start with an mpsnl and don't actually want to add
+        if 'force_mpsnl' in fw_spec and 'force_snlgroup_id' in fw_spec:
+            return FWAction(update_spec={'mpsnl': fw_spec['force_mpsnl'], 'snlgroup_id': fw_spec['force_snlgroup_id']})
+
         sma = SNLMongoAdapter.auto_load()
-
-        # get the SNL
         snl = StructureNL.from_dict(fw_spec['snl'])
-
-        # add snl
         mpsnl, snlgroup_id = sma.add_snl(snl)
 
         return FWAction(update_spec={'mpsnl': mpsnl.to_dict, 'snlgroup_id': snlgroup_id})

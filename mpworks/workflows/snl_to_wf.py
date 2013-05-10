@@ -6,7 +6,7 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
-from mpworks.snl_utils.mpsnl import get_meta_from_structure
+from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_utils import _get_custodian_task
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
@@ -58,17 +58,19 @@ def _snl_to_spec(snl, enforce_gga=False):
     return spec
 
 
-def snl_to_wf(snl, do_bandstructure=True):
-    # TODO: clean this up once we're out of testing mode
-    # TODO: add WF metadata
+def snl_to_wf(snl, parameters=None):
     fws = []
     connections = {}
+    parameters = parameters if parameters else {}
 
     f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
     spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict}
+    if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
+        spec['force_mpsnl'] = snl.to_dict
+        spec['force_snlgroup_id'] = parameters['snlgroup_id']
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 
@@ -85,7 +87,7 @@ def snl_to_wf(snl, do_bandstructure=True):
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
-    if do_bandstructure:
+    if not parameters.get('skip_bandstructure', False):
         spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
                 '_queueadapter': {'_nnodes': 1}}
         fws.append(
@@ -112,7 +114,7 @@ def snl_to_wf(snl, do_bandstructure=True):
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
-        if do_bandstructure:
+        if not parameters.get('skip_bandstructure', False):
             spec = {'task_type': 'Controller: add Electronic Structure', '_priority': 2,
                     '_queueadapter': {'_nnodes': 1}}
             fws.append(

@@ -57,7 +57,7 @@ class SubmissionProcessor():
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
                     # create a workflow
-                    wf = snl_to_wf(snl)
+                    wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
