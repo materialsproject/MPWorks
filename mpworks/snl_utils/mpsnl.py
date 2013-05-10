@@ -159,7 +159,7 @@ class SNLGroup():
 
         # use default Structure Matcher params from April 24, 2013, as suggested by Shyue
         # we are using the ElementComparator() because this is how we want to group results
-        sm = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True, attempt_supercell=True, comparator=ElementComparator())
+        sm = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True, attempt_supercell=False, comparator=ElementComparator())
 
         if not sm.fit(cand_snl.structure, self.canonical_structure):
             return False

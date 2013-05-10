@@ -13,6 +13,8 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 08, 2013'
 
 
+RESET = True
+
 if __name__ == '__main__':
 
     module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -28,11 +30,12 @@ if __name__ == '__main__':
     db.authenticate(y['username'], y['password'])
 
     snldb = SNLMongoAdapter.from_file(snl_f)
-    snldb._reset()
+    if RESET:
+        snldb._reset()
 
     for mps in db.mps.find(timeout=False):
         try:
-            if not snldb.snl.find_one({"about._materialsproject.deprecated.mps_ids": mps['mps_id']}):
+            if RESET or not snldb.snl.find_one({"about._materialsproject.deprecated.mps_ids": mps['mps_id']}):
                 snl = mps_dict_to_snl(mps)
                 if snl:
                     snldb.add_snl(snl)
