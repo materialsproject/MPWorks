@@ -16,7 +16,7 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Apr 26, 2013'
 
 # TODO: support priority as a parameter
-# TODO: vary the workflow depending on params
+
 
 DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
 YAML_STYLE = False  # False = YAML is formatted as blocks

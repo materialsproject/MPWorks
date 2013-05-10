@@ -7,7 +7,6 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 22, 2013'
 
-# TODO: add Launchpad indices that make this query efficient
 
 class DupeFinderVasp(DupeFinderBase):
     """

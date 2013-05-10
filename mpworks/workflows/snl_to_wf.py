@@ -49,8 +49,6 @@ def _snl_to_spec(snl, enforce_gga=False):
     spec['run_tags'].extend(u_tags)
 
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
-    # TODO: restore category
-    # spec['_category'] = 'Materials Project'
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp'][
         'incar'].get('LDAU', False) else 'GGA optimize structure (2x)'

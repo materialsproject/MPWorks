@@ -31,7 +31,6 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         self.gap_cutoff = parameters.get('gap_cutoff', 0.5)  # see e-mail from Geoffroy, 5/1/2013
 
     def run_task(self, fw_spec):
-        # TODO: add stored data?
         print 'sleeping 10s for Mongo'
         time.sleep(10)
         print 'done sleeping'

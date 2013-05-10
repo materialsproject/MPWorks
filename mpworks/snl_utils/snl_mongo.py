@@ -18,7 +18,6 @@ __date__ = 'Apr 24, 2013'
 # Parameters for spacegroup and mps_unique_id determination
 SPACEGROUP_TOLERANCE = 0.1  # as suggested by Shyue, 6/19/2012
 
-# TODO: add logging
 
 class SNLMongoAdapter(FWSerializable):
     def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):

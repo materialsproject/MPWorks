@@ -154,7 +154,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-1))
             connections[-2] = -1
 
-            # TODO: add WF meta
             wf = Workflow(fws, connections)
 
             return FWAction(detours=wf)
