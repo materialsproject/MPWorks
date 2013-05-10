@@ -65,7 +65,7 @@ def snl_to_wf(snl, parameters=None):
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict}
+    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': {'_nnodes': 1}}
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
         spec['force_mpsnl'] = snl.to_dict
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
