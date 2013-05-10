@@ -4,6 +4,7 @@
 
 """
 import json
+import logging
 import os
 import shutil
 from custodian.vasp.handlers import UnconvergedErrorHandler
@@ -103,6 +104,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
 
+        logging.basicConfig(level=logging.DEBUG)
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(

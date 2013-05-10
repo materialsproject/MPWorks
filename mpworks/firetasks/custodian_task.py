@@ -1,3 +1,4 @@
+import logging
 import socket
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
@@ -27,6 +28,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
+
         # write a file containing the formula and task_type for somewhat easier file system browsing
         self._write_formula_file(fw_spec)
 
@@ -41,6 +43,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         for job in self.jobs:
             job.vasp_command = v_exe
 
+        logging.basicConfig(level=logging.DEBUG)
         c = Custodian(self.handlers, self.jobs, self.max_errors)
         custodian_out = c.run()
 

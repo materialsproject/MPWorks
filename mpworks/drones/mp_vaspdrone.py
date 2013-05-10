@@ -90,9 +90,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 self.process_fw(path, d)
                 coll.update({"dir_name": d["dir_name"]}, {"$set": d},
                             upsert=True)
-                return d["task_id"], d
             else:
                 logger.info("Skipping duplicate {}".format(d["dir_name"]))
+            return d["task_id"], d
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
