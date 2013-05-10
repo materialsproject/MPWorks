@@ -57,7 +57,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                      _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1},
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
@@ -72,7 +72,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1},
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
@@ -88,7 +88,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-7] = -6
 
             # insert into DB - GGA Band structure
-            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1},
+            spec = {'task_type': 'VASP db insertion', '_queueadapter': {'nnodes': 1, 'walltime': '24:00:00'},
                     '_allow_fizzled_parents': True, '_priority': 2}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
