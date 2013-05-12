@@ -18,7 +18,8 @@ __date__ = 'Apr 26, 2013'
 # TODO: support priority as a parameter
 
 
-DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+DATETIME_HANDLER = lambda obj: obj.isoformat() \
+    if isinstance(obj, datetime.datetime) else None
 YAML_STYLE = False  # False = YAML is formatted as blocks
 
 
@@ -124,10 +125,12 @@ class SubmissionMongoAdapter(object):
         :param f_format: the format to output to (default json)
         """
         if f_format == 'json':
-            return json.dumps(self.to_dict(), *args, default=DATETIME_HANDLER, **kwargs)
+            return json.dumps(self.to_dict(), *args,
+                              default=DATETIME_HANDLER, **kwargs)
         elif f_format == 'yaml':
             # start with the JSON format, and convert to YAML
-            return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE, allow_unicode=True)
+            return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE,
+                             allow_unicode=True)
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
@@ -145,25 +148,27 @@ class SubmissionMongoAdapter(object):
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
-    def to_file(self, filename, f_format='AUTO_DETECT', *args, **kwargs):
+    def to_file(self, filename, f_format=None, *args, **kwargs):
         """
         Write a serialization of this object to a file
         :param filename: filename to write to
-        :param f_format: serialization format, default checks the filename extension
+        :param f_format: serialization format, default checks the filename
+                         extension
         """
-        if f_format == 'AUTO_DETECT':
+        if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'w') as f:
             f.write(self.to_format(f_format=f_format, *args, **kwargs))
 
     @classmethod
-    def from_file(cls, filename, f_format='AUTO_DETECT'):
+    def from_file(cls, filename, f_format=None):
         """
         Load a serialization of this object from a file
         :param filename: filename to read
-        :param f_format: serialization format, default checks the filename extension
+        :param f_format: serialization format, default (None) checks the
+                         filename extension
         """
-        if f_format == 'AUTO_DETECT':
+        if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'r') as f:
             return cls.from_format(f.read(), f_format=f_format)
@@ -182,7 +187,7 @@ def _reconstitute_dates(obj_dict):
     if isinstance(obj_dict, basestring):
         try:
             return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
-        except:
+        except ValueError:
             pass
 
     return obj_dict
@@ -191,20 +196,17 @@ def _reconstitute_dates(obj_dict):
 def get_meta_from_structure(structure):
     comp = structure.composition
     elsyms = sorted(set([e.symbol for e in comp.elements]))
-    # TODO: this won't work for molecules
-    meta = {'nsites': len(structure.sites),
+    # TODO: this won't work for molecules (SP: I don't understand why not?)
+    meta = {'nsites': len(structure),
             'elements': elsyms,
             'nelements': len(elsyms),
             'formula': comp.formula,
             'reduced_cell_formula': comp.reduced_formula,
-            'reduced_cell_formula_abc': Composition.from_formula(comp
-                .reduced_formula).alphabetical_formula,
+            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
+            .alphabetical_formula,
             'composition_dict': comp.to_dict,
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
             'is_valid': structure.is_valid()}
-    # the complex logic set/list is to prevent duplicates if there are
-    # multiple oxidation states
-
     return meta
