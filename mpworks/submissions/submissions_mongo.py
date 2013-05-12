@@ -145,25 +145,26 @@ class SubmissionMongoAdapter(object):
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
-    def to_file(self, filename, f_format='AUTO_DETECT', *args, **kwargs):
+    def to_file(self, filename, f_format=None, *args, **kwargs):
         """
         Write a serialization of this object to a file
         :param filename: filename to write to
         :param f_format: serialization format, default checks the filename extension
         """
-        if f_format == 'AUTO_DETECT':
+        if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'w') as f:
             f.write(self.to_format(f_format=f_format, *args, **kwargs))
 
     @classmethod
-    def from_file(cls, filename, f_format='AUTO_DETECT'):
+    def from_file(cls, filename, f_format=None):
         """
         Load a serialization of this object from a file
         :param filename: filename to read
-        :param f_format: serialization format, default checks the filename extension
+        :param f_format: serialization format, default (None) checks the
+                         filename extension
         """
-        if f_format == 'AUTO_DETECT':
+        if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'r') as f:
             return cls.from_format(f.read(), f_format=f_format)
