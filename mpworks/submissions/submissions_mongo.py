@@ -196,20 +196,17 @@ def _reconstitute_dates(obj_dict):
 def get_meta_from_structure(structure):
     comp = structure.composition
     elsyms = sorted(set([e.symbol for e in comp.elements]))
-    # TODO: this won't work for molecules
-    meta = {'nsites': len(structure.sites),
+    # TODO: this won't work for molecules (SP: I don't understand why not?)
+    meta = {'nsites': len(structure),
             'elements': elsyms,
             'nelements': len(elsyms),
             'formula': comp.formula,
             'reduced_cell_formula': comp.reduced_formula,
-            'reduced_cell_formula_abc': Composition.from_formula(comp
-                .reduced_formula).alphabetical_formula,
+            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
+            .alphabetical_formula,
             'composition_dict': comp.to_dict,
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
             'is_valid': structure.is_valid()}
-    # the complex logic set/list is to prevent duplicates if there are
-    # multiple oxidation states
-
     return meta
