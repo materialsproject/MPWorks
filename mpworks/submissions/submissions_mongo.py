@@ -18,7 +18,8 @@ __date__ = 'Apr 26, 2013'
 # TODO: support priority as a parameter
 
 
-DATETIME_HANDLER = lambda obj: obj.isoformat() if isinstance(obj, datetime.datetime) else None
+DATETIME_HANDLER = lambda obj: obj.isoformat() \
+    if isinstance(obj, datetime.datetime) else None
 YAML_STYLE = False  # False = YAML is formatted as blocks
 
 
@@ -124,10 +125,12 @@ class SubmissionMongoAdapter(object):
         :param f_format: the format to output to (default json)
         """
         if f_format == 'json':
-            return json.dumps(self.to_dict(), *args, default=DATETIME_HANDLER, **kwargs)
+            return json.dumps(self.to_dict(), *args,
+                              default=DATETIME_HANDLER, **kwargs)
         elif f_format == 'yaml':
             # start with the JSON format, and convert to YAML
-            return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE, allow_unicode=True)
+            return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE,
+                             allow_unicode=True)
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
@@ -149,7 +152,8 @@ class SubmissionMongoAdapter(object):
         """
         Write a serialization of this object to a file
         :param filename: filename to write to
-        :param f_format: serialization format, default checks the filename extension
+        :param f_format: serialization format, default checks the filename
+                         extension
         """
         if f_format is None:
             f_format = filename.split('.')[-1]
@@ -183,7 +187,7 @@ def _reconstitute_dates(obj_dict):
     if isinstance(obj_dict, basestring):
         try:
             return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
-        except:
+        except ValueError:
             pass
 
     return obj_dict
