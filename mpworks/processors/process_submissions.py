@@ -3,7 +3,7 @@ import time
 import traceback
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
-from mpworks.submissions.submissions_mongo import SubmissionMongoAdapter
+from mpworks.submissions.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.snl_to_wf import snl_to_wf
 from pymatgen.matproj.snl import StructureNL
 
