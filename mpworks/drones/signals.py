@@ -153,7 +153,7 @@ class WallTimeSignal(SignalDetector):
         # Look for *.error
         file_names = glob.glob(os.path.join(dir_name, "*.error"))
         for file_name in file_names:
-            if string_list_in_file(["job killed: walltime"], file_name,
+            if string_list_in_file(["job killed: walltime", "PBS: job killed"], file_name,
                                           ignore_case=True):
                 return set(["WALLTIME_EXCEEDED"])
         return set()
