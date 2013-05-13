@@ -44,6 +44,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         for job in self.jobs:
             job.vasp_command = v_exe
+            job.gamma_vasp_cmd = v_exe.replace('vasp', 'gvasp')
 
         logging.basicConfig(level=logging.DEBUG)
         c = Custodian(self.handlers, self.jobs, self.max_errors)
