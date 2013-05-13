@@ -35,16 +35,18 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # TODO: make this better - is there a way to load an environment variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
             v_exe = shlex.split('aprun -n 48 vasp')  # TODO: can base ncores on FW_submit.script
+            gv_exe = shlex.split('aprun -n 48 gvasp')
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
             v_exe = shlex.split('mpirun -n 32 vasp')  # TODO: can base ncores on FW_submit.script
+            gv_exe = shlex.split('aprun -n 32 gvasp')
             print 'running on MENDEL'
         else:
             raise ValueError('Unrecognized host!')
 
         for job in self.jobs:
             job.vasp_cmd = v_exe
-            job.gamma_vasp_cmd = v_exe.replace('vasp', 'gvasp')
+            job.gamma_vasp_cmd = gv_exe
 
         logging.basicConfig(level=logging.DEBUG)
         c = Custodian(self.handlers, self.jobs, self.max_errors)
