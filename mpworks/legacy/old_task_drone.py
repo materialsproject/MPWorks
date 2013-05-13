@@ -52,7 +52,8 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
         d["dir_name_full"] = d["dir_name"].split(":")[1]
-        d["dir_name"] = get_block_part(d["dir_name_full"])
+        d["dir_name"] = get_block_part(d["dir_name_full"]) if 'block_' in d["dir_name_full"] else d[
+            'dir_name_full']
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
             # be pickled, every insertion needs to create a new connection
@@ -119,7 +120,8 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
         if old_task.get('mps_id', -1) > 0:
             # grab the SNL from the SNL db
-            snl_d = sma.snl.find_one({'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
+            snl_d = sma.snl.find_one(
+                {'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
             del snl_d['_id']
             d['snl'] = snl_d
             d['snlgroup_id'] = sma.snlgroups.find_one({'all_snl_ids': d['snl']['snl_id']}, {'snlgroup_id': 1})['snlgroup_id']
@@ -147,7 +149,6 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
             # add snl
             mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
-            print 'ADDED snlgroup', snlgroup_id
 
             d['snl_final'] = mpsnl.to_dict
             d['snlgroup_id_final'] = snlgroup_id
