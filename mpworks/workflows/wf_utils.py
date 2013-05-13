@@ -34,7 +34,9 @@ def orig(filename):
 
 
 def get_block_part(m_dir):
-    return m_dir[m_dir.find('block_'):]
+    if 'block_' in m_dir:
+        return m_dir[m_dir.find('block_'):]
+    return m_dir
 
 
 def get_loc(m_dir):

@@ -52,8 +52,7 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
         d["dir_name_full"] = d["dir_name"].split(":")[1]
-        d["dir_name"] = get_block_part(d["dir_name_full"]) if 'block_' in d["dir_name_full"] else d[
-            'dir_name_full']
+        d["dir_name"] = get_block_part(d["dir_name_full"])
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
             # be pickled, every insertion needs to create a new connection
@@ -222,3 +221,5 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
         d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
+
+        d['run_stats'] = old_task['run_stats']  # the old parser was better here
