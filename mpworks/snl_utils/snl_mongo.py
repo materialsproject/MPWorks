@@ -101,6 +101,7 @@ class SNLMongoAdapter(FWSerializable):
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.to_dict
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
+        print snl_d
         self.snl.insert(snl_d)
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
 

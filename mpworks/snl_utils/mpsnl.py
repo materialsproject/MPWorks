@@ -23,7 +23,6 @@ def get_meta_from_structure(structure):
             'reduced_cell_formula': comp.reduced_formula,
             'reduced_cell_formula_abc': Composition(comp.reduced_formula)
             .alphabetical_formula,
-            'composition_dict': comp.to_dict,
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
