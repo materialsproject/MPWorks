@@ -32,7 +32,7 @@ with open(tasks_f) as f:
     logging.basicConfig(level=logging.DEBUG)
     with open(db_path) as f:
         db_creds = json.load(f)
-        for t in tasks_old.find(timeout=False, sort=[("task_id", ASCENDING)], timeout=False):
+        for t in tasks_old.find(sort=[("task_id", ASCENDING)], timeout=False):
             # get the directory containing the db file
             try:
                 drone = MPVaspDrone_CONVERSION(
