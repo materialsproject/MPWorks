@@ -221,5 +221,3 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
         d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
-
-        d['run_stats'] = old_task['run_stats']  # the old parser was better here
