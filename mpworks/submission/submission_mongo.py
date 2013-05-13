@@ -196,7 +196,6 @@ def _reconstitute_dates(obj_dict):
 def get_meta_from_structure(structure):
     comp = structure.composition
     elsyms = sorted(set([e.symbol for e in comp.elements]))
-    # TODO: this won't work for molecules (SP: I don't understand why not?)
     meta = {'nsites': len(structure),
             'elements': elsyms,
             'nelements': len(elsyms),
