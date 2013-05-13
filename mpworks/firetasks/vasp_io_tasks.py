@@ -98,9 +98,16 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update_duplicates = self.get('update_duplicates', False)
 
     def run_task(self, fw_spec):
-        prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
+        if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
+            prev_dir = get_loc(fw_spec['_fizzled_parents'][0].launches[0].launch_dir)
+            update_spec = {}
+            fizzled_parent = True
+        else:
+            prev_dir = get_loc(fw_spec['prev_vasp_dir'])
+            update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
                        'run_tags': fw_spec['run_tags']}
+            fizzled_parent = False
+
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
@@ -130,7 +137,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         # not successful - first test to see if UnconvergedHandler is needed
         output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags']:
+        if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags'] and not fizzled_parent:
             print 'Unconverged run! Creating dynamic FW...'
 
             spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
