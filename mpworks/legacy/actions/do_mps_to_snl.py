@@ -14,7 +14,7 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 08, 2013'
 
 
-RESET = True
+RESET = False
 
 if __name__ == '__main__':
 
@@ -31,13 +31,22 @@ if __name__ == '__main__':
     db.authenticate(y['username'], y['password'])
 
     snldb = SNLMongoAdapter.from_file(snl_f)
+
+    prev_ids = []  # MPS ids that we already took care of
+
+    print 'INITIALIZING'
     if RESET:
         snldb._reset()
         time.sleep(10)  # makes me sleep better at night
 
+    else:
+        for mps in snldb.snl.find({}, {"about._materialsproject.deprecated.mps_ids": 1}):
+            prev_ids.extend(mps['about']['_materialsproject']['deprecated']['mps_ids'])
+
+    print 'PROCESSING'
     for mps in db.mps.find(timeout=False):
         try:
-            if RESET or not snldb.snl.find_one({"about._materialsproject.deprecated.mps_ids": mps['mps_id']}):
+            if not mps['mps_id'] in prev_ids:
                 snl = mps_dict_to_snl(mps)
                 if snl:
                     snldb.add_snl(snl)
