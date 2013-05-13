@@ -32,16 +32,16 @@ with open(tasks_f) as f:
     logging.basicConfig(level=logging.INFO)
     with open(db_path) as f:
         db_creds = json.load(f)
+        drone = MPVaspDrone_CONVERSION(
+        host=db_creds['host'], port=db_creds['port'],
+        database=db_creds['database'], user=db_creds['admin_user'],
+        password=db_creds['admin_password'],
+        collection=db_creds['collection'], parse_dos=False,
+        additional_fields={},
+        update_duplicates=False)
         for t in tasks_old.find(sort=[("task_id", ASCENDING)], timeout=False):
             # get the directory containing the db file
             try:
-                drone = MPVaspDrone_CONVERSION(
-                    host=db_creds['host'], port=db_creds['port'],
-                    database=db_creds['database'], user=db_creds['admin_user'],
-                    password=db_creds['admin_password'],
-                    collection=db_creds['collection'], parse_dos=False,
-                    additional_fields={},
-                    update_duplicates=False)
                 t_id, d = drone.assimilate(t)
                 print 'ENTERED', t_id
             except:
