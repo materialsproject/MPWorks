@@ -1,6 +1,7 @@
 import re
 import random
 import unicodedata
+import datetime
 from pymatgen import Structure
 from pymatgen.matproj.snl import StructureNL
 
@@ -17,9 +18,11 @@ def icsd_dict_to_snl(icsd_dict):
     references = _get_icsd_reference(icsd_dict)
 
     data = {'_icsd': {}}
-    excluded_data = ['a_len', 'b_len', 'c_len', 'alpha', 'beta', 'gamma', 'compostion', 'composition', 'created_at', 'crystal_id', 'idnum', 'journal', 'updated_at', 'username']
+    excluded_data = ['_id', 'a_len', 'b_len', 'c_len', 'alpha', 'beta', 'gamma', 'compostion', 'composition', 'created_at', 'crystal_id', 'idnum', 'journal', 'tstruct', 'updated_at', 'username']
     for k, v in icsd_dict.iteritems():
         if k not in excluded_data:
+            if isinstance(v, datetime.datetime):
+                v = v.strftime(format='%Y-%m-%d %H:%M:%S')
             data['_icsd'][k] = v
 
     projects = None

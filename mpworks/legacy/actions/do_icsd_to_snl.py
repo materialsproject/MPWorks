@@ -1,9 +1,11 @@
+import json
 import os
 import traceback
 from pymongo import MongoClient
 import yaml
 from mpworks.legacy.icsd2012_to_snl import icsd_dict_to_snl
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
+from mpworks.submission.submission_mongo import DATETIME_HANDLER
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -31,7 +33,7 @@ if __name__ == '__main__':
     for icsd_dict in db.icsd_2012_crystals.find(timeout=False):
         try:
                 snl = icsd_dict_to_snl(icsd_dict)
-                print snl
+                print json.dumps(snl.to_dict, default=DATETIME_HANDLER)
                 #if snl:
                 #    snldb.add_snl(snl)
         except:
