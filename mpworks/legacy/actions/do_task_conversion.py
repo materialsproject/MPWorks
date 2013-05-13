@@ -29,7 +29,7 @@ with open(tasks_f) as f:
     # get the directory containing the db file
     db_dir = os.environ['DB_LOC']
     db_path = os.path.join(db_dir, 'tasks_db.json')
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     with open(db_path) as f:
         db_creds = json.load(f)
         for t in tasks_old.find(sort=[("task_id", ASCENDING)], timeout=False):
@@ -45,5 +45,5 @@ with open(tasks_f) as f:
                 t_id, d = drone.assimilate(t)
                 print 'ENTERED', t_id
             except:
-                print 'ERROR entering', t_id
+                print 'ERROR entering', t['task_id']
                 traceback.print_exc()
