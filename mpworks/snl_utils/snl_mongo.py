@@ -79,7 +79,7 @@ class SNLMongoAdapter(FWSerializable):
         self.id_assigner.insert(
             {"next_snl_id": next_snl_id, "next_snlgroup_id": next_snlgroup_id})
 
-    def add_snl(self, snl):
+    def add_snl(self, snl, force_new=False, snlgroup_guess=None):
         snl_id = self._get_next_snl_id()
         sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
@@ -95,40 +95,50 @@ class SNLMongoAdapter(FWSerializable):
 
         mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                        sgxtal, sglatt, sgpoint)
-        snlgroup, add_new = self.add_mpsnl(mpsnl)
+        snlgroup, add_new = self.add_mpsnl(mpsnl, force_new, snlgroup_guess)
         return mpsnl, snlgroup.snlgroup_id
 
-    def add_mpsnl(self, mpsnl):
+    def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.to_dict
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
         self.snl.insert(snl_d)
-        return self.build_groups(mpsnl)
+        return self.build_groups(mpsnl, force_new, snlgroup_guess)
 
-    def build_groups(self, mpsnl, testing_mode=False):
+    def _add_if_belongs(self, snlgroup, mpsnl, testing_mode):
+        if snlgroup.add_if_belongs(mpsnl):
+            print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
+            if not testing_mode:
+                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
+            return True
+        return False
+
+    def build_groups(self, mpsnl, force_new=False, snlgroup_guess=None, testing_mode=False):
         # testing mode is used to see if something already exists in DB w/o adding it to the db
-        add_new = True
 
-        for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key},
-                                         sort=[("num_snl", DESCENDING)]):
-            snlgroup = SNLGroup.from_dict(entry)
-            if snlgroup.add_if_belongs(mpsnl):
-                add_new = False
-                print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format(
-                    (mpsnl.snl_id, snlgroup.snlgroup_id))
-                if not testing_mode:
-                    self.snlgroups.update(
-                        {'snlgroup_id': snlgroup.snlgroup_id},
-                        snlgroup.to_dict)
-                break
+        match_found = False
+        if not force_new:
+            if snlgroup_guess:
+                sgp = self.snlgroups.find_one({'snlgroup_id': snlgroup_guess})
+                snlgroup = SNLGroup.from_dict(sgp)
+                match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
 
-        if add_new:
+            if not match_found:
+                # look at all potential matches
+                for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key},
+                                                 sort=[("num_snl", DESCENDING)]):
+                    snlgroup = SNLGroup.from_dict(entry)
+                    match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
+                    if match_found:
+                        break
+
+        if not match_found:
             # add a new SNLGroup
             snlgroup_id = self._get_next_snlgroup_id()
             snlgroup = SNLGroup(snlgroup_id, mpsnl)
             if not testing_mode:
                 self.snlgroups.insert(snlgroup.to_dict)
 
-        return snlgroup, add_new
+        return snlgroup, not match_found
 
     def to_dict(self):
         """

@@ -134,7 +134,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 sma = SNLMongoAdapter.auto_load()
 
                 # add snl
-                mpsnl, snlgroup_id = sma.add_snl(new_snl)
+                mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
                 d['snl_final'] = mpsnl.to_dict
                 d['snlgroup_id_final'] = snlgroup_id
                 d['snlgroup_changed'] = (d['snlgroup_id'] !=
