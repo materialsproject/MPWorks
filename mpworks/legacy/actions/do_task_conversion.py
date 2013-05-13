@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import json
 import logging
 import multiprocessing
@@ -53,8 +54,15 @@ def process_task(task_id):
                     traceback.print_exc()
 
 
-def _parallel_build():
-    task_ids = range(1, 10000)
+def parallel_build(min, max):
+    task_ids = range(min, max)
     pool = multiprocessing.Pool(16)
     pool.map(process_task, task_ids)
     print 'DONE'
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('min', help='min', type=int)
+    parser.add_argument('max', help='max', type=int)
+    args = parser.parse_args()
+    parallel_build(args.min, args.max)
