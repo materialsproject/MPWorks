@@ -115,6 +115,8 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
 
+        self.additional_fields['run_tags'] = fw_spec['run_tags']
+
         logging.basicConfig(level=logging.DEBUG)
         with open(db_path) as f:
             db_creds = json.load(f)

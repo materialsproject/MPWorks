@@ -221,3 +221,7 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
         d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
+
+        d['run_tags'] = ['PBE']
+        d['run_tags'].extend(d['pseudo_potential']['labels'])
+        d['run_tags'].extend([e+"="+str(d['hubbards'].get(e, 0)) for e in d['elements']])
