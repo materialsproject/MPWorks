@@ -7,6 +7,7 @@ from custodian.vasp.jobs import VaspJob
 import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
+from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
@@ -58,7 +59,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
                 all_errors.update(correction['errors'])
 
         stored_data = {'error_list': list(all_errors)}
-        update_spec = {'prev_vasp_dir': os.getcwd(),
+        update_spec = {'prev_vasp_dir': get_block_part(os.getcwd()),
                        'prev_task_type': fw_spec['task_type'],
                        'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id'], 'run_tags': fw_spec['run_tags']}
 

@@ -25,7 +25,8 @@ def _get_custodian_task(spec):
     else:
         jobs = [VaspJob(v_exe)]
 
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                NonConvergingErrorHandler()]
     params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
 
@@ -49,14 +50,20 @@ def orig(filename):
         return filename
 
 
+def get_block_part(m_dir):
+    return m_dir[m_dir.find('block_'):]
+
+
 def get_loc(m_dir):
     if os.path.exists(m_dir):
         return m_dir
-    block_part = m_dir[m_dir.find('block_'):]
-    garden_part = '/project/projectdirs/matgen/garden'
-    new_loc = os.path.join(garden_part, block_part)
+    block_part = get_block_part(m_dir)
+    locs = ['/project/projectdirs/matgen/garden/', '/global/scratch/sd/matcomp/',
+            '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/']
 
-    if os.path.exists(new_loc):
-        return new_loc
+    for preamble in locs:
+        new_loc = os.path.join(preamble, block_part)
+        if os.path.exists(new_loc):
+            return new_loc
 
     raise ValueError('get_loc() -- dir does not exist!!')

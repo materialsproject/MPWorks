@@ -16,7 +16,7 @@ from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB
-from mpworks.workflows.wf_utils import last_relax, _get_custodian_task, get_loc
+from mpworks.workflows.wf_utils import last_relax, _get_custodian_task, get_loc, get_block_part
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -104,7 +104,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fizzled_parent = True
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-            update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type'],
+            update_spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['prev_task_type'],
                        'run_tags': fw_spec['run_tags']}
             fizzled_parent = False
 
@@ -140,7 +140,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags'] and not fizzled_parent:
             print 'Unconverged run! Creating dynamic FW...'
 
-            spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['task_type'],
+            spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['task_type'],
                     'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                     'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': fw_spec['_priority']}
