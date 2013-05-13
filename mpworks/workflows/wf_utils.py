@@ -1,5 +1,6 @@
 import glob
 import os
+import shutil
 
 
 __author__ = 'Anubhav Jain'
@@ -50,3 +51,11 @@ def get_loc(m_dir):
             return new_loc
 
     raise ValueError('get_loc() -- dir does not exist!!')
+
+
+def move_to_garden(m_dir):
+    block_part = get_block_part(m_dir)
+    garden_part = '/project/projectdirs/matgen/garden/'
+    f_dir = os.path.join(garden_part, block_part)
+    shutil.move(m_dir, f_dir)
+    return f_dir
