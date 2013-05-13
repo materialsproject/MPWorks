@@ -1,17 +1,14 @@
-from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
-from custodian.vasp.jobs import VaspJob
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.controller_tasks import AddEStructureTask
-from mpworks.firetasks.custodian_task import VaspCustodianTask
+from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
-from mpworks.workflows.wf_utils import j_decorate
 from pymatgen import Composition
 from pymatgen.io.cifio import CifParser
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPGGAVaspInputSet
@@ -58,22 +55,6 @@ def _snl_to_spec(snl, enforce_gga=False):
         'incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
     return spec
-
-
-def get_custodian_task(spec):
-    task_type = spec['task_type']
-    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
-    if 'optimize structure (2x)' in task_type:
-        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-    else:
-        jobs = [VaspJob(v_exe)]
-
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                NonConvergingErrorHandler()]
-    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
-
-    return VaspCustodianTask(params)
 
 
 def snl_to_wf(snl, parameters=None):

@@ -1,5 +1,6 @@
 import logging
 import socket
+from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -7,7 +8,7 @@ from custodian.vasp.jobs import VaspJob
 import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.workflows.wf_utils import get_block_part
+from mpworks.workflows.wf_utils import get_block_part, j_decorate
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
@@ -61,11 +62,29 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         stored_data = {'error_list': list(all_errors)}
         update_spec = {'prev_vasp_dir': get_block_part(os.getcwd()),
                        'prev_task_type': fw_spec['task_type'],
-                       'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id'], 'run_tags': fw_spec['run_tags']}
+                       'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id'],
+                       'run_tags': fw_spec['run_tags']}
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
     def _write_formula_file(self, fw_spec):
-        filename = get_slug('JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--' + fw_spec['task_type'])
+        filename = get_slug(
+            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--' + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
+
+
+def get_custodian_task(spec):
+    task_type = spec['task_type']
+    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
+    if 'optimize structure (2x)' in task_type:
+        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+    else:
+        jobs = [VaspJob(v_exe)]
+
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                NonConvergingErrorHandler()]
+    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+
+    return VaspCustodianTask(params)

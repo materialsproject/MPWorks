@@ -3,10 +3,10 @@ from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
-from mpworks.workflows.snl_to_wf import get_custodian_task
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB
 from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
