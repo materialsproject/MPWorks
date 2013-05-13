@@ -47,7 +47,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
-        d["dir_name"] = d["dir_name"].split(":")[1]  # don't include hostname (compute node!)
+        d["dir_name"] = d["dir_name"].split(":")[1]
+        # don't include hostname (compute node!)
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
             # be pickled, every insertion needs to create a new connection
@@ -76,14 +77,15 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 if result is None:
                     if ("task_id" not in d) or (not d["task_id"]):
                         d["task_id"] = "mp-%".format(
-                            db.counter.find_and_modify(query={"_id": "taskid"},
-                                                       update={"$inc": {"c": 1}})["c"])
+                            db.counter.find_and_modify(
+                                query={"_id": "taskid"},
+                                update={"$inc": {"c": 1}})["c"])
                     logger.info("Inserting {} with taskid = {}"
-                    .format(d["dir_name"], d["task_id"]))
+                                .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                    .format(d["dir_name"], d["task_id"]))
+                                .format(d["dir_name"], d["task_id"]))
 
                 #Fireworks processing
                 self.process_fw(path, d)
@@ -97,7 +99,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-            .format(d["dir_name"], d["task_id"]))
+                        .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):

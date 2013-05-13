@@ -3,8 +3,6 @@ import os
 from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen import Structure
-from pymatgen.matproj.snl import StructureNL
 from pymatgen.symmetry.finder import SymmetryFinder
 
 
@@ -20,7 +18,8 @@ SPACEGROUP_TOLERANCE = 0.1  # as suggested by Shyue, 6/19/2012
 
 
 class SNLMongoAdapter(FWSerializable):
-    def __init__(self, host='localhost', port=27017, db='snl', username=None, password=None):
+    def __init__(self, host='localhost', port=27017, db='snl', username=None,
+                 password=None):
         self.host = host
         self.port = port
         self.db = db
@@ -65,30 +64,37 @@ class SNLMongoAdapter(FWSerializable):
         self.snlgroups.ensure_index('autometa.is_ordered')
 
     def _get_next_snl_id(self):
-        snl_id = self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_snl_id': 1}})[
-            'next_snl_id']
+        snl_id = self.id_assigner.find_and_modify(
+            query={}, update={'$inc': {'next_snl_id': 1}})['next_snl_id']
         return snl_id
 
     def _get_next_snlgroup_id(self):
-        snlgroup_id = self.id_assigner.find_and_modify(query={}, update={'$inc': {'next_snlgroup_id': 1}})['next_snlgroup_id']
+        snlgroup_id = self.id_assigner.find_and_modify(
+            query={},
+            update={'$inc': {'next_snlgroup_id': 1}})['next_snlgroup_id']
         return snlgroup_id
 
     def restart_id_assigner_at(self, next_snl_id, next_snlgroup_id):
         self.id_assigner.remove()
-        self.id_assigner.insert({"next_snl_id": next_snl_id, "next_snlgroup_id": next_snlgroup_id})
+        self.id_assigner.insert(
+            {"next_snl_id": next_snl_id, "next_snlgroup_id": next_snlgroup_id})
 
     def add_snl(self, snl):
         snl_id = self._get_next_snl_id()
         sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
-        sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() else -1
-        sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() else 'unknown'
+        sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
+            else -1
+        sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() \
+            else 'unknown'
         sghall = sf.get_hall() if sf.get_hall() else 'unknown'
-        sgxtal = sf.get_crystal_system() if sf.get_crystal_system() else 'unknown'
+        sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
+            else 'unknown'
         sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
         sgpoint = unicode(sf.get_point_group(), errors="ignore")
 
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall, sgxtal, sglatt, sgpoint)
+        mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
+                                       sgxtal, sglatt, sgpoint)
         snlgroup, add_new = self.add_mpsnl(mpsnl)
         return mpsnl, snlgroup.snlgroup_id
 
@@ -110,7 +116,9 @@ class SNLMongoAdapter(FWSerializable):
                 print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format(
                     (mpsnl.snl_id, snlgroup.snlgroup_id))
                 if not testing_mode:
-                    self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
+                    self.snlgroups.update(
+                        {'snlgroup_id': snlgroup.snlgroup_id},
+                        snlgroup.to_dict)
                 break
 
         if add_new:
@@ -126,13 +134,13 @@ class SNLMongoAdapter(FWSerializable):
         """
         Note: usernames/passwords are exported as unencrypted Strings!
         """
-        d = {'host': self.host, 'port': self.port, 'db': self.db, 'username': self.username,
-             'password': self.password}
-        return d
+        return {'host': self.host, 'port': self.port, 'db': self.db,
+                'username': self.username, 'password': self.password}
 
     @classmethod
     def from_dict(cls, d):
-        return SNLMongoAdapter(d['host'], d['port'], d['db'], d['username'], d['password'])
+        return SNLMongoAdapter(d['host'], d['port'], d['db'], d['username'],
+                               d['password'])
 
     @classmethod
     def auto_load(cls):
