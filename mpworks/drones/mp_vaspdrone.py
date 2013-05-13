@@ -76,7 +76,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 d["last_updated"] = datetime.datetime.today()
                 if result is None:
                     if ("task_id" not in d) or (not d["task_id"]):
-                        d["task_id"] = "mp-%".format(
+                        d["task_id"] = "mp-{}".format(
                             db.counter.find_and_modify(
                                 query={"_id": "taskid"},
                                 update={"$inc": {"c": 1}})["c"])
