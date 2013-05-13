@@ -15,8 +15,9 @@ from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
+from mpworks.workflows.snl_to_wf import get_custodian_task
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB
-from mpworks.workflows.wf_utils import last_relax, _get_custodian_task, get_loc, get_block_part
+from mpworks.workflows.wf_utils import last_relax, get_loc, get_block_part
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -158,7 +159,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fws.append(FireWork(
                 [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
                                'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
-                 _get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
+                 get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
                 fw_id=-2))
 
             spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,

@@ -6,8 +6,8 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
+from mpworks.workflows.snl_to_wf import get_custodian_task
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB
-from mpworks.workflows.wf_utils import _get_custodian_task
 from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
 
@@ -57,7 +57,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(
                 FireWork(
                     [VaspCopyTask({'use_CONTCAR': True}), SetupStaticRunTask(),
-                     _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
+                     get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
@@ -71,7 +71,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork(
                 [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
-                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-8))
+                 get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-8))
             connections[-9] = -8
 
             # insert into DB - GGA Uniform
@@ -86,7 +86,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             spec = {'task_type': '{} band structure'.format(type_name), '_queueadapter': QA_VASP,
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
-                                 _get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
+                                 get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                                 fw_id=-6))
             connections[-7] = -6
 

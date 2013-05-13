@@ -1,8 +1,6 @@
 import glob
 import os
-from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
-from custodian.vasp.jobs import VaspJob
-from mpworks.firetasks.custodian_task import VaspCustodianTask
+
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -15,22 +13,6 @@ __date__ = 'May 06, 2013'
 def j_decorate(m_dict):
     m_dict['auto_npar'] = False
     return m_dict
-
-
-def _get_custodian_task(spec):
-    task_type = spec['task_type']
-    v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
-    if 'optimize structure (2x)' in task_type:
-        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-    else:
-        jobs = [VaspJob(v_exe)]
-
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                NonConvergingErrorHandler()]
-    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
-
-    return VaspCustodianTask(params)
 
 
 def last_relax(filename):
