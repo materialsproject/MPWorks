@@ -16,10 +16,9 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 13, 2013'
 
 
-def process_task(task_id):
+def get_old_tasks():
     module_dir = os.path.dirname(os.path.abspath(__file__))
     tasks_f = os.path.join(module_dir, 'mg_core_dev.yaml')
-    tasks_new_f = os.path.join(module_dir, 'tasks_new.yaml')
 
     with open(tasks_f) as f:
         y = yaml.load(f)
@@ -28,7 +27,12 @@ def process_task(task_id):
         db = mc[y['db']]
         db.authenticate(y['username'], y['password'])
 
-        tasks_old = db['tasks_dbv2']
+        return db['tasks_dbv2']
+
+
+def process_task(task_id):
+
+        tasks_old = get_old_tasks()
 
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
@@ -54,15 +58,22 @@ def process_task(task_id):
                     traceback.print_exc()
 
 
-def parallel_build(min, max):
-    task_ids = range(min, max)
+def parallel_build():
+
+    tasks_old = get_old_tasks()
+    task_ids = []
+    for i in tasks_old.find({}, {'task_id': 1}):
+        task_ids.append(i['task_id'])
+
+    print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
     pool.map(process_task, task_ids)
     print 'DONE'
 
 if __name__ == '__main__':
-    parser = ArgumentParser()
-    parser.add_argument('min', help='min', type=int)
-    parser.add_argument('max', help='max', type=int)
-    args = parser.parse_args()
-    parallel_build(args.min, args.max)
+    #parser = ArgumentParser()
+    #parser.add_argument('min', help='min', type=int)
+    #parser.add_argument('max', help='max', type=int)
+    #args = parser.parse_args()
+    #parallel_build(args.min, args.max)
+    parallel_build()
