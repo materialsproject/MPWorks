@@ -17,7 +17,7 @@ __date__ = 'May 12, 2013'
 if __name__ == '__main__':
 
     module_dir = os.path.dirname(os.path.abspath(__file__))
-    icsd_f = os.path.join(module_dir, 'icsd2012.yaml')
+    icsd_f = os.path.join(module_dir, 'mg_core_dev.yaml')
     snl_f = os.path.join(module_dir, 'snl.yaml')
 
     with open(icsd_f) as f:

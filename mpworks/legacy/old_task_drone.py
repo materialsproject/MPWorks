@@ -36,7 +36,7 @@ def is_valid_vasp_dir(mydir):
     return True
 
 
-class MPVaspDrone(VaspToDbTaskDrone):
+class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
     # AJ: give old_task, not dir_name
     def assimilate(self, old_task):
         """
@@ -147,6 +147,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
             # add snl
             mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
+            print 'ADDED snlgroup', snlgroup_id
+
             d['snl_final'] = mpsnl.to_dict
             d['snlgroup_id_final'] = snlgroup_id
             d['snlgroup_changed'] = (d['snlgroup_id'] !=
