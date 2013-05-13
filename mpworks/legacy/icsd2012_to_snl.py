@@ -16,11 +16,18 @@ def icsd_dict_to_snl(icsd_dict):
     struct = Structure.from_dict(icsd_dict['tstruct'])
     references = _get_icsd_reference(icsd_dict)
 
+    data = {'_icsd': {}}
+    excluded_data = ['a_len', 'b_len', 'c_len', 'alpha', 'beta', 'gamma', 'compostion', 'composition', 'created_at', 'crystal_id', 'idnum', 'journal', 'updated_at', 'username']
+    for k, v in icsd_dict.iteritems():
+        if k not in excluded_data:
+            data['_icsd'][k] = v
+
     projects = None
     remarks = None
-    data = {}
-    history = None
-    authors = 'Will Richards <wrichard@mit.edu>, Anubhav Jain <ajain@lbl.gov>, Shyue Ping Ong <shyue@mit.edu>'
+
+    history = [{'name': 'Inorganic Crystal Structure Database (ICSD)', 'url': 'http://icsd.fiz-karlsruhe.de/', 'description': {'icsd_id': data['_icsd']['icsd_id']}}, {'name': 'pymatgen', 'url': 'https://pypi.python.org/pypi/pymatgen', 'description': {'comment': 'converted to explicit structure'}}]
+
+    authors = 'William Davidson Richards <wrichard@mit.edu>, Shyue Ping Ong <shyue@mit.edu>, Stephen Dacek <sdacek@mit.edu>, Anubhav Jain <ajain@lbl.gov>'
 
     return StructureNL(struct, authors, projects, references, remarks, data, history)
 
