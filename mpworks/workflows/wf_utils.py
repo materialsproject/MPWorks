@@ -41,7 +41,9 @@ def get_loc(m_dir):
     if os.path.exists(m_dir):
         return m_dir
     block_part = get_block_part(m_dir)
-    locs = ['/project/projectdirs/matgen/garden/', '/global/scratch/sd/matcomp/',
+    locs = ['/project/projectdirs/matgen/garden/',
+            '/project/projectdirs/matgen/garden/control_blocks',
+            '/global/scratch/sd/matcomp/',
             '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/',
             '/global/scratch/sd/matcomp/aj_tests/']
 
