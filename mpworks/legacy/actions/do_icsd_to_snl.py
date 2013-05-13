@@ -33,7 +33,8 @@ if __name__ == '__main__':
     for icsd_dict in db.icsd_2012_crystals.find(sort=[("icsd_id", ASCENDING)], timeout=False):
         try:
             snl = icsd_dict_to_snl(icsd_dict)
-            snldb.add_snl(snl)
+            if snl:
+                snldb.add_snl(snl)
         except:
             traceback.print_exc()
             print 'ERROR - icsd id:', icsd_dict['icsd_id']

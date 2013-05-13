@@ -14,6 +14,9 @@ __date__ = 'May 12, 2013'
 
 
 def icsd_dict_to_snl(icsd_dict):
+    if 'tstruct' not in icsd_dict:
+        return None
+
     struct = Structure.from_dict(icsd_dict['tstruct'])
     references = _get_icsd_reference(icsd_dict)
 
