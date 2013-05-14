@@ -79,11 +79,12 @@ def get_custodian_task(spec):
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                    NonConvergingErrorHandler()]
     else:
         jobs = [VaspJob(v_exe)]
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
 
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                NonConvergingErrorHandler()]
     params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
 
