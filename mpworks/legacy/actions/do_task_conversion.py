@@ -50,20 +50,16 @@ class OldTaskBuilder():
             additional_fields={},
             update_duplicates=False)
 
-
-
     def process_task(self, task_id):
         # get the directory containing the db file
         if not self.tasks_new.find_one({'task_id': 'mp-{}'.format(task_id)}):
             t = self.old_tasks.find_one({'task_id': task_id})
-            if t:
-                # get the directory containing the db file
-                try:
-                    t_id, d = self.drone.assimilate(t)
-                    print 'ENTERED', t_id
-                except:
-                    print 'ERROR entering', t['task_id']
-                    traceback.print_exc()
+            try:
+                t_id, d = self.drone.assimilate(t)
+                print 'ENTERED', t_id
+            except:
+                print 'ERROR entering', t['task_id']
+                traceback.print_exc()
 
 
 def _analyze(task_id):
