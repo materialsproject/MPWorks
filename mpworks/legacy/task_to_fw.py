@@ -40,8 +40,11 @@ def task_dict_to_wf(task_dict, launchpad):
 
     fwaction = FWAction(stored_data=stored_data, update_spec=update_spec)
 
-    complete_date = datetime.datetime.strptime(task_dict['completed_at'], "%Y-%m-%d %H:%M:%S")
-    state_history = [{"created_on": complete_date, 'state': 'COMPLETED'}]
+    if task_dict['completed_at']:
+        complete_date = datetime.datetime.strptime(task_dict['completed_at'], "%Y-%m-%d %H:%M:%S")
+        state_history = [{"created_on": complete_date, 'state': 'COMPLETED'}]
+    else:
+        state_history = []
 
     launches = [Launch('COMPLETED', launch_dir, fworker=None, host=None, ip=None, action=fwaction,
                        state_history=state_history, launch_id=l_id, fw_id=fw_id)]
