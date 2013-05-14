@@ -124,11 +124,18 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
             d['snl'] = snl_d
             d['snlgroup_id'] = sma.snlgroups.find_one({'all_snl_ids': d['snl']['snl_id']}, {'snlgroup_id': 1})['snlgroup_id']
 
-        else:
+        elif 'mps' in old_task:
             snl = mps_dict_to_snl(old_task['mps'])
             mpsnl, snlgroup_id = sma.add_snl(snl)
             d['snl'] = mpsnl.to_dict
             d['snlgroup_id'] = snlgroup_id
+        else:
+            s = Structure.from_dict(old_task['input']['crystal'])
+            snl = StructureNL(s, 'Anubhav Jain <ajain@lbl.gov>', remarks=['origin unknown'])
+            mpsnl, snlgroup_id = sma.add_snl(snl)
+            d['snl'] = mpsnl.to_dict
+            d['snlgroup_id'] = snlgroup_id
+            
 
         if 'optimize structure' in d['task_type'] and 'output' in d:
             # create a new SNL based on optimized structure
