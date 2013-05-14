@@ -42,30 +42,29 @@ class OldTaskBuilder():
 
             cls.new_tasks = db2['tasks']
 
-
-    def process_task(self, task_id):
-        # get the directory containing the db file
-        db_dir = os.environ['DB_LOC']
-        db_path = os.path.join(db_dir, 'tasks_db.json')
-        logging.basicConfig(level=logging.INFO)
-        with open(db_path) as f:
-            db_creds = json.load(f)
-            drone = MPVaspDrone_CONVERSION(
+            cls.drone = MPVaspDrone_CONVERSION(
             host=db_creds['host'], port=db_creds['port'],
             database=db_creds['database'], user=db_creds['admin_user'],
             password=db_creds['admin_password'],
             collection=db_creds['collection'], parse_dos=False,
             additional_fields={},
             update_duplicates=False)
+
+
+
+    def process_task(self, task_id):
+        # get the directory containing the db file
+        if not self.tasks_new.find_one({'task_id': 'mp-{}'.format(task_id)}):
             t = self.old_tasks.find_one({'task_id': task_id})
             if t:
                 # get the directory containing the db file
                 try:
-                    t_id, d = drone.assimilate(t)
+                    t_id, d = self.drone.assimilate(t)
                     print 'ENTERED', t_id
                 except:
                     print 'ERROR entering', t['task_id']
                     traceback.print_exc()
+
 
 def _analyze(task_id):
     b = OldTaskBuilder()
@@ -73,15 +72,10 @@ def _analyze(task_id):
 
 
 def parallel_build():
-
     tasks_old = OldTaskBuilder.old_tasks
-    tasks_new = OldTaskBuilder.new_tasks
     task_ids = []
     for i in tasks_old.find({}, {'task_id': 1}):
-        if not tasks_new.find_one({'task_id': 'mp-{}'.format(i['task_id'])}):
-            task_ids.append(i['task_id'])
-        else:
-            print 'ALREADY DONE'
+        task_ids.append(i['task_id'])
 
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
@@ -91,6 +85,7 @@ def parallel_build():
 if __name__ == '__main__':
     o = OldTaskBuilder()
     o.setup()
+    logging.basicConfig(level=logging.INFO)
     #parser = ArgumentParser()
     #parser.add_argument('min', help='min', type=int)
     #parser.add_argument('max', help='max', type=int)
