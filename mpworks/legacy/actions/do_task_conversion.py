@@ -69,10 +69,10 @@ def _analyze(task_id):
     return b.process_task(task_id)
 
 
-def parallel_build():
+def parallel_build(min, max):
     tasks_old = OldTaskBuilder.old_tasks
     task_ids = []
-    for i in tasks_old.find({}, {'task_id': 1}):
+    for i in tasks_old.find({'task_id': {'$gte': min, '$lt': max}}, {'task_id': 1}):
         task_ids.append(i['task_id'])
 
     print 'GOT all tasks...'
@@ -84,9 +84,8 @@ if __name__ == '__main__':
     o = OldTaskBuilder()
     o.setup()
     logging.basicConfig(level=logging.INFO)
-    #parser = ArgumentParser()
-    #parser.add_argument('min', help='min', type=int)
-    #parser.add_argument('max', help='max', type=int)
-    #args = parser.parse_args()
-    #parallel_build(args.min, args.max)
-    parallel_build()
+    parser = ArgumentParser()
+    parser.add_argument('min', help='min', type=int)
+    parser.add_argument('max', help='max', type=int)
+    args = parser.parse_args()
+    parallel_build(args.min, args.max)
