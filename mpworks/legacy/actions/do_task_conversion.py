@@ -15,25 +15,24 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 13, 2013'
 
+class OldTaskBuilder():
 
-def get_old_tasks():
-    module_dir = os.path.dirname(os.path.abspath(__file__))
-    tasks_f = os.path.join(module_dir, 'mg_core_dev.yaml')
+    @classmethod
+    def setup(cls):
+        module_dir = os.path.dirname(os.path.abspath(__file__))
+        tasks_f = os.path.join(module_dir, 'mg_core_dev.yaml')
 
-    with open(tasks_f) as f:
-        y = yaml.load(f)
+        with open(tasks_f) as f:
+            y = yaml.load(f)
 
-        mc = MongoClient(y['host'], y['port'])
-        db = mc[y['db']]
-        db.authenticate(y['username'], y['password'])
+            mc = MongoClient(y['host'], y['port'])
+            db = mc[y['db']]
+            db.authenticate(y['username'], y['password'])
 
-        return db['tasks_dbv2']
+            cls.old_tasks = db['tasks_dbv2']
 
 
-def process_task(task_id):
-
-        tasks_old = get_old_tasks()
-
+    def process_task(self, task_id):
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
@@ -47,7 +46,7 @@ def process_task(task_id):
             collection=db_creds['collection'], parse_dos=False,
             additional_fields={},
             update_duplicates=False)
-            t = tasks_old.find_one({'task_id': task_id})
+            t = self.tasks_old.find_one({'task_id': task_id})
             if t:
                 # get the directory containing the db file
                 try:
@@ -57,20 +56,26 @@ def process_task(task_id):
                     print 'ERROR entering', t['task_id']
                     traceback.print_exc()
 
+def _analyze(task_id):
+    b = OldTaskBuilder()
+    return b.process_task(task_id)
+
 
 def parallel_build():
 
-    tasks_old = get_old_tasks()
+    tasks_old = OldTaskBuilder.old_tasks
     task_ids = []
     for i in tasks_old.find({}, {'task_id': 1}):
         task_ids.append(i['task_id'])
 
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
-    pool.map(process_task, task_ids)
+    pool.map(_analyze, task_ids)
     print 'DONE'
 
 if __name__ == '__main__':
+    o = OldTaskBuilder()
+    o.setup()
     #parser = ArgumentParser()
     #parser.add_argument('min', help='min', type=int)
     #parser.add_argument('max', help='max', type=int)
