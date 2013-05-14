@@ -31,6 +31,17 @@ class OldTaskBuilder():
 
             cls.old_tasks = db['tasks_dbv2']
 
+        db_dir = os.environ['DB_LOC']
+        db_path = os.path.join(db_dir, 'tasks_db.json')
+        with open(db_path) as f2:
+            db_creds = json.load(f2)
+
+            mc2 = MongoClient(db_creds['host'], db_creds['port'])
+            db2 = mc2[db_creds['database']]
+            db2.authenticate(db_creds['admin_user'], db_creds['admin_password'])
+
+            cls.new_tasks = db2['tasks']
+
 
     def process_task(self, task_id):
         # get the directory containing the db file
@@ -64,9 +75,13 @@ def _analyze(task_id):
 def parallel_build():
 
     tasks_old = OldTaskBuilder.old_tasks
+    tasks_new = OldTaskBuilder.new_tasks
     task_ids = []
     for i in tasks_old.find({}, {'task_id': 1}):
-        task_ids.append(i['task_id'])
+        if not tasks_new.find_one({'task_id': 'mp-{}'.format(i['task_id'])}):
+            task_ids.append(i['task_id'])
+        else:
+            print 'ALREADY DONE'
 
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
