@@ -117,10 +117,9 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
         d['submission_id'] = None
         d['vaspinputset_name'] = None
 
-        if old_task.get('mps_id', -1) > 0:
+        snl_d = sma.snl.find_one({'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
+        if old_task.get('mps_id', -1) > 0 and snl_d:
             # grab the SNL from the SNL db
-            snl_d = sma.snl.find_one(
-                {'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
             del snl_d['_id']
             d['snl'] = snl_d
             d['snlgroup_id'] = sma.snlgroups.find_one({'all_snl_ids': d['snl']['snl_id']}, {'snlgroup_id': 1})['snlgroup_id']
