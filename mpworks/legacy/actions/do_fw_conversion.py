@@ -1,5 +1,8 @@
 import os
+from pymongo import MongoClient, ASCENDING
+import yaml
 from fireworks.core.launchpad import LaunchPad
+from mpworks.legacy.task_to_fw import task_dict_to_wf
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -12,31 +15,33 @@ if __name__ == '__main__':
 
     module_dir = os.path.dirname(os.path.abspath(__file__))
     lp_f = os.path.join(module_dir, 'my_launchpad.yaml')
-    snl_f = os.path.join(module_dir, 'snl.yaml')
+    tasks_f = os.path.join(module_dir, 'tasks.yaml')
 
     with open(lp_f) as f:
         lp = LaunchPad.from_file(lp_f)
         lp.reset(None, require_password=False)
 
+    with open(tasks_f) as f2:
+        db_creds = yaml.load(f2)
 
+        mc2 = MongoClient(db_creds['host'], db_creds['port'])
+        db2 = mc2[db_creds['database']]
+        db2.authenticate(db_creds['admin_user'], db_creds['admin_password'])
+        new_tasks = db2['tasks']
 
-
+    print new_tasks.count()
     """
-    mc = MongoClient(y['host'], y['port'])
-    db = mc[y['db']]
-
-    db.authenticate(y['username'], y['password'])
-
-    snldb = SNLMongoAdapter.from_file(snl_f)
-
-    for icsd_dict in db.icsd_2012_crystals.find(sort=[("icsd_id", ASCENDING)], timeout=False):
-        try:
-            snl = icsd_dict_to_snl(icsd_dict)
-            if snl:
-                snldb.add_snl(snl)
-        except:
-            traceback.print_exc()
-            print 'ERROR - icsd id:', icsd_dict['icsd_id']
-
-    print 'DONE'
+    new_tasks.ensure_index("task_id", unique=True)
+    new_tasks.ensure_index("chemsys")
+    new_tasks.ensure_index("analysis.e_above_hull")
+    new_tasks.ensure_index("pretty_formula")
+    new_tasks.ensure_index([("elements", ASCENDING), ("nelements", ASCENDING)])
+    new_tasks.ensure_index("state")
+    new_tasks.ensure_index("is_compatible")
+    new_tasks.ensure_index("snl.snl_id")
+    new_tasks.ensure_index("snlgroup_id")
     """
+
+    for task_dict in new_tasks.find({"state":"successful"}, sort=[("task_id", ASCENDING)], timeout=False):
+        fw_id = task_dict_to_wf(task_dict, lp)
+        new_tasks.update({"task_id": task_dict["task_id"]}, {"$set": {"fw_id": fw_id}})

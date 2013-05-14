@@ -1,6 +1,9 @@
 import datetime
 from fireworks.core.firework import FireTaskBase, FireWork, Launch, FWAction, Workflow
 from fireworks.utilities.fw_serializers import FWSerializable
+from fireworks.utilities.fw_utilities import get_slug
+from mpworks.snl_utils.mpsnl import get_meta_from_structure
+from pymatgen import Composition, Structure
 
 
 __author__ = 'Anubhav Jain'
@@ -43,12 +46,19 @@ def task_dict_to_wf(task_dict, launchpad):
     launches = [Launch('COMPLETED', launch_dir, fworker=None, host=None, ip=None, action=fwaction,
                        state_history=state_history, launch_id=l_id, fw_id=fw_id)]
 
-    fw = FireWork(tasks, spec, name=None, launches=launches, state='COMPLETED', created_on=None,
+    f = Composition.from_formula(task_dict['pretty_formula']).alphabetical_formula
+
+
+    fw = FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), launches=launches, state='COMPLETED', created_on=None,
                  fw_id=fw_id)
 
-    wf = Workflow.from_FireWork(fw)
+    wf_meta = get_meta_from_structure(Structure.from_dict(task_dict['snl']))
+    wf_meta['run_version'] = 'preproduction (0)'
+
+    wf = Workflow.from_FireWork(fw, name=f, metadata=wf_meta)
 
     launchpad.add_wf(wf, reassign_all=False)
 
+    print 'ADDED', fw_id
     # return fw_id
     return fw_id
