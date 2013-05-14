@@ -36,7 +36,8 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         return FWAction(stored_data={'refined_structure': structure[1][0].to_dict,
                                      'conventional_standard_structure': structure[1][1].to_dict,
-                                     'symmetry_dataset': structure[1][2], 'symmetry_operations': structure[1][3]})
+                                     'symmetry_dataset': structure[1][2],
+                                     'symmetry_operations': [x.to_dict for x in structure[1][3]]})
 
 
 class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
