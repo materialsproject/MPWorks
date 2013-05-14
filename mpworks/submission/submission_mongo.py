@@ -119,14 +119,13 @@ class SubmissionMongoAdapter(object):
         s_file = os.path.join(s_dir, 'submission_db.yaml')
         return SubmissionMongoAdapter.from_file(s_file)
 
-    def to_format(self, f_format='json', *args, **kwargs):
+    def to_format(self, f_format='json', **kwargs):
         """
         returns a String representation in the given format
         :param f_format: the format to output to (default json)
         """
         if f_format == 'json':
-            return json.dumps(self.to_dict(), *args,
-                              default=DATETIME_HANDLER, **kwargs)
+            return json.dumps(self.to_dict(), default=DATETIME_HANDLER, **kwargs)
         elif f_format == 'yaml':
             # start with the JSON format, and convert to YAML
             return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE,
@@ -148,7 +147,7 @@ class SubmissionMongoAdapter(object):
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
-    def to_file(self, filename, f_format=None, *args, **kwargs):
+    def to_file(self, filename, f_format=None, **kwargs):
         """
         Write a serialization of this object to a file
         :param filename: filename to write to
@@ -158,7 +157,7 @@ class SubmissionMongoAdapter(object):
         if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'w') as f:
-            f.write(self.to_format(f_format=f_format, *args, **kwargs))
+            f.write(self.to_format(f_format=f_format, **kwargs))
 
     @classmethod
     def from_file(cls, filename, f_format=None):
