@@ -46,7 +46,7 @@ class OldTaskBuilder():
             collection=db_creds['collection'], parse_dos=False,
             additional_fields={},
             update_duplicates=False)
-            t = self.tasks_old.find_one({'task_id': task_id})
+            t = self.old_tasks.find_one({'task_id': task_id})
             if t:
                 # get the directory containing the db file
                 try:
