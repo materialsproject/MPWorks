@@ -77,6 +77,9 @@ class SubmissionMongoAdapter(object):
             d.update(get_meta_from_structure(snl.structure))
         self.jobs.insert(d)
 
+        sorted_structure = snl.structure.get_sorted_structure()
+        d.update(sorted_structure.to_dict)
+
         return d['submission_id']
 
     def resubmit(self, submission_id):
