@@ -106,8 +106,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-            update_spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['prev_task_type'],
-                       'run_tags': fw_spec['run_tags']}
+            update_spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                           'prev_task_type': fw_spec['prev_task_type'],
+                           'run_tags': fw_spec['run_tags']}
             self.additional_fields['run_tags'] = fw_spec['run_tags']
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
@@ -148,44 +149,49 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
-        unconverged_tag = 'unconverged_handler--{}'.format(fw_spec['prev_task_type'])
-        output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
-        ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if not fizzled_parent and ueh.check() and unconverged_tag not in fw_spec['run_tags']:
-            print 'Unconverged run! Creating dynamic FW...'
+        if not fizzled_parent:
+            unconverged_tag = 'unconverged_handler--{}'.format(fw_spec['prev_task_type'])
+            output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
+            ueh = UnconvergedErrorHandler(output_filename=output_dir)
+            if ueh.check() and unconverged_tag not in fw_spec['run_tags']:
+                print 'Unconverged run! Creating dynamic FW...'
 
-            spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['task_type'],
-                    'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
-                    'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': fw_spec['_priority']}
+                spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                        'prev_task_type': fw_spec['task_type'],
+                        'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
+                        'task_type': fw_spec['prev_task_type'],
+                        'run_tags': list(fw_spec['run_tags']),
+                        '_dupefinder': DupeFinderVasp().to_dict(),
+                        '_priority': fw_spec['_priority']}
 
-            snl = StructureNL.from_dict(spec['mpsnl'])
-            spec['run_tags'].append(unconverged_tag)
-            spec['_queueadapter'] = QA_VASP
+                snl = StructureNL.from_dict(spec['mpsnl'])
+                spec['run_tags'].append(unconverged_tag)
+                spec['_queueadapter'] = QA_VASP
 
-            fws = []
-            connections = {}
+                fws = []
+                connections = {}
 
-            f = Composition.from_formula(
-                snl.structure.composition.reduced_formula).alphabetical_formula
+                f = Composition.from_formula(
+                    snl.structure.composition.reduced_formula).alphabetical_formula
 
-            fws.append(FireWork(
-                [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
-                               'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
-                 get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
-                fw_id=-2))
+                fws.append(FireWork(
+                    [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
+                                   'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
+                     get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
+                    fw_id=-2))
 
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
-                    '_priority': fw_spec['_priority'], '_queueadapter': QA_DB, 'run_tags': list(fw_spec['run_tags'])}
-            spec['run_tags'].append(unconverged_tag)
-            fws.append(
-                FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
-                         fw_id=-1))
-            connections[-2] = -1
+                spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
+                        '_priority': fw_spec['_priority'], '_queueadapter': QA_DB,
+                        'run_tags': list(fw_spec['run_tags'])}
+                spec['run_tags'].append(unconverged_tag)
+                fws.append(
+                    FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                             fw_id=-1))
+                connections[-2] = -1
 
-            wf = Workflow(fws, connections)
+                wf = Workflow(fws, connections)
 
-            return FWAction(detours=wf)
+                return FWAction(detours=wf)
 
         # not successful and not due to convergence problem - DEFUSE
         return FWAction(stored_data=stored_data, defuse_children=True)
