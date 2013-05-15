@@ -21,7 +21,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 26, 2013'
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('MPVaspDrone')
 
 
 def is_valid_vasp_dir(mydir):

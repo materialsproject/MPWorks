@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 from custodian.vasp.handlers import UnconvergedErrorHandler
 
 from fireworks.utilities.fw_serializers import FWSerializable
@@ -118,6 +119,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.additional_fields['run_tags'] = fw_spec['run_tags']
 
         logging.basicConfig(level=logging.DEBUG)
+        logger = logging.getLogger('MPVaspDrone')
+        logger.setLevel(logging.DEBUG)
+        sh = logging.StreamHandler(stream=sys.stdout)
+        sh.setLevel(getattr(logging, 'INFO'))
+        logger.addHandler(sh)
+
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(
