@@ -19,8 +19,9 @@ def j_decorate(m_dict):
 def last_relax(filename):
     # for old runs
     m_dir = os.path.dirname(filename)
-    if os.path.exists(os.path.join(m_dir, 'relax2', filename)):
-        return os.path.join(m_dir, 'relax2', filename)
+    m_file = os.path.basename(filename)
+    if os.path.exists(os.path.join(m_dir, 'relax2', m_file)):
+        return os.path.join(m_dir, 'relax2', m_file)
 
     if os.path.exists(filename):
         return filename
@@ -29,8 +30,8 @@ def last_relax(filename):
         return relaxations[-1]
 
     # backup for old runs
-    if os.path.exists(os.path.join(m_dir, 'relax1', filename)):
-        return os.path.join(m_dir, 'relax1', filename)
+    if os.path.exists(os.path.join(m_dir, 'relax1', m_file)):
+        return os.path.join(m_dir, 'relax1', m_file)
 
     return filename
 
