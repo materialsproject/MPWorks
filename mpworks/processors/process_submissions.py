@@ -128,7 +128,10 @@ class SubmissionProcessor():
                     for l in fw.launches:
                         if l.state == 'COMPLETED':
                             t_id = l.action.stored_data['task_id']
-                            m_taskdict[fw.spec['prev_task_type']] = t_id
+                            if 'prev_task_type' in fw.spec:
+                                m_taskdict[fw.spec['prev_task_type']] = t_id
+                            else:
+                                m_taskdict[fw.spec['_fizzled_parents'][0]['spec']['task_type']] = t_id
                             break
 
         self.sma.update_state(submission_id, wf.state, details, m_taskdict)
