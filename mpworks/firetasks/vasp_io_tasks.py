@@ -103,12 +103,14 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
             update_spec = {}
             fizzled_parent = True
+            parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
             update_spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['prev_task_type'],
                        'run_tags': fw_spec['run_tags']}
             self.additional_fields['run_tags'] = fw_spec['run_tags']
             fizzled_parent = False
+            parse_dos = 'Uniform' in fw_spec['prev_task_type']
 
         if MOVE_TO_GARDEN:
             prev_dir = move_to_garden(prev_dir)
@@ -130,7 +132,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_dos='Uniform' in fw_spec['prev_task_type'],
+                collection=db_creds['collection'], parse_dos=parse_dos,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir)
@@ -149,7 +151,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         unconverged_tag = 'unconverged_handler--{}'.format(fw_spec['prev_task_type'])
         output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
         ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check() and unconverged_tag not in fw_spec['run_tags'] and not fizzled_parent:
+        if not fizzled_parent and ueh.check() and unconverged_tag not in fw_spec['run_tags']:
             print 'Unconverged run! Creating dynamic FW...'
 
             spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['task_type'],
