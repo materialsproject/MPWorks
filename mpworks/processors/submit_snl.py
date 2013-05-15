@@ -12,7 +12,7 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 14, 2013'
 
 
-def submit_snl(min=None, max=None):
+def submit_all_snl(min=None, max=None):
     constraints = {'is_ordered': True, 'is_valid': True, 'nsites': {'$lte': 200}, 'canonical_snl.about.projects': {'$ne': 'CederDahn Challenge'}}
     constraints['elements'] = {'$nin': NO_POTCARS}
 
@@ -24,9 +24,10 @@ def submit_snl(min=None, max=None):
     snldb = SNLMongoAdapter.auto_load()
     sma = SubmissionMongoAdapter.auto_load()
 
-    print snldb.snlgroups.count(constraints)
-
     for result in snldb.snlgroups.find(constraints, {'canonical_snl': 1, 'snlgroup_id': 1}):
         snl = MPStructureNL.from_dict(result['canonical_snl'])
         parameters = {'snlgroup_id': result['snlgroup_id']}
-        sma.submit_snl(snl, parameters=parameters)
+        sma.submit_snl(snl, 'Anubhav Jain <ajain@lbl.gov>', parameters=parameters)
+
+if __name__ == '__main__':
+    submit_all_snl(0, 0)
