@@ -80,9 +80,6 @@ class SubmissionMongoAdapter(object):
         d.update(sorted_structure.to_dict)
 
         self.jobs.insert(d)
-
-
-
         return d['submission_id']
 
     def resubmit(self, submission_id):
