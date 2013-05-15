@@ -21,7 +21,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 26, 2013'
 
-logger = logging.getLogger('MPVaspDrone')
+logger = logging.getLogger(__name__)
 
 
 def is_valid_vasp_dir(mydir):
@@ -82,11 +82,11 @@ class MPVaspDrone(VaspToDbTaskDrone):
                                 query={"_id": "taskid"},
                                 update={"$inc": {"c": 1}})["c"])
                     logger.info("Inserting {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
 
                 #Fireworks processing
                 self.process_fw(path, d)
@@ -100,7 +100,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-                        .format(d["dir_name"], d["task_id"]))
+            .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):
@@ -110,7 +110,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
-            d['submission_id'] = fw_dict['spec'].get('submission_id')
+            d['submission_id'] = fw_dict['spec']['mpsnl']['about'].get('_materialsproject', {}).get('submission_id')
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
 
