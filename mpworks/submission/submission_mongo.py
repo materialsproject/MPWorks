@@ -75,10 +75,13 @@ class SubmissionMongoAdapter(object):
         d['submitted_at'] = datetime.datetime.utcnow().isoformat()
         if 'is_valid' not in d:
             d.update(get_meta_from_structure(snl.structure))
-        self.jobs.insert(d)
 
         sorted_structure = snl.structure.get_sorted_structure()
         d.update(sorted_structure.to_dict)
+
+        self.jobs.insert(d)
+
+
 
         return d['submission_id']
 
