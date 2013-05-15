@@ -1,6 +1,7 @@
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
+from mpworks.workflows.wf_utils import NO_POTCARS
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -13,6 +14,8 @@ __date__ = 'May 14, 2013'
 
 def submit_snl(min=None, max=None):
     constraints = {'is_ordered': True, 'is_valid': True, 'nsites': {'$lte': 200}, 'canonical_snl.about.projects': {'$ne': 'CederDahn Challenge'}}
+    constraints['elements'] = {'$nin': NO_POTCARS}
+
     if min and max:
         constraints['snlgroup_id'] = {'$gte': min, '$lte': max}
     elif min or max:

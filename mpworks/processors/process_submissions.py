@@ -6,6 +6,7 @@ from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.snl_to_wf import snl_to_wf
+from mpworks.workflows.wf_utils import NO_POTCARS
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -56,6 +57,9 @@ class SubmissionProcessor():
                 elif not job['is_valid']:
                     self.sma.update_state(submission_id, 'rejected', 'invalid structure (atoms too close)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(snl.structure.formula)
+                elif len(set(NO_POTCARS) & set(job['elements'])) > 0:
+                    self.sma.update_state(submission_id, 'rejected', 'invalid structure (no POTCAR)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(snl.structure.formula)
                 else:
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id

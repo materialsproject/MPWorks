@@ -11,6 +11,9 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
 
+NO_POTCARS = ['Po', 'At', 'Rn', 'Fr', 'Ra', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr']
+
+
 def j_decorate(m_dict):
     m_dict['auto_npar'] = False
     return m_dict
