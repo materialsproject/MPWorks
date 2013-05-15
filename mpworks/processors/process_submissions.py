@@ -42,7 +42,7 @@ class SubmissionProcessor():
 
     def submit_new_workflow(self):
         # finds a submitted job, creates a workflow, and submits it to FireWorks
-        job = self.jobs.find_and_modify({'state': 'submitted'}, {'$set': {'state': 'waiting'}})
+        job = self.jobs.find_and_modify({'state': 'SUBMITTED'}, {'$set': {'state': 'WAITING'}})
         if job:
             submission_id = job['submission_id']
             try:
@@ -51,16 +51,16 @@ class SubmissionProcessor():
                 else:
                     snl = StructureNL.from_dict(job)
                 if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
-                    self.sma.update_state(submission_id, 'rejected', 'too many sites', {})
+                    self.sma.update_state(submission_id, 'REJECTED', 'too many sites', {})
                     print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(
                         snl.structure.formula, len(snl.structure.sites))
                 elif not job['is_valid']:
-                    self.sma.update_state(submission_id, 'rejected',
+                    self.sma.update_state(submission_id, 'REJECTED',
                                           'invalid structure (atoms too close)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(
                         snl.structure.formula)
                 elif len(set(NO_POTCARS) & set(job['elements'])) > 0:
-                    self.sma.update_state(submission_id, 'rejected',
+                    self.sma.update_state(submission_id, 'REJECTED',
                                           'invalid structure (no POTCAR)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(
                         snl.structure.formula)
@@ -74,14 +74,14 @@ class SubmissionProcessor():
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
                 self.jobs.find_and_modify({'submission_id': submission_id},
-                                          {'$set': {'state': 'error'}})
+                                          {'$set': {'state': 'ERROR'}})
                 traceback.print_exc()
 
             return submission_id
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'error']}},
+        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
                                          {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:

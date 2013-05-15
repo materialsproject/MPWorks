@@ -68,7 +68,7 @@ class SubmissionMongoAdapter(object):
         d = snl.to_dict
         d['submitter_email'] = submitter_email
         d['parameters'] = parameters
-        d['state'] = 'submitted'
+        d['state'] = 'SUBMITTED'
         d['state_details'] = {}
         d['task_dict'] = {}
         d['submission_id'] = self._get_next_submission_id()
@@ -82,7 +82,7 @@ class SubmissionMongoAdapter(object):
     def resubmit(self, submission_id):
         self.jobs.update(
             {'submission_id': submission_id},
-            {'$set': {'state': 'submitted', 'state_details': {},
+            {'$set': {'state': 'SUBMITTED', 'state_details': {},
                       'task_dict': {}}})
 
     def cancel_submission(self, submission_id):
