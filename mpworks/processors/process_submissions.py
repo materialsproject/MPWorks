@@ -19,7 +19,6 @@ __date__ = 'May 08, 2013'
 # Turn submissions into workflows, and updates the state of the submissions DB
 
 class SubmissionProcessor():
-
     MAX_SITES = 200
 
     # This is run on the server end
@@ -53,13 +52,18 @@ class SubmissionProcessor():
                     snl = StructureNL.from_dict(job)
                 if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
                     self.sma.update_state(submission_id, 'rejected', 'too many sites', {})
-                    print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(snl.structure.formula, len(snl.structure.sites))
+                    print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(
+                        snl.structure.formula, len(snl.structure.sites))
                 elif not job['is_valid']:
-                    self.sma.update_state(submission_id, 'rejected', 'invalid structure (atoms too close)', {})
-                    print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(snl.structure.formula)
+                    self.sma.update_state(submission_id, 'rejected',
+                                          'invalid structure (atoms too close)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(
+                        snl.structure.formula)
                 elif len(set(NO_POTCARS) & set(job['elements'])) > 0:
-                    self.sma.update_state(submission_id, 'rejected', 'invalid structure (no POTCAR)', {})
-                    print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(snl.structure.formula)
+                    self.sma.update_state(submission_id, 'rejected',
+                                          'invalid structure (no POTCAR)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(
+                        snl.structure.formula)
                 else:
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
@@ -69,14 +73,16 @@ class SubmissionProcessor():
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
-                self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': {'state': 'error'}})
+                self.jobs.find_and_modify({'submission_id': submission_id},
+                                          {'$set': {'state': 'error'}})
                 traceback.print_exc()
 
             return submission_id
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission in self.jobs.find({'state': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+        for submission in self.jobs.find({'state': {'$ne': 'COMPLETED'}},
+                                         {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:
                 # get a wf with this submission id
@@ -111,7 +117,8 @@ class SubmissionProcessor():
                 if fw.state == 'RUNNING':
                     details = 'running: {} on {}'.format(fw.spec['task_type'], machine_name)
                 if fw.state == 'FIZZLED':
-                    details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
+                    details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'],
+                                                                       machine_name)
 
         m_taskdict = {}
         states = [fw.state for fw in wf.fws]
