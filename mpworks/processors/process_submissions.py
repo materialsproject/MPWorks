@@ -76,7 +76,7 @@ class SubmissionProcessor():
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+        for submission in self.jobs.find({'state': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:
                 # get a wf with this submission id
@@ -114,7 +114,7 @@ class SubmissionProcessor():
                     details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'], machine_name)
 
         m_taskdict = {}
-        states = [fw.state for fw in self.fws]
+        states = [fw.state for fw in wf.fws]
         if any([s == 'COMPLETED' for s in states]):
             for fw in wf.fws:
                 if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
@@ -124,7 +124,7 @@ class SubmissionProcessor():
                             m_taskdict[fw.spec['prev_task_type']] = t_id
                             break
 
-        self.sma.update_state(wf.state, details, m_taskdict)
+        self.sma.update_state(submission_id, wf.state, details, m_taskdict)
         return wf.state, details, m_taskdict
 
     @classmethod

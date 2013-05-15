@@ -108,7 +108,7 @@ class SubmissionMongoAdapter(object):
 
     def update_state(self, submission_id, state, state_details, task_dict):
         self.jobs.find_and_modify({'submission_id': submission_id},
-                                  {'$set': {'state': state}})
+                                  {'$set': {'state': state, 'state_details': state_details, 'task_dict': task_dict}})
 
     @classmethod
     def from_dict(cls, d):
