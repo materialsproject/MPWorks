@@ -107,6 +107,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
             update_spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['prev_task_type'],
                        'run_tags': fw_spec['run_tags']}
+            self.additional_fields['run_tags'] = fw_spec['run_tags']
             fizzled_parent = False
 
         if MOVE_TO_GARDEN:
@@ -115,8 +116,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
-
-        self.additional_fields['run_tags'] = fw_spec['run_tags']
 
         logging.basicConfig(level=logging.DEBUG)
         logger = logging.getLogger('MPVaspDrone')
