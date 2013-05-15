@@ -73,7 +73,8 @@ class SubmissionMongoAdapter(object):
         d['task_dict'] = {}
         d['submission_id'] = self._get_next_submission_id()
         d['submitted_at'] = datetime.datetime.utcnow().isoformat()
-        d.update(get_meta_from_structure(snl.structure))
+        if 'is_valid' not in d:
+            d.update(get_meta_from_structure(snl.structure))
         self.jobs.insert(d)
 
         return d['submission_id']

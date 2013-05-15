@@ -3,6 +3,7 @@ import time
 import traceback
 from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
+from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.snl_to_wf import snl_to_wf
 from pymatgen.matproj.snl import StructureNL
@@ -45,11 +46,14 @@ class SubmissionProcessor():
         if job:
             submission_id = job['submission_id']
             try:
-                snl = StructureNL.from_dict(job)
+                if 'snl_id' in job:
+                    snl = MPStructureNL.from_dict(job)
+                else:
+                    snl = StructureNL.from_dict(job)
                 if len(snl.structure.sites) > SubmissionProcessor.MAX_SITES:
                     self.sma.update_state(submission_id, 'rejected', 'too many sites', {})
                     print 'REJECTED WORKFLOW FOR {} - too many sites ({})'.format(snl.structure.formula, len(snl.structure.sites))
-                elif not snl.structure.is_valid():
+                elif not job['is_valid']:
                     self.sma.update_state(submission_id, 'rejected', 'invalid structure (atoms too close)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(snl.structure.formula)
                 else:
