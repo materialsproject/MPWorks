@@ -102,3 +102,10 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             return FWAction(additions=wf)
         return FWAction()
+
+
+class DummyLegacyTask(FireTaskBase, FWSerializable):
+    _fw_name = "Dummy Legacy Task"
+
+    def run_task(self, fw_spec):
+        pass

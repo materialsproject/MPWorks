@@ -1,7 +1,7 @@
 import datetime
-from fireworks.core.firework import FireTaskBase, FireWork, Launch, FWAction, Workflow
-from fireworks.utilities.fw_serializers import FWSerializable
+from fireworks.core.firework import FireWork, Launch, FWAction, Workflow
 from fireworks.utilities.fw_utilities import get_slug
+from mpworks.firetasks.controller_tasks import DummyLegacyTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from pymatgen import Composition, Structure
 
@@ -12,13 +12,6 @@ __version__ = '0.1'
 __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 14, 2013'
-
-
-class DummyLegacyTask(FireTaskBase, FWSerializable):
-    _fw_name = "Dummy Legacy Task"
-
-    def run_task(self, fw_spec):
-        pass
 
 
 def task_dict_to_wf(task_dict, launchpad):
