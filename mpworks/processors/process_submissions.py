@@ -76,11 +76,11 @@ class SubmissionProcessor():
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission_id in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
-            submission_id = str(submission_id['submission_id'])
+        for submission in self.jobs.find({'status': {'$in': ['waiting', 'running']}}, {'submission_id': 1}):
+            submission_id = submission['submission_id']
             try:
-                # get a fw_id with this submission id
-                fw_id = self.launchpad.get_fw_ids({'spec.submission_id': submission_id})[0]
+                # get a wf with this submission id
+                fw_id = self.launchpad.get_wf_ids({'metadata.submission_id': submission_id}, limit=1)[0]
                 # get a workflow
                 wf = self.launchpad.get_wf_by_fw_id(fw_id)
                 # update workflow
