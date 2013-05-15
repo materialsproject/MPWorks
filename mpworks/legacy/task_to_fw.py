@@ -61,6 +61,7 @@ def task_dict_to_wf(task_dict, launchpad):
     wf = Workflow.from_FireWork(fw, name=f, metadata=wf_meta)
 
     launchpad.add_wf(wf, reassign_all=False)
+    launchpad._upsert_launch(launches[0])
 
     print 'ADDED', fw_id
     # return fw_id
