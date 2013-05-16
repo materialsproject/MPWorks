@@ -6,7 +6,6 @@ from pymongo import MongoClient
 from pymatgen import Composition
 
 import yaml
-from mpworks.snl_utils.mpsnl import get_meta_from_structure
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -94,11 +93,12 @@ class SubmissionMongoAdapter(object):
         # in the SubmissionProcessor, detect this state and defuse the FW
         raise NotImplementedError()
 
-    def get_state(self, submission_id):
-        info = self.jobs.find_one(
-            {'submission_id': submission_id},
-            {'state': 1, 'state_details': 1, 'task_dict': 1})
-        return info['state'], info['state_details'], info['task_dict']
+    def get_states(self, crit):
+        props = ['state', 'state_details', 'task_dict', 'submission_id', 'formula']
+        infos = []
+        for j in self.jobs.find(crit, dict([(p, 1) for p in props])):
+            infos.append(dict([(p, j[p]) for p in props]))
+        return infos
 
     def to_dict(self):
         """
