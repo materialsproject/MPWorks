@@ -138,6 +138,10 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 d['snlgroup_id_final'] = snlgroup_id
                 d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                          d['snlgroup_id_final'])
+            else:
+                d['snl_final'] = d['snl']
+                d['snlgroup_id_final'] = d['snlgroup_id']
+                d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
         new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
