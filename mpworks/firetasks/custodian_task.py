@@ -41,7 +41,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
             v_exe = shlex.split('mpirun -n 32 vasp')  # TODO: can base ncores on FW_submit.script
-            gv_exe = shlex.split('aprun -n 32 gvasp')
+            gv_exe = shlex.split('mpirun -n 32 gvasp')
             print 'running on MENDEL'
         else:
             raise ValueError('Unrecognized host!')
