@@ -30,7 +30,7 @@ def last_relax(filename):
         return filename
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
-        return relaxations[-1]
+        return sorted(relaxations)[-1]
 
     # backup for old runs
     if os.path.exists(os.path.join(m_dir, 'relax1', m_file)):
