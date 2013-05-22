@@ -64,7 +64,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         self.files = parameters.get('files', default_files)  # files to move
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
         if self.use_contcar:
-            default_files.append('CONTCAR')
+            self.files.append('CONTCAR')
+            self.files = [x for x in self.files if x != 'POSCAR']  # remove POSCAR
 
     def run_task(self, fw_spec):
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
