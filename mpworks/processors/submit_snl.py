@@ -2,7 +2,6 @@ from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.wf_utils import NO_POTCARS
-from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
