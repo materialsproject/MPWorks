@@ -27,11 +27,13 @@ class SubmissionProcessor():
         self.jobs = sma.jobs
         self.launchpad = launchpad
 
-    def run(self, sleep_time=None):
+    def run(self, sleep_time=None, infinite=False):
         sleep_time = sleep_time if sleep_time else 30
         while True:
             self.submit_all_new_workflows()
             self.update_existing_workflows()
+            if not infinite:
+                break
             print 'sleeping', sleep_time
             time.sleep(sleep_time)
 
