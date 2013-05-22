@@ -8,7 +8,7 @@ from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
-    SignalDetectorList
+    SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
@@ -151,7 +151,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
                            "CHARGE_UNCONVERGED", "NETWORK_QUIESCED",
                            "HARD_KILLED", "WALLTIME_EXCEEDED",
-                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
+                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2"]
 
         last_relax_dir = dir_name
 
@@ -181,6 +181,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
         sl.append(HitAMemberSignal())
         sl.append(SegFaultSignal())
         sl.append(VASPStartedCompletedSignal())
+
+        if d['state'] == 'successful' and 'optimize structure' in d['task_type']:
+            sl.append(Relax2ExistsSignal())
 
         signals = sl.detect_all(last_relax_dir)
 

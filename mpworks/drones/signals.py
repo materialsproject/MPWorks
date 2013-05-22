@@ -210,3 +210,10 @@ class VASPStartedCompletedSignal(SignalDetectorSimple):
 
     def __init__(self):
         super(VASPStartedCompletedSignal, self).__init__({"VASP_HASNT_STARTED": "vasp", "VASP_HASNT_COMPLETED": "Voluntary context switches:"}, ["OUTCAR"], invert_search=True)
+
+
+class Relax2ExistsSignal(SignalDetector):
+
+    def detect(self, dir_name):
+        f_exists = 'relax2' in last_relax(os.path.join(dir_name, 'vasprun.xml'))
+        return set() if f_exists else set(["NO_RELAX2"])
