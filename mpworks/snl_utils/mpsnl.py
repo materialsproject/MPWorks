@@ -148,7 +148,7 @@ class SNLGroup():
         comp = cand_snl.structure.composition
         elsyms = sorted(set([e.symbol for e in comp.elements]))
         chemsys = '-'.join(elsyms)
-        if (cand_snl.structure.num_sites > 1500 or self.canonical_structure.numsites > 1500) and chemsys == 'C-Ce':
+        if (cand_snl.structure.num_sites > 1500 or self.canonical_structure.num_sites > 1500) and chemsys == 'C-Ce':
             print 'SKIPPING LARGE C-Ce'
             return False
 
