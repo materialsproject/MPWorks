@@ -26,7 +26,7 @@ def go_submissions():
 
     parser = ArgumentParser(description=m_description)
     parser.add_argument('--sleep', help='sleep time between loops', default=None, type=int)
-    parser.add_argument('--infinite', help='loop infinite times', action='store_true', type=bool)
+    parser.add_argument('--infinite', help='loop infinite times', action='store_true')
     args = parser.parse_args()
 
     sp = SubmissionProcessor.auto_load()
