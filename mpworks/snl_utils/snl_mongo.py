@@ -51,6 +51,7 @@ class SNLMongoAdapter(FWSerializable):
         self.snl.ensure_index('autometa.reduced_cell_formula')
         self.snl.ensure_index('autometa.reduced_cell_formula_abc')
         self.snl.ensure_index('autometa.is_ordered')
+        self.snl.ensure_index('about._icsd.icsd_id')
 
         self.snlgroups.ensure_index('snlgroup_id', unique=True)
         self.snlgroups.ensure_index('all_snl_ids')
@@ -62,6 +63,7 @@ class SNLMongoAdapter(FWSerializable):
         self.snlgroups.ensure_index('autometa.reduced_cell_formula')
         self.snlgroups.ensure_index('autometa.reduced_cell_formula_abc')
         self.snlgroups.ensure_index('autometa.is_ordered')
+        self.snlgroups.ensure_index('canonical_snl.about._icsd.icsd_id')
 
     def _get_next_snl_id(self):
         snl_id = self.id_assigner.find_and_modify(
