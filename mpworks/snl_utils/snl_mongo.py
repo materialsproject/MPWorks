@@ -142,6 +142,21 @@ class SNLMongoAdapter(FWSerializable):
 
         return snlgroup, not match_found
 
+
+    def switch_canonical_snl(self, snlgroup_id, canonical_mpsnl):
+        sgp = self.snlgroups.find_one({'snlgroup_id': snlgroup_id})
+        snlgroup = SNLGroup.from_dict(sgp)
+
+        all_snl_ids = [sid for sid in snlgroup.all_snl_ids]
+        if canonical_mpsnl.snl_id not in all_snl_ids:
+            raise ValueError('Canonical SNL must already be in snlgroup to switch!')
+
+        new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
+        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.to_dict)
+
+
+
+
     def to_dict(self):
         """
         Note: usernames/passwords are exported as unencrypted Strings!
