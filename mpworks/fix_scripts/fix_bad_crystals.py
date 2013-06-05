@@ -2,6 +2,7 @@ import os
 from pymongo import MongoClient
 import yaml
 from fireworks.core.launchpad import LaunchPad
+from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 
@@ -124,8 +125,45 @@ def fix():
             print 'FIXED', c_id
 
 
+def find_alternate_canonical():
+    # see if we can replace a deprecated canonical SNL with a non-deprecated one
+
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+
+    snl_f = os.path.join(module_dir, 'snl.yaml')
+    snldb = SNLMongoAdapter.from_file(snl_f)
+    snl = snldb.snl
+    snlgroups = snldb.snlgroups
+
+    for g in snlgroups.find({"canonical_snl.about.remarks":"DEPRECATED"}, {"snlgroup_id": 1, "all_snl_ids": 1}):
+        for s in snl.find({"snl_id": {"$in": g['all_snl_ids']}, "about.remarks": {"$ne": "DEPRECATED"}}):
+            canonical_mpsnl = MPStructureNL.from_dict(s)
+            snldb.switch_canonical_snl(g['snlgroup_id'], canonical_mpsnl)
+            print g['snlgroup_id']
+            break
+
+    print 'DONE'
+
+def archive_deprecated_fws():
+    # find all snlgroups that are deprecated, and archive all WFs that have deprecated fw_ids so we don't run them
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    snl_f = os.path.join(module_dir, 'snl.yaml')
+    snldb = SNLMongoAdapter.from_file(snl_f)
+    snlgroups = snldb.snlgroups
+
+    lp_f = os.path.join(module_dir, 'my_launchpad.yaml')
+    lpdb = LaunchPad.from_file(lp_f)
+
+    for g in snlgroups.find({'canonical_snl.about.remarks':'DEPRECATED'}, {'snlgroup_id': 1}):
+        while lpdb.fireworks.find_one({'spec.snlgroup_id': g['snlgroup_id'], 'state': {'$ne': 'ARCHIVED'}}, {'fw_id': 1}):
+            fw = lpdb.fireworks.find_one({'spec.snlgroup_id': g['snlgroup_id'], 'state': {'$ne': 'ARCHIVED'}}, {'fw_id': 1})
+            print fw['fw_id']
+            lpdb.archive_wf(fw['fw_id'])
+
+
+    print 'DONE'
 
 
 
 if __name__ == '__main__':
-    fix()
+    archive_deprecated_fws()
