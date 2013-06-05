@@ -15,6 +15,7 @@ def submit_all_snl(min=None, max=None):
     constraints = {'is_ordered': True, 'is_valid': True, 'nsites': {'$lte': 200}, 'canonical_snl.about.projects': {'$ne': 'CederDahn Challenge'}}
     constraints['elements'] = {'$nin': NO_POTCARS}
     constraints['canonical_snl.about.history.name'] = {"$ne":"Materials Project structure optimization"}
+    constraints['canonical_snl.about.remarks'] = {"$ne": "DEPRECATED"}
 
     if min and max:
         constraints['snlgroup_id'] = {'$gte': min, '$lte': max}
