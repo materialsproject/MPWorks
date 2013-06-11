@@ -99,7 +99,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 self.process_fw(path, d)
 
                 #Override incorrect outcar subdocs for two step relaxations
-                if "optimize structure" in d['task_type']:
+                if "optimize structure" in d['task_type'] and \
+                    os.path.exists(os.path.join(path, "relax2")):
                     try:
                         run_stats = {}
                         for i in [1,2]:
