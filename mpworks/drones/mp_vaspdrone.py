@@ -95,16 +95,17 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     .format(d["dir_name"], d["task_id"]))
 
                 #Fireworks processing
+
                 self.process_fw(path, d)
-                '''
+
                 #Override incorrect outcar subdocs for two step relaxations
-                if ['optimize structure'] in d['task_type']:
+                if "optimize structure" in d['task_type']:
                     try:
                         run_stats = {}
                         for i in [1,2]:
                             outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
-                        d["calculations"][i]["output"]["outcar"] = outcar.to_dict
-                        run_stats["relax"+str(i)] = outcar.run_stats
+                            d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
+                            run_stats["relax"+str(i)] = outcar.run_stats
                     except:
                         logger.error("Bad OUTCAR for {}.".format(path))
 
@@ -118,8 +119,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     except:
                         logger.error("Bad run stats for {}.".format(path))
 
-                        d["run_stats"] = run_stats
-                '''
+                    d["run_stats"] = run_stats
 
                 #task_type dependent processing
                 if 'static' in d['task_type']:
