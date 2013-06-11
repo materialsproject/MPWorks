@@ -117,18 +117,25 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
         d['submission_id'] = None
         d['vaspinputset_name'] = None
 
-        if old_task.get('mps_id', -1) > 0:
+        snl_d = sma.snl.find_one({'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
+        if old_task.get('mps_id', -1) > 0 and snl_d:
             # grab the SNL from the SNL db
-            snl_d = sma.snl.find_one({'about._materialsproject.deprecated.mps_ids': old_task['mps_id']})
             del snl_d['_id']
             d['snl'] = snl_d
             d['snlgroup_id'] = sma.snlgroups.find_one({'all_snl_ids': d['snl']['snl_id']}, {'snlgroup_id': 1})['snlgroup_id']
 
-        else:
+        elif 'mps' in old_task and old_task['mps']:
             snl = mps_dict_to_snl(old_task['mps'])
             mpsnl, snlgroup_id = sma.add_snl(snl)
             d['snl'] = mpsnl.to_dict
             d['snlgroup_id'] = snlgroup_id
+        else:
+            s = Structure.from_dict(old_task['input']['crystal'])
+            snl = StructureNL(s, 'Anubhav Jain <ajain@lbl.gov>', remarks=['origin unknown'])
+            mpsnl, snlgroup_id = sma.add_snl(snl)
+            d['snl'] = mpsnl.to_dict
+            d['snlgroup_id'] = snlgroup_id
+
 
         if 'optimize structure' in d['task_type'] and 'output' in d:
             # create a new SNL based on optimized structure
@@ -147,7 +154,6 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
             # add snl
             mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
-            print 'ADDED snlgroup', snlgroup_id
 
             d['snl_final'] = mpsnl.to_dict
             d['snlgroup_id_final'] = snlgroup_id
@@ -221,3 +227,7 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
 
         d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
+
+        d['run_tags'] = ['PBE']
+        d['run_tags'].extend(d['pseudo_potential']['labels'])
+        d['run_tags'].extend([e+"="+str(d['hubbards'].get(e, 0)) for e in d['elements']])

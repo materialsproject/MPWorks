@@ -11,17 +11,31 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
 
+NO_POTCARS = ['Po', 'At', 'Rn', 'Fr', 'Ra', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No', 'Lr']
+
+
 def j_decorate(m_dict):
     m_dict['auto_npar'] = False
     return m_dict
 
 
 def last_relax(filename):
+    # for old runs
+    m_dir = os.path.dirname(filename)
+    m_file = os.path.basename(filename)
+    if os.path.exists(os.path.join(m_dir, 'relax2', m_file)):
+        return os.path.join(m_dir, 'relax2', m_file)
+
     if os.path.exists(filename):
         return filename
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
-        return relaxations[-1]
+        return sorted(relaxations)[-1]
+
+    # backup for old runs
+    if os.path.exists(os.path.join(m_dir, 'relax1', m_file)):
+        return os.path.join(m_dir, 'relax1', m_file)
+
     return filename
 
 
@@ -34,7 +48,9 @@ def orig(filename):
 
 
 def get_block_part(m_dir):
-    return m_dir[m_dir.find('block_'):]
+    if 'block_' in m_dir:
+        return m_dir[m_dir.find('block_'):]
+    return m_dir
 
 
 def get_loc(m_dir):
@@ -59,5 +75,6 @@ def move_to_garden(m_dir):
     block_part = get_block_part(m_dir)
     garden_part = '/project/projectdirs/matgen/garden/'
     f_dir = os.path.join(garden_part, block_part)
-    shutil.move(m_dir, f_dir)
+    if os.path.exists(m_dir) and not os.path.exists(f_dir):
+        shutil.move(m_dir, f_dir)
     return f_dir

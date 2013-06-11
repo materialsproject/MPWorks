@@ -6,7 +6,6 @@ from pymongo import MongoClient
 from pymatgen import Composition
 
 import yaml
-from mpworks.snl_utils.mpsnl import get_meta_from_structure
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -68,20 +67,24 @@ class SubmissionMongoAdapter(object):
         d = snl.to_dict
         d['submitter_email'] = submitter_email
         d['parameters'] = parameters
-        d['state'] = 'submitted'
+        d['state'] = 'SUBMITTED'
         d['state_details'] = {}
         d['task_dict'] = {}
         d['submission_id'] = self._get_next_submission_id()
         d['submitted_at'] = datetime.datetime.utcnow().isoformat()
-        d.update(get_meta_from_structure(snl.structure))
-        self.jobs.insert(d)
+        if 'is_valid' not in d:
+            d.update(get_meta_from_structure(snl.structure))
 
+        sorted_structure = snl.structure.get_sorted_structure()
+        d.update(sorted_structure.to_dict)
+
+        self.jobs.insert(d)
         return d['submission_id']
 
     def resubmit(self, submission_id):
         self.jobs.update(
             {'submission_id': submission_id},
-            {'$set': {'state': 'submitted', 'state_details': {},
+            {'$set': {'state': 'SUBMITTED', 'state_details': {},
                       'task_dict': {}}})
 
     def cancel_submission(self, submission_id):
@@ -90,11 +93,12 @@ class SubmissionMongoAdapter(object):
         # in the SubmissionProcessor, detect this state and defuse the FW
         raise NotImplementedError()
 
-    def get_state(self, submission_id):
-        info = self.jobs.find_one(
-            {'submission_id': submission_id},
-            {'state': 1, 'state_details': 1, 'task_dict': 1})
-        return info['state'], info['state_details'], info['task_dict']
+    def get_states(self, crit):
+        props = ['state', 'state_details', 'task_dict', 'submission_id', 'formula']
+        infos = []
+        for j in self.jobs.find(crit, dict([(p, 1) for p in props])):
+            infos.append(dict([(p, j[p]) for p in props]))
+        return infos
 
     def to_dict(self):
         """
@@ -107,7 +111,7 @@ class SubmissionMongoAdapter(object):
 
     def update_state(self, submission_id, state, state_details, task_dict):
         self.jobs.find_and_modify({'submission_id': submission_id},
-                                  {'$set': {'state': state}})
+                                  {'$set': {'state': state, 'state_details': state_details, 'task_dict': task_dict}})
 
     @classmethod
     def from_dict(cls, d):
@@ -119,14 +123,13 @@ class SubmissionMongoAdapter(object):
         s_file = os.path.join(s_dir, 'submission_db.yaml')
         return SubmissionMongoAdapter.from_file(s_file)
 
-    def to_format(self, f_format='json', *args, **kwargs):
+    def to_format(self, f_format='json', **kwargs):
         """
         returns a String representation in the given format
         :param f_format: the format to output to (default json)
         """
         if f_format == 'json':
-            return json.dumps(self.to_dict(), *args,
-                              default=DATETIME_HANDLER, **kwargs)
+            return json.dumps(self.to_dict(), default=DATETIME_HANDLER, **kwargs)
         elif f_format == 'yaml':
             # start with the JSON format, and convert to YAML
             return yaml.dump(self.to_dict(), default_flow_style=YAML_STYLE,
@@ -148,7 +151,7 @@ class SubmissionMongoAdapter(object):
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
-    def to_file(self, filename, f_format=None, *args, **kwargs):
+    def to_file(self, filename, f_format=None, **kwargs):
         """
         Write a serialization of this object to a file
         :param filename: filename to write to
@@ -158,7 +161,7 @@ class SubmissionMongoAdapter(object):
         if f_format is None:
             f_format = filename.split('.')[-1]
         with open(filename, 'w') as f:
-            f.write(self.to_format(f_format=f_format, *args, **kwargs))
+            f.write(self.to_format(f_format=f_format, **kwargs))
 
     @classmethod
     def from_file(cls, filename, f_format=None):

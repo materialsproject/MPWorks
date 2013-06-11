@@ -73,6 +73,7 @@ def snl_to_wf(snl, parameters=None):
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
         spec['force_mpsnl'] = snl.to_dict
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
+        del spec['snl']
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 

@@ -38,13 +38,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # TODO: make this better - is there a way to load an environment
         # variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 48 vasp')
             # TODO: can base ncores on FW_submit.script
+            v_exe = shlex.split('aprun -n 48 vasp')
             gv_exe = shlex.split('aprun -n 48 gvasp')
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
-            v_exe = shlex.split('mpirun -n 32 vasp')
             # TODO: can base ncores on FW_submit.script
+            v_exe = shlex.split('mpirun -n 32 vasp')
             gv_exe = shlex.split('aprun -n 32 gvasp')
             print 'running on MENDEL'
         else:
@@ -85,11 +85,12 @@ def get_custodian_task(spec):
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                    NonConvergingErrorHandler()]
     else:
         jobs = [VaspJob(v_exe)]
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
 
-    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(),
-                MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
     params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
 

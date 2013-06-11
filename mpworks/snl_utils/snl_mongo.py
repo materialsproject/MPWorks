@@ -51,6 +51,7 @@ class SNLMongoAdapter(FWSerializable):
         self.snl.ensure_index('autometa.reduced_cell_formula')
         self.snl.ensure_index('autometa.reduced_cell_formula_abc')
         self.snl.ensure_index('autometa.is_ordered')
+        self.snl.ensure_index('about._icsd.icsd_id')
 
         self.snlgroups.ensure_index('snlgroup_id', unique=True)
         self.snlgroups.ensure_index('all_snl_ids')
@@ -62,6 +63,7 @@ class SNLMongoAdapter(FWSerializable):
         self.snlgroups.ensure_index('autometa.reduced_cell_formula')
         self.snlgroups.ensure_index('autometa.reduced_cell_formula_abc')
         self.snlgroups.ensure_index('autometa.is_ordered')
+        self.snlgroups.ensure_index('canonical_snl.about._icsd.icsd_id')
 
     def _get_next_snl_id(self):
         snl_id = self.id_assigner.find_and_modify(
@@ -139,6 +141,21 @@ class SNLMongoAdapter(FWSerializable):
                 self.snlgroups.insert(snlgroup.to_dict)
 
         return snlgroup, not match_found
+
+
+    def switch_canonical_snl(self, snlgroup_id, canonical_mpsnl):
+        sgp = self.snlgroups.find_one({'snlgroup_id': snlgroup_id})
+        snlgroup = SNLGroup.from_dict(sgp)
+
+        all_snl_ids = [sid for sid in snlgroup.all_snl_ids]
+        if canonical_mpsnl.snl_id not in all_snl_ids:
+            raise ValueError('Canonical SNL must already be in snlgroup to switch!')
+
+        new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
+        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.to_dict)
+
+
+
 
     def to_dict(self):
         """

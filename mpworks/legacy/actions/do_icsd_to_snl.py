@@ -30,7 +30,10 @@ if __name__ == '__main__':
 
     snldb = SNLMongoAdapter.from_file(snl_f)
 
-    for icsd_dict in db.icsd_2012_crystals.find(sort=[("icsd_id", ASCENDING)], timeout=False):
+    # query = {"icsd_id": {"$gte": 170623}}
+    query = {}
+
+    for icsd_dict in db.icsd_2012_crystals.find(query, sort=[("icsd_id", ASCENDING)], timeout=False):
         try:
             snl = icsd_dict_to_snl(icsd_dict)
             if snl:

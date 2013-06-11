@@ -8,7 +8,7 @@ from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
-    SignalDetectorList
+    SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
@@ -82,11 +82,11 @@ class MPVaspDrone(VaspToDbTaskDrone):
                                 query={"_id": "taskid"},
                                 update={"$inc": {"c": 1}})["c"])
                     logger.info("Inserting {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
                     d["task_id"] = result["task_id"]
                     logger.info("Updating {} with taskid = {}"
-                                .format(d["dir_name"], d["task_id"]))
+                    .format(d["dir_name"], d["task_id"]))
 
                 #Fireworks processing
                 self.process_fw(path, d)
@@ -100,7 +100,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
         else:
             d["task_id"] = 0
             logger.info("Simulated insert into database for {} with task_id {}"
-                        .format(d["dir_name"], d["task_id"]))
+            .format(d["dir_name"], d["task_id"]))
             return 0, d
 
     def process_fw(self, dir_name, d):
@@ -110,7 +110,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
-            d['submission_id'] = fw_dict['spec'].get('submission_id')
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
 
@@ -139,6 +138,10 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 d['snlgroup_id_final'] = snlgroup_id
                 d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                          d['snlgroup_id_final'])
+            else:
+                d['snl_final'] = d['snl']
+                d['snlgroup_id_final'] = d['snlgroup_id']
+                d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
         new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
@@ -148,7 +151,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
                            "CHARGE_UNCONVERGED", "NETWORK_QUIESCED",
                            "HARD_KILLED", "WALLTIME_EXCEEDED",
-                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED"]
+                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2"]
 
         last_relax_dir = dir_name
 
@@ -178,6 +181,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
         sl.append(HitAMemberSignal())
         sl.append(SegFaultSignal())
         sl.append(VASPStartedCompletedSignal())
+
+        if d['state'] == 'successful' and 'optimize structure' in d['task_type']:
+            sl.append(Relax2ExistsSignal())
 
         signals = sl.detect_all(last_relax_dir)
 

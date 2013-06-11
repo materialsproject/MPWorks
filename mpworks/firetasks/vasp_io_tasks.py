@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import shutil
+import sys
 from custodian.vasp.handlers import UnconvergedErrorHandler
 
 from fireworks.utilities.fw_serializers import FWSerializable
@@ -63,7 +64,8 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         self.files = parameters.get('files', default_files)  # files to move
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
         if self.use_contcar:
-            default_files.append('CONTCAR')
+            self.files.append('CONTCAR')
+            self.files = [x for x in self.files if x != 'POSCAR']  # remove POSCAR
 
     def run_task(self, fw_spec):
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
@@ -102,11 +104,15 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
             update_spec = {}
             fizzled_parent = True
+            parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-            update_spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['prev_task_type'],
-                       'run_tags': fw_spec['run_tags']}
+            update_spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                           'prev_task_type': fw_spec['prev_task_type'],
+                           'run_tags': fw_spec['run_tags']}
+            self.additional_fields['run_tags'] = fw_spec['run_tags']
             fizzled_parent = False
+            parse_dos = 'Uniform' in fw_spec['prev_task_type']
 
         if MOVE_TO_GARDEN:
             prev_dir = move_to_garden(prev_dir)
@@ -116,13 +122,19 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_path = os.path.join(db_dir, 'tasks_db.json')
 
         logging.basicConfig(level=logging.DEBUG)
+        logger = logging.getLogger('MPVaspDrone')
+        logger.setLevel(logging.DEBUG)
+        sh = logging.StreamHandler(stream=sys.stdout)
+        sh.setLevel(getattr(logging, 'INFO'))
+        logger.addHandler(sh)
+
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_dos='Uniform' in fw_spec['prev_task_type'],
+                collection=db_creds['collection'], parse_dos=parse_dos,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir)
@@ -138,43 +150,49 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
-        output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
-        ueh = UnconvergedErrorHandler(output_filename=output_dir)
-        if ueh.check() and 'unconverged_handler' not in fw_spec['run_tags'] and not fizzled_parent:
-            print 'Unconverged run! Creating dynamic FW...'
+        if not fizzled_parent:
+            unconverged_tag = 'unconverged_handler--{}'.format(fw_spec['prev_task_type'])
+            output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
+            ueh = UnconvergedErrorHandler(output_filename=output_dir)
+            if ueh.check() and unconverged_tag not in fw_spec['run_tags']:
+                print 'Unconverged run! Creating dynamic FW...'
 
-            spec = {'prev_vasp_dir': get_block_part(prev_dir), 'prev_task_type': fw_spec['task_type'],
-                    'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
-                    'task_type': fw_spec['prev_task_type'], 'run_tags': list(fw_spec['run_tags']),
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': fw_spec['_priority']}
+                spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                        'prev_task_type': fw_spec['task_type'],
+                        'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
+                        'task_type': fw_spec['prev_task_type'],
+                        'run_tags': list(fw_spec['run_tags']),
+                        '_dupefinder': DupeFinderVasp().to_dict(),
+                        '_priority': fw_spec['_priority']}
 
-            snl = StructureNL.from_dict(spec['mpsnl'])
-            spec['run_tags'].append('unconverged_handler')
-            spec['_queueadapter'] = QA_VASP
+                snl = StructureNL.from_dict(spec['mpsnl'])
+                spec['run_tags'].append(unconverged_tag)
+                spec['_queueadapter'] = QA_VASP
 
-            fws = []
-            connections = {}
+                fws = []
+                connections = {}
 
-            f = Composition.from_formula(
-                snl.structure.composition.reduced_formula).alphabetical_formula
+                f = Composition.from_formula(
+                    snl.structure.composition.reduced_formula).alphabetical_formula
 
-            fws.append(FireWork(
-                [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
-                               'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
-                 get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
-                fw_id=-2))
+                fws.append(FireWork(
+                    [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
+                                   'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
+                     get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
+                    fw_id=-2))
 
-            spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
-                    '_priority': fw_spec['_priority'], '_queueadapter': QA_DB, 'run_tags': list(fw_spec['run_tags'])}
-            spec['run_tags'].append('unconverged_handler')
-            fws.append(
-                FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
-                         fw_id=-1))
-            connections[-2] = -1
+                spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
+                        '_priority': fw_spec['_priority'], '_queueadapter': QA_DB,
+                        'run_tags': list(fw_spec['run_tags'])}
+                spec['run_tags'].append(unconverged_tag)
+                fws.append(
+                    FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                             fw_id=-1))
+                connections[-2] = -1
 
-            wf = Workflow(fws, connections)
+                wf = Workflow(fws, connections)
 
-            return FWAction(detours=wf)
+                return FWAction(detours=wf)
 
         # not successful and not due to convergence problem - DEFUSE
         return FWAction(stored_data=stored_data, defuse_children=True)
