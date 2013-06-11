@@ -2,6 +2,7 @@ import json
 import os
 import datetime
 import logging
+import re
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -13,6 +14,10 @@ from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
+from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.electronic_structure.bandstructure import BandStructureSymmLine
+import numpy as np
+import re
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -36,7 +41,7 @@ def is_valid_vasp_dir(mydir):
 
 
 class MPVaspDrone(VaspToDbTaskDrone):
-    def assimilate(self, path):
+    def assimilate(self, path, fw_db=None):
         """
         Parses vasp runs. Then insert the result into the db. and return the
         task_id or doc of the insertion.
@@ -48,6 +53,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
+
         d["dir_name_full"] = d["dir_name"].split(":")[1]
         d["dir_name"] = get_block_part(d["dir_name_full"])
         if not self.simulate:
@@ -90,8 +96,63 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 #Fireworks processing
                 self.process_fw(path, d)
+                '''
+                #Override incorrect outcar subdocs for two step relaxations
+                if ['optimize structure'] in d['task_type']:
+                    try:
+                        run_stats = {}
+                        for i in [1,2]:
+                            outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
+                        d["calculations"][i]["output"]["outcar"] = outcar.to_dict
+                        run_stats["relax"+str(i)] = outcar.run_stats
+                    except:
+                        logger.error("Bad OUTCAR for {}.".format(path))
+
+                    try:
+                        overall_run_stats = {}
+                        for key in ["Total CPU time used (sec)", "User time (sec)",
+                                    "System time (sec)", "Elapsed time (sec)"]:
+                            overall_run_stats[key] = sum([v[key]
+                                              for v in run_stats.values()])
+                        run_stats["overall"] = overall_run_stats
+                    except:
+                        logger.error("Bad run stats for {}.".format(path))
+
+                        d["run_stats"] = run_stats
+                '''
+
+                #task_type dependent processing
+                if 'static' in d['task_type']:
+                    launch_doc = fw_db.find({"fw_id": d['fw_id']}, {"action.stored_data": 1})
+                    for i in ["conventional_standard_structure", "symmetry_operations",
+                              "symmetry_dataset", "refined_structure"]:
+                        d['analysis'][i] = launch_doc['action']['stored_data'][i]
+
+                #parse band structure if necessary
+                if 'band structure' in d['task_type']:
+                    launch_doc = fw_db.find_one({"fw_id": d['fw_id']}, {"action.stored_data": 1})
+
+                    def string_to_numlist(stringlist):
+                        g=re.search('([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', stringlist)
+                        return [float(g.group(i)) for i in range(1,4)]
+
+                    for i in ["kpath_name", "kpath"]:
+                        d['analysis'][i] = launch_doc['action']['stored_data'][i]
+                    kpoints_doc = d['analysis']['kpath']['kpoints']
+                    for i in kpoints_doc:
+                        kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
+
+                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=True)
+
+                    bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'], line_mode=True)
+                    bs_json = json.dumps(bs.to_dict)
+                    fs = gridfs.GridFS(db, "band_structure_fs")
+                    bs_id = fs.put(bs_json)
+                    d['calculations'][0]["band_structure_fs_id"] = bs_id
+
                 coll.update({"dir_name": d["dir_name"]}, {"$set": d},
                             upsert=True)
+
                 return d["task_id"], d
             else:
                 logger.info("Skipping duplicate {}".format(d["dir_name"]))
@@ -212,3 +273,4 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d['analysis'] = d.get('analysis', {})
         d['analysis']['errors_MP'] = vasp_signals
+
