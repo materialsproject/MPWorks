@@ -3,8 +3,9 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints, VaspInput
-from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, MPNonSCFVaspInputSet
+from pymatgen.io.vaspio.vasp_input import VaspInput
+from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
+    MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -19,8 +20,8 @@ module_dir = os.path.dirname(__file__)
 
 class SetupStaticRunTask(FireTaskBase, FWSerializable):
     """
-    Set VASP input sets for static runs, assuming vasp Outputs (vasprun.xml and OUTCAR) from
-    relax runs are already in the directory
+    Set VASP input sets for static runs, assuming vasp Outputs (vasprun.xml
+    and OUTCAR) from relax runs are already in the directory
     """
 
     _fw_name = "Setup Static Task"
@@ -42,7 +43,8 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
 class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
     """
-    Assumes the current directory contains an unconverged job. Fixes it and runs it
+    Assumes the current directory contains an unconverged job. Fixes it and
+    runs it
     """
 
     _fw_name = "Unconverged Handler Task"
@@ -55,7 +57,8 @@ class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
 
 class SetupNonSCFTask(FireTaskBase, FWSerializable):
     """
-    Set up vasp inputs for non-SCF calculations (Uniform [DOS] or band structure)
+    Set up vasp inputs for non-SCF calculations (Uniform [DOS] or band
+    structure)
     """
     _fw_name = "Setup non-SCF Task"
 
@@ -65,7 +68,7 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         :param parameters:
         """
         parameters = parameters if parameters else {}
-        self.update(parameters)  # store the parameters explicitly set by the user
+        self.update(parameters)
         self.line = parameters.get('mode', 'line').lower() == 'line'
 
     def run_task(self, fw_spec):
@@ -75,43 +78,52 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
                                parse_eigen=False)
             outcar = Outcar(os.path.join(os.getcwd(), "OUTCAR"))
         except Exception as e:
-            raise RuntimeError("Can't get valid results from relaxed run: " + str(e))
+            raise RuntimeError("Can't get valid results from relaxed run: " +
+                               str(e))
 
-        user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(vasp_run, outcar)
+        user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(
+            vasp_run, outcar)
         user_incar_settings.update({"NPAR": 2})
-        structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar, initial_structure=True)
+        structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar,
+                                                       initial_structure=True)
 
         if self.line:
             mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Line")
-            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            for k, v in mpnscfvip.get_all_vasp_input(
+                    structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
         else:
-            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Uniform")
-            for k, v in mpnscfvip.get_all_vasp_input(structure, generate_potcar=True).items():
+            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings,
+                                             mode="Uniform")
+            for k, v in mpnscfvip.get_all_vasp_input(
+                    structure, generate_potcar=True).items():
                 v.write_file(os.path.join(os.getcwd(), k))
 
         if self.line:
-            return FWAction(stored_data={"kpath": kpath.kpath, "kpath_name": kpath.name})
+            return FWAction(stored_data={"kpath": kpath.kpath,
+                                         "kpath_name": kpath.name})
         else:
             return FWAction()
 
 
 class SetupGGAUTask(FireTaskBase, FWSerializable):
     """
-    Assuming that GGA inputs/outputs already exist in the directory, set up a GGA+U run.
+    Assuming that GGA inputs/outputs already exist in the directory, set up a
+    GGA+U run.
     """
     _fw_name = "Setup GGAU Task"
 
     def run_task(self, fw_spec):
         chgcar_start = False
-
-        vi = VaspInput.from_directory(".")  # read the VaspInput from the previous run
+        # read the VaspInput from the previous run
+        vi = VaspInput.from_directory(".")
 
         # figure out what GGA+U values to use and override them
+        # LDAU values to use
         mpvis = MPVaspInputSet()
         incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
-        incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}  # LDAU values to use
+        incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}
         vi['INCAR'].update(incar_updates)  # override the +U keys
 
         # start from the CHGCAR of previous run
@@ -119,6 +131,6 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
             vi['INCAR']['ICHARG'] = 1
             chgcar_start = True
 
-        vi['INCAR'].write_file('INCAR')  # write back the new INCAR to the current directory
-
+        # write back the new INCAR to the current directory
+        vi['INCAR'].write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})

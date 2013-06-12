@@ -24,24 +24,28 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters):
         self.update(parameters)
-        self.jobs = [VaspJob.from_dict(d) for d in self['jobs']]
+        self.jobs = map(VaspJob.from_dict, self['jobs'])
         dec = PMGJSONDecoder()
-        self.handlers = [dec.process_decoded(d) for d in self['handlers']]
+        self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
 
     def run_task(self, fw_spec):
 
-        # write a file containing the formula and task_type for somewhat easier file system browsing
+        # write a file containing the formula and task_type for somewhat
+        # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        # TODO: make this better - is there a way to load an environment variable as the VASP_EXE?
+        # TODO: make this better - is there a way to load an environment
+        # variable as the VASP_EXE?
         if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 48 vasp')  # TODO: can base ncores on FW_submit.script
+            # TODO: can base ncores on FW_submit.script
+            v_exe = shlex.split('aprun -n 48 vasp')
             gv_exe = shlex.split('aprun -n 48 gvasp')
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
-            v_exe = shlex.split('mpirun -n 32 vasp')  # TODO: can base ncores on FW_submit.script
-            gv_exe = shlex.split('mpirun -n 32 gvasp')
+            # TODO: can base ncores on FW_submit.script
+            v_exe = shlex.split('mpirun -n 32 vasp')
+            gv_exe = shlex.split('aprun -n 32 gvasp')
             print 'running on MENDEL'
         else:
             raise ValueError('Unrecognized host!')
@@ -62,14 +66,16 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         stored_data = {'error_list': list(all_errors)}
         update_spec = {'prev_vasp_dir': get_block_part(os.getcwd()),
                        'prev_task_type': fw_spec['task_type'],
-                       'mpsnl': fw_spec['mpsnl'], 'snlgroup_id': fw_spec['snlgroup_id'],
+                       'mpsnl': fw_spec['mpsnl'],
+                       'snlgroup_id': fw_spec['snlgroup_id'],
                        'run_tags': fw_spec['run_tags']}
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
     def _write_formula_file(self, fw_spec):
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--' + fw_spec['task_type'])
+            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
 
