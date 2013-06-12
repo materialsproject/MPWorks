@@ -21,9 +21,7 @@ def clear_env():
     if 'testing' not in str(sma.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
 
-    l_dir = FWConfig().CONFIG_FILE_DIR
-    l_file = os.path.join(l_dir, 'my_launchpad.yaml')
-    lp = LaunchPad.from_file(l_file)
+    lp = LaunchPad.auto_load()
     if 'testing' not in str(lp.db):
         raise ValueError('{} is not a testing database'.format(sma.db))
 

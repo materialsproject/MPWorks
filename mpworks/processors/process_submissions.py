@@ -142,9 +142,6 @@ class SubmissionProcessor():
     @classmethod
     def auto_load(cls):
         sma = SubmissionMongoAdapter.auto_load()
-
-        l_dir = FWConfig().CONFIG_FILE_DIR
-        l_file = os.path.join(l_dir, 'my_launchpad.yaml')
-        lp = LaunchPad.from_file(l_file)
+        lp = LaunchPad.auto_load()
 
         return SubmissionProcessor(sma, lp)

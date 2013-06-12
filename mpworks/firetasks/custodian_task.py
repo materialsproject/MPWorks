@@ -48,6 +48,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             gv_exe = shlex.split('aprun -n 32 gvasp')
             print 'running on MENDEL'
         else:
+
             raise ValueError('Unrecognized host!')
 
         for job in self.jobs:
