@@ -9,6 +9,7 @@ import os
 import shutil
 import sys
 from custodian.vasp.handlers import UnconvergedErrorHandler
+from fireworks.core.launchpad import LaunchPad
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
@@ -137,7 +138,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 collection=db_creds['collection'], parse_dos=parse_dos,
                 additional_fields=self.additional_fields,
                 update_duplicates=self.update_duplicates)
-            t_id, d = drone.assimilate(prev_dir)
+            t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
 
         mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
         snlgroup_id = d['snlgroup_id_final'] if 'snlgroup_id_final' in d else d['snlgroup_id']

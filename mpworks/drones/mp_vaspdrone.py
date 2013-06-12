@@ -41,7 +41,7 @@ def is_valid_vasp_dir(mydir):
 
 
 class MPVaspDrone(VaspToDbTaskDrone):
-    def assimilate(self, path, fw_db=None):
+    def assimilate(self, path, launches_coll=None):
         """
         Parses vasp runs. Then insert the result into the db. and return the
         task_id or doc of the insertion.
@@ -124,14 +124,14 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 #task_type dependent processing
                 if 'static' in d['task_type']:
-                    launch_doc = fw_db.find({"fw_id": d['fw_id']}, {"action.stored_data": 1})
+                    launch_doc = launches_coll.find({"fw_id": d['fw_id']}, {"action.stored_data": 1})
                     for i in ["conventional_standard_structure", "symmetry_operations",
                               "symmetry_dataset", "refined_structure"]:
                         d['analysis'][i] = launch_doc['action']['stored_data'][i]
 
                 #parse band structure if necessary
                 if 'band structure' in d['task_type']:
-                    launch_doc = fw_db.find_one({"fw_id": d['fw_id']}, {"action.stored_data": 1})
+                    launch_doc = launches_coll.find_one({"fw_id": d['fw_id']}, {"action.stored_data": 1})
 
                     def string_to_numlist(stringlist):
                         g=re.search('([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', stringlist)
