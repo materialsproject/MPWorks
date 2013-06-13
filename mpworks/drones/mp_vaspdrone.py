@@ -56,6 +56,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d["dir_name_full"] = d["dir_name"].split(":")[1]
         d["dir_name"] = get_block_part(d["dir_name_full"])
+        d["stored_data"] = {}
+
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
             # be pickled, every insertion needs to create a new connection
@@ -127,7 +129,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
                     for i in ["conventional_standard_structure", "symmetry_operations",
                               "symmetry_dataset", "refined_structure"]:
-                        d['analysis'][i] = launch_doc['action']['stored_data'][i]
+                        d['stored_data'][i] = launch_doc['action']['stored_data'][i]
 
                 #parse band structure if necessary
                 if 'band structure' in d['task_type']:
@@ -138,8 +140,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         return [float(g.group(i)) for i in range(1,4)]
 
                     for i in ["kpath_name", "kpath"]:
-                        d['analysis'][i] = launch_doc['action']['stored_data'][i]
-                    kpoints_doc = d['analysis']['kpath']['kpoints']
+                        d['stored_data'][i] = launch_doc['action']['stored_data'][i]
+                    kpoints_doc = d['stored_data']['kpath']['kpoints']
                     for i in kpoints_doc:
                         kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
 
