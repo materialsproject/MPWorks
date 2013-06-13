@@ -136,7 +136,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
 
                     def string_to_numlist(stringlist):
-                        g=re.search('([0-9.]+)\s+([0-9.]+)\s+([0-9.]+)', stringlist)
+                        g=re.search('([0-9\-\.]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)', stringlist)
                         return [float(g.group(i)) for i in range(1,4)]
 
                     for i in ["kpath_name", "kpath"]:
