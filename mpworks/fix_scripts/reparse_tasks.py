@@ -44,9 +44,11 @@ class TaskBuilder():
             cls.admin_password = db_creds['admin_password']
 
     def process_task(self, data):
+
         try:
             dir_name = data[0]
             parse_dos = data[1]
+            prev_info = self.tasks.find_one({'dir_name_full': dir_name}, {'task_type': 1, 'snl_final': 1, 'snlgroup_id_final': 1, 'snlgroup_changed': 1})
             drone = MPVaspDrone(
                 host=self.host, port=self.port,
                 database=self.database, user=self.admin_user,
@@ -56,8 +58,8 @@ class TaskBuilder():
                 update_duplicates=True)
             t_id, d = drone.assimilate(dir_name, launches_coll=LaunchPad.auto_load().launches)
 
-            d = self.tasks.find_one({'task_id': t_id}, {'task_type': 1, 'snl_final': 1, 'snlgroup_id_final': 1, 'snlgroup_changed': 1})
-            self.tasks.update({"task_id": t_id}, {"$set": {"snl_final": d['snl_final'], "snlgroup_id_final": d['snlgroup_id_final'], "snlgroup_changed": d['snlgroup_changed']}})
+
+            self.tasks.update({"task_id": t_id}, {"$set": {"snl_final": prev_info['snl_final'], "snlgroup_id_final": prev_info['snlgroup_id_final'], "snlgroup_changed": prev_info['snlgroup_changed']}})
             print 'FINISHED', t_id
         except:
             print '-----'
