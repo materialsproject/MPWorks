@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from pymongo import MongoClient
+from fireworks.core.launchpad import LaunchPad
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 
 __author__ = 'Anubhav Jain'
@@ -32,15 +33,13 @@ if __name__ == '__main__':
         db.authenticate(db_creds['admin_user'], db_creds['admin_password'])
         coll = db[db_creds['collection']]
 
-        print coll.count()
-
-        """
-        drone = MPVaspDrone(
-            host=db_creds['host'], port=db_creds['port'],
-            database=db_creds['database'], user=db_creds['admin_user'],
-            password=db_creds['admin_password'],
-            collection=db_creds['collection'], parse_dos=True,
-            additional_fields={},
-            update_duplicates=True)
-        t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
-        """
+        for d in coll.find({},{'dir_name_full': 1}):
+            dir_name = d['dir_name_full']
+            drone = MPVaspDrone(
+                host=db_creds['host'], port=db_creds['port'],
+                database=db_creds['database'], user=db_creds['admin_user'],
+                password=db_creds['admin_password'],
+                collection=db_creds['collection'], parse_dos=True,
+                additional_fields={},
+                update_duplicates=True)
+            t_id, d = drone.assimilate(dir_name, launches_coll=LaunchPad.auto_load().launches)
