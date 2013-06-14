@@ -13,15 +13,15 @@ __copyright__ = 'Copyright 2013, The Materials Project'
 __version__ = '0.1'
 __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
-__date__ = 'Jun 13, 2013'
-
-
-__author__ = 'Anubhav Jain'
-__copyright__ = 'Copyright 2013, The Materials Project'
-__version__ = '0.1'
-__maintainer__ = 'Anubhav Jain'
-__email__ = 'ajain@lbl.gov'
 __date__ = 'May 13, 2013'
+
+'''
+This script re-runs the MPVaspDrone over all the *new-style* tasks. It can be used when the MPVaspDrone is updated.
+
+A few notes:
+* The old-style tasks will be unaffected by this script
+* The dos_fs and band_structure_fs collections should be completely deleted before running this script over the database.
+'''
 
 class TaskBuilder():
 
