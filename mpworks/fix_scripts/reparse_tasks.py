@@ -81,7 +81,8 @@ if __name__ == '__main__':
     o.setup()
     tasks = TaskBuilder.tasks
     m_data = []
-    for d in tasks.find({},{'dir_name_full': 1, 'task_id': 1, 'task_type': 1}):
+    q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
+    for d in tasks.find(q, {'dir_name_full': 1, 'task_id': 1, 'task_type': 1}):
         m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
