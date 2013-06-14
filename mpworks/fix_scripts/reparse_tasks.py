@@ -2,9 +2,11 @@ import json
 import logging
 import os
 import sys
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient
 from fireworks.core.launchpad import LaunchPad
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
+import multiprocessing
+import traceback
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -13,19 +15,6 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Jun 13, 2013'
 
-
-
-
-
-from argparse import ArgumentParser
-import json
-import logging
-import multiprocessing
-import os
-import traceback
-from pymongo import MongoClient, ASCENDING
-import yaml
-from mpworks.legacy.old_task_drone import MPVaspDrone_CONVERSION
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -50,6 +39,7 @@ class TaskBuilder():
             cls.host = db_creds['host']
             cls.port = db_creds['port']
             cls.database = db_creds['database']
+            cls.collection = db_creds['collection']
             cls.admin_user = db_creds['admin_user']
             cls.admin_password = db_creds['admin_password']
 
@@ -92,7 +82,7 @@ if __name__ == '__main__':
     tasks = TaskBuilder.tasks
     m_data = []
     for d in tasks.find({},{'dir_name_full': 1, 'task_id': 1, 'task_type': 1}):
-        m_data.append[(d['dir_name_full'], 'Uniform' in d['task_type'])]
+        m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
     pool.map(_analyze, m_data)
