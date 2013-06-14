@@ -55,7 +55,9 @@ class TaskBuilder():
                 additional_fields={},
                 update_duplicates=True)
             t_id, d = drone.assimilate(dir_name, launches_coll=LaunchPad.auto_load().launches)
-            self.tasks.update({"task_id": t_id}, {"$set": {"snl_final": d[2], "snlgroup_id_final": d[3], "snlgroup_changed": d[4]}})
+
+            d = self.tasks.find_one({'task_id': t_id}, {'task_type': 1, 'snl_final': 1, 'snlgroup_id_final': 1, 'snlgroup_changed': 1})
+            self.tasks.update({"task_id": t_id}, {"$set": {"snl_final": d['snl_final'], "snlgroup_id_final": d['snlgroup_id_final'], "snlgroup_changed": d['snlgroup_changed']}})
             print 'FINISHED', t_id
         except:
             print '-----'
@@ -83,8 +85,8 @@ if __name__ == '__main__':
     tasks = TaskBuilder.tasks
     m_data = []
     q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
-    for d in tasks.find(q, {'dir_name_full': 1, 'task_id': 1, 'task_type': 1, 'snl_final': 1, 'snlgroup_id_final': 1, 'snlgroup_changed': 1}):
-        m_data.append((d['dir_name_full'], 'Uniform' in d['task_type'], d['snl_final'], d['snlgroup_id_final'], d['snlgroup_changed']))
+    for d in tasks.find(q, {'dir_name_full': 1, 'task_id': 1}):
+        m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
     pool.map(_analyze, m_data)
