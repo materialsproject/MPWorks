@@ -33,9 +33,12 @@ if __name__ == '__main__':
         db.authenticate(db_creds['admin_user'], db_creds['admin_password'])
         coll = db[db_creds['collection']]
 
-        for d in coll.find({},{'dir_name_full': 1, 'task_id': 1, 'task_type': 1}, sort=[("task_id", ASCENDING)]):
+        counter = 0
+        for d in coll.find({},{'dir_name_full': 1, 'task_id': 1, 'task_type': 1}):
             dir_name = d['dir_name_full']
             parse_dos = 'Uniform' in d['task_type']
+            counter+=1
+            print 'TASK #', counter
             print 'REPARSING', d['task_id']
             drone = MPVaspDrone(
                 host=db_creds['host'], port=db_creds['port'],
