@@ -82,13 +82,24 @@ if __name__ == '__main__':
     sh.setLevel(getattr(logging, 'INFO'))
     logger.addHandler(sh)
 
+    finished_tasks = []
+    module_dir = os.path.dirname(os.path.abspath(__file__))
+    if os.path.exists(os.path.join(module_dir, 'finished_tasks.txt')):
+        with open(os.path.join(module_dir, 'finished_tasks.txt')) as f:
+            for line in f:
+                task = line.split()[1].strip()
+                finished_tasks.append(task)
+
     o = TaskBuilder()
     o.setup()
     tasks = TaskBuilder.tasks
     m_data = []
     q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
-    for d in tasks.find(q, {'dir_name_full': 1, 'task_type': 1}):
-        m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
+    for d in tasks.find(q, {'dir_name_full': 1, 'task_type': 1, 'task_id': 1}):
+        if d['task_id'] in finished_tasks:
+            print 'DUPLICATE', d['task_id']
+        else:
+            m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
     pool.map(_analyze, m_data)
