@@ -177,35 +177,36 @@ class MPVaspDrone(VaspToDbTaskDrone):
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
 
-            if 'optimize structure' in d['task_type'] and 'output' in d:
-                # create a new SNL based on optimized structure
-                new_s = Structure.from_dict(d['output']['crystal'])
-                old_snl = StructureNL.from_dict(d['snl'])
-                history = old_snl.history
-                history.append(
-                    {'name': 'Materials Project structure optimization',
-                     'url': 'http://www.materialsproject.org',
-                     'description': {'task_type': d['task_type'],
-                                     'fw_id': d['fw_id'],
-                                     'task_id': d['task_id']}})
-                new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
-                                      old_snl.references, old_snl.remarks,
-                                      old_snl.data, history)
+            if not self.update_duplicates:
+                if 'optimize structure' in d['task_type'] and 'output' in d:
+                    # create a new SNL based on optimized structure
+                    new_s = Structure.from_dict(d['output']['crystal'])
+                    old_snl = StructureNL.from_dict(d['snl'])
+                    history = old_snl.history
+                    history.append(
+                        {'name': 'Materials Project structure optimization',
+                         'url': 'http://www.materialsproject.org',
+                         'description': {'task_type': d['task_type'],
+                                         'fw_id': d['fw_id'],
+                                         'task_id': d['task_id']}})
+                    new_snl = StructureNL(new_s, old_snl.authors, old_snl.projects,
+                                          old_snl.references, old_snl.remarks,
+                                          old_snl.data, history)
 
-                # enter new SNL into SNL db
-                # get the SNL mongo adapter
-                sma = SNLMongoAdapter.auto_load()
+                    # enter new SNL into SNL db
+                    # get the SNL mongo adapter
+                    sma = SNLMongoAdapter.auto_load()
 
-                # add snl
-                mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
-                d['snl_final'] = mpsnl.to_dict
-                d['snlgroup_id_final'] = snlgroup_id
-                d['snlgroup_changed'] = (d['snlgroup_id'] !=
-                                         d['snlgroup_id_final'])
-            else:
-                d['snl_final'] = d['snl']
-                d['snlgroup_id_final'] = d['snlgroup_id']
-                d['snlgroup_changed'] = False
+                    # add snl
+                    mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
+                    d['snl_final'] = mpsnl.to_dict
+                    d['snlgroup_id_final'] = snlgroup_id
+                    d['snlgroup_changed'] = (d['snlgroup_id'] !=
+                                             d['snlgroup_id_final'])
+                else:
+                    d['snl_final'] = d['snl']
+                    d['snlgroup_id_final'] = d['snlgroup_id']
+                    d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
         new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
