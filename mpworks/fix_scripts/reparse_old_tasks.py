@@ -72,7 +72,9 @@ class OldTaskFixer():
                     logger.error("Bad run stats for {}.".format(path))
 
                 self.tasks.update({'dir_name_full': path}, {'$set': {"run_stats": run_stats}})
-            print 'FINISHED', path
+                print 'FINISHED', path
+            else:
+                print 'SKIPPING', path
         except:
             print '-----'
             print 'ENCOUNTERED AN EXCEPTION!!!', path
@@ -99,8 +101,8 @@ if __name__ == '__main__':
     tasks = OldTaskFixer.tasks
     m_data = []
     q = {'submission_id': {'$exists': True}}  # these are all old-style tasks
-    for d in tasks.find(q, {'dir_name_full': 1, 'task_id': 1, 'task_type': 1}):
-        m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
+    for d in tasks.find(q, {'dir_name_full': 1}):
+        m_data.append(d['dir_name_full'])
     print 'GOT all tasks...'
     pool = multiprocessing.Pool(16)
     pool.map(_analyze, m_data)
