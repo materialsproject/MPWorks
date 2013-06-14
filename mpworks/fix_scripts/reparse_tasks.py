@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from pymongo import MongoClient
+from pymongo import MongoClient, ASCENDING
 from fireworks.core.launchpad import LaunchPad
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 
@@ -33,13 +33,15 @@ if __name__ == '__main__':
         db.authenticate(db_creds['admin_user'], db_creds['admin_password'])
         coll = db[db_creds['collection']]
 
-        for d in coll.find({},{'dir_name_full': 1}):
+        for d in coll.find({},{'dir_name_full': 1, 'task_id': 1, 'task_type': 1}, sort=[("task_id", ASCENDING)]):
             dir_name = d['dir_name_full']
+            parse_dos = 'Uniform' in d['task_type']
+            print 'REPARSING', d['task_id']
             drone = MPVaspDrone(
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_dos=True,
+                collection=db_creds['collection'], parse_dos=parse_dos,
                 additional_fields={},
                 update_duplicates=True)
             t_id, d = drone.assimilate(dir_name, launches_coll=LaunchPad.auto_load().launches)
