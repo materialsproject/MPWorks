@@ -132,7 +132,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         d['stored_data'][i] = launch_doc['action']['stored_data'][i]
 
                 #parse band structure if necessary
-                if 'band structure' in d['task_type']:
+                if 'band structure' in d['task_type'] and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
 
                     def string_to_numlist(stringlist):
