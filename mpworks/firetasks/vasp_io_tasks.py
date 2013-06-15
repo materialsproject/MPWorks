@@ -122,9 +122,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
 
-        logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.INFO)
         logger = logging.getLogger('MPVaspDrone')
-        logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.INFO)
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setLevel(getattr(logging, 'INFO'))
         logger.addHandler(sh)

@@ -89,9 +89,9 @@ def _analyze(data):
 
 if __name__ == '__main__':
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger('MPVaspDrone')
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     sh = logging.StreamHandler(stream=sys.stdout)
     sh.setLevel(getattr(logging, 'INFO'))
     logger.addHandler(sh)
