@@ -99,8 +99,7 @@ if __name__ == '__main__':
         if d['task_id'] in finished_tasks:
             print 'DUPLICATE', d['task_id']
         else:
-            m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
-    print 'GOT all tasks...'
-    pool = multiprocessing.Pool(16)
-    pool.map(_analyze, m_data)
+            o.process_task((d['dir_name_full'], 'Uniform' in d['task_type']))
+            print 'FINISHED', d['task_id']
+            # m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'DONE'
