@@ -47,6 +47,8 @@ def clear_env():
     db.counter.remove()
     db['dos_fs.chunks'].remove()
     db['dos_fs.files'].remove()
+    db['band_structure_fs.files'].remove()
+    db['band_structure_fs.files'].remove()
 
 
 def submit_tests(names=None):
