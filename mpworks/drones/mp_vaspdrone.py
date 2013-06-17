@@ -62,6 +62,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             print 'COULD NOT GET DIR NAME'
             pprint.pprint(d)
             print traceback.format_exc()
+            raise ValueError('IMPROPER PARSING OF {}'.format(path))
 
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
