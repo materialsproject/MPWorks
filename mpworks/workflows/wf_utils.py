@@ -1,6 +1,7 @@
 import glob
 import os
 import shutil
+import time
 
 
 __author__ = 'Anubhav Jain'
@@ -77,4 +78,5 @@ def move_to_garden(m_dir):
     f_dir = os.path.join(garden_part, block_part)
     if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
         shutil.move(m_dir, f_dir)
+        time.sleep(30)
     return f_dir
