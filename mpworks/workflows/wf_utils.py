@@ -75,6 +75,6 @@ def move_to_garden(m_dir):
     block_part = get_block_part(m_dir)
     garden_part = '/project/projectdirs/matgen/garden/'
     f_dir = os.path.join(garden_part, block_part)
-    if os.path.exists(m_dir) and not os.path.exists(f_dir):
+    if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
         shutil.move(m_dir, f_dir)
     return f_dir
