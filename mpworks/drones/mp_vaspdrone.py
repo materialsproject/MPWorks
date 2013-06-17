@@ -2,7 +2,9 @@ import json
 import os
 import datetime
 import logging
+import pprint
 import re
+import traceback
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -15,9 +17,7 @@ from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.electronic_structure.bandstructure import BandStructureSymmLine
-import numpy as np
-import re
+
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -54,9 +54,14 @@ class MPVaspDrone(VaspToDbTaskDrone):
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
 
-        d["dir_name_full"] = d["dir_name"].split(":")[1]
-        d["dir_name"] = get_block_part(d["dir_name_full"])
-        d["stored_data"] = {}
+        try:
+            d["dir_name_full"] = d["dir_name"].split(":")[1]
+            d["dir_name"] = get_block_part(d["dir_name_full"])
+            d["stored_data"] = {}
+        except:
+            print 'COULD NOT GET DIR NAME'
+            pprint.pprint(d)
+            print traceback.format_exc()
 
         if not self.simulate:
             # Perform actual insertion into db. Because db connections cannot
