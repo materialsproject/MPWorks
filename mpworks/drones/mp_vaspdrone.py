@@ -129,7 +129,10 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
                     for i in ["conventional_standard_structure", "symmetry_operations",
                               "symmetry_dataset", "refined_structure"]:
-                        d['stored_data'][i] = launch_doc['action']['stored_data'][i]
+                        try:
+                            d['stored_data'][i] = launch_doc['action']['stored_data'][i]
+                        except:
+                            pass
 
                 #parse band structure if necessary
                 if 'band structure' in d['task_type'] and d['state'] == 'successful':
