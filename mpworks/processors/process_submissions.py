@@ -128,7 +128,8 @@ class SubmissionProcessor():
             for fw in wf.fws:
                 if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
                     for l in fw.launches:
-                        if l.state == 'COMPLETED':
+                        # if task_id is not there, it means we went on DETOUR...
+                        if l.state == 'COMPLETED' and 'task_id' in l.action.stored_data:
                             t_id = l.action.stored_data['task_id']
                             if 'prev_task_type' in fw.spec:
                                 m_taskdict[fw.spec['prev_task_type']] = t_id
