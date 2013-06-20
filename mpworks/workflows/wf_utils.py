@@ -2,6 +2,7 @@ import glob
 import os
 import shutil
 import time
+from mpworks.workflows.wf_settings import RUN_LOCS
 
 
 __author__ = 'Anubhav Jain'
@@ -58,13 +59,8 @@ def get_loc(m_dir):
     if os.path.exists(m_dir):
         return m_dir
     block_part = get_block_part(m_dir)
-    locs = ['/project/projectdirs/matgen/garden/',
-            '/project/projectdirs/matgen/garden/control_blocks',
-            '/global/scratch/sd/matcomp/',
-            '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/',
-            '/global/scratch/sd/matcomp/aj_tests/']
 
-    for preamble in locs:
+    for preamble in RUN_LOCS:
         new_loc = os.path.join(preamble, block_part)
         if os.path.exists(new_loc):
             return new_loc
