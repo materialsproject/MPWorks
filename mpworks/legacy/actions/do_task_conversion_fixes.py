@@ -68,10 +68,9 @@ if __name__ == '__main__':
     for i in tasks_old.find({'dir_name':{'$regex':'cathode_'}}, {'task_id': 1, 'dir_name': 1}):
         task_id = i['task_id']
         dir_name = i['dir_name']
-        print 'FIXING', task_id, dir_name
+        print 'FIXING', task_id
         # cut off the last part of the dir_name
         cutoff_path = os.path.dirname(dir_name)
         final_path = cutoff_path.replace('cathode_block', 'block')
-        print 'FINAL_PATH', final_path
-
-        # o.process_task(task_id)
+        o.old_tasks.find_and_modify({'task_id': task_id}, {'$set': {'dir_name': final_path}})
+        o.process_task(task_id)
