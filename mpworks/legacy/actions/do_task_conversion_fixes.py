@@ -71,7 +71,7 @@ if __name__ == '__main__':
         print 'FIXING', task_id, dir_name
         # cut off the last part of the dir_name
         cutoff_path = os.path.dirname(dir_name)
-        final_path = cutoff_path[cutoff_path.find('block_'):]
+        final_path = cutoff_path.replace('cathode_block', 'block')
         print 'FINAL_PATH', final_path
 
         # o.process_task(task_id)
