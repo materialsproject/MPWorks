@@ -64,6 +64,7 @@ if __name__ == '__main__':
     o = OldTaskBuilder()
     o.setup()
     logging.basicConfig(level=logging.INFO)
+    """
     tasks_old = OldTaskBuilder.old_tasks
     for i in tasks_old.find({'dir_name':{'$regex':'cathode_'}}, {'task_id': 1, 'dir_name': 1}):
         task_id = i['task_id']
@@ -73,4 +74,14 @@ if __name__ == '__main__':
         cutoff_path = os.path.dirname(dir_name)
         final_path = cutoff_path.replace('cathode_block', 'block')
         o.old_tasks.find_and_modify({'task_id': task_id}, {'$set': {'dir_name': final_path}})
-        o.process_task(task_id)
+        # o.process_task(task_id)
+    """
+    with open('to_fix.txt') as f:
+        for line in f:
+            old_task_id = int(line.split(' ')[1])
+            new_task_id = 'mp-'+str(old_task_id)
+            t = o.new_tasks.find_one({"task_id": new_task_id}, {"state": 1})
+            if t:
+                o.new_tasks.remove({'task_id': new_task_id})
+                print 'REPARSING', old_task_id
+                o.process_task(old_task_id)
