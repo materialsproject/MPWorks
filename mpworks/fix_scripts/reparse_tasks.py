@@ -101,6 +101,5 @@ if __name__ == '__main__':
             print 'DUPLICATE', d['task_id']
         else:
             o.process_task((d['dir_name_full'], 'Uniform' in d['task_type']))
-            print 'FINISHED', d['task_id']
             # m_data.append((d['dir_name_full'], 'Uniform' in d['task_type']))
     print 'DONE'
