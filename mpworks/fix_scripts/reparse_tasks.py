@@ -94,7 +94,8 @@ if __name__ == '__main__':
     o.setup()
     tasks = TaskBuilder.tasks
     m_data = []
-    q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
+    # q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
+    q = {"task_type":{"$regex":"band structure"}, "state":"successful", "calculations.0.band_structure_fs_id":{"$exists":False}}
     for d in tasks.find(q, {'dir_name_full': 1, 'task_type': 1, 'task_id': 1}):
         if d['task_id'] in finished_tasks:
             print 'DUPLICATE', d['task_id']
