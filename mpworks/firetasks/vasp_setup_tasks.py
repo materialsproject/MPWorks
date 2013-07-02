@@ -3,7 +3,7 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import VaspInput
+from pymatgen.io.vaspio.vasp_input import VaspInput, Incar
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
     MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
@@ -134,3 +134,4 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # write back the new INCAR to the current directory
         vi['INCAR'].write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})
+

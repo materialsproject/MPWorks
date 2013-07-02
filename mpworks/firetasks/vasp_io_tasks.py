@@ -148,6 +148,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         stored_data = {'task_id': t_id}
         if d['state'] == 'successful':
             update_spec['analysis'] = d['analysis']
+            update_spec['output'] = d['output']
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed

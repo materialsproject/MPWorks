@@ -6,7 +6,7 @@ from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupFConvergenceTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
@@ -160,6 +160,7 @@ def snl_to_wf_ggau(snl):
 
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 """
+
 
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
