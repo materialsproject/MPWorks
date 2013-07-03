@@ -5,8 +5,6 @@ __author__ = 'weichen'
 
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
-from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
@@ -17,6 +15,7 @@ from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from genstrain import DeformGeometry
 from pymatgen.core.structure import Structure
+from mpworks.workflows import snl_to_wf
 
 def snl_to_wf_phonon(snl, parameters=None):
     fws = []
@@ -39,7 +38,7 @@ def snl_to_wf_phonon(snl, parameters=None):
     connections[0] = [1]
 
     # run GGA structure optimization for force convergence
-    spec = _snl_to_spec(snl)
+    spec = snl_to_wf._snl_to_spec(snl)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Vasp force convergence"
@@ -64,3 +63,8 @@ def snl_to_wf_phonon(snl, parameters=None):
              get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
             fw_id=10+i))
 
+    wf_meta = get_meta_from_structure(snl.structure)
+    wf_meta['run_version'] = 'May 2013 (1)'
+
+    return Workflow(fws, connections, name=Composition.from_formula(
+        snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
