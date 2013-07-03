@@ -14,10 +14,10 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         incar = fw_spec['vasp']['incar']
         update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
         incar.update(update_set)
-        if fw_spec['double_kmesh']:
-            kpoints = fw_spec['vasp']['kpoints']
-            k = [2*k for k in kpoints[kpoints]]
-            kpoints['kpoints'] = [k]
+        #if fw_spec['double_kmesh']:
+        kpoints = fw_spec['vasp']['kpoints']
+        k = [2*k for k in kpoints[kpoints]]
+        kpoints['kpoints'] = [k]
         return FWAction()
 
 class SetupElastConstTask(FireTaskBase, FWSerializable):

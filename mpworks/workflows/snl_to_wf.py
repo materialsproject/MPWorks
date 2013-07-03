@@ -6,7 +6,7 @@ from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, \
     VaspToDBTask
-from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask, SetupFConvergenceTask
+from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
