@@ -13,8 +13,7 @@ from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
-from genstrain import DeformGeometry
-from pymatgen.core.structure import Structure
+
 from mpworks.workflows import snl_to_wf
 
 def snl_to_wf_phonon(snl, parameters=None):
@@ -51,17 +50,6 @@ def snl_to_wf_phonon(snl, parameters=None):
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
-
-    relaxed_struct = Structure.from_dict(spec['output']['crystal'])
-    deformed_structs = DeformGeometry()
-    for i,strain in enumerate(deformed_structs.keys):
-        d_struct = Structure.from_dict(deformed_structs[strain])
-        spec['vasp']['poscar']=Poscar(d_struct)
-        spec['task_type'] = "Vasp deformed structure"
-        fws.append(FireWork(
-            [VaspWriterTask(), SetupElastConstTask(),
-             get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
-            fw_id=10+i))
 
     wf_meta = get_meta_from_structure(snl.structure)
     wf_meta['run_version'] = 'May 2013 (1)'
