@@ -1,5 +1,5 @@
 from pymatgen.io.vaspio import Poscar
-from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenceTask
+from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenceTask, SetupDeformedStructTask
 
 __author__ = 'weichen'
 
@@ -13,8 +13,8 @@ from mpworks.firetasks.vasp_setup_tasks import SetupGGAUTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
-
 from mpworks.workflows import snl_to_wf
+
 
 def snl_to_wf_phonon(snl, parameters=None):
     fws = []
@@ -50,6 +50,13 @@ def snl_to_wf_phonon(snl, parameters=None):
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
+
+    spec = {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
+                '_queueadapter': QA_CONTROL}
+    fws.append(
+            FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                     fw_id=3))
+    connections[2] = [3]
 
     wf_meta = get_meta_from_structure(snl.structure)
     wf_meta['run_version'] = 'May 2013 (1)'
