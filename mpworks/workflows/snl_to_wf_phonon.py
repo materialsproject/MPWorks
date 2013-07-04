@@ -61,5 +61,8 @@ def snl_to_wf_phonon(snl, parameters=None):
     wf_meta = get_meta_from_structure(snl.structure)
     wf_meta['run_version'] = 'May 2013 (1)'
 
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+        wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
+
     return Workflow(fws, connections, name=Composition.from_formula(
         snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)

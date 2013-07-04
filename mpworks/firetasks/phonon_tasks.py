@@ -23,7 +23,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
-        k = [2*k for k in kpoints[kpoints]]
+        k = [2*k for k in kpoints['kpoints'][0]]
         kpoints['kpoints'] = [k]
         return FWAction()
 
