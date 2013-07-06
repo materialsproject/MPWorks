@@ -15,6 +15,14 @@ from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from mpworks.workflows import snl_to_wf
 
+def _update_spec_force_convergence(spec):
+    fw_spec = spec
+    update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
+    fw_spec['vasp']['incar'].upate(update_set)
+    kpoints = spec['vasp']['kpoints']
+    k = [2*k for k in kpoints['kpoints'][0]]
+    fw_spec['vasp']['kpoints'][0] = k
+    return fw_spec
 
 def snl_to_wf_phonon(snl, parameters=None):
     fws = []
@@ -38,10 +46,11 @@ def snl_to_wf_phonon(snl, parameters=None):
 
     # run GGA structure optimization for force convergence
     spec = snl_to_wf._snl_to_spec(snl)
+    spec = _update_spec_force_convergence(spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Vasp force convergence"
-    tasks = [SetupFConvergenceTask(), VaspWriterTask(), get_custodian_task(spec)]
+    tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
