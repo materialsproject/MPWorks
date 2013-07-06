@@ -14,7 +14,17 @@ from mpworks.firetasks.custodian_task import get_custodian_task
 from fireworks.utilities.fw_utilities import get_slug
 from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
-from mpworks.workflows import snl_to_wf, snl_to_wf_phonon
+from mpworks.workflows import snl_to_wf
+
+def update_spec_force_convergence(spec):
+    fw_spec = spec
+    update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
+    fw_spec['vasp']['incar'].update(update_set)
+    kpoints = spec['vasp']['kpoints']
+    k = [2*k for k in kpoints['kpoints'][0]]
+    fw_spec['vasp']['kpoints']['kpoints'] = k
+    return fw_spec
+
 
 class SetupFConvergenceTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Force Convergence Task"
@@ -54,7 +64,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             f = Composition.from_formula(d_struct.formula).alphabetical_formula
             snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>')
             spec = snl_to_wf._snl_to_spec(snl)
-            spec = snl_to_wf_phonon._update_spec_force_convergence(spec)
+            spec = update_spec_force_convergence(spec)
             spec['vasp']['poscar'] = Poscar(d_struct)
             spec['task_type'] = "Vasp deformed structure"
             fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),

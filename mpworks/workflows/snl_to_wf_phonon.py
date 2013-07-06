@@ -14,16 +14,8 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from mpworks.workflows import snl_to_wf
-from mpworks.workflows import snl_to_wf_phonon
+from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
 
-def _update_spec_force_convergence(spec):
-    fw_spec = spec
-    update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
-    fw_spec['vasp']['incar'].update(update_set)
-    kpoints = spec['vasp']['kpoints']
-    k = [2*k for k in kpoints['kpoints'][0]]
-    fw_spec['vasp']['kpoints']['kpoints'] = k
-    return fw_spec
 
 def snl_to_wf_phonon(snl, parameters=None):
     fws = []
@@ -47,7 +39,7 @@ def snl_to_wf_phonon(snl, parameters=None):
 
     # run GGA structure optimization for force convergence
     spec = snl_to_wf._snl_to_spec(snl)
-    spec = _update_spec_force_convergence(spec)
+    spec = update_spec_force_convergence(spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Vasp force convergence"
