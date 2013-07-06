@@ -13,6 +13,8 @@ from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from fireworks.utilities.fw_utilities import get_slug
 from pymatgen import Composition
+from pymatgen.matproj.snl import StructureNL
+from mpworks.workflows import snl_to_wf, snl_to_wf_phonon
 
 class SetupFConvergenceTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Force Convergence Task"
@@ -46,20 +48,22 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
         fws=[]
         connections={}
 
-        for i, strain in enumerate(deformed_structs.keys):
-            d_struct = Structure.from_dict(deformed_structs[strain])
+        for i, strain in enumerate(deformed_structs.keys()):
+            d_struct = deformed_structs[strain]
 
             f = Composition.from_formula(d_struct.formula).alphabetical_formula
-
-            fw_spec['vasp']['poscar'] = Poscar(d_struct)
-            fw_spec['task_type'] = "Vasp deformed structure"
+            snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>')
+            spec = snl_to_wf._snl_to_spec(snl)
+            spec = snl_to_wf_phonon._update_spec_force_convergence(spec)
+            spec['vasp']['poscar'] = Poscar(d_struct)
+            spec['task_type'] = "Vasp deformed structure"
             fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),
-                                 get_custodian_task(fw_spec)], fw_spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=10+i*2))
+                                 get_custodian_task(spec)], fw_spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=10+i*2))
 
             priority = fw_spec['_priority']
-            fw_spec = {'task_type': 'VASP db insertion', '_priority': priority,
+            spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-            fws.append(FireWork([VaspToDBTask()], fw_spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=11+i*2))
+            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=11+i*2))
             connections[10+i*2] = [11+i*2]
 
             wf = Workflow(fws, connections)
