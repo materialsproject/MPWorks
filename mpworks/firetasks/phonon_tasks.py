@@ -22,7 +22,7 @@ def update_spec_force_convergence(spec):
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
     k = [2*k for k in kpoints['kpoints'][0]]
-    fw_spec['vasp']['kpoints']['kpoints'] = k
+    fw_spec['vasp']['kpoints']['kpoints'] = [k]
     return fw_spec
 
 
@@ -31,7 +31,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         incar = fw_spec['vasp']['incar']
-        update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
+        update_set = {"ENCUT": 600, "EDIFF": 0.00005}
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
@@ -68,13 +68,13 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             spec['vasp']['poscar'] = Poscar(d_struct)
             spec['task_type'] = "Vasp deformed structure"
             fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),
-                                 get_custodian_task(spec)], fw_spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=10+i*2))
+                                 get_custodian_task(spec)], fw_spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-1000+i*2))
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=11+i*2))
-            connections[10+i*2] = [11+i*2]
+            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*2))
+            connections[-1000+i*2] = [-999+i*2]
 
             wf = Workflow(fws, connections)
             return FWAction(additions=wf)
