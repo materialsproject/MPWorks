@@ -20,7 +20,7 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 600, "EDIFF": 0.00005, "EDIFFG": -0.0005}
+    update_set = {"ENCUT": 600, "EDIFF": 0.00005}
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
     k = [2*k for k in kpoints['kpoints'][0]]
@@ -50,7 +50,7 @@ class SetupElastConstTask(FireTaskBase, FWSerializable):
         incar.write_file("INCAR")
         return FWAction()
 
-class GetDeformedStructTask(FireTaskBase, FWSerializable):
+class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Deformed Struct Task"
 
     def run_task(self, fw_spec):
@@ -59,6 +59,7 @@ class GetDeformedStructTask(FireTaskBase, FWSerializable):
         deformed_structs = DeformGeometry(relaxed_struct)
         fws=[]
         connections={}
+        wf=[]
 
         for i, strain in enumerate(deformed_structs.keys()):
             d_struct = deformed_structs[strain]
@@ -77,6 +78,9 @@ class GetDeformedStructTask(FireTaskBase, FWSerializable):
 
             spec = snl_to_wf._snl_to_spec(snl)
             spec = update_spec_force_convergence(spec)
+            spec['run_tags'].append((strain,))
+            #Turn off dupefinder for deformed structure
+            del spec['_dupefinder']
 
             spec['task_type'] = "Calculate deformed structure"
             fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),
@@ -85,10 +89,9 @@ class GetDeformedStructTask(FireTaskBase, FWSerializable):
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-999+i*2))
+            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 
-            wf = Workflow(fws, connections)
-            return FWAction(additions=wf)
-        return FWAction()
+            wf.append(Workflow(fws, connections))
+        return FWAction(additions=wf)
 

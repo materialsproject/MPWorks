@@ -40,6 +40,7 @@ def snl_to_wf_phonon(snl, parameters=None):
     # run GGA structure optimization for force convergence
     spec = snl_to_wf._snl_to_spec(snl)
     spec = update_spec_force_convergence(spec)
+    spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Vasp force convergence"
