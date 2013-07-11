@@ -78,6 +78,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             # DOS data tends to be above the 4Mb limit for mongo docs. A ref
             # to the dos file is in the dos_fs_id.
             result = coll.find_one({"dir_name": d["dir_name"]})
+
             if result is None or self.update_duplicates:
                 if self.parse_dos and "calculations" in d:
                     for calc in d["calculations"]:
@@ -141,22 +142,27 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             pass
 
                 #parse band structure if necessary
-                if 'band structure' in d['task_type'] and d['state'] == 'successful':
-                    launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
+                if ('band structure' in d['task_type'] or "Uniform" in d['task_type'])\
+                    and d['state'] == 'successful':
+                    launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
+                                                        {"action.stored_data": 1})
+                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=False)
 
-                    def string_to_numlist(stringlist):
-                        g=re.search('([0-9\-\.]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)', stringlist)
-                        return [float(g.group(i)) for i in range(1,4)]
+                    if 'band structure' in d['task_type']:
+                        def string_to_numlist(stringlist):
+                            g=re.search('([0-9\-\.]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)', stringlist)
+                            return [float(g.group(i)) for i in range(1,4)]
 
-                    for i in ["kpath_name", "kpath"]:
-                        d['stored_data'][i] = launch_doc['action']['stored_data'][i]
-                    kpoints_doc = d['stored_data']['kpath']['kpoints']
-                    for i in kpoints_doc:
-                        kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
-
-                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=True)
-
-                    bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'], line_mode=True)
+                        for i in ["kpath_name", "kpath"]:
+                            d['stored_data'][i] = launch_doc['action']['stored_data'][i]
+                        kpoints_doc = d['stored_data']['kpath']['kpoints']
+                        for i in kpoints_doc:
+                            kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
+                        bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
+                                                       line_mode=True)
+                    else:
+                        bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
+                                                       line_mode=False)
                     bs_json = json.dumps(bs.to_dict)
                     fs = gridfs.GridFS(db, "band_structure_fs")
                     bs_id = fs.put(bs_json)
