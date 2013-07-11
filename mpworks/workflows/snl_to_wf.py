@@ -161,6 +161,7 @@ def snl_to_wf_ggau(snl):
     return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
 """
 
+
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]
     s2 = CifParser('test_wfs/FeO.cif').get_structures()[0]
