@@ -69,7 +69,7 @@ def snl_to_wf_surface(snl, parameters=None):
     # run GGA structure optimization for surfaces/bulk
     spec={}
     for i in ['incar', 'poscar', 'kpoints']:
-        spec['vasp'][i] = snl.data['_vasp'][i.upper()]
+        spec['vasp'][i] = snl.data['_vasp'][i]
     spec['vasp']['poscar'] = MPVaspInputSet.get_potcar(Structure.from_dict(spec['vasp']['poscar'].stucture))
     # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [spec['vasp']['potcar']['functional']])
