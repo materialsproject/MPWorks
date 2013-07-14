@@ -67,19 +67,19 @@ def snl_to_wf_surface(snl, parameters=None):
     connections[0] = [1]
 
     # run GGA structure optimization for surfaces/bulk
-    spec={}
+    spec={'vasp':{}}
     for i in ['incar', 'poscar', 'kpoints']:
-        spec['vasp'][i] = snl.data['_vasp'][i]
-    spec['vasp']['poscar'] = MPVaspInputSet.get_potcar(Structure.from_dict(spec['vasp']['poscar'].stucture))
+        spec['vasp'][i] = snl.data['_vasp'][i].to_dict
+    spec['vasp']['potcar'] = MPVaspInputSet().get_potcar(snl['data']['_vasp']['poscar'].structure).to_dict
     # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [spec['vasp']['potcar']['functional']])
     spec['run_tags'].extend(spec['vasp']['potcar']['symbols'])
 
     # Add run tags of +U
-    u_tags = ['%s=%s' % t for t in
-              zip(Poscar().from_dict(spec['vasp']['poscar']).site_symbols, spec['vasp']['incar'].get('LDAUU',
-                                        [0] * len(Poscar().from_dict(spec['vasp']['poscar']).site_symbols)))]
-    spec['run_tags'].extend(u_tags)
+    #u_tags = ['%s=%s' % t for t in
+    #          zip(Poscar.from_dict(spec['vasp']['poscar']).site_symbols, spec['vasp']['incar'].get('LDAUU',
+    #                                    [0] * len(Poscar.from_dict(spec['vasp']['poscar']).site_symbols)))]
+    #spec['run_tags'].extend(u_tags)
 
     spec['vaspinputset_name'] = "Surfaces"
 
