@@ -8,6 +8,7 @@ from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.snl_to_wf import snl_to_wf
 from mpworks.workflows.wf_utils import NO_POTCARS
 from pymatgen.matproj.snl import StructureNL
+from mpworks.workflows.wf_surface import snl_to_wf_surface
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -71,7 +72,7 @@ class SubmissionProcessor():
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
                     # create a workflow
-                    wf = snl_to_wf(snl, job['parameters'])
+                    wf = snl_to_wf_surface(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:

@@ -14,6 +14,8 @@ from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
 from pymatgen.io.vaspio import VaspInput, Poscar
 import re
 from pymatgen.matproj.snl import StructureNL
+from pymatgen.io.vaspio_set import MPVaspInputSet
+from pymatgen.core.structure import Structure
 
 def get_surface_input(dir):
     '''
@@ -27,12 +29,10 @@ def get_surface_input(dir):
     vasp_input = VaspInput.from_directory(dir)
 
     vasp = {}
-    print vasp_input.keys()
     vasp['incar'] = vasp_input['INCAR'].to_dict
     vasp['incar'].update(incar_enforce)
     vasp['poscar'] = vasp_input['POSCAR'].to_dict
     vasp['kpoints'] = vasp_input['KPOINTS'].to_dict
-    vasp['potcar'] = vasp_input['POTCAR'].to_dict
     if "BULK" in dir:
         vasp["slab"] = False
     else:
@@ -68,15 +68,17 @@ def snl_to_wf_surface(snl, parameters=None):
 
     # run GGA structure optimization for surfaces/bulk
     spec={}
-    for i in ['incar', 'poscar', 'potcar', 'kpoints']:
+    for i in ['incar', 'poscar', 'kpoints']:
         spec['vasp'][i] = snl.data['_vasp'][i.upper()]
+    spec['vasp']['poscar'] = MPVaspInputSet.get_potcar(Structure.from_dict(spec['vasp']['poscar'].stucture))
     # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [spec['vasp']['potcar']['functional']])
     spec['run_tags'].extend(spec['vasp']['potcar']['symbols'])
 
     # Add run tags of +U
     u_tags = ['%s=%s' % t for t in
-              zip(Poscar().from_dict(spec['vasp']['poscar']).site_symbols, spec['vasp']['incar'].get('LDAUU', [0] * len(poscar.site_symbols)))]
+              zip(Poscar().from_dict(spec['vasp']['poscar']).site_symbols, spec['vasp']['incar'].get('LDAUU',
+                                        [0] * len(Poscar().from_dict(spec['vasp']['poscar']).site_symbols)))]
     spec['run_tags'].extend(u_tags)
 
     spec['vaspinputset_name'] = "Surfaces"
