@@ -16,7 +16,7 @@ from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
-from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar, Oszicar
 
 
 __author__ = 'Anubhav Jain'
@@ -53,6 +53,21 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         d = self.get_task_doc(path, self.parse_dos,
                               self.additional_fields)
+        #Parse oszicar
+        try:
+            for i in [1,2]:
+                o_path = os.path.join(path, "OSZICAR.relax"+str(i))
+                o_path2 = os.path.join(path, "relax"+str(i), "OSZICAR")
+                if os.path.exists(o_path):
+                    oszicar = Oszicar(o_path)
+                elif os.path.exists(o_path2):
+                    oszicar = Oszicar(o_path2)
+                else:
+                    oszicar = None
+                if oszicar:
+                    d["calculations"][i-1]["output"]["oszicar"] = oszicar.to_dict
+        except:
+                logger.error("Bad OUTCAR for {}.".format(path))
 
         try:
             d["dir_name_full"] = d["dir_name"].split(":")[1]
@@ -141,7 +156,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         except:
                             pass
 
-                #parse band structure if necessary
+                #parse band structure for band structure and uniform runs
                 if ('band structure' in d['task_type'] or "Uniform" in d['task_type'])\
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
@@ -172,6 +187,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             upsert=True)
 
                 return d["task_id"], d
+
             else:
                 logger.info("Skipping duplicate {}".format(d["dir_name"]))
                 return result["task_id"], result
