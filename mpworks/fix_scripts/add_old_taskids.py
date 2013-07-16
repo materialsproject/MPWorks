@@ -78,6 +78,6 @@ if __name__ == '__main__':
     tasks = TaskBuilder.tasks
     m_data = []
     q = {}
-    for d in tasks.find(q, {'task_id': 1}, timeout=False).limit(1):
+    for d in tasks.find(q, {'task_id': 1}, timeout=False):
         o.process_task(d['task_id'])
     print 'DONE'

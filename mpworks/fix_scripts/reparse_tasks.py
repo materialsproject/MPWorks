@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 import json
 import logging
 import os
@@ -95,7 +96,15 @@ if __name__ == '__main__':
     tasks = TaskBuilder.tasks
     m_data = []
     # q = {'submission_id': {'$exists': False}}  # these are all new-style tasks
-    q = {"task_type":{"$regex":"band structure"}, "state":"successful", "calculations.0.band_structure_fs_id":{"$exists":False}}
+    #q = {"task_type":{"$regex":"band structure"}, "state":"successful", "calculations.0.band_structure_fs_id":{"$exists":False}}
+
+    parser = ArgumentParser()
+    parser.add_argument('min', help='min', type=int)
+    parser.add_argument('max', help='max', type=int)
+    args = parser.parse_args()
+    q = {"task_id_deprecated": {"$lte": args.max, "$gte":args.min}}
+
+
     for d in tasks.find(q, {'dir_name_full': 1, 'task_type': 1, 'task_id': 1}, timeout=False):
         if d['task_id'] in finished_tasks:
             print 'DUPLICATE', d['task_id']
