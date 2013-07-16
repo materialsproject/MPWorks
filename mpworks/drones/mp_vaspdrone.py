@@ -168,8 +168,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
 
-                coll.update({"dir_name": d["dir_name"]}, {"$set": d},
-                            upsert=True)
+                coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
                 return d["task_id"], d
             else:
