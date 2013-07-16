@@ -32,6 +32,7 @@ if __name__ == '__main__':
     print new_tasks.count()
 
     new_tasks.ensure_index("task_id", unique=True)
+    new_tasks.ensure_index("task_id_deprecated", unique=True)
     new_tasks.ensure_index("chemsys")
     new_tasks.ensure_index("analysis.e_above_hull")
     new_tasks.ensure_index("pretty_formula")
