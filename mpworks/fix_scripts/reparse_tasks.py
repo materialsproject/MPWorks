@@ -102,8 +102,7 @@ if __name__ == '__main__':
     parser.add_argument('min', help='min', type=int)
     parser.add_argument('max', help='max', type=int)
     args = parser.parse_args()
-    q = {"task_id_deprecated": {"$lte": args.max, "$gte":args.min}}
-
+    q = {"task_id_deprecated": {"$lte": args.max, "$gte":args.min}, "is_deprecated": True}
 
     for d in tasks.find(q, {'dir_name_full': 1, 'task_type': 1, 'task_id': 1}, timeout=False):
         if d['task_id'] in finished_tasks:
