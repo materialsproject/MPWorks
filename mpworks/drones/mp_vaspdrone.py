@@ -150,7 +150,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):
-                            g=re.search('([0-9\-\.\e]+)\s+([0-9\-\.\e]+)\s+([0-9\-\.\e]+)', stringlist)
+                            g=re.search('([0-9\-\.eE]+)\s+([0-9\-\.eE]+)\s+([0-9\-\.eE]+)', stringlist)
                             return [float(g.group(i)) for i in range(1,4)]
 
                         for i in ["kpath_name", "kpath"]:
