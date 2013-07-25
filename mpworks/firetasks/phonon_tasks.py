@@ -7,7 +7,7 @@ __author__ = 'weichen'
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar
-from genstrain import DeformGeometry
+# from genstrain import DeformGeometry
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
@@ -54,7 +54,8 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Deformed Struct Task"
 
     def run_task(self, fw_spec):
-
+        pass
+        """
         relaxed_struct = Structure.from_dict(fw_spec['output']['crystal'])
         deformed_structs = DeformGeometry(relaxed_struct)
         fws=[]
@@ -94,4 +95,5 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             wf.append(Workflow(fws, connections))
         return FWAction(additions=wf)
+        """
 
