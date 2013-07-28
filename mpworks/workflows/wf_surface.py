@@ -17,7 +17,7 @@ from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio_set import MPVaspInputSet
 from pymatgen.core.structure import Structure
 
-def get_surface_input(dir):
+def get_surface_input(dir, perturb_struct=True):
     '''
     Read a directory containing vasp inputs and converted to snl
     Include surface info in snl.parameters
@@ -40,6 +40,12 @@ def get_surface_input(dir):
     index=re.search(".*(\[.*\]).*", dir)
     if index:
         vasp['index'] = index.group(1)
+    vasp['dir'] = str(dir)
+
+    if perturb_struct:
+        struct = Structure.from_dict(vasp['poscar']['structure'])
+        struct.perturb(0.1)
+        vasp['poscar']['structure'] = struct.to_dict
 
     snl = StructureNL(vasp_input['POSCAR'].structure, ["Wei Chen <weichen@lbl.gov>"],
                       remarks="Surface", data={"_vasp":vasp})
