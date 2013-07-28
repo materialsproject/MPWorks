@@ -30,6 +30,8 @@ def get_surface_input(dir, perturb_struct=True):
 
     vasp = {}
     vasp['incar'] = vasp_input['INCAR'].to_dict
+    vasp['incar']["EDIFF"] = 0.00005
+    vasp['incar']["NSW"] = 200
     vasp['incar'].update(incar_enforce)
     vasp['poscar'] = vasp_input['POSCAR'].to_dict
     vasp['kpoints'] = vasp_input['KPOINTS'].to_dict
@@ -44,8 +46,12 @@ def get_surface_input(dir, perturb_struct=True):
 
     if perturb_struct:
         struct = Structure.from_dict(vasp['poscar']['structure'])
-        struct.perturb(0.1)
+        #struct.perturb(0.1)
+        #vasp['poscar']['structure'] = struct.to_dict
+        index= vasp['poscar']["selective_dynamics"].index([True, True, True])
+        struct.translate_sites([index],[0.01,0.03,0.02],frac_coords=False)
         vasp['poscar']['structure'] = struct.to_dict
+
 
     snl = StructureNL(vasp_input['POSCAR'].structure, ["Wei Chen <weichen@lbl.gov>"],
                       remarks="Surface", data={"_vasp":vasp})
