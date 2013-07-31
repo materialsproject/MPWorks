@@ -52,7 +52,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             # run GGA static
             spec = fw_spec  # pass all the items from the current spec to the new
             #  one
-            spec.update({'task_type': '{} static'.format(type_name), '_queueadapter': QA_VASP,
+            spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_VASP,
                          '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
             fws.append(
                 FireWork(
@@ -67,7 +67,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-10] = -9
 
             # run GGA Uniform
-            spec = {'task_type': '{} Uniform'.format(type_name), '_queueadapter': QA_VASP,
+            spec = {'task_type': '{} Uniform v2'.format(type_name), '_queueadapter': QA_VASP,
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork(
                 [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
@@ -83,7 +83,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-8] = -7
 
             # run GGA Band structure
-            spec = {'task_type': '{} band structure'.format(type_name), '_queueadapter': QA_VASP,
+            spec = {'task_type': '{} band structure v2'.format(type_name), '_queueadapter': QA_VASP,
                     '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
                                  get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
