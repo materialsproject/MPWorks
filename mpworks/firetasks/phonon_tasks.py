@@ -42,7 +42,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         return FWAction()
 
 class SetupElastConstTask(FireTaskBase, FWSerializable):
-    _fw_name = "Setup non-SCF Task"
+    _fw_name = "Setup Elastic Constant Task"
 
     def run_task(self, fw_spec):
         incar = Incar.from_file("INCAR")
