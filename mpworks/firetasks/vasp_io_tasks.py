@@ -196,5 +196,5 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
                 return FWAction(detours=wf)
 
-        # not successful and not due to convergence problem - DEFUSE
-        return FWAction(stored_data=stored_data, defuse_children=True)
+        # not successful and not due to convergence problem - FIZZLE
+        raise ValueError("DB insertion successful, but don't know how to fix this FireWork! Can't continue with workflow...")
