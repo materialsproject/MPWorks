@@ -20,7 +20,7 @@ __date__ = 'May 01, 2013'
 
 
 class AddEStructureTask(FireTaskBase, FWSerializable):
-    _fw_name = "Add Electronic Structure Task"
+    _fw_name = "Add Electronic Structure Task v2"
 
     def __init__(self, parameters=None):
         """

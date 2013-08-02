@@ -84,8 +84,7 @@ class SubmissionMongoAdapter(object):
     def resubmit(self, submission_id):
         self.jobs.update(
             {'submission_id': submission_id},
-            {'$set': {'state': 'SUBMITTED', 'state_details': {},
-                      'task_dict': {}}})
+            {'$set': {'state': 'SUBMITTED', 'state_details': {}, 'task_dict': {}}})
 
     def cancel_submission(self, submission_id):
         # TODO: implement me

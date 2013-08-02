@@ -92,7 +92,7 @@ def snl_to_wf(snl, parameters=None):
     connections[1] = [2]
 
     if not parameters.get('skip_bandstructure', False):
-        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+        spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
         fws.append(
             FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
@@ -120,7 +120,7 @@ def snl_to_wf(snl, parameters=None):
         connections[10] = [11]
 
         if not parameters.get('skip_bandstructure', False):
-            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+            spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                     '_queueadapter': QA_CONTROL}
             fws.append(
                 FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
