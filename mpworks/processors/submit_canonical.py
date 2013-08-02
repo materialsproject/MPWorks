@@ -72,7 +72,7 @@ def submit_tests(names=None):
 
     for name, sid in compounds.iteritems():
         if not names or name in names:
-            s = mpr.get_structure_by_material_id(sid, final=False)
+            s = mpr.get_structure_by_material_id("mp-{}".format(sid), final=False)
 
             snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
 
