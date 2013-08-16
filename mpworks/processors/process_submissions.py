@@ -66,6 +66,11 @@ class SubmissionProcessor():
                                           'invalid structure (no POTCAR)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(
                         snl.structure.formula)
+                elif not job['is_ordered']:
+                    self.sma.update_state(submission_id, 'REJECTED',
+                                          'invalid structure (disordered)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(
+                        snl.structure.formula)
                 else:
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
