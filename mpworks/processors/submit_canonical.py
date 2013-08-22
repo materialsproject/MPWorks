@@ -15,26 +15,17 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 06, 2013'
 
-
 def clear_env():
     sma = SubmissionMongoAdapter.auto_load()
-    if 'testing' not in str(sma.db):
-        raise ValueError('{} is not a testing database'.format(sma.db))
 
     lp = LaunchPad.auto_load()
-    if 'testing' not in str(lp.db):
-        raise ValueError('{} is not a testing database'.format(sma.db))
 
     snl = SNLMongoAdapter.auto_load()
-    if 'testing' not in str(snl.db):
-        raise ValueError('{} is not a testing database'.format(sma.db))
 
     db_dir = os.environ['DB_LOC']
     db_path = os.path.join(db_dir, 'tasks_db.json')
     with open(db_path) as f:
         db_creds = json.load(f)
-        if 'testing' not in db_creds['database']:
-            raise ValueError('{} is not a testing database'.format(db_creds['database']))
 
     sma._reset()
     lp.reset('', require_password=False)
@@ -53,8 +44,6 @@ def clear_env():
 
 def submit_tests(names=None):
     sma = SubmissionMongoAdapter.auto_load()
-    if 'testing' not in str(sma.db):
-        raise ValueError('{} is not a testing database'.format(sma.db))
 
     # note: TiO2 is duplicated twice purposely, duplicate check should catch this
     compounds = {"Si": 149, "Al": 134, "ZnO": 2133, "FeO": 18905,
