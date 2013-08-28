@@ -27,7 +27,7 @@ def _snl_to_spec(snl, enforce_gga=False):
 
     incar_enforce = {'NPAR': 2}
     structure = snl.structure
-    mpvis = MPGGAVaspInputSet(incar_enforce) if enforce_gga else MPVaspInputSet(incar_enforce)
+    mpvis = MPGGAVaspInputSet(user_incar_settings=incar_enforce) if enforce_gga else MPVaspInputSet(user_incar_settings=incar_enforce)
 
     incar = mpvis.get_incar(structure)
     poscar = mpvis.get_poscar(structure)
