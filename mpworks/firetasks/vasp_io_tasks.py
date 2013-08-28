@@ -18,7 +18,7 @@ from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN
+from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, get_block_part, move_to_garden
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
@@ -115,8 +115,11 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
 
-        if MOVE_TO_GARDEN:
-            prev_dir = move_to_garden(prev_dir)
+        if MOVE_TO_GARDEN_DEV:
+            prev_dir = move_to_garden(prev_dir, prod=False)
+
+        elif MOVE_TO_GARDEN_PROD:
+            prev_dir = move_to_garden(prev_dir, prod=True)
 
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']

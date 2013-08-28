@@ -68,9 +68,12 @@ def get_loc(m_dir):
     raise ValueError('get_loc() -- dir does not exist!!')
 
 
-def move_to_garden(m_dir):
+def move_to_garden(m_dir, prod=False):
     block_part = get_block_part(m_dir)
-    garden_part = '/project/projectdirs/matgen/garden/'
+    if prod:
+        garden_part = '/project/projectdirs/matgen/garden/'
+    else:
+        garden_part = '/project/projectdirs/matgen/garden/dev'
     f_dir = os.path.join(garden_part, block_part)
     if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
         shutil.move(m_dir, f_dir)
