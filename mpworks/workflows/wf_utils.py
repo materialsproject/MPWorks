@@ -65,7 +65,7 @@ def get_loc(m_dir):
         if os.path.exists(new_loc):
             return new_loc
 
-    raise ValueError('get_loc() -- dir does not exist!!')
+    raise ValueError('get_loc() -- dir does not exist!! Make sure your base directory is listed in RUN_LOCS of wf_settings.py')
 
 
 def move_to_garden(m_dir, prod=False):
