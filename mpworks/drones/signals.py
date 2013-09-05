@@ -181,7 +181,7 @@ class SegFaultSignal(SignalDetector):
             'forrtl: severe (174): SIGSEGV, segmentation fault occurred'
         """
         file_names = glob.glob("%s/*.error" % dir_name)
-        rx = re.compile(r'(fault|segmentation)', re.IGNORECASE)
+        rx = re.compile(r'segmentation', re.IGNORECASE)
         for file_name in file_names:
             with open(file_name, 'r') as f:
                 lines = f.readlines()
