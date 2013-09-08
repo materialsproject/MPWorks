@@ -2,6 +2,7 @@ import glob
 import os
 import shutil
 import time
+import traceback
 from mpworks.workflows.wf_settings import RUN_LOCS
 
 
@@ -76,6 +77,14 @@ def move_to_garden(m_dir, prod=False):
         garden_part = '/project/projectdirs/matgen/garden/dev'
     f_dir = os.path.join(garden_part, block_part)
     if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
-        shutil.move(m_dir, f_dir)
-        time.sleep(30)
+        try:
+            shutil.move(m_dir, f_dir)
+            time.sleep(30)
+        except:
+            if os.path.exists(f_dir):
+                pass
+            traceback.print_exc()
+            raise ValueError('Could not move file to GARDEN! {}'.format(traceback.format_exc()))
+
+
     return f_dir
