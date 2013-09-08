@@ -81,8 +81,10 @@ def move_to_garden(m_dir, prod=False):
             shutil.move(m_dir, f_dir)
             time.sleep(30)
         except:
+            # double check the move error is not due to path existing
+            # there is sometimes a race condition with duplicate check
             if os.path.exists(f_dir):
-                pass
+                return f_dir
             traceback.print_exc()
             raise ValueError('Could not move file to GARDEN! {}'.format(traceback.format_exc()))
 
