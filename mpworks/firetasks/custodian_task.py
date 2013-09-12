@@ -45,7 +45,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         elif 'c' in socket.gethostname():  # mendel compute nodes
             # TODO: can base ncores on FW_submit.script
             v_exe = shlex.split('mpirun -n 32 vasp')
-            gv_exe = shlex.split('aprun -n 32 gvasp')
+            gv_exe = shlex.split('mpirun -n 32 gvasp')
             print 'running on MENDEL'
         else:
 
