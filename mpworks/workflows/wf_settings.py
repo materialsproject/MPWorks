@@ -19,4 +19,5 @@ RUN_LOCS = ['/project/projectdirs/matgen/garden/',
             '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/',
             '/global/scratch/sd/matcomp/aj_tests/',
             '/global/scratch/sd/matcomp/wc_tests/',
-            '/global/scratch/sd/matcomp/aj_prod/']
+            '/global/scratch/sd/matcomp/aj_prod/',
+            '/global/scratch2/sd/matcomp/mp_prod']
