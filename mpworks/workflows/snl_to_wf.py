@@ -67,18 +67,25 @@ def snl_to_wf(snl, parameters=None):
 
     f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
 
-    # add the SNL to the SNL DB and figure out duplicate group
-    tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
-    if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
-        spec['force_mpsnl'] = parameters['mpsnl'] if 'mpsnl' in parameters else snl.to_dict
-        spec['force_snlgroup_id'] = parameters['snlgroup_id']
-        del spec['snl']
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
-    connections[0] = [1]
+    snl_spec = {}
+    if 'snlgroup_id' in parameters:
+        if 'mpsnl' in parameters:
+            snl_spec['mpsnl'] = parameters['mpsnl']
+        elif isinstance(snl, MPStructureNL):
+            snl_spec['mpsnl'] = snl.to_dict
+        else:
+            raise ValueError("improper use of force SNL")
+        snl_spec['snlgroup_id'] = parameters['snlgroup_id']
+    else:
+        # add the SNL to the SNL DB and figure out duplicate group
+        tasks = [AddSNLTask()]
+        spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+        fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+        connections[0] = [1]
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
+    spec.update(snl_spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
