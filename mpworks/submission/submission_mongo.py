@@ -3,6 +3,8 @@ import os
 import datetime
 
 from pymongo import MongoClient
+from mpworks.snl_utils.mpsnl import MPStructureNL
+from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen import Composition
 
 import yaml
@@ -81,10 +83,27 @@ class SubmissionMongoAdapter(object):
         self.jobs.insert(d)
         return d['submission_id']
 
-    def resubmit(self, submission_id):
-        self.jobs.update(
-            {'submission_id': submission_id},
-            {'$set': {'state': 'SUBMITTED', 'state_details': {}, 'task_dict': {}}})
+    def resubmit(self, submission_id, snl_db=None):
+        # see if an SNL object has already been created
+        if not snl_db:
+            snl_db = SNLMongoAdapter.auto_load()
+
+        mpsnl = None
+        snlgroup_id = None
+        snl_dict = snl_db.snl.find_one({"about._materialsproject.submission_id": submission_id})
+        if snl_dict:
+            mpsnl = MPStructureNL.from_dict(snl_dict)
+            snlgroup_id = snl_db.snlgroups.find_one({"all_snl_ids": snl_dict['snl_id']}, {"snlgroup_id":1})['snlgroup_id']
+
+        # Now reset the current submission parameters
+        updates = {'state': 'SUBMITTED', 'state_details': {}, 'task_dict': {}}
+
+        if mpsnl:
+            updates['parameters'] = self.jobs.find_one({'submission_id': submission_id}, {'parameters': 1})['parameters']
+            updates['parameters'].update({"force_mpsnl": mpsnl.to_dict, "force_snlgroup_id": snlgroup_id})
+
+        self.jobs.update({'submission_id': submission_id}, {'$set': updates})
+
 
     def cancel_submission(self, submission_id):
         # TODO: implement me
