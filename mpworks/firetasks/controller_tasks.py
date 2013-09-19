@@ -56,7 +56,7 @@ class AddEStructureTask_old(FireTaskBase, FWSerializable):
                          '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
             fws.append(
                 FireWork(
-                    [VaspCopyTask({'use_CONTCAR': True}), SetupStaticRunTask(),
+                    [VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True}), SetupStaticRunTask(),
                      get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
             # insert into DB - GGA static

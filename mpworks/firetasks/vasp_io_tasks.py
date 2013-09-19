@@ -61,7 +61,11 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         self.update(parameters)  # store the parameters explicitly set by the user
 
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
-                         'vasprun.xml', 'CHGCAR', 'OSZICAR']
+                         'vasprun.xml', 'OSZICAR']
+
+        if not parameters.get('skip_CHGCAR'):
+            default_files.append('CHGCAR')
+
         self.files = parameters.get('files', default_files)  # files to move
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
         if self.use_contcar:
