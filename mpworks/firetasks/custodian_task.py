@@ -88,6 +88,10 @@ def get_custodian_task(spec):
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
+    elif 'static' in task_type:
+        jobs = [VaspJob(v_exe)]
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                    NonConvergingErrorHandler()]
     else:
         jobs = [VaspJob(v_exe)]
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
