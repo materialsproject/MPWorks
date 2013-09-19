@@ -102,7 +102,7 @@ class SubmissionMongoAdapter(object):
             updates['parameters'] = self.jobs.find_one({'submission_id': submission_id}, {'parameters': 1})['parameters']
             updates['parameters'].update({"force_mpsnl": mpsnl.to_dict, "force_snlgroup_id": snlgroup_id})
 
-        self.jobs.update({'submission_id': submission_id}, {'$set': updates})
+        self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': updates})
 
 
     def cancel_submission(self, submission_id):
