@@ -36,5 +36,5 @@ class DupeFinderDB(DupeFinderBase):
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 
     def query(self, spec):
-        return {'spec.task_type': spec['task_type'],
+        return {'spec.task_type': spec['task_type'], 'spec.prev_task_type': spec['prev_task_type'],
                 'spec.prev_vasp_dir': spec['prev_vasp_dir']}
