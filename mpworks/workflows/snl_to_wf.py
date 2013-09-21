@@ -1,6 +1,6 @@
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
 from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
@@ -93,7 +93,7 @@ def snl_to_wf(snl, parameters=None):
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB.to_dict()}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
@@ -121,7 +121,7 @@ def snl_to_wf(snl, parameters=None):
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                '_allow_fizzled_parents': True, '_priority': priority}
+                '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB.to_dict()}
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
