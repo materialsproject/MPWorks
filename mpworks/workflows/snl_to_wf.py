@@ -1,3 +1,4 @@
+from collections import defaultdict
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
@@ -59,7 +60,7 @@ def _snl_to_spec(snl, enforce_gga=False):
 
 def snl_to_wf(snl, parameters=None):
     fws = []
-    connections = {}
+    connections = defaultdict(list)
     parameters = parameters if parameters else {}
 
     snl_priority = parameters.get('priority', 1)
