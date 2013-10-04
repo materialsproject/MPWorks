@@ -19,7 +19,7 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
-from mpworks.workflows.wf_utils import last_relax, get_loc, get_block_part, move_to_garden
+from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -112,7 +112,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-            update_spec = {'prev_vasp_dir': get_block_part(prev_dir),
+            update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
                            'run_tags': fw_spec['run_tags']}
             self.additional_fields['run_tags'] = fw_spec['run_tags']
@@ -166,7 +166,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             if ueh.check() and unconverged_tag not in fw_spec['run_tags']:
                 print 'Unconverged run! Creating dynamic FW...'
 
-                spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                spec = {'prev_vasp_dir': prev_dir,
                         'prev_task_type': fw_spec['task_type'],
                         'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                         'task_type': fw_spec['prev_task_type'],
