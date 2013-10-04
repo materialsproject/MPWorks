@@ -6,7 +6,8 @@ from fireworks.utilities.fw_utilities import get_slug
 from mpworks.examples.firetasks_ex import VaspCustodianTaskEx, VaspToDBTaskEx
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspCopyTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask
-from pymatgen import Composition
+from pymatgen import Composition, Lattice
+from pymatgen.core.structure import Structure
 from pymatgen.io.vaspio_set import MPGGAVaspInputSet
 
 __author__ = 'Anubhav Jain'
@@ -50,9 +51,11 @@ def structure_to_wf(structure):
 
     # set up the custodian that we want to run
     jobs = VaspJob.double_relaxation_run('', gzipped=False)
+    for j in jobs: # turn off auto npar, it doesn't work for >1 node
+            j.auto_npar = False
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
-    c_params = {'jobs': jobs, 'handlers': handlers, 'max_errors': 10}
+    c_params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
     custodiantask = VaspCustodianTaskEx(c_params)
 
     # 1st FireWork - run GGA optimize structure
@@ -74,7 +77,7 @@ def structure_to_wf(structure):
     spec = {'task_type': 'GGA static example'}
     copytask = VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True})
     setuptask = SetupStaticRunTask()
-    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('')], 'handlers': handlers, 'max_errors': 10})
+    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).to_dict], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10})
     fws.append(FireWork([copytask, setuptask, custodiantask], spec, name=get_name(structure, spec['task_type']), fw_id=3))
     connections[2] = [3]
 
@@ -85,3 +88,10 @@ def structure_to_wf(structure):
     connections[3] = [4]
 
     return Workflow(fws, connections, name=get_slug(structure.formula))
+
+if __name__ == '__main__':
+    l = Lattice.from_parameters(3.866, 3.866, 3.866, 60, 60, 60)
+    s = Structure(l, ['Si', 'Si'], [[0.125,0.125,0.125], [0.875,0.875,0.875]])
+    print s
+
+    print structure_to_wf(s).to_dict()
