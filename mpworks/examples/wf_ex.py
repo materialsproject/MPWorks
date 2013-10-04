@@ -1,6 +1,9 @@
 from collections import defaultdict
+from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
+from custodian.vasp.jobs import VaspJob
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
+from mpworks.examples.firetasks_ex import VaspCustodianTaskEx
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask
 from pymatgen import Composition
 from pymatgen.io.vaspio_set import MPGGAVaspInputSet
@@ -46,11 +49,13 @@ def structure_to_wf(structure):
     # VaspWriterTask - write input files (INCAR, POSCAR, KPOINTS, POSCAR) based on spec
     # CustodianTaskEx - run VASP within a custodian
 
-    jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+    jobs = VaspJob.double_relaxation_run('', gzipped=False)
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
 
-    tasks = [VaspWriterTask(), get_custodian_task(spec)]
+    c_params = {'jobs': jobs, 'handlers': handlers, 'max_errors': 10}
+
+    tasks = [VaspWriterTask(), VaspCustodianTaskEx(c_params)]
     fws.append(FireWork(tasks, spec, name=get_name(structure, spec['task_type']), fw_id=1))
 
     # 2nd FireWork - insert previous run into DB
