@@ -23,11 +23,16 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-def _snl_to_spec(snl, enforce_gga=False):
+def _snl_to_spec(snl, enforce_gga=False, parameters=None):
     spec = {}
+    parameters = parameters if parameters else {}
 
     incar_enforce = {'NPAR': 2}
-    structure = snl.structure
+    if 'exact_structure' in parameters and parameters['exact_structure']:
+        structure = snl.structure
+    else:
+        structure = snl.structure.get_primitive_structure()
+
     mpvis = MPGGAVaspInputSet(user_incar_settings=incar_enforce) if enforce_gga else MPVaspInputSet(user_incar_settings=incar_enforce)
 
     incar = mpvis.get_incar(structure)
@@ -56,7 +61,6 @@ def _snl_to_spec(snl, enforce_gga=False):
         'incar'].get('LDAU', False) else 'GGA optimize structure (2x)'
 
     return spec
-
 
 def snl_to_wf(snl, parameters=None):
     fws = []
@@ -111,7 +115,7 @@ def snl_to_wf(snl, parameters=None):
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = _snl_to_spec(snl, enforce_gga=False)
+        spec = _snl_to_spec(snl, enforce_gga=False, parameters)
         del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
