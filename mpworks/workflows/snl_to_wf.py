@@ -115,7 +115,7 @@ def snl_to_wf(snl, parameters=None):
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = _snl_to_spec(snl, enforce_gga=False, parameters)
+        spec = _snl_to_spec(snl, enforce_gga=False, parameters=parameters)
         del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
