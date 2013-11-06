@@ -56,7 +56,7 @@ def structure_to_wf(structure):
             j.auto_npar = False
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
-    c_params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+    c_params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
     custodiantask = VaspCustodianTaskEx(c_params)
 
     # 1st FireWork - run GGA optimize structure
@@ -78,7 +78,7 @@ def structure_to_wf(structure):
     spec = {'task_type': 'GGA static example'}
     copytask = VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True})
     setuptask = SetupStaticRunTask()
-    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).to_dict], 'handlers': [h.to_dict for h in handlers], 'max_errors': 10})
+    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).to_dict], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5})
     fws.append(FireWork([copytask, setuptask, custodiantask], spec, name=get_name(structure, spec['task_type']), fw_id=3))
     connections[2] = [3]
 
