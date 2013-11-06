@@ -1,4 +1,5 @@
 from collections import defaultdict
+from pprint import pprint
 from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
 from custodian.vasp.jobs import VaspJob
 from fireworks.core.firework import FireWork, Workflow
@@ -92,6 +93,7 @@ def structure_to_wf(structure):
 if __name__ == '__main__':
     l = Lattice.from_parameters(3.866, 3.866, 3.866, 60, 60, 60)
     s = Structure(l, ['Si', 'Si'], [[0.125,0.125,0.125], [0.875,0.875,0.875]])
-    print s
 
-    print structure_to_wf(s).to_dict()
+    my_wf = structure_to_wf(s)
+    pprint(my_wf.to_dict(), indent=2)
+    my_wf.to_file("Si_wf.json")
