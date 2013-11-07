@@ -51,8 +51,9 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # run GGA static
             spec = fw_spec  # pass all the items from the current spec to the new
-            #  one
-            spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_VASP,
+            QA_STATIC = dict(QA_VASP)
+            QA_STATIC['walltime'] = '72:00:00'
+            spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_STATIC,
                          '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
             fws.append(
                 FireWork(
