@@ -20,7 +20,7 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 600, "EDIFF": 0.00005}
+    update_set = {"ENCUT": 650, "EDIFF": 0.00005}
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
     k = [2*k for k in kpoints['kpoints'][0]]
@@ -33,7 +33,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         incar = fw_spec['vasp']['incar']
-        update_set = {"ENCUT": 600, "EDIFF": 0.00005}
+        update_set = {"ENCUT": 650, "EDIFF": 0.00005}
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
@@ -42,7 +42,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         return FWAction()
 
 class SetupElastConstTask(FireTaskBase, FWSerializable):
-    _fw_name = "Setup non-SCF Task"
+    _fw_name = "Setup Elastic Constant Task"
 
     def run_task(self, fw_spec):
         incar = Incar.from_file("INCAR")

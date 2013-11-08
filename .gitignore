@@ -46,3 +46,17 @@ mpworks/fix_scripts/*.yaml
 gulptmp_4_1
 
 octave-core
+
+mpworks/.idea/encodings.xml
+
+mpworks/.idea/misc.xml
+
+mpworks/.idea/modules.xml
+
+mpworks/.idea/mpworks.iml
+
+mpworks/.idea/scopes/scope_settings.xml
+
+mpworks/.idea/vcs.xml
+
+mpworks/.idea/workspace.xml
