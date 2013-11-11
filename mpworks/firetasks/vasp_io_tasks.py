@@ -66,8 +66,11 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         if not parameters.get('skip_CHGCAR'):
             default_files.append('CHGCAR')
 
+        self.missing_CHGCAR_OK = parameters.get('missing_CHGCAR_OK', True)
+
         self.files = parameters.get('files', default_files)  # files to move
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
+
         if self.use_contcar:
             self.files.append('CONTCAR')
             self.files = [x for x in self.files if x != 'POSCAR']  # remove POSCAR
@@ -82,7 +85,10 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
             prev_filename = last_relax(os.path.join(prev_dir, file))
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
             print 'COPYING', prev_filename, dest_file
-            shutil.copy2(prev_filename, dest_file)
+            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not os.path.exists(prev_filename):
+                print 'Skipping missing CHGCAR'
+            else:
+                shutil.copy2(prev_filename, dest_file)
 
         return FWAction(stored_data={'copied_files': self.files})
 
