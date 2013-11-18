@@ -1,6 +1,6 @@
 import logging
 import socket
-from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
+from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, AliasingErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -87,11 +87,11 @@ def get_custodian_task(spec):
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                    NonConvergingErrorHandler()]
+                    NonConvergingErrorHandler(), AliasingErrorHandler()]
     elif 'static' in task_type:
         jobs = [VaspJob(v_exe)]
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                    NonConvergingErrorHandler()]
+                    NonConvergingErrorHandler(), AliasingErrorHandler()]
     else:
         jobs = [VaspJob(v_exe)]
         handlers = []
