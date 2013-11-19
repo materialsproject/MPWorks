@@ -93,8 +93,9 @@ def get_custodian_task(spec):
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
     else:
+        # non-SCF runs
         jobs = [VaspJob(v_exe)]
-        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
+        handlers = []
 
     params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
               'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
