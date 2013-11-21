@@ -7,6 +7,7 @@ from custodian.vasp.jobs import VaspJob
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
+from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from pymatgen import PMGJSONDecoder
 
@@ -74,21 +75,17 @@ class VaspToDBTaskEx(FireTaskBase, FWSerializable):
         # use MPDrone to put it in the database
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MPVaspDrone(
+            drone = VaspToDbTaskDrone(
                 host=db_creds['host'], port=db_creds['port'],
                 database=db_creds['database'], user=db_creds['admin_user'],
                 password=db_creds['admin_password'],
                 collection=db_creds['collection'])
-            t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
+            t_id = drone.assimilate(prev_dir)
 
-        # return FWAction
-        print 'ENTERED task id:', t_id
-        stored_data = {'task_id': t_id}
-        update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
-        if d['state'] == 'successful':
-            update_spec['analysis'] = d['analysis']
-            update_spec['output'] = d['output']
+        if t_id:
+            print 'ENTERED task id:', t_id
+            stored_data = {'task_id': t_id}
+            update_spec = {'prev_vasp_dir': prev_dir, 'prev_task_type': fw_spec['prev_task_type']}
             return FWAction(stored_data=stored_data, update_spec=update_spec)
-
         else:
-            raise ValueError("DB insertion successful, but don't know how to fix this FireWork! Can't continue with workflow...")
+            raise ValueError("Could not parse entry for database insertion!")
