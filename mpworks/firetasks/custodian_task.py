@@ -35,7 +35,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        hostname = os.environ('HOSTNAME')
+        hostname = os.environ['HOSTNAME']
 
         if 'edison' in hostname:
             v_exe = shlex.split('aprun -n 32 vasp')
