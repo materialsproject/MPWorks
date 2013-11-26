@@ -35,15 +35,17 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        # TODO: make this better - is there a way to load an environment
-        # variable as the VASP_EXE?
-        if 'nid' in socket.gethostname():  # hopper compute nodes
-            # TODO: can base ncores on FW_submit.script
+        hostname = os.environ('HOSTNAME')
+
+        if 'edison' in hostname:
+            v_exe = shlex.split('aprun -n 32 vasp')
+            gv_exe = shlex.split('aprun -n 32 gvasp')
+            print 'running on EDISON'
+        elif 'nid' in socket.gethostname():  # hopper compute nodes
             v_exe = shlex.split('aprun -n 48 vasp')
             gv_exe = shlex.split('aprun -n 48 gvasp')
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
-            # TODO: can base ncores on FW_submit.script
             v_exe = shlex.split('mpirun -n 32 vasp')
             gv_exe = shlex.split('mpirun -n 32 gvasp')
             print 'running on MENDEL'
