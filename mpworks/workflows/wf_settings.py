@@ -7,7 +7,7 @@ __date__ = 'May 10, 2013'
 
 QA_VASP = {'nnodes': 2}  # don't change nnodes unless other parts of code are also changed
 QA_DB = {'nnodes': 1, 'walltime': '6:00:00',
-         'pre_rocket': '#PBS -v DB_LOC,FW_CONFIG_FILE,VENV_LOC\nulimit -v hard\nmodule load python/2.7.3\nmodule load vasp/5.2.matgen\nsource $VENV_LOC'}
+         'pre_rocket': '#PBS -v DB_LOC,FW_CONFIG_FILE,VENV_LOC\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC'}
 QA_CONTROL = {'nnodes': 1, 'walltime': '00:30:00'}
 MOVE_TO_GARDEN_DEV = False
 MOVE_TO_GARDEN_PROD = False
