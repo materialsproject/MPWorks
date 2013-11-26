@@ -62,7 +62,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
             connections[-10] = -9
@@ -77,7 +77,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Uniform
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
                          fw_id=-7))
@@ -93,7 +93,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Band structure
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
