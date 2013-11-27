@@ -46,6 +46,9 @@ if __name__ == '__main__':
                 except_dict['NO_FIX'] = except_dict['NO_FIX']+1
             elif 'Poscar.from_string' in except_str and 'chunks[0]' in except_str:
                 except_dict['POSCAR_PARSE'] = except_dict['POSCAR_PARSE']+1
+            elif 'TypeError: integer argument expected, got float':
+                except_dict['MAXRUN_TYPE'] = except_dict['MAXRUN_TYPE']+1
+                print l['fw_id']
 
             else:
                 except_dict[except_str] = except_dict[except_str]+1
