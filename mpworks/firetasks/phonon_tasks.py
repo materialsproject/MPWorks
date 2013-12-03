@@ -7,7 +7,7 @@ __author__ = 'weichen'
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar
-from genstrain import DeformGeometry
+from pymatgen.phonons.genstrain import DeformGeometry
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
@@ -20,10 +20,10 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 650, "EDIFF": 0.00005}
+    update_set = {"ENCUT": 650, "EDIFF": 0.00005, "EDIFFG":-0.005}
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
-    k = [2*k for k in kpoints['kpoints'][0]]
+    k = [2*k+1 for k in kpoints['kpoints'][0]]
     fw_spec['vasp']['kpoints']['kpoints'] = [k]
     return fw_spec
 
@@ -33,11 +33,11 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         incar = fw_spec['vasp']['incar']
-        update_set = {"ENCUT": 650, "EDIFF": 0.00005}
+        update_set = {"ENCUT": 650, "EDIFF": 0.00005, "EDIFFG":-0.005}
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
-        k = [2*k for k in kpoints['kpoints'][0]]
+        k = [2*k+1 for k in kpoints['kpoints'][0]]
         kpoints['kpoints'] = [k]
         return FWAction()
 
@@ -68,7 +68,8 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
-            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.to_dict, 'strain': strain,
+                    '_queueadapter': QA_DB, '_priority': snl_priority}
             if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
                 spec['force_mpsnl'] = snl.to_dict
                 spec['force_snlgroup_id'] = fw_spec['snlgroup_id']
@@ -88,7 +89,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True}
             fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 

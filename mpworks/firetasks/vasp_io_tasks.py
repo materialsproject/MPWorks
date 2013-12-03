@@ -129,6 +129,11 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         sh.setLevel(getattr(logging, 'INFO'))
         logger.addHandler(sh)
 
+        #Use drone for elastic constant calculations
+        if fw_spec["elastic_constant"]:
+            from mpworks.drones.mp_vaspdrone_ec import MPVaspDrone_ec
+            MPVaspDrone = MPVaspDrone_ec
+
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(
