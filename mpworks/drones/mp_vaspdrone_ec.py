@@ -23,7 +23,7 @@ class MPVaspDrone_ec(MPVaspDrone):
 
 
     def process_fw(self, dir_name, d):
-        super(MPVaspDrone_ec, self).process_fw()
+        super(MPVaspDrone_ec, self).process_fw(dir_name, d)
         with open(os.path.join(dir_name, 'FW.json')) as f:
             fw_dict = json.load(f)
             d['strain'] = fw_dict['strain']

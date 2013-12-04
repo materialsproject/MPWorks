@@ -79,7 +79,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             spec = snl_to_wf._snl_to_spec(snl)
             spec = update_spec_force_convergence(spec)
-            spec['run_tags'].append((strain,))
+            spec['strain'] = strain
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
 
