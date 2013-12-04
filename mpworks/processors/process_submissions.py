@@ -31,7 +31,8 @@ class SubmissionProcessor():
         sleep_time = sleep_time if sleep_time else 30
         while True:
             self.submit_all_new_workflows()
-            self.update_existing_workflows()
+            print "SKIPPING update existing workflows bc it is too inefficent...this won't affect your workflow execution at all."
+            # self.update_existing_workflows()
             if not infinite:
                 break
             print 'sleeping', sleep_time
@@ -66,6 +67,11 @@ class SubmissionProcessor():
                                           'invalid structure (no POTCAR)', {})
                     print 'REJECTED WORKFLOW FOR {} - invalid element (No POTCAR)'.format(
                         snl.structure.formula)
+                elif not job['is_ordered']:
+                    self.sma.update_state(submission_id, 'REJECTED',
+                                          'invalid structure (disordered)', {})
+                    print 'REJECTED WORKFLOW FOR {} - invalid structure'.format(
+                        snl.structure.formula)
                 else:
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
@@ -82,6 +88,9 @@ class SubmissionProcessor():
             return submission_id
 
     def update_existing_workflows(self):
+        raise ValueError(
+            "update_existing_workflows is deprecated! It completely pounds the database and the server and needs performance tweaks")
+        """
         # updates the state of existing workflows by querying the FireWorks database
         for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
                                          {'submission_id': 1}):
@@ -96,6 +105,7 @@ class SubmissionProcessor():
             except:
                 print 'ERROR while processing s_id', submission_id
                 traceback.print_exc()
+        """
 
     def update_wf_state(self, wf, submission_id):
         # state of the workflow
@@ -134,7 +144,8 @@ class SubmissionProcessor():
                             if 'prev_task_type' in fw.spec:
                                 m_taskdict[fw.spec['prev_task_type']] = t_id
                             else:
-                                m_taskdict[fw.spec['_fizzled_parents'][0]['spec']['task_type']] = t_id
+                                m_taskdict[
+                                    fw.spec['_fizzled_parents'][0]['spec']['task_type']] = t_id
                             break
 
         self.sma.update_state(submission_id, wf.state, details, m_taskdict)

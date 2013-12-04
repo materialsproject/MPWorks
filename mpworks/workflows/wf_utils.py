@@ -2,6 +2,7 @@ import glob
 import os
 import shutil
 import time
+import traceback
 from mpworks.workflows.wf_settings import RUN_LOCS
 
 
@@ -65,14 +66,27 @@ def get_loc(m_dir):
         if os.path.exists(new_loc):
             return new_loc
 
-    raise ValueError('get_loc() -- dir does not exist!!')
+    raise ValueError('get_loc() -- dir does not exist!! Make sure your base directory is listed in RUN_LOCS of wf_settings.py')
 
 
-def move_to_garden(m_dir):
+def move_to_garden(m_dir, prod=False):
     block_part = get_block_part(m_dir)
-    garden_part = '/project/projectdirs/matgen/garden/'
+    if prod:
+        garden_part = '/project/projectdirs/matgen/garden/'
+    else:
+        garden_part = '/project/projectdirs/matgen/garden/dev'
     f_dir = os.path.join(garden_part, block_part)
     if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
-        shutil.move(m_dir, f_dir)
-        time.sleep(30)
+        try:
+            shutil.move(m_dir, f_dir)
+            time.sleep(30)
+        except:
+            # double check the move error is not due to path existing
+            # there is sometimes a race condition with duplicate check
+            if os.path.exists(f_dir):
+                return f_dir
+            traceback.print_exc()
+            raise ValueError('Could not move file to GARDEN! {}'.format(traceback.format_exc()))
+
+
     return f_dir

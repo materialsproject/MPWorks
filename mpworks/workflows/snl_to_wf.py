@@ -1,6 +1,7 @@
+from collections import defaultdict
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
+from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
 from mpworks.firetasks.controller_tasks import AddEStructureTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
@@ -22,12 +23,17 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
 
-def _snl_to_spec(snl, enforce_gga=False):
+def _snl_to_spec(snl, enforce_gga=False, parameters=None):
     spec = {}
+    parameters = parameters if parameters else {}
 
     incar_enforce = {'NPAR': 2}
-    structure = snl.structure
-    mpvis = MPGGAVaspInputSet(incar_enforce) if enforce_gga else MPVaspInputSet(incar_enforce)
+    if 'exact_structure' in parameters and parameters['exact_structure']:
+        structure = snl.structure
+    else:
+        structure = snl.structure.get_primitive_structure()
+
+    mpvis = MPGGAVaspInputSet(user_incar_settings=incar_enforce) if enforce_gga else MPVaspInputSet(user_incar_settings=incar_enforce)
 
     incar = mpvis.get_incar(structure)
     poscar = mpvis.get_poscar(structure)
@@ -56,10 +62,9 @@ def _snl_to_spec(snl, enforce_gga=False):
 
     return spec
 
-
 def snl_to_wf(snl, parameters=None):
     fws = []
-    connections = {}
+    connections = defaultdict(list)
     parameters = parameters if parameters else {}
 
     snl_priority = parameters.get('priority', 1)
@@ -67,32 +72,39 @@ def snl_to_wf(snl, parameters=None):
 
     f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
 
-    # add the SNL to the SNL DB and figure out duplicate group
-    tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
-    if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
-        spec['force_mpsnl'] = snl.to_dict
-        spec['force_snlgroup_id'] = parameters['snlgroup_id']
-        del spec['snl']
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
-    connections[0] = [1]
+    snl_spec = {}
+    if 'snlgroup_id' in parameters:
+        if 'mpsnl' in parameters:
+            snl_spec['mpsnl'] = parameters['mpsnl']
+        elif isinstance(snl, MPStructureNL):
+            snl_spec['mpsnl'] = snl.to_dict
+        else:
+            raise ValueError("improper use of force SNL")
+        snl_spec['snlgroup_id'] = parameters['snlgroup_id']
+    else:
+        # add the SNL to the SNL DB and figure out duplicate group
+        tasks = [AddSNLTask()]
+        spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+        fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+        connections[0] = [1]
 
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
+    spec.update(snl_spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
-    spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
+    spec = {'task_type': 'VASP db insertion', '_priority': priority*2,
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB().to_dict()}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if not parameters.get('skip_bandstructure', False):
-        spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+        spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
         fws.append(
             FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
@@ -103,7 +115,7 @@ def snl_to_wf(snl, parameters=None):
     incar = MPVaspInputSet().get_incar(snl.structure).to_dict
 
     if 'LDAU' in incar and incar['LDAU']:
-        spec = _snl_to_spec(snl, enforce_gga=False)
+        spec = _snl_to_spec(snl, enforce_gga=False, parameters=parameters)
         del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
@@ -114,13 +126,13 @@ def snl_to_wf(snl, parameters=None):
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                '_allow_fizzled_parents': True, '_priority': priority}
+                '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if not parameters.get('skip_bandstructure', False):
-            spec = {'task_type': 'Controller: add Electronic Structure', '_priority': priority,
+            spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                     '_queueadapter': QA_CONTROL}
             fws.append(
                 FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
