@@ -89,7 +89,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True, 'strain':strain.ravel().tolist()}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True, 'strain':list(strain.strain)}
             fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 
