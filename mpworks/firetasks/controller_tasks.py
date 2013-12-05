@@ -7,7 +7,7 @@ from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
     SetupNonSCFTask
-from mpworks.workflows.wf_settings import QA_VASP, QA_DB
+from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
 from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
 
@@ -51,9 +51,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # run GGA static
             spec = fw_spec  # pass all the items from the current spec to the new
-            QA_STATIC = dict(QA_VASP)
-            QA_STATIC['walltime'] = '72:00:00'
-            spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_STATIC,
+            spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_VASP_SMALL,
                          '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
             fws.append(
                 FireWork(
