@@ -20,26 +20,27 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 650, "EDIFF": 0.000001}
+    update_set = {"ENCUT": 700, "EDIFF": 0.000001}
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
-    k = [2*k+1 for k in kpoints['kpoints'][0]]
+    k = [int(round(2.5*k)) if int(round(2.5*k))%2 else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
     fw_spec['vasp']['kpoints']['kpoints'] = [k]
     return fw_spec
 
-
+'''
 class SetupFConvergenceTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Force Convergence Task"
 
     def run_task(self, fw_spec):
         incar = fw_spec['vasp']['incar']
-        update_set = {"ENCUT": 650, "EDIFF": 0.000001}
+        update_set = {"ENCUT": 700, "EDIFF": 0.000001}
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
-        k = [2*k+1 for k in kpoints['kpoints'][0]]
+        k = [int(round(2.5*k)) if int(round(2.5*k))%2 else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
         kpoints['kpoints'] = [k]
         return FWAction()
+'''
 
 class SetupElastConstTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Elastic Constant Task"
@@ -64,7 +65,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
         for i, strain in enumerate(deformed_structs.keys()):
             d_struct = deformed_structs[strain]
             f = Composition.from_formula(d_struct.formula).alphabetical_formula
-            snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>')
+            snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>',projects=["Elasticity"])
 
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
@@ -78,8 +79,10 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             connections[-1000+i*10] = [-999+i*10]
 
             spec = snl_to_wf._snl_to_spec(snl)
-            spec = update_spec_force_convergence(spec)
+            spec.update(fw_spec['vasp']['incar'])
+            spec.update(fw_spec['vasp']['kpoints'])
             spec['deformation_matrix'] = strain.deformation_matrix.tolist()
+            spec['origin_task_id']=fw_spec["task_id"]
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
 
@@ -89,7 +92,8 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True, 'deformation_matrix':strain.deformation_matrix.tolist()}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True,
+            'deformation_matrix':strain.deformation_matrix.tolist(), 'origin_task_id':fw_spec["task_id"]}
             fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 

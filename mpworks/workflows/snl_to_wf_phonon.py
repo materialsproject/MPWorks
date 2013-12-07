@@ -54,8 +54,9 @@ def snl_to_wf_phonon(snl, parameters=None):
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
-    spec = {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
+    spec_update = {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
+    spec.upate(spec_update)
     fws.append(
             FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))

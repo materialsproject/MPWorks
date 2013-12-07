@@ -77,7 +77,11 @@ class SubmissionProcessor():
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
                     # create a workflow
-                    wf = snl_to_wf(snl, job['parameters'])
+                    if "Elasticity" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_phonon import snl_to_wf_phonon
+                        wf=snl_to_wf_phonon(snl, job['parameters'])
+                    else:
+                        wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
