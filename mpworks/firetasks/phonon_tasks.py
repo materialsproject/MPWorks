@@ -20,7 +20,7 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 650, "EDIFF": 0.00005, "EDIFFG":-0.005}
+    update_set = {"ENCUT": 650, "EDIFF": 0.000001}
     fw_spec['vasp']['incar'].update(update_set)
     kpoints = spec['vasp']['kpoints']
     k = [2*k+1 for k in kpoints['kpoints'][0]]
@@ -33,7 +33,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         incar = fw_spec['vasp']['incar']
-        update_set = {"ENCUT": 650, "EDIFF": 0.00005, "EDIFFG":-0.005}
+        update_set = {"ENCUT": 650, "EDIFF": 0.000001}
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
@@ -56,7 +56,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         relaxed_struct = Structure.from_dict(fw_spec['output']['crystal'])
-        deformed_structs = DeformGeometry(relaxed_struct)
+        deformed_structs = DeformGeometry(relaxed_struct, ns=0.06)
         fws=[]
         connections={}
         wf=[]
@@ -79,7 +79,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             spec = snl_to_wf._snl_to_spec(snl)
             spec = update_spec_force_convergence(spec)
-            spec['strain'] = strain.strain.tolist()
+            spec['deformation_matrix'] = strain.deformation_matrix.tolist()
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
 
@@ -89,7 +89,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True, 'strain':strain.strain.tolist()}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True, 'deformation_matrix':strain.deformation_matrix.tolist()}
             fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 
