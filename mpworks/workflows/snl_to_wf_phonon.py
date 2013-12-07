@@ -1,5 +1,5 @@
 from pymatgen.io.vaspio import Poscar
-from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenceTask, SetupDeformedStructTask
+from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupDeformedStructTask
 
 __author__ = 'weichen'
 
@@ -56,7 +56,7 @@ def snl_to_wf_phonon(snl, parameters=None):
 
     spec_update = {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
-    spec.upate(spec_update)
+    spec.update(spec_update)
     fws.append(
             FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
