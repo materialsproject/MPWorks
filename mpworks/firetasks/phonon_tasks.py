@@ -81,6 +81,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             spec = snl_to_wf._snl_to_spec(snl)
             spec.update(fw_spec['vasp']['incar'])
             spec.update(fw_spec['vasp']['kpoints'])
+            spec.pop(['vasp']['kpoints']['actual_points'])
             spec['deformation_matrix'] = strain.deformation_matrix.tolist()
             spec['origin_task_id']=fw_spec["task_id"]
             #Turn off dupefinder for deformed structure
