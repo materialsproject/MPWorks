@@ -83,7 +83,8 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             incar.update({"ISIF":2})
             spec['vasp']['incar']=incar
             kpoints=fw_spec['vasp']['kpoints']
-            kpoints.pop('actual_points')
+            if "actual_points" in kpoints:
+                kpoints.pop('actual_points')
             spec['vasp']['kpoints']= kpoints
             spec['deformation_matrix'] = strain.deformation_matrix.tolist()
             spec['origin_task_id']=fw_spec["task_id"]
