@@ -27,4 +27,4 @@ class MPVaspDrone_ec(MPVaspDrone):
         with open(os.path.join(dir_name, 'FW.json')) as f:
             fw_dict = json.load(f)
             d['deformation_matrix'] = fw_dict['spec']['deformation_matrix']
-            d['origin_task_id']=fw_dict['spec']["task_id"]
+            d['original_task_id']=fw_dict['spec']["original_task_id"]

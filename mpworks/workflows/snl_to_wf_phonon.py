@@ -1,5 +1,5 @@
 from pymatgen.io.vaspio import Poscar
-from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupDeformedStructTask
+from mpworks.firetasks.phonon_tasks import SetupDeformedStructTask
 
 __author__ = 'weichen'
 

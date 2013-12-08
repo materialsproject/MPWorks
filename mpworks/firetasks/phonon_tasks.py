@@ -40,7 +40,7 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         k = [int(round(2.5*k)) if int(round(2.5*k))%2 else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
         kpoints['kpoints'] = [k]
         return FWAction()
-'''
+
 
 class SetupElastConstTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Elastic Constant Task"
@@ -50,7 +50,7 @@ class SetupElastConstTask(FireTaskBase, FWSerializable):
         incar.update({"ISIF": 2})
         incar.write_file("INCAR")
         return FWAction()
-
+'''
 class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Deformed Struct Task"
 
@@ -79,24 +79,25 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             connections[-1000+i*10] = [-999+i*10]
 
             spec = snl_to_wf._snl_to_spec(snl)
-            spec.update(fw_spec['vasp']['incar'])
-            spec['vasp']['kpoints']={"generation_style":fw_spec['vasp']['kpoints']["generation_style"],
-                                     "kpoints":fw_spec['vasp']['kpoints']["kpoints"],
-                                     "comment":fw_spec['vasp']['kpoints']["comment"],
-                                     "usershift":fw_spec['vasp']['kpoints']["usershift"]}
+            incar=fw_spec['vasp']['incar']
+            incar.update({"ISIF":2})
+            spec['vasp']['incar']=incar
+            kpoints=fw_spec['vasp']['kpoints']
+            kpoints.pop('actual_points')
+            spec['vasp']['kpoints']= kpoints
             spec['deformation_matrix'] = strain.deformation_matrix.tolist()
             spec['origin_task_id']=fw_spec["task_id"]
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
 
             spec['task_type'] = "Calculate deformed structure optimize structure (2x)"
-            fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),
-                                 get_custodian_task(spec)], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
+            fws.append(FireWork([VaspWriterTask(), get_custodian_task(spec)],
+                                spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':True,
-            'deformation_matrix':strain.deformation_matrix.tolist(), 'origin_task_id':fw_spec["task_id"]}
+            'deformation_matrix':strain.deformation_matrix.tolist(), 'original_task_id':fw_spec["task_id"]}
             fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 
