@@ -158,6 +158,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
 
+        #Pop large fields in task_doc
+        if fw_spec.get("clean_task_doc"):
+            for doc in d["calculations"]:
+                doc["input"]["kpoints"].pop("actual_kpoints", None)
+                doc["output"].pop("eigenvalues", None)
+
         mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
         snlgroup_id = d['snlgroup_id_final'] if 'snlgroup_id_final' in d else d['snlgroup_id']
         update_spec.update({'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id})
