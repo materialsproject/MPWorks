@@ -49,7 +49,8 @@ def snl_to_wf_phonon(snl, parameters=None):
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'clean_task_doc':True}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'clean_task_doc':True,
+            'elastic_constant':"force_convergence"}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
