@@ -26,10 +26,9 @@ class MPVaspDrone_ec(MPVaspDrone):
             return None
         if cls._clean_task_doc:
             for doc in d["calculations"]:
-                doc["input"]["kpoints"].pop("actual_kpoints", None)
+                doc["input"]["kpoints"].pop("actual_points", None)
                 doc["output"].pop("eigenvalues", None)
-        else:
-            return d
+        return d
 
 
     def process_fw(self, dir_name, d):
