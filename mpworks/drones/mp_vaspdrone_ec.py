@@ -34,7 +34,8 @@ class MPVaspDrone_ec(MPVaspDrone):
 
     def process_fw(self, dir_name, d):
         super(MPVaspDrone_ec, self).process_fw(dir_name, d)
-        with open(os.path.join(dir_name, 'FW.json')) as f:
-            fw_dict = json.load(f)
-            d['deformation_matrix'] = fw_dict['spec']['deformation_matrix']
-            d['original_task_id']=fw_dict['spec']["original_task_id"]
+        if self._parse_type=="deformed_structure":
+            with open(os.path.join(dir_name, 'FW.json')) as f:
+                fw_dict = json.load(f)
+                d['deformation_matrix'] = fw_dict['spec']['deformation_matrix']
+                d['original_task_id']=fw_dict['spec']["original_task_id"]
