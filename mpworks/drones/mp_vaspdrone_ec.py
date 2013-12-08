@@ -8,21 +8,14 @@ import json
 logger = logging.getLogger(__name__)
 
 class MPVaspDrone_ec(MPVaspDrone):
-    def __init__(self, host="127.0.0.1", port=27017, database="vasp",
-                 user=None, password=None,  collection="tasks",
-                 parse_dos=False, simulate_mode=False,
-                 additional_fields=None, update_duplicates=True,
-                 mapi_key=None, parse_type="force_convergence", clean_task_doc=True):
-        super(MPVaspDrone_ec, self).__init__(self, host, port, database,
-                 user, password,  collection, parse_dos, simulate_mode,
-                 additional_fields, update_duplicates, mapi_key)
-        self._parse_type=parse_type
-        self._clean_task_doc=clean_task_doc
+    _parse_type="force_convergence"
+    _clean_task_doc=True
 
-    def generate_doc(self, dir_name, vasprun_files, parse_dos,
+    @classmethod
+    def generate_doc(cls, dir_name, vasprun_files, parse_dos,
                      additional_fields, max_force_threshold=10.0):
-        d=super(MPVaspDrone_ec, self).generate_doc(dir_name, vasprun_files, parse_dos, additional_fields)
-        if self._parse_type=="force_convergence":
+        d=super(MPVaspDrone_ec, cls).generate_doc(dir_name, vasprun_files, parse_dos, additional_fields)
+        if cls._parse_type=="force_convergence":
             max_force_threshold=0.5
         try:
             force_state=get_basic_analysis_and_error_checks(d,max_force_threshold)
@@ -31,7 +24,7 @@ class MPVaspDrone_ec(MPVaspDrone):
             logger.error("Error in " + os.path.abspath(dir_name) +
                          ".\nError msg: " + str(ex))
             return None
-        if self._clean_task_doc:
+        if cls._clean_task_doc:
             for doc in d["calculations"]:
                 doc["input"]["kpoints"].pop("actual_kpoints", None)
                 doc["output"].pop("eigenvalues", None)
