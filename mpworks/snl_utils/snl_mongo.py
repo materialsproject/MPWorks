@@ -97,8 +97,8 @@ class SNLMongoAdapter(FWSerializable):
 
         mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                        sgxtal, sglatt, sgpoint)
-        snlgroup, add_new = self.add_mpsnl(mpsnl, force_new, snlgroup_guess)
-        return mpsnl, snlgroup.snlgroup_id
+        snlgroup, add_new, spec_group = self.add_mpsnl(mpsnl, force_new, snlgroup_guess)
+        return mpsnl, snlgroup.snlgroup_id, spec_group
 
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.to_dict
@@ -107,12 +107,13 @@ class SNLMongoAdapter(FWSerializable):
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
 
     def _add_if_belongs(self, snlgroup, mpsnl, testing_mode):
-        if snlgroup.add_if_belongs(mpsnl):
+        match_found, spec_group = snlgroup.add_if_belongs(mpsnl)
+        if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
                 self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
-            return True
-        return False
+
+        return match_found, spec_group
 
     def build_groups(self, mpsnl, force_new=False, snlgroup_guess=None, testing_mode=False):
         # testing mode is used to see if something already exists in DB w/o adding it to the db
@@ -122,14 +123,14 @@ class SNLMongoAdapter(FWSerializable):
             if snlgroup_guess:
                 sgp = self.snlgroups.find_one({'snlgroup_id': snlgroup_guess})
                 snlgroup = SNLGroup.from_dict(sgp)
-                match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
+                match_found, spec_group = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
 
             if not match_found:
                 # look at all potential matches
                 for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key},
                                                  sort=[("num_snl", DESCENDING)]):
                     snlgroup = SNLGroup.from_dict(entry)
-                    match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
+                    match_found, spec_group = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
                     if match_found:
                         break
 
@@ -137,10 +138,12 @@ class SNLMongoAdapter(FWSerializable):
             # add a new SNLGroup
             snlgroup_id = self._get_next_snlgroup_id()
             snlgroup = SNLGroup(snlgroup_id, mpsnl)
+            if snlgroup.species_groups:
+                spec_group = snlgroup.species_groups.keys()[0]
             if not testing_mode:
                 self.snlgroups.insert(snlgroup.to_dict)
 
-        return snlgroup, not match_found
+        return snlgroup, not match_found, spec_group
 
 
     def switch_canonical_snl(self, snlgroup_id, canonical_mpsnl):

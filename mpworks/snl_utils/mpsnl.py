@@ -1,6 +1,6 @@
 import datetime
 from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
-from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
+from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -73,11 +73,11 @@ class MPStructureNL(StructureNL):
         structure = Structure.from_dict(d) if "lattice" in d \
             else Molecule.from_dict(d)
         return MPStructureNL(structure, a["authors"],
-                           projects=a.get("projects", None),
-                           references=a.get("references", ""),
-                           remarks=a.get("remarks", None), data=data,
-                           history=a.get("history", None),
-                           created_at=created_at)
+                             projects=a.get("projects", None),
+                             references=a.get("references", ""),
+                             remarks=a.get("remarks", None), data=data,
+                             history=a.get("history", None),
+                             created_at=created_at)
 
     @staticmethod
     def from_snl(snl, snl_id, sg_num, sg_symbol, hall, xtal_system, lattice_type, pointgroup):
@@ -100,7 +100,8 @@ class MPStructureNL(StructureNL):
 
 
 class SNLGroup():
-    def __init__(self, snlgroup_id, canonical_snl, all_snl_ids=None):
+    def __init__(self, snlgroup_id, canonical_snl, all_snl_ids=None, species_snl=None,
+                 species_groups=None):
         # Auto fields
         self.created_at = datetime.datetime.utcnow()
         self.updated_at = datetime.datetime.utcnow()
@@ -112,6 +113,15 @@ class SNLGroup():
         self.all_snl_ids = all_snl_ids if all_snl_ids else []
         if self.canonical_snl.snl_id not in self.all_snl_ids:
             self.all_snl_ids.append(canonical_snl.snl_id)
+
+        # For snl with species properties
+        self.species_snl = species_snl if species_snl else []
+        self.species_groups = species_groups if species_groups else {}
+
+        # if the canonical SNL has species properties, it belongs in the species group
+        if canonical_snl.structure.site_properties and not species_snl:
+            species_snl.add(canonical_snl)
+            species_groups[canonical_snl.snl_id] = canonical_snl.snl_id
 
         # Convenience fields
         self.canonical_structure = canonical_snl.structure
@@ -126,48 +136,73 @@ class SNLGroup():
         d['canonical_snl'] = self.canonical_snl.to_dict
         d['all_snl_ids'] = self.all_snl_ids
         d['num_snl'] = len(self.all_snl_ids)
+        d['species_snl'] = self.species_snl
+        d['species_groups'] = self.species_groups
 
         d['snlgroup_key'] = self.canonical_snl.snlgroup_key
         return d
 
     @staticmethod
     def from_dict(d):
-        return SNLGroup(d['snlgroup_id'], MPStructureNL.from_dict(d['canonical_snl']), d['all_snl_ids'])
+        sp_snl = [StructureNL.from_dict(s) for s in d['species_snl']] if 'species_snl' in d else None
+        return SNLGroup(d['snlgroup_id'], MPStructureNL.from_dict(d['canonical_snl']),
+                        d['all_snl_ids'], sp_snl, d.get('species_groups', None))
 
     def add_if_belongs(self, cand_snl):
 
         # no need to compare if different formulas or spacegroups
         if cand_snl.snlgroup_key != self.canonical_snl.snlgroup_key:
-            return False
+            return False, None
 
         # no need to compare if one is ordered, the other disordered
         if not (cand_snl.structure.is_ordered == self.canonical_structure.is_ordered):
-            return False
+            return False, None
 
         # filter out large C-Ce structures
         comp = cand_snl.structure.composition
         elsyms = sorted(set([e.symbol for e in comp.elements]))
         chemsys = '-'.join(elsyms)
-        if (cand_snl.structure.num_sites > 1500 or self.canonical_structure.num_sites > 1500) and chemsys == 'C-Ce':
+        if (
+                cand_snl.structure.num_sites > 1500 or self.canonical_structure.num_sites > 1500) and chemsys == 'C-Ce':
             print 'SKIPPING LARGE C-Ce'
-            return False
+            return False, None
 
         # make sure the structure is not already in all_structures
         if cand_snl.snl_id in self.all_snl_ids:
             print 'WARNING: add_if_belongs() has detected that you are trying to add the same SNL id twice!'
-            return False
+            return False, None
 
         #try a structure fit to the canonical structure
 
         # use default Structure Matcher params from April 24, 2013, as suggested by Shyue
         # we are using the ElementComparator() because this is how we want to group results
-        sm = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True, attempt_supercell=False, comparator=ElementComparator())
+        sm = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+                              attempt_supercell=False, comparator=ElementComparator())
 
         if not sm.fit(cand_snl.structure, self.canonical_structure):
-            return False
+            return False, None
 
         # everything checks out, add to the group
         self.all_snl_ids.append(cand_snl.snl_id)
+
+        # now that we are in the group, if there are site properties we need to check species_groups
+        # e.g., if there is another SNL in the group with the same site properties, e.g. MAGMOM
+        spec_group = None
+        if cand_snl.structure.site_properties:
+            for snl in self.species_snl:
+                sms = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+                              attempt_supercell=False, comparator=SpeciesComparator())
+                if sms.fit(cand_snl.structure, snl.structure):
+                    spec_group = snl.snl_id
+                    self.species_groups[snl.snl_id].append(cand_snl.snl_id)
+                    break
+
+            # add a new species group
+            if not spec_group:
+                self.species_groups[cand_snl.snl_id] = [cand_snl.snl_id]
+                self.species_snl.append(cand_snl)
+                spec_group = cand_snl.snl_id
+
         self.updated_at = datetime.datetime.utcnow()
 
-        return True
+        return True, spec_group
