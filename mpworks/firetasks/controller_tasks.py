@@ -1,5 +1,5 @@
 import time
-from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
+from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow, Tracker
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
@@ -39,6 +39,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
         if fw_spec['analysis']['bandgap'] >= self.gap_cutoff:
             print 'Adding more runs...'
+
             type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
 
             snl = StructureNL.from_dict(fw_spec['mpsnl'])
@@ -48,11 +49,13 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections = {}
 
             priority = fw_spec['_priority']
+            trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR')]
+            trackers_db = [Tracker('FW_job.out'), Tracker('FW_job.error')]
 
             # run GGA static
             spec = fw_spec  # pass all the items from the current spec to the new
             spec.update({'task_type': '{} static v2'.format(type_name), '_queueadapter': QA_VASP_SMALL,
-                         '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority})
+                         '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority, '_trackers': trackers})
             fws.append(
                 FireWork(
                     [VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True}), SetupStaticRunTask(),
@@ -60,14 +63,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA static
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
             fws.append(
                 FireWork([VaspToDBTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-9))
             connections[-10] = -9
 
             # run GGA Uniform
             spec = {'task_type': '{} Uniform v2'.format(type_name), '_queueadapter': QA_VASP,
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority, '_trackers': trackers}
             fws.append(FireWork(
                 [VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'uniform'}),
                  get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-8))
@@ -75,7 +78,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Uniform
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
             fws.append(
                 FireWork([VaspToDBTask({'parse_uniform': True})], spec, name=get_slug(f+'--'+spec['task_type']),
                          fw_id=-7))
@@ -83,7 +86,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # run GGA Band structure
             spec = {'task_type': '{} band structure v2'.format(type_name), '_queueadapter': QA_VASP,
-                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority}
+                    '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority, '_trackers': trackers}
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
                                  get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                                 fw_id=-6))
@@ -91,7 +94,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
             # insert into DB - GGA Band structure
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict()}
+                    '_allow_fizzled_parents': True, '_priority': priority*2, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
