@@ -107,49 +107,28 @@ class SubmissionProcessor():
                 traceback.print_exc()
         """
 
-    def update_wf_state(self, wf, submission_id):
+    def update_wf_state(self, submission_id):
         # state of the workflow
-
         details = '(none available)'
-        for fw in wf.fws:
-            if fw.state == 'READY':
-                details = 'waiting to run: {}'.format(fw.spec['task_type'])
-            elif fw.state in ['RESERVED', 'RUNNING', 'FIZZLED']:
-                machine_name = 'unknown'
-                for l in fw.launches:
-                    if l.state == fw.state:
-                        machine_name = 'unknown'
-                        if 'hopper' in l.host or 'nid' in l.host:
-                            machine_name = 'hopper'
-                        elif 'c' in l.host:
-                            machine_name = 'mendel/carver'
+        
+        wf = self.launchpad.workflows.find_one({'metadata.submission_id': submission_id},
+                                               sort=[('updated_on', -1)])
+        fw_state = {}
+        for e in self.launchpad.fireworks.find({'fw_id': {'$in' : wf['nodes']}},
+                            {'spec.task_type': 1 ,'state': 1, 'launches': 1}):
+            fw_state[e['spec']['task_type']] = e['state']
+            if e['spec']['task_type'] == 'VASP db insertion' and \
+                    e['state'] == 'COMPLETED':
+                for launch in self.launchpad.launches.find({'launch_id': {'$in' : e['launches']}},
+                                                           {'action.stored_data.task_id': 1}):
+                    try:
+                        details = launch['action']['stored_data']['task_id']
                         break
-                if fw.state == 'RESERVED':
-                    details = 'queued to run: {} on {}'.format(fw.spec['task_type'], machine_name)
-                if fw.state == 'RUNNING':
-                    details = 'running: {} on {}'.format(fw.spec['task_type'], machine_name)
-                if fw.state == 'FIZZLED':
-                    details = 'fizzled while running: {} on {}'.format(fw.spec['task_type'],
-                                                                       machine_name)
-
-        m_taskdict = {}
-        states = [fw.state for fw in wf.fws]
-        if any([s == 'COMPLETED' for s in states]):
-            for fw in wf.fws:
-                if fw.state == 'COMPLETED' and fw.spec['task_type'] == 'VASP db insertion':
-                    for l in fw.launches:
-                        # if task_id is not there, it means we went on DETOUR...
-                        if l.state == 'COMPLETED' and 'task_id' in l.action.stored_data:
-                            t_id = l.action.stored_data['task_id']
-                            if 'prev_task_type' in fw.spec:
-                                m_taskdict[fw.spec['prev_task_type']] = t_id
-                            else:
-                                m_taskdict[
-                                    fw.spec['_fizzled_parents'][0]['spec']['task_type']] = t_id
-                            break
-
-        self.sma.update_state(submission_id, wf.state, details, m_taskdict)
-        return wf.state, details, m_taskdict
+                    except:
+                        pass
+        
+        self.sma.update_state(submission_id, wf['state'], details, fw_state)    
+        return wf['state'], details, fw_state
 
     @classmethod
     def auto_load(cls):
