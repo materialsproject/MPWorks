@@ -1,5 +1,5 @@
 from collections import defaultdict
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import FireWork, Workflow, Tracker
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
 from mpworks.firetasks.controller_tasks import AddEStructureTask
@@ -88,17 +88,20 @@ def snl_to_wf(snl, parameters=None):
         fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
         connections[0] = [1]
 
+    trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'), Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
+    trackers_db = [Tracker('FW_job.out'), Tracker('FW_job.error')]
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True)
     spec.update(snl_spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
+    spec['_trackers'] = trackers
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority*2,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB().to_dict()}
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
     fws.append(
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
@@ -119,6 +122,7 @@ def snl_to_wf(snl, parameters=None):
         del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
+        spec['_trackers'] = trackers
         fws.append(FireWork(
             [VaspCopyTask(), SetupGGAUTask(),
              get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
@@ -126,7 +130,7 @@ def snl_to_wf(snl, parameters=None):
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
+                '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
         fws.append(
             FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]

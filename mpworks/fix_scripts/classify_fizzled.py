@@ -44,11 +44,13 @@ if __name__ == '__main__':
                 except_dict['MEMORY_ERROR'] = except_dict['MEMORY_ERROR']+1
             elif 'DB insertion successful, but don\'t know how to fix' in except_str:
                 except_dict['NO_FIX'] = except_dict['NO_FIX']+1
-                print l['launch_dir']
             elif 'Poscar.from_string' in except_str and 'chunks[0]' in except_str:
                 except_dict['POSCAR_PARSE'] = except_dict['POSCAR_PARSE']+1
             elif 'TypeError: integer argument expected, got float':
                 except_dict['MAXRUN_TYPE'] = except_dict['MAXRUN_TYPE']+1
+            elif 'cannot import name DupeFinderDB' in except_str:
+                print l['fw_id']
+                except_dict['DUPEFINDER_DB'] = except_dict['DUPEFINDER_DB']+1
             else:
                 except_dict[except_str] = except_dict[except_str]+1
 
