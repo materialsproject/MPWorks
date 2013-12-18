@@ -109,26 +109,27 @@ class SubmissionProcessor():
 
     def update_wf_state(self, submission_id):
         # state of the workflow
-        details = '(none available)'
+        tasks = {}
         
         wf = self.launchpad.workflows.find_one({'metadata.submission_id': submission_id},
                                                sort=[('updated_on', -1)])
-        fw_state = {}
+        details = '(none)'
         for e in self.launchpad.fireworks.find({'fw_id': {'$in' : wf['nodes']}},
                             {'spec.task_type': 1 ,'state': 1, 'launches': 1}):
-            fw_state[e['spec']['task_type']] = e['state']
             if e['spec']['task_type'] == 'VASP db insertion' and \
                     e['state'] == 'COMPLETED':
                 for launch in self.launchpad.launches.find({'launch_id': {'$in' : e['launches']}},
-                                                           {'action.stored_data.task_id': 1}):
+                                                           {'action.stored_data.task_id': 1,
+                                                            'action.update_spec.prev_task_type' : 1}):
                     try:
-                        details = launch['action']['stored_data']['task_id']
+                        tasks[launch['action']['update_spec']['prev_task_type']] \
+                            = launch['action']['stored_data']['task_id']
                         break
                     except:
                         pass
         
-        self.sma.update_state(submission_id, wf['state'], details, fw_state)    
-        return wf['state'], details, fw_state
+        self.sma.update_state(submission_id, wf['state'], details, tasks)    
+        return wf['state'], details, tasks
 
     @classmethod
     def auto_load(cls):
