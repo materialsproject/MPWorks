@@ -120,8 +120,8 @@ class SNLGroup():
 
         # if the canonical SNL has species properties, it belongs in the species group
         if canonical_snl.structure.site_properties and not species_snl:
-            species_snl.add(canonical_snl)
-            species_groups[canonical_snl.snl_id] = canonical_snl.snl_id
+            self.species_snl.add(canonical_snl)
+            self.species_groups[canonical_snl.snl_id] = canonical_snl.snl_id
 
         # Convenience fields
         self.canonical_structure = canonical_snl.structure
