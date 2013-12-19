@@ -30,6 +30,13 @@ def get_meta_from_structure(structure):
     return meta
 
 
+def has_species_properties(structure):
+    for site in structure:
+        for species in site:
+            if hasattr(species, 'spin'):
+                return True
+
+
 class MPStructureNL(StructureNL):
     # adds snl_id, spacegroup, and autometa properties to StructureNL.
 
@@ -119,7 +126,7 @@ class SNLGroup():
         self.species_groups = species_groups if species_groups else {}
 
         # if the canonical SNL has species properties, it belongs in the species group
-        if canonical_snl.structure.site_properties and not species_snl:
+        if has_species_properties(canonical_snl.structure) and not species_snl:
             self.species_snl.add(canonical_snl)
             self.species_groups[canonical_snl.snl_id] = canonical_snl.snl_id
 
@@ -137,16 +144,20 @@ class SNLGroup():
         d['all_snl_ids'] = self.all_snl_ids
         d['num_snl'] = len(self.all_snl_ids)
         d['species_snl'] = self.species_snl
-        d['species_groups'] = self.species_groups
-
+        d['species_groups'] = dict([(str(k), v) for k, v in self.species_groups.iteritems()])
         d['snlgroup_key'] = self.canonical_snl.snlgroup_key
         return d
 
     @staticmethod
     def from_dict(d):
         sp_snl = [StructureNL.from_dict(s) for s in d['species_snl']] if 'species_snl' in d else None
+        # to account for no int keys in Mongo dicts
+        if d.get('species_groups', None):
+            species_groups = dict([(int(k), v) for k, v in d['species_groups'].iteritems()])
+        else:
+            species_groups = None
         return SNLGroup(d['snlgroup_id'], MPStructureNL.from_dict(d['canonical_snl']),
-                        d['all_snl_ids'], sp_snl, d.get('species_groups', None))
+                        d['all_snl_ids'], sp_snl, species_groups)
 
     def add_if_belongs(self, cand_snl):
 
@@ -188,20 +199,14 @@ class SNLGroup():
         # now that we are in the group, if there are site properties we need to check species_groups
         # e.g., if there is another SNL in the group with the same site properties, e.g. MAGMOM
         spec_group = None
-        spin_structure = False
-        for site in cand_snl.structure:
-            for species in site:
-                if hasattr(species, 'spin'):
-                    spin_structure = True
-                    break
 
-        if spin_structure:
+        if has_species_properties(cand_snl.structure):
             for snl in self.species_snl:
                 sms = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
                               attempt_supercell=False, comparator=SpeciesComparator())
                 if sms.fit(cand_snl.structure, snl.structure):
                     spec_group = snl.snl_id
-                    self.species_groups[snl.snl_id].append(cand_snl.snl_id)
+                    self.species_groups[str(snl.snl_id)].append(cand_snl.snl_id)
                     break
 
             # add a new species group
