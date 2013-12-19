@@ -188,7 +188,14 @@ class SNLGroup():
         # now that we are in the group, if there are site properties we need to check species_groups
         # e.g., if there is another SNL in the group with the same site properties, e.g. MAGMOM
         spec_group = None
-        if cand_snl.structure.site_properties:
+        spin_structure = False
+        for site in cand_snl.structure:
+            for species in site:
+                if hasattr(species, 'spin'):
+                    spin_structure = True
+                    break
+
+        if spin_structure:
             for snl in self.species_snl:
                 sms = StructureMatcher(ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
                               attempt_supercell=False, comparator=SpeciesComparator())
