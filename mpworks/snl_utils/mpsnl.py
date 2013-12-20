@@ -127,8 +127,8 @@ class SNLGroup():
 
         # if the canonical SNL has species properties, it belongs in the species group
         if has_species_properties(canonical_snl.structure) and not species_snl:
-            self.species_snl.add(canonical_snl)
-            self.species_groups[canonical_snl.snl_id] = canonical_snl.snl_id
+            self.species_snl.append(canonical_snl)
+            self.species_groups[canonical_snl.snl_id] = [canonical_snl.snl_id]
 
         # Convenience fields
         self.canonical_structure = canonical_snl.structure
@@ -206,7 +206,7 @@ class SNLGroup():
                               attempt_supercell=False, comparator=SpeciesComparator())
                 if sms.fit(cand_snl.structure, snl.structure):
                     spec_group = snl.snl_id
-                    self.species_groups[str(snl.snl_id)].append(cand_snl.snl_id)
+                    self.species_groups[snl.snl_id].append(cand_snl.snl_id)
                     break
 
             # add a new species group
