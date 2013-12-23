@@ -141,6 +141,7 @@ class SNLMongoAdapter(FWSerializable):
             # add a new SNLGroup
             snlgroup_id = self._get_next_snlgroup_id()
             snlgroup = SNLGroup(snlgroup_id, mpsnl)
+            spec_group=None
             if snlgroup.species_groups:
                 spec_group = snlgroup.species_groups.keys()[0]
             if not testing_mode:
