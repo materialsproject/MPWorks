@@ -83,7 +83,10 @@ class SNLMongoAdapter(FWSerializable):
 
     def add_snl(self, snl, force_new=False, snlgroup_guess=None):
         snl_id = self._get_next_snl_id()
-        sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
+
+        spstruc = snl.structure.copy()
+        spstruc.remove_oxidation_states()
+        sf = SymmetryFinder(spstruc, SPACEGROUP_TOLERANCE)
         sf.get_spacegroup()
         sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
             else -1
