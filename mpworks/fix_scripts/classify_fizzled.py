@@ -49,8 +49,9 @@ if __name__ == '__main__':
             elif 'TypeError: integer argument expected, got float':
                 except_dict['MAXRUN_TYPE'] = except_dict['MAXRUN_TYPE']+1
             elif 'cannot import name DupeFinderDB' in except_str:
-                print l['fw_id']
                 except_dict['DUPEFINDER_DB'] = except_dict['DUPEFINDER_DB']+1
+            elif 'jinja2' in except_str:
+                except_dict['JINJA2'] = except_dict['JINJA2']+1
             else:
                 except_dict[except_str] = except_dict[except_str]+1
 
