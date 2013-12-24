@@ -183,6 +183,13 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
     def process_fw(self, dir_name, d):
         d["task_id_deprecated"] = int(d["task_id"].split('-')[-1])  # useful for WC and AJ
+
+        # update the run fields to give species group in root, if exists
+        for r in d["run_tags"]:
+            if "species_group=" in r:
+                d["species_group"] = int(r.split("=")[-1])
+                break
+
         # custom Materials Project post-processing for FireWorks
         with open(os.path.join(dir_name, 'FW.json')) as f:
             fw_dict = json.load(f)
