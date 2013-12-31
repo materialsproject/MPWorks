@@ -185,7 +185,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
         d["task_id_deprecated"] = int(d["task_id"].split('-')[-1])  # useful for WC and AJ
 
         # update the run fields to give species group in root, if exists
-        for r in d["run_tags"]:
+        for r in d.get("run_tags", []):
             if "species_group=" in r:
                 d["species_group"] = int(r.split("=")[-1])
                 break
