@@ -113,6 +113,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
+
             update_spec = {}
             fizzled_parent = True
             parse_dos = False
@@ -121,9 +122,13 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
                            'run_tags': fw_spec['run_tags']}
-            self.additional_fields['run_tags'] = fw_spec['run_tags']
+
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
+        if 'run_tags' in fw_spec:
+            self.additional_fields['run_tags'] = fw_spec['run_tags']
+        else:
+            self.additional_fields['run_tags'] = fw_spec['_fizzled_parents'][0]['spec']['run_tags']
 
         if MOVE_TO_GARDEN_DEV:
             prev_dir = move_to_garden(prev_dir, prod=False)
