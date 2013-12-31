@@ -113,7 +113,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
-
             update_spec = {}
             fizzled_parent = True
             parse_dos = False
