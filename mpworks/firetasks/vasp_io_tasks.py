@@ -121,7 +121,6 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
                            'run_tags': fw_spec['run_tags']}
-
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
         if 'run_tags' in fw_spec:

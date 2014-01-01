@@ -51,8 +51,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        d = self.get_task_doc(path, self.parse_dos,
-                              self.additional_fields)
+        d = self.get_task_doc(path, self.parse_dos)
+        if self.additional_fields:
+            d.update(self.additional_fields)  # always add additional fields, even for failed jobs
 
         try:
             d["dir_name_full"] = d["dir_name"].split(":")[1]
