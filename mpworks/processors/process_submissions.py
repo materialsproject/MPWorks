@@ -90,22 +90,17 @@ class SubmissionProcessor():
     def update_existing_workflows(self):
         raise ValueError(
             "update_existing_workflows is deprecated! It completely pounds the database and the server and needs performance tweaks")
-        """
+        
         # updates the state of existing workflows by querying the FireWorks database
         for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
                                          {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:
-                # get a wf with this submission id
-                fw_id = self.launchpad.get_wf_ids({'metadata.submission_id': submission_id}, limit=1)[0]
-                # get a workflow
-                wf = self.launchpad.get_wf_by_fw_id(fw_id)
-                # update workflow
-                self.update_wf_state(wf, submission_id)
+                self.update_wf_state(submission_id)
             except:
                 print 'ERROR while processing s_id', submission_id
                 traceback.print_exc()
-        """
+        
 
     def update_wf_state(self, submission_id):
         # state of the workflow
