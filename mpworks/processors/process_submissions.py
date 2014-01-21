@@ -31,8 +31,8 @@ class SubmissionProcessor():
         sleep_time = sleep_time if sleep_time else 30
         while True:
             self.submit_all_new_workflows()
-            print "SKIPPING update existing workflows bc it is too inefficent...this won't affect your workflow execution at all."
-            # self.update_existing_workflows()
+            print "Updating existing workflows..."
+            self.update_existing_workflows()
             if not infinite:
                 break
             print 'sleeping', sleep_time
