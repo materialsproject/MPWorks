@@ -17,13 +17,13 @@ if __name__ == '__main__':
     except_dict = defaultdict(int)
     fizzled_fws = []
 
-
-    for f in lpdb.fireworks.find({"state": "FIZZLED"}, {'fw_id': 1}):
+    for f in lpdb.fireworks.find({"state": "FIZZLED"}):
         fizzled_fws.append(f['fw_id'])
 
-    for l in lpdb.launches.find({"state": "FIZZLED", "action":{"$ne": None}}, {"action":1, 'fw_id': 1, 'time_start': 1, 'launch_dir':1}):
+    for l in lpdb.launches.find({"state": "FIZZLED", "action":{"$ne": None}}, {"action":1, 'fw_id': 1, 'time_start': 1, 'launch_dir':1}, timeout=False):
 
         if l['fw_id'] in fizzled_fws:
+            print '1'
             except_str = l['action']['stored_data'].get('_exception')
             if 'Disk quota exceeded' in except_str:
                  except_dict['DISK_QUOTA_EXCEEDED'] = except_dict['DISK_QUOTA_EXCEEDED']+1
@@ -46,12 +46,15 @@ if __name__ == '__main__':
                 except_dict['NO_FIX'] = except_dict['NO_FIX']+1
             elif 'Poscar.from_string' in except_str and 'chunks[0]' in except_str:
                 except_dict['POSCAR_PARSE'] = except_dict['POSCAR_PARSE']+1
-            elif 'TypeError: integer argument expected, got float':
+            elif 'TypeError: integer argument expected, got float' in except_str:
                 except_dict['MAXRUN_TYPE'] = except_dict['MAXRUN_TYPE']+1
             elif 'cannot import name DupeFinderDB' in except_str:
                 except_dict['DUPEFINDER_DB'] = except_dict['DUPEFINDER_DB']+1
             elif 'jinja2' in except_str:
                 except_dict['JINJA2'] = except_dict['JINJA2']+1
+            elif 'run_tags' in except_str:
+                except_dict['RUN_TAGS'] = except_dict['RUN_TAGS']+1
+                #lpdb.rerun_fw(l['fw_id'])
             else:
                 except_dict[except_str] = except_dict[except_str]+1
 
