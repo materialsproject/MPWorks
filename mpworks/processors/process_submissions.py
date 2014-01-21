@@ -88,9 +88,6 @@ class SubmissionProcessor():
             return submission_id
 
     def update_existing_workflows(self):
-        raise ValueError(
-            "update_existing_workflows is deprecated! It completely pounds the database and the server and needs performance tweaks")
-        
         # updates the state of existing workflows by querying the FireWorks database
         for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
                                          {'submission_id': 1}):
