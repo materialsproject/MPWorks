@@ -30,6 +30,10 @@ def get_task_info(fw_id, tdb):
     warnings.extend(x['analysis']['errors_MP']['signals'])
     errors = x['analysis'].get('errors', [])
     errors.extend(x['analysis']['errors_MP']['critical_signals'])
+
+    warnings = set(warnings)
+    errors = set(errors)
+    warnings = warnings.difference(errors)
     return set(warnings), set(errors)
 
 
