@@ -1,5 +1,7 @@
 from collections import defaultdict
 import os
+from pymongo import MongoClient
+import yaml
 from fireworks.core.launchpad import LaunchPad
 
 __author__ = 'Anubhav Jain'
@@ -11,24 +13,45 @@ __date__ = 'Nov 11, 2013'
 
 def get_parent_launch_locs(fw_id, lpdb):
     parent_fw_id = lpdb.workflows.find_one({"nodes": fw_id}, {"parent_links":1})['parent_links'][str(fw_id)][0]
-    print parent_fw_id
     launch_ids = lpdb.fireworks.find_one({"fw_id": parent_fw_id},{'launches': 1})['launches']
-
     locs = []
+    ran_fws = []
     for l in launch_ids:
-        launch_loc = str(lpdb.launches.find_one({"launch_id": l}, {'launch_dir': 1})['launch_dir'])
-
+        d = lpdb.launches.find_one({"launch_id": l}, {'launch_dir': 1, 'fw_id': 1})
+        launch_loc = str(d['launch_dir'])
+        ran_fws.append(d['fw_id'])
         locs.append("/project/projectdirs/matgen/garden/"+launch_loc[launch_loc.find('block_'):])
 
-    return locs
+    return locs, parent_fw_id, ran_fws
+
+def get_task_info(fw_id, tdb):
+    x = tdb.tasks.find_one({"fw_id": fw_id}, {"analysis": 1})
+    warnings = x['analysis'].get('warnings', [])
+    warnings.extend(x['analysis']['errors_MP']['signals'])
+    errors = x['analysis'].get('errors', [])
+    errors.extend(x['analysis']['errors_MP']['critical_signals'])
+    return set(warnings), set(errors)
+
 
 if __name__ == '__main__':
     module_dir = os.path.dirname(os.path.abspath(__file__))
     lp_f = os.path.join(module_dir, 'my_launchpad.yaml')
     lpdb = LaunchPad.from_file(lp_f)
 
+    tasks_f = os.path.join(module_dir, 'tasks_read.yaml')
+    creds = {}
+    with open(tasks_f) as f:
+        creds = yaml.load(f)
+
+    connection = MongoClient(creds['host'], creds['port'])
+    tdb = connection[creds['db']]
+    tdb.authenticate(creds['username'], creds['password'])
+
+
     except_dict = defaultdict(int)
     fizzled_fws = []
+
+
 
     for f in lpdb.fireworks.find({"state": "FIZZLED"}, {"fw_id":1}):
         fizzled_fws.append(f['fw_id'])
@@ -57,8 +80,13 @@ if __name__ == '__main__':
                 except_dict['MEMORY_ERROR'] = except_dict['MEMORY_ERROR']+1
             elif 'DB insertion successful, but don\'t know how to fix' in except_str:
                 except_dict['NO_FIX'] = except_dict['NO_FIX']+1
-                print l['fw_id']
-                print get_parent_launch_locs(l['fw_id'], lpdb)
+                launches, pfw_id, ran_fws = get_parent_launch_locs(l['fw_id'], lpdb)
+                print '--',l['fw_id']
+                for idx, l in enumerate(launches):
+                    print l
+                    print get_task_info(ran_fws[idx], tdb)
+
+
             elif 'Poscar.from_string' in except_str and 'chunks[0]' in except_str:
                 except_dict['POSCAR_PARSE'] = except_dict['POSCAR_PARSE']+1
             elif 'TypeError: integer argument expected, got float' in except_str:
