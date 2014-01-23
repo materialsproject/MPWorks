@@ -30,7 +30,7 @@ if __name__ == '__main__':
     except_dict = defaultdict(int)
     fizzled_fws = []
 
-    for f in lpdb.fireworks.find({"state": "FIZZLED"}):
+    for f in lpdb.fireworks.find({"state": "FIZZLED"}, {"fw_id":1}):
         fizzled_fws.append(f['fw_id'])
 
     for l in lpdb.launches.find({"state": "FIZZLED", "action":{"$ne": None}}, {"action":1, 'fw_id': 1, 'time_start': 1, 'launch_dir':1}, timeout=False):
