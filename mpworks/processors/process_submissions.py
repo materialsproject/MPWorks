@@ -31,8 +31,8 @@ class SubmissionProcessor():
         sleep_time = sleep_time if sleep_time else 30
         while True:
             self.submit_all_new_workflows()
-            print "SKIPPING update existing workflows bc it is too inefficent...this won't affect your workflow execution at all."
-            # self.update_existing_workflows()
+            print "Updating existing workflows..."
+            self.update_existing_workflows()
             if not infinite:
                 break
             print 'sleeping', sleep_time
@@ -88,9 +88,6 @@ class SubmissionProcessor():
             return submission_id
 
     def update_existing_workflows(self):
-        raise ValueError(
-            "update_existing_workflows is deprecated! It completely pounds the database and the server and needs performance tweaks")
-        
         # updates the state of existing workflows by querying the FireWorks database
         for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
                                          {'submission_id': 1}):
