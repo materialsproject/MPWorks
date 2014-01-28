@@ -12,6 +12,7 @@ from pymatgen import Specie
 from pymatgen.io.cifio import CifWriter
 from pymatpro.abitbx.utils import _space_group_info_to_dict, find_symmetry
 from pymatgen import write_structure
+from pymatgen.serializers.json_coders import pmg_load
 
 
 import subprocess
@@ -67,8 +68,10 @@ class StructurePredictionTask(FireTaskBase, FWSerializable):
             write_structure(s['ts'].final_structure, 'prediction_symmetry.cif')
             subprocess.check_call(["cctbx.python", 
                                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "structure_prediction_cctbx.py")])
-            with open('symmetrydict.json') as f:
-                entry['space_group'] = json.load(f)
+            
+            cctbx_data = pmg_load('symmetrydict.json')
+            entry['space_group'] = cctbx_data['space_group']
+            entry['diffraction_pattern_doc'] = cctbx_data['diffraction_pattern_doc']
             results.append(entry)
         
         
