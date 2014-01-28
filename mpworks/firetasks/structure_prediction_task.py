@@ -63,6 +63,7 @@ class StructurePredictionTask(FireTaskBase, FWSerializable):
             entry['pretty_formula'] = s['ts'].composition.reduced_formula
             entry['probability'] = s['probability']
             entry['cif'] = str(CifWriter(s['ts'].final_structure))
+            entry['nsites'] = len(s['ts'].final_structure)
             write_structure(s['ts'].final_structure, 'prediction_symmetry.cif')
             subprocess.check_call(["cctbx.python", 
                                    os.path.join(os.path.dirname(os.path.abspath(__file__)), "structure_prediction_cctbx.py")])

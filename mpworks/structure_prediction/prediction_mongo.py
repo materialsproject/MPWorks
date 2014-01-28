@@ -64,8 +64,9 @@ class SPSubmissionsMongoAdapter(object):
         self.ensure_indices()
         
     def ensure_indices(self):
-        self.pred_coll.ensure_index('sp_id', unique=True)
-        self.results_coll.ensure_index([('_materialsproject.sp_id', ASCENDING),
+        self.pred_coll.drop_indexes()
+        self.pred_coll.ensure_index('structure_predictor_id', unique=True)
+        self.results_coll.ensure_index([('_materialsproject.structure_predictor_id', ASCENDING),
                                         ('_materialsproject.crystal_id', ASCENDING)],
                                        unique=True)
         self.id_coll.ensure_index('collection', unique=True)
@@ -77,14 +78,17 @@ class SPSubmissionsMongoAdapter(object):
             self.id_coll.insert({'collection': 'sp_predictions',
                                  'next_id' : 1})
         
-    def submit_prediction(self, species, threshold, submitter_email):
+    def submit_prediction(self, elements, element_oxidation_states, threshold, submitter_email):
         sp_id = self.id_coll.find_and_modify({'collection': 'sp_predictions'},
                                              {'$inc' : {'next_id': 1}})['next_id']
         d = {'submitter_email': submitter_email,
+             'email': submitter_email,
+             'user_name': submitter_email,
              'state': 'SUBMITTED',
              'state_details': {},
              'submitted_at': datetime.datetime.utcnow().isoformat(),
-             'species': map(str, species),
+             'elements': elements,
+             'element_oxidation_states': element_oxidation_states,
              'threshold': threshold,
              'structure_predictor_id': sp_id}
         self.pred_coll.insert(d)
