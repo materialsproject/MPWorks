@@ -36,8 +36,8 @@ class StructurePredictionTask(FireTaskBase, FWSerializable):
                 continue
             st = SubstitutionTransformation(subs)
             target = map(str, subs.keys())
-            for snl in db.get_snls(target):
-                ts = TransformedStructure.from_snl(snl)
+            for structure in db.get_structures(target):
+                ts = TransformedStructure(structure)
                 ts.append_transformation(st)
                 if ts.final_structure.charge == 0:
                     structures.append({'ts': ts,

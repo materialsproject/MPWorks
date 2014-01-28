@@ -1,13 +1,13 @@
 import json
 import os
 import datetime
-
+import logging
 
 from materials_django.utils import connector
 from materials_django.settings import PRODUCTION
 
 from pymongo import MongoClient, ASCENDING, DESCENDING
-from pymatgen import Composition
+from pymatgen import Composition, Specie, Structure
 from pymatgen.matproj.snl import StructureNL
 
 import yaml
@@ -36,12 +36,38 @@ class SPStructuresMongoAdapter(object):
         self.coll.ensure_index([('_materialsproject.nspecies', ASCENDING),
                                 ('_materialsproject.species', ASCENDING)])
 
-    def get_snls(self, species):
+    def get_structures(self, species):
         o = []
         for e in self.coll.find({'_materialsproject.nspecies' : len(species), 
                                  '_materialsproject.species' : {'$all' : species}}):
-            o.append(StructureNL.from_dict(e))
+            o.append(Structure.from_dict(e))
         return o
+    
+    def insert_structure(self, structure):
+        assert isinstance(structure, Structure)
+        species = set()
+        oxi_decorated = True
+        for site in structure:
+            for sp in site.species_and_occu.keys():
+                oxi_decorated &= isinstance(sp, Specie)
+                species.add(sp)
+                
+        if not oxi_decorated:
+            logging.debug("Oxidation state decorating " + str(structure.composition))
+            from pymatgen.transformations.standard_transformations import AutoOxiStateDecorationTransformation  
+            t = AutoOxiStateDecorationTransformation()
+            structure = t.apply_transformation(structure)
+            
+        species = set()
+        for site in structure:
+            for sp in site.species_and_occu.keys():
+                oxi_decorated &= isinstance(sp, Specie)
+                species.add(str(sp))
+        
+        d = structure.to_dict
+        d['_materialsproject'] = {'nspecies': len(species), 'species': list(species)}
+        
+        self.coll.insert(d)
     
     @classmethod
     def auto_load(cls):
@@ -66,8 +92,8 @@ class SPSubmissionsMongoAdapter(object):
     def ensure_indices(self):
         self.pred_coll.drop_indexes()
         self.pred_coll.ensure_index('structure_predictor_id', unique=True)
-        self.results_coll.ensure_index([('_materialsproject.structure_predictor_id', ASCENDING),
-                                        ('_materialsproject.crystal_id', ASCENDING)],
+        self.results_coll.ensure_index([('structure_predictor_id', ASCENDING),
+                                        ('crystal_id', ASCENDING)],
                                        unique=True)
         self.id_coll.ensure_index('collection', unique=True)
         
