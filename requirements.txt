@@ -4,3 +4,4 @@ pymatgen-db>=0.3.4
 fireworks>=0.1
 custodian>=0.4
 pymongo>=2.4.2
+monty>=0.1.1

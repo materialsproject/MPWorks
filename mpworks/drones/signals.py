@@ -1,8 +1,8 @@
 import glob
 import os
 import re
+from monty.io import zopen
 from mpworks.workflows.wf_utils import last_relax
-from pymatgen import zopen
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
