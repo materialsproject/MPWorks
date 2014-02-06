@@ -90,10 +90,9 @@ class SPSubmissionsMongoAdapter(object):
         self.ensure_indices()
         
     def ensure_indices(self):
-        self.pred_coll.drop_indexes()
         self.pred_coll.ensure_index('structure_predictor_id', unique=True)
         self.results_coll.ensure_index([('structure_predictor_id', ASCENDING),
-                                        ('crystal_id', ASCENDING)],
+                                        ('sp_crystal_id', ASCENDING)],
                                        unique=True)
         self.id_coll.ensure_index('collection', unique=True)
         
@@ -124,7 +123,7 @@ class SPSubmissionsMongoAdapter(object):
         """
         results is a list of snl dictionaries with additional keys:
             _materialsproject.probability
-            _materialsproject.crystal_id
+            _materialsproject.sp_crystal_id
         """
         sp_id = int(submission_id)
         self.pred_coll.update({'structure_predictor_id': sp_id},
