@@ -17,6 +17,7 @@ from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.analysis.structure_analyzer import oxide_type
 
 
 __author__ = 'Anubhav Jain'
@@ -107,6 +108,13 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 #Fireworks processing
 
                 self.process_fw(path, d)
+
+                #Add oxide_type
+                struct=Structure.from_dict(d["output"]["crystal"])
+                try:
+                    d["oxide_type"]=oxide_type(struct)
+                except:
+                    logger.error("can't get oxide_type for {}".format(d["task_id"]))
 
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
