@@ -65,8 +65,8 @@ if __name__ == '__main__':
             except_str = l['action']['stored_data'].get('_exception')
             if 'Disk quota exceeded' in except_str:
                  except_dict['DISK_QUOTA_EXCEEDED'] = except_dict['DISK_QUOTA_EXCEEDED']+1
-                 # print l['fw_id'], '*'
-                 # lpdb.rerun_fw(l['fw_id'])
+                 print l['fw_id'], '*'
+                 lpdb.rerun_fw(l['fw_id'])
             elif 'No such file' in except_str:
                 # this is due to missing CHGCAR from Michael's old runs
                 except_dict['NO_SUCH_FILE'] = except_dict['NO_SUCH_FILE']+1
@@ -84,11 +84,13 @@ if __name__ == '__main__':
                 except_dict['MEMORY_ERROR'] = except_dict['MEMORY_ERROR']+1
             elif 'DB insertion successful, but don\'t know how to fix' in except_str:
                 except_dict['NO_FIX'] = except_dict['NO_FIX']+1
+                """
                 launches, pfw_id, ran_fws = get_parent_launch_locs(l['fw_id'], lpdb)
                 print '--',l['fw_id']
                 for idx, l in enumerate(launches):
                     print l
                     print get_task_info(ran_fws[idx], tdb)
+                """
 
 
             elif 'Poscar.from_string' in except_str and 'chunks[0]' in except_str:

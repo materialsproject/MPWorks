@@ -1,14 +1,10 @@
-import os
 import time
 import traceback
-from fireworks.core.fw_config import FWConfig
-from fireworks.core.launchpad import LaunchPad
-from fireworks.core.firework import FireWork, Workflow
 
-from mpworks.snl_utils.mpsnl import MPStructureNL
-from mpworks.structure_prediction.prediction_mongo import SPSubmissionsMongoAdapter
+from fireworks.core.firework import FireWork, Workflow
+from structure_prediction_tasks.prediction_mongo import SPSubmissionsMongoAdapter
 from mpworks.firetasks.structure_prediction_task import StructurePredictionTask
-from pymatgen import Specie
+
 
 __author__ = 'William Richards'
 __copyright__ = 'Copyright 2013, The Materials Project'
