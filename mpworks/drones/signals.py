@@ -2,7 +2,7 @@ import glob
 import os
 import re
 from monty.io import zopen
-from mpworks.workflows.wf_utils import last_relax
+from mpworks.workflows.wf_utils import last_relax, exists_gz
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -91,7 +91,7 @@ class SignalDetectorSimple(SignalDetector):
 
         for filename in self.filename_list:
             #find the strings that match in the file
-            if not self.ignore_nonexistent_file or os.path.exists(os.path.join(dir_name, filename)):
+            if not self.ignore_nonexistent_file or exists_gz(os.path.join(dir_name, filename)):
                 f = last_relax(os.path.join(dir_name, filename))
                 errors = string_list_in_file(self.signames_targetstrings.values(), f, ignore_case=self.ignore_case)
                 if self.invert_search:
@@ -202,7 +202,7 @@ class VASPOutputsExistSignal(SignalDetector):
 
     def detect(self, dir_name):
 
-        names = [last_relax(os.path.join(dir_name, x)) for x in ['OUTCAR', 'OSZICAR', 'vasprun.xml', 'CHGCAR', 'vasp.out']]
+        names = [last_relax(os.path.join(dir_name, x)) for x in ['OUTCAR', 'OSZICAR', 'vasprun.xml', 'vasp.out']]
         return set() if all([os.path.exists(file_name) for file_name in names]) and os.stat(names[0]).st_size > 0 else set(["OUTPUTS_DONT_EXIST"])
 
 

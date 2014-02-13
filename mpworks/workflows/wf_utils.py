@@ -26,18 +26,20 @@ def last_relax(filename):
     # for old runs
     m_dir = os.path.dirname(filename)
     m_file = os.path.basename(filename)
-    if os.path.exists(os.path.join(m_dir, 'relax2', m_file)):
-        return os.path.join(m_dir, 'relax2', m_file)
 
-    if os.path.exists(filename):
-        return filename
+    if exists_gz(os.path.join(m_dir, 'relax2', m_file)):
+        return exists_gz(m_dir, 'relax2', m_file)
+
+    elif exists_gz(filename):
+        return exists_gz(filename)
+
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
         return sorted(relaxations)[-1]
 
     # backup for old runs
-    if os.path.exists(os.path.join(m_dir, 'relax1', m_file)):
-        return os.path.join(m_dir, 'relax1', m_file)
+    elif exists_gz(os.path.join(m_dir, 'relax1', m_file)):
+        return exists_gz(os.path.join(m_dir, 'relax1', m_file))
 
     return filename
 
@@ -90,3 +92,12 @@ def move_to_garden(m_dir, prod=False):
 
 
     return f_dir
+
+def exists_gz(filename):
+    if os.path.exists(filename):
+        return filename
+
+    elif os.path.exists(filename+".gz"):
+        return filename+".gz"
+
+    return False

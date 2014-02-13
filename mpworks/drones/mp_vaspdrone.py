@@ -13,7 +13,7 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
-from mpworks.workflows.wf_utils import get_block_part
+from mpworks.workflows.wf_utils import get_block_part, exists_gz
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
@@ -36,7 +36,7 @@ def is_valid_vasp_dir(mydir):
     files = ["OUTCAR", "POSCAR", "INCAR", "KPOINTS"]
     for f in files:
         m_file = os.path.join(mydir, f)
-        if not (os.path.exists(m_file) and os.stat(m_file).st_size > 0):
+        if not (exists_gz(m_file)) or not(os.stat(m_file).st_size > 0 or os.stat(m_file+'.gz').st_size > 0):
             return False
     return True
 
@@ -122,7 +122,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     try:
                         run_stats = {}
                         for i in [1,2]:
-                            outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
+                            o_path = os.path.join(path,"relax"+str(i),"OUTCAR")
+                            o_path = o_path if os.path.exists(o_path) else o_path+".gz"
+                            outcar = Outcar(o_path)
                             d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
                             run_stats["relax"+str(i)] = outcar.run_stats
                     except:
@@ -155,7 +157,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
                                                         {"action.stored_data": 1})
-                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=False)
+                    vasp_run = Vasprun(os.path.join(path, exists_gz("vasprun.xml")), parse_projected_eigen=False)
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):

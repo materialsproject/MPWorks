@@ -2,8 +2,9 @@ import os
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
+from mpworks.workflows.wf_utils import exists_gz
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import VaspInput, Incar
+from pymatgen.io.vaspio.vasp_input import VaspInput, Incar, Poscar, Kpoints, Potcar
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
     MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
@@ -31,7 +32,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
                                                     user_incar_settings=user_incar_settings)
-        structure = MPStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
+        structure = MPStaticVaspInputSet.get_structure(Vasprun(exists_gz("vasprun.xml")), Outcar(exists_gz("OUTCAR")),
                                                        initial_structure=False,
                                                        additional_info=True)
 
@@ -74,9 +75,9 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+            vasp_run = Vasprun(exists_gz("vasprun.xml"), parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(), "OUTCAR"))
+            outcar = Outcar(os.path.join(os.getcwd(), exists_gz("OUTCAR")))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " +
                                str(e))
@@ -117,7 +118,7 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         chgcar_start = False
         # read the VaspInput from the previous run
-        vi = VaspInput.from_directory(".")
+        vi = VaspInput.from_directory(".", optional_files={"INCAR.gz": Incar, 'POSCAR.gz': Poscar, 'KPOINTS.gz': Kpoints, 'POTCAR.gz': Potcar})
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use
