@@ -1,7 +1,5 @@
-import os
 import time
 import traceback
-from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
