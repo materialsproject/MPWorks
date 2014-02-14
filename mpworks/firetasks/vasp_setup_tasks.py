@@ -118,21 +118,22 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         chgcar_start = False
         # read the VaspInput from the previous run
-        vi = VaspInput.from_directory(".", optional_files={"INCAR.gz": Incar, 'POSCAR.gz': Poscar, 'KPOINTS.gz': Kpoints, 'POTCAR.gz': Potcar})
+
+        p = Poscar.from_file(exists_gz('POSCAR'))
+        i = Incar.from_file(exists_gz('INCAR'))
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use
         mpvis = MPVaspInputSet()
-        incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
+        incar = mpvis.get_incar(p.structure).to_dict
         incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}
-        vi['INCAR'].update(incar_updates)  # override the +U keys
+        i.update(incar_updates)  # override the +U keys
 
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
-            vi['INCAR']['ICHARG'] = 1
+            i['ICHARG'] = 1
             chgcar_start = True
 
         # write back the new INCAR to the current directory
-        vi['INCAR'].write_file('INCAR')
+        i.write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})
-
