@@ -1,6 +1,4 @@
-from mpworks.workflows.wf_utils import exists_gz
-from pymatgen import Structure
-from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
+from monty.os.path import zpath
 
 __author__ = 'weichen'
 
@@ -46,7 +44,7 @@ class SetupElastConstTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Elastic Constant Task"
 
     def run_task(self, fw_spec):
-        incar = Incar.from_file(exists_gz("INCAR"))
+        incar = Incar.from_file(zpath("INCAR"))
         incar.update({"ISIF": 2})
         incar.write_file("INCAR")
         return FWAction()

@@ -6,6 +6,7 @@ import pprint
 import re
 import traceback
 from monty.io import zopen
+from monty.os.path import zpath
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -14,7 +15,7 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
-from mpworks.workflows.wf_utils import get_block_part, exists_gz
+from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
@@ -37,7 +38,7 @@ def is_valid_vasp_dir(mydir):
     files = ["OUTCAR", "POSCAR", "INCAR", "KPOINTS"]
     for f in files:
         m_file = os.path.join(mydir, f)
-        if not (exists_gz(m_file)) or not(os.stat(m_file).st_size > 0 or os.stat(m_file+'.gz').st_size > 0):
+        if not os.path.exists(zpath(m_file)) or not(os.stat(m_file).st_size > 0 or os.stat(m_file+'.gz').st_size > 0):
             return False
     return True
 
@@ -158,7 +159,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
                                                         {"action.stored_data": 1})
-                    vasp_run = Vasprun(exists_gz(os.path.join(path, "vasprun.xml")), parse_projected_eigen=False)
+                    vasp_run = Vasprun(zpath(os.path.join(path, "vasprun.xml")), parse_projected_eigen=False)
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):
@@ -203,7 +204,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 break
 
         # custom Materials Project post-processing for FireWorks
-        with zopen(exists_gz(os.path.join(dir_name, 'FW.json'))) as f:
+        with zopen(zpath(os.path.join(dir_name, 'FW.json'))) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
@@ -243,7 +244,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
-        new_style = bool(exists_gz(os.path.join(dir_name, 'FW.json')))
+        new_style = os.path.exists(zpath(os.path.join(dir_name, 'FW.json')))
         vasp_signals = {}
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",

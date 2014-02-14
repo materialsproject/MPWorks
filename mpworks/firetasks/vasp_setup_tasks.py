@@ -1,8 +1,8 @@
 import os
+from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from mpworks.workflows.wf_utils import exists_gz
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.io.vaspio.vasp_input import VaspInput, Incar, Poscar, Kpoints, Potcar
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
@@ -32,7 +32,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
                                                     user_incar_settings=user_incar_settings)
-        structure = MPStaticVaspInputSet.get_structure(Vasprun(exists_gz("vasprun.xml")), Outcar(exists_gz("OUTCAR")),
+        structure = MPStaticVaspInputSet.get_structure(Vasprun(zpath("vasprun.xml")), Outcar(zpath("OUTCAR")),
                                                        initial_structure=False,
                                                        additional_info=True)
 
@@ -75,9 +75,9 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            vasp_run = Vasprun(exists_gz("vasprun.xml"), parse_dos=False,
+            vasp_run = Vasprun(zpath("vasprun.xml"), parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(), exists_gz("OUTCAR")))
+            outcar = Outcar(os.path.join(os.getcwd(), zpath("OUTCAR")))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " +
                                str(e))
@@ -119,8 +119,8 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         chgcar_start = False
         # read the VaspInput from the previous run
 
-        p = Poscar.from_file(exists_gz('POSCAR'))
-        i = Incar.from_file(exists_gz('INCAR'))
+        p = Poscar.from_file(zpath('POSCAR'))
+        i = Incar.from_file(zpath('INCAR'))
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use

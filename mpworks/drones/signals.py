@@ -2,7 +2,8 @@ import glob
 import os
 import re
 from monty.io import zopen
-from mpworks.workflows.wf_utils import last_relax, exists_gz
+from monty.os.path import zpath
+from mpworks.workflows.wf_utils import last_relax
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -91,7 +92,7 @@ class SignalDetectorSimple(SignalDetector):
 
         for filename in self.filename_list:
             #find the strings that match in the file
-            if not self.ignore_nonexistent_file or exists_gz(os.path.join(dir_name, filename)):
+            if not self.ignore_nonexistent_file or os.path.exists(zpath(os.path.join(dir_name, filename))):
                 f = last_relax(os.path.join(dir_name, filename))
                 errors = string_list_in_file(self.signames_targetstrings.values(), f, ignore_case=self.ignore_case)
                 if self.invert_search:

@@ -9,6 +9,7 @@ import logging
 import os
 import shutil
 import sys
+from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
 
@@ -20,7 +21,7 @@ from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
-from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden, exists_gz
+from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -85,11 +86,11 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = last_relax(os.path.join(prev_dir, file))
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
-            if '.gz' in prev_filename:
+            if prev_filename.endswith('.gz'):
                 dest_file += '.gz'
 
             print 'COPYING', prev_filename, dest_file
-            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not exists_gz(prev_filename):
+            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not os.path.exists(zpath(prev_filename)):
                 print 'Skipping missing CHGCAR'
             else:
                 shutil.copy2(prev_filename, dest_file)
