@@ -203,7 +203,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 break
 
         # custom Materials Project post-processing for FireWorks
-        with zopen(os.path.join(dir_name, exists_gz('FW.json'))) as f:
+        with zopen(exists_gz(os.path.join(dir_name, 'FW.json'))) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
@@ -243,7 +243,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
-        new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
+        new_style = bool(exists_gz(os.path.join(dir_name, 'FW.json')))
         vasp_signals = {}
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",
