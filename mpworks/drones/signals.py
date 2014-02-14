@@ -183,7 +183,7 @@ class SegFaultSignal(SignalDetector):
         file_names = glob.glob("%s/*.error" % dir_name)
         rx = re.compile(r'segmentation', re.IGNORECASE)
         for file_name in file_names:
-            with open(file_name, 'r') as f:
+            with zopen(file_name, 'r') as f:
                 lines = f.readlines()
                 for line in lines:
                     if rx.search(line) is not None:

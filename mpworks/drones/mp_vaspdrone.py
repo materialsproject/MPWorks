@@ -5,6 +5,7 @@ import logging
 import pprint
 import re
 import traceback
+from monty.io import zopen
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -202,7 +203,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 break
 
         # custom Materials Project post-processing for FireWorks
-        with open(os.path.join(dir_name, 'FW.json')) as f:
+        with zopen(os.path.join(dir_name, exists_gz('FW.json'))) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
