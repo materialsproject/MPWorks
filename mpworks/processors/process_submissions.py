@@ -4,6 +4,7 @@ from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
 from mpworks.workflows.snl_to_wf import snl_to_wf
+from mpworks.workflows.snl_to_wf_phonon import snl_to_wf_phonon
 from mpworks.workflows.wf_utils import NO_POTCARS
 from pymatgen.matproj.snl import StructureNL
 

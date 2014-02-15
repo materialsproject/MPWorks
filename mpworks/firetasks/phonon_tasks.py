@@ -18,12 +18,14 @@ from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
 from pymatgen.io.vaspio_set import MPVaspInputSet
+from pymatgen.io.vaspio.input import Poscar
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
     update_set = {"ENCUT": 700, "EDIFF": 0.000001}
     fw_spec['vasp']['incar'].update(update_set)
-    old_struct=Structure.from_dict(['output']['crystal'])
+    #old_struct=Structure.from_dict(fw_spec['output']['crystal'])
+    old_struct=Poscar.from_dict(fw_spec["vasp"]["poscar"]).structure
     mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
     kpoints = mp_kpoints.to_dict()
     k = [int(round(2.2*k)) if int(round(2.2*k))%2 else int(round(2.2*k))+1 for k in kpoints['kpoints'][0]]
