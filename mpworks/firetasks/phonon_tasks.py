@@ -18,7 +18,7 @@ from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
 from pymatgen.io.vaspio_set import MPVaspInputSet
-from pymatgen.io.vaspio.input import Poscar
+from pymatgen.io.vaspio.vasp_input import Poscar
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
