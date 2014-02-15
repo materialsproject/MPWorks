@@ -27,7 +27,7 @@ def update_spec_force_convergence(spec):
     #old_struct=Structure.from_dict(fw_spec['output']['crystal'])
     old_struct=Poscar.from_dict(fw_spec["vasp"]["poscar"]).structure
     mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
-    kpoints = mp_kpoints.to_dict()
+    kpoints = mp_kpoints.to_dict
     k = [int(round(2.2*k)) if int(round(2.2*k))%2 else int(round(2.2*k))+1 for k in kpoints['kpoints'][0]]
     fw_spec['vasp']['kpoints']['kpoints'] = [k]
     return fw_spec

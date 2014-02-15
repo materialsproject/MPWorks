@@ -43,6 +43,7 @@ def snl_to_wf_phonon(snl, parameters=None):
     spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
+    del spec['_dupefinder']
     spec['task_type'] = "Vasp force convergence optimize structure (2x)"
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
