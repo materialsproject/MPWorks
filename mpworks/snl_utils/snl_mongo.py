@@ -1,5 +1,7 @@
-import datetime
+import time
 import os
+import traceback
+import datetime
 from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
@@ -82,23 +84,34 @@ class SNLMongoAdapter(FWSerializable):
             {"next_snl_id": next_snl_id, "next_snlgroup_id": next_snlgroup_id})
 
     def add_snl(self, snl, force_new=False, snlgroup_guess=None):
-        snl_id = self._get_next_snl_id()
-        sf = SymmetryFinder(snl.structure, SPACEGROUP_TOLERANCE)
-        sf.get_spacegroup()
-        sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
-            else -1
-        sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() \
-            else 'unknown'
-        sghall = sf.get_hall() if sf.get_hall() else 'unknown'
-        sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
-            else 'unknown'
-        sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
-        sgpoint = unicode(sf.get_point_group(), errors="ignore")
+        try:
+            self.lock_db()
+            snl_id = self._get_next_snl_id()
 
-        mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
-                                       sgxtal, sglatt, sgpoint)
-        snlgroup, add_new = self.add_mpsnl(mpsnl, force_new, snlgroup_guess)
-        return mpsnl, snlgroup.snlgroup_id
+            spstruc = snl.structure.copy()
+            spstruc.remove_oxidation_states()
+            sf = SymmetryFinder(spstruc, SPACEGROUP_TOLERANCE)
+            sf.get_spacegroup()
+            sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
+                else -1
+            sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() \
+                else 'unknown'
+            sghall = sf.get_hall() if sf.get_hall() else 'unknown'
+            sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
+                else 'unknown'
+            sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
+            sgpoint = unicode(sf.get_point_group(), errors="ignore")
+
+            mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
+                                           sgxtal, sglatt, sgpoint)
+            snlgroup, add_new, spec_group = self.add_mpsnl(mpsnl, force_new, snlgroup_guess)
+            self.release_lock()
+            return mpsnl, snlgroup.snlgroup_id, spec_group
+        except:
+            self.release_lock()
+            traceback.print_exc()
+            raise ValueError("Error while adding SNL!")
+
 
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.to_dict
@@ -107,12 +120,13 @@ class SNLMongoAdapter(FWSerializable):
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
 
     def _add_if_belongs(self, snlgroup, mpsnl, testing_mode):
-        if snlgroup.add_if_belongs(mpsnl):
+        match_found, spec_group = snlgroup.add_if_belongs(mpsnl)
+        if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
                 self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
-            return True
-        return False
+
+        return match_found, spec_group
 
     def build_groups(self, mpsnl, force_new=False, snlgroup_guess=None, testing_mode=False):
         # testing mode is used to see if something already exists in DB w/o adding it to the db
@@ -122,14 +136,14 @@ class SNLMongoAdapter(FWSerializable):
             if snlgroup_guess:
                 sgp = self.snlgroups.find_one({'snlgroup_id': snlgroup_guess})
                 snlgroup = SNLGroup.from_dict(sgp)
-                match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
+                match_found, spec_group = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
 
             if not match_found:
                 # look at all potential matches
                 for entry in self.snlgroups.find({'snlgroup_key': mpsnl.snlgroup_key},
                                                  sort=[("num_snl", DESCENDING)]):
                     snlgroup = SNLGroup.from_dict(entry)
-                    match_found = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
+                    match_found, spec_group = self._add_if_belongs(snlgroup, mpsnl, testing_mode)
                     if match_found:
                         break
 
@@ -137,10 +151,13 @@ class SNLMongoAdapter(FWSerializable):
             # add a new SNLGroup
             snlgroup_id = self._get_next_snlgroup_id()
             snlgroup = SNLGroup(snlgroup_id, mpsnl)
+            spec_group=None
+            if snlgroup.species_groups:
+                spec_group = snlgroup.species_groups.keys()[0]
             if not testing_mode:
                 self.snlgroups.insert(snlgroup.to_dict)
 
-        return snlgroup, not match_found
+        return snlgroup, not match_found, spec_group
 
 
     def switch_canonical_snl(self, snlgroup_id, canonical_mpsnl):
@@ -154,8 +171,15 @@ class SNLMongoAdapter(FWSerializable):
         new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
         self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.to_dict)
 
+    def lock_db(self):
+        x = self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': True}}, fields={'lock':1})
+        if 'lock' in x and x['lock']:
+            print 'DB is already locked, waiting 30 secs...'
+            time.sleep(30)
+            self.lock_db()  # DB was already locked by another process in a race condition
 
-
+    def release_lock(self):
+        self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': False}})
 
     def to_dict(self):
         """

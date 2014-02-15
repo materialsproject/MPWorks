@@ -1,3 +1,4 @@
+from monty.os.path import zpath
 from pymatgen.io.vaspio import Outcar
 
 __author__ = 'Anubhav Jain'
@@ -54,7 +55,7 @@ class OldTaskFixer():
                 try:
                     run_stats = {}
                     for i in [1,2]:
-                        outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
+                        outcar = Outcar(zpath(os.path.join(path,"relax"+str(i), "OUTCAR")))
                         m_key = "calculations."+str(i-1)+".output.outcar"
                         self.tasks.update({'dir_name_full': path}, {'$set': {m_key: outcar.to_dict}})
                         run_stats["relax"+str(i)] = outcar.run_stats

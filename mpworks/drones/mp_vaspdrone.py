@@ -5,6 +5,8 @@ import logging
 import pprint
 import re
 import traceback
+from monty.io import zopen
+from monty.os.path import zpath
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -17,6 +19,7 @@ from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.analysis.structure_analyzer import oxide_type
 
 
 __author__ = 'Anubhav Jain'
@@ -35,7 +38,7 @@ def is_valid_vasp_dir(mydir):
     files = ["OUTCAR", "POSCAR", "INCAR", "KPOINTS"]
     for f in files:
         m_file = os.path.join(mydir, f)
-        if not (os.path.exists(m_file) and os.stat(m_file).st_size > 0):
+        if not os.path.exists(zpath(m_file)) or not(os.stat(m_file).st_size > 0 or os.stat(m_file+'.gz').st_size > 0):
             return False
     return True
 
@@ -51,8 +54,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        d = self.get_task_doc(path, self.parse_dos,
-                              self.additional_fields)
+        d = self.get_task_doc(path, self.parse_dos)
+        if self.additional_fields:
+            d.update(self.additional_fields)  # always add additional fields, even for failed jobs
 
         try:
             d["dir_name_full"] = d["dir_name"].split(":")[1]
@@ -107,13 +111,22 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 self.process_fw(path, d)
 
+                #Add oxide_type
+                struct=Structure.from_dict(d["output"]["crystal"])
+                try:
+                    d["oxide_type"]=oxide_type(struct)
+                except:
+                    logger.error("can't get oxide_type for {}".format(d["task_id"]))
+
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
                     os.path.exists(os.path.join(path, "relax2")):
                     try:
                         run_stats = {}
                         for i in [1,2]:
-                            outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
+                            o_path = os.path.join(path,"relax"+str(i),"OUTCAR")
+                            o_path = o_path if os.path.exists(o_path) else o_path+".gz"
+                            outcar = Outcar(o_path)
                             d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
                             run_stats["relax"+str(i)] = outcar.run_stats
                     except:
@@ -146,7 +159,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
                                                         {"action.stored_data": 1})
-                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=False)
+                    vasp_run = Vasprun(zpath(os.path.join(path, "vasprun.xml")), parse_projected_eigen=False)
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):
@@ -183,8 +196,15 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
     def process_fw(self, dir_name, d):
         d["task_id_deprecated"] = int(d["task_id"].split('-')[-1])  # useful for WC and AJ
+
+        # update the run fields to give species group in root, if exists
+        for r in d['run_tags']:
+            if "species_group=" in r:
+                d["species_group"] = int(r.split("=")[-1])
+                break
+
         # custom Materials Project post-processing for FireWorks
-        with open(os.path.join(dir_name, 'FW.json')) as f:
+        with zopen(zpath(os.path.join(dir_name, 'FW.json'))) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
@@ -213,7 +233,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     sma = SNLMongoAdapter.auto_load()
 
                     # add snl
-                    mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
+                    mpsnl, snlgroup_id, spec_group = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
                     d['snl_final'] = mpsnl.to_dict
                     d['snlgroup_id_final'] = snlgroup_id
                     d['snlgroup_changed'] = (d['snlgroup_id'] !=
@@ -224,7 +244,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
-        new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
+        new_style = os.path.exists(zpath(os.path.join(dir_name, 'FW.json')))
         vasp_signals = {}
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",

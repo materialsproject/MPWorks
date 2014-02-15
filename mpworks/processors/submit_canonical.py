@@ -1,7 +1,6 @@
 import json
 import os
 from pymongo import MongoClient
-from fireworks.core.fw_config import FWConfig
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter

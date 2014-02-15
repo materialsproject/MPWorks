@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import traceback
+from monty.os.path import zpath
 from mpworks.workflows.wf_settings import RUN_LOCS
 
 
@@ -26,18 +27,20 @@ def last_relax(filename):
     # for old runs
     m_dir = os.path.dirname(filename)
     m_file = os.path.basename(filename)
-    if os.path.exists(os.path.join(m_dir, 'relax2', m_file)):
-        return os.path.join(m_dir, 'relax2', m_file)
 
-    if os.path.exists(filename):
-        return filename
+    if os.path.exists(zpath(os.path.join(m_dir, 'relax2', m_file))):
+        return zpath(m_dir, 'relax2', m_file)
+
+    elif os.path.exists(zpath(filename)):
+        return zpath(filename)
+
     relaxations = glob.glob('%s.relax*' % filename)
     if relaxations:
         return sorted(relaxations)[-1]
 
     # backup for old runs
-    if os.path.exists(os.path.join(m_dir, 'relax1', m_file)):
-        return os.path.join(m_dir, 'relax1', m_file)
+    elif os.path.exists(zpath(os.path.join(m_dir, 'relax1', m_file))):
+        return zpath(os.path.join(m_dir, 'relax1', m_file))
 
     return filename
 

@@ -28,6 +28,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         dec = PMGJSONDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
+        self.gzip_output = self.get('gzip_output', True)
 
     def run_task(self, fw_spec):
 
@@ -58,7 +59,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             job.gamma_vasp_cmd = gv_exe
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, self.max_errors)
+        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=self.gzip_output)
         custodian_out = c.run()
 
         all_errors = set()

@@ -36,6 +36,6 @@ class DupeFinderDB(DupeFinderBase):
         return set(spec1['run_tags']) == set(spec2['run_tags'])
 
     def query(self, spec):
-        if 'prev_task_type' in spec and 'previous_vasp_dir' in spec and '_fizzled_parents' not in spec:
+        if 'prev_task_type' in spec and 'prev_vasp_dir' in spec and '_fizzled_parents' not in spec:
             return {'spec.task_type': spec['task_type'], 'spec.prev_task_type': spec['prev_task_type'], 'spec.prev_vasp_dir': spec['prev_vasp_dir']}
         return {'fw_id': -1}

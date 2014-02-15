@@ -3,11 +3,13 @@
 """
 
 """
+import gzip
 import json
 import logging
 import os
 import shutil
 import sys
+from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
 
@@ -84,11 +86,24 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = last_relax(os.path.join(prev_dir, file))
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
+            if prev_filename.endswith('.gz'):
+                dest_file += '.gz'
+
             print 'COPYING', prev_filename, dest_file
-            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not os.path.exists(prev_filename):
+            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not os.path.exists(zpath(prev_filename)):
                 print 'Skipping missing CHGCAR'
             else:
                 shutil.copy2(prev_filename, dest_file)
+                if '.gz' in dest_file:
+                    # unzip dest file
+                    f = gzip.open(dest_file, 'rb')
+                    file_content = f.read()
+                    with open(dest_file[0:-3], 'wb') as f_out:
+                        f_out.writelines(file_content)
+                    f.close()
+                    os.remove(dest_file)
+
+
 
         return FWAction(stored_data={'copied_files': self.files})
 
@@ -121,9 +136,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
                            'run_tags': fw_spec['run_tags']}
-            self.additional_fields['run_tags'] = fw_spec['run_tags']
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
+        if 'run_tags' in fw_spec:
+            self.additional_fields['run_tags'] = fw_spec['run_tags']
+        else:
+            self.additional_fields['run_tags'] = fw_spec['_fizzled_parents'][0]['spec']['run_tags']
 
         if MOVE_TO_GARDEN_DEV:
             prev_dir = move_to_garden(prev_dir, prod=False)
