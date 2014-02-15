@@ -5,7 +5,6 @@ __author__ = 'weichen'
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar
 from pymatgen.phonons.genstrain import DeformGeometry
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
@@ -15,13 +14,18 @@ from pymatgen import Composition
 from pymatgen.matproj.snl import StructureNL
 from mpworks.workflows import snl_to_wf
 from mpworks.firetasks.snl_tasks import AddSNLTask
-from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
+from mpworks.snl_utils.mpsnl import MPStructureNL
+from pymatgen.core.structure import Structure
+from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
+from pymatgen.io.vaspio_set import MPVaspInputSet
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
     update_set = {"ENCUT": 700, "EDIFF": 0.000001}
     fw_spec['vasp']['incar'].update(update_set)
-    kpoints = spec['vasp']['kpoints']
+    old_struct=Structure.from_dict(['output']['crystal'])
+    mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
+    kpoints = mp_kpoints.to_dict()
     k = [int(round(2.5*k)) if int(round(2.5*k))%2 else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
     fw_spec['vasp']['kpoints']['kpoints'] = [k]
     return fw_spec
@@ -54,8 +58,9 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Deformed Struct Task"
 
     def run_task(self, fw_spec):
-
+        # Read structure from previous relaxation
         relaxed_struct = Structure.from_dict(fw_spec['output']['crystal'])
+        # Generate deformed structures
         deformed_structs = DeformGeometry(relaxed_struct, ns=0.06)
         fws=[]
         connections={}
