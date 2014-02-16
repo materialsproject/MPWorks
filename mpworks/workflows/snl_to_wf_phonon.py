@@ -17,7 +17,7 @@ from mpworks.workflows import snl_to_wf
 from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
 
 
-def snl_to_wf_phonon(snl, parameters=None):
+def snl_to_wf_phonon(snl, parameters={'exact_structure':True}):
     fws = []
     connections = {}
     parameters = parameters if parameters else {}
