@@ -17,7 +17,7 @@ from mpworks.workflows import snl_to_wf
 from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
 
 
-def snl_to_wf_phonon(snl, parameters={'exact_structure':True}):
+def snl_to_wf_phonon(snl, parameters):
     fws = []
     connections = {}
     parameters = parameters if parameters else {}
@@ -37,6 +37,7 @@ def snl_to_wf_phonon(snl, parameters={'exact_structure':True}):
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 
+    parameters["exact_structure"] = True
     # run GGA structure optimization for force convergence
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     spec = update_spec_force_convergence(spec)
