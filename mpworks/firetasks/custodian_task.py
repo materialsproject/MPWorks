@@ -1,5 +1,6 @@
 import logging
 import socket
+from monty.os.path import which
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
@@ -36,23 +37,21 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        hostname = os.environ['HOSTNAME']
-
-        if 'edison' in hostname:
-            v_exe = shlex.split('aprun -n 32 vasp')
-            gv_exe = shlex.split('aprun -n 32 gvasp')
-            print 'running on EDISON'
-        elif 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 48 vasp')
-            gv_exe = shlex.split('aprun -n 48 gvasp')
-            print 'running on HOPPER'
-        elif 'c' in socket.gethostname():  # mendel compute nodes
-            v_exe = shlex.split('mpirun -n 32 vasp')
-            gv_exe = shlex.split('mpirun -n 32 gvasp')
-            print 'running on MENDEL'
+        if which("mpirun"):
+            mpi_cmd = "mpirun"
+        elif which("aprun"):
+            mpi_cmd = "aprun"
         else:
+            raise ValueError("No MPI command found!")
 
-            raise ValueError('Unrecognized host!')
+        nproc = os.environ['PBS_NP']
+
+        v_exe = shlex.split('{} -n {} vasp'.format(mpi_cmd, nproc))
+        gv_exe = shlex.split('{} -n {} gvasp'.format(mpi_cmd, nproc))
+
+        print 'host:', os.environ['HOSTNAME']
+        print v_exe
+        print gv_exe
 
         for job in self.jobs:
             job.vasp_cmd = v_exe
