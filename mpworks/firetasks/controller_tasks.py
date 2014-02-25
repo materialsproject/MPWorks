@@ -104,7 +104,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                     '_dupefinder': DupeFinderDB().to_dict(), '_priority': priority}
             fws.append(FireWork(
                 [BoltztrapRunTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-4))
-            connections[-7] = -4
+            connections[-7].append(-4)
 
             wf = Workflow(fws, connections)
 
