@@ -44,7 +44,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             creds = json.load(f)
             connection = MongoClient(creds['host'], creds['port'])
             tdb = connection[creds['database']]
-            tdb.authenticate(creds['username'], creds['password'])
+            tdb.authenticate(creds['admin_user'], creds['admin_password'])
 
             m_task = tdb.tasks.find_one({"dir_name": db_dir})
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
