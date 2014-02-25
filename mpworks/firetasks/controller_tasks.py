@@ -3,6 +3,7 @@ from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow, 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
+from mpworks.firetasks.boltztrap_tasks import BoltztrapRunTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspToDBTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask, \
@@ -186,6 +187,13 @@ class AddEStructureTask_old(FireTaskBase, FWSerializable):
                     '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict()}
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
+
+            # run Boltztrap
+            spec = {'task_type': '{} Boltztrap'.format(type_name), '_queueadapter': QA_DB,
+                    '_dupefinder': DupeFinderDB().to_dict(), '_priority': priority}
+            fws.append(FireWork(
+                [BoltztrapRunTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-4))
+            connections[-7] = -4
 
             wf = Workflow(fws, connections)
 
