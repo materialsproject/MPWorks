@@ -46,7 +46,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             tdb = connection[creds['database']]
             tdb.authenticate(creds['admin_user'], creds['admin_password'])
 
-            m_task = tdb.tasks.find_one({"dir_name": db_dir})
+            m_task = tdb.tasks.find_one({"dir_name": block_part})
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
             bs_id = m_task['calculations'][0]['band_structure_fs_id']
             bs=BandStructure.from_dict(tdb.electronic_structure.find_one({'_id':bs_id}))
