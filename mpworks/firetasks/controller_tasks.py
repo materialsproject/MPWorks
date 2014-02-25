@@ -91,7 +91,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(FireWork([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
                                  get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                                 fw_id=-6))
-            connections[-7] = -6
+            connections[-7] = [-6]
 
             # insert into DB - GGA Band structure
             spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
