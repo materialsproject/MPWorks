@@ -17,8 +17,8 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
-from pymatgen.io.vaspio_set import MPVaspInputSet
-from pymatgen.io.vaspio.vasp_input import Poscar
+#from pymatgen.io.vaspio_set import MPVaspInputSet
+from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
@@ -26,10 +26,11 @@ def update_spec_force_convergence(spec):
     fw_spec['vasp']['incar'].update(update_set)
     #old_struct=Structure.from_dict(fw_spec['output']['crystal'])
     old_struct=Poscar.from_dict(fw_spec["vasp"]["poscar"]).structure
-    mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
-    kpoints = mp_kpoints.to_dict
-    k = [int(round(2.2*k)) if int(round(2.2*k))%2 else int(round(2.2*k))+1 for k in kpoints['kpoints'][0]]
-    fw_spec['vasp']['kpoints']['kpoints'] = [k]
+    #mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
+    #kpoints = mp_kpoints.to_dict
+    #k = [int(round(2.2*k)) if int(round(2.2*k))%2 else int(round(2.2*k))+1 for k in kpoints['kpoints'][0]]
+    k=Kpoints.automatic_density(old_struct, 7000)
+    fw_spec['vasp']['kpoints'] = k.to_dict
     return fw_spec
 
 '''
