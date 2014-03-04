@@ -30,7 +30,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         """
         parameters = parameters if parameters else {}
         self.update(parameters)  # store the parameters explicitly set by the user
-        self.gap_cutoff = parameters.get('gap_cutoff', 0.5)  # see e-mail from Geoffroy, 5/1/2013
+        self.gap_cutoff = parameters.get('gap_cutoff', 0.0)  # see e-mail from Geoffroy, 5/1/2013
 
     def run_task(self, fw_spec):
         print 'sleeping 10s for Mongo'
