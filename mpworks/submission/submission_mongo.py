@@ -227,5 +227,5 @@ def get_meta_from_structure(structure):
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
-            'is_valid': structure.is_valid()}
+            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
     return meta
