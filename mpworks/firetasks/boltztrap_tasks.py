@@ -49,7 +49,8 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             m_task = tdb.tasks.find_one({"dir_name": block_part})
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
             bs_id = m_task['calculations'][0]['band_structure_fs_id']
-            bs=BandStructure.from_dict(tdb.electronic_structure.find_one({'_id':bs_id}))
+            print bs_id
+            bs=BandStructure.from_dict(tdb.band_structure_fs.find_one({'_id':bs_id}))
 
             print nelect
             print 'Band Structure found:', bool(bs)
