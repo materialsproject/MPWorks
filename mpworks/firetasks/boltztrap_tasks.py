@@ -1,3 +1,4 @@
+import gridfs
 from fireworks import FireTaskBase
 import json
 import os
@@ -49,11 +50,12 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             m_task = tdb.tasks.find_one({"dir_name": block_part})
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
             bs_id = m_task['calculations'][0]['band_structure_fs_id']
-            print bs_id
-            bs=BandStructure.from_dict(tdb.band_structure_fs.find_one({'_id':bs_id}))
-
-            print nelect
+            print bs_id, type(bs_id)
+            fs = gridfs.GridFS(tdb, 'band_structure_fs')
+            bs = BandStructure.from_dict(json.loads(fs.get(bs_id).read()))
             print 'Band Structure found:', bool(bs)
+            print nelect
+
             # run Boltztrap
             runner = BoltztrapRunner(bs, nelect)
             dir = runner.run(path_dir=os.getcwd())
