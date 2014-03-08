@@ -2,7 +2,7 @@ import json
 import os
 import datetime
 
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen import Composition
@@ -111,12 +111,11 @@ class SubmissionMongoAdapter(object):
         # in the SubmissionProcessor, detect this state and defuse the FW
         raise NotImplementedError()
 
-    def get_states(self, crit):
-        props = ['state', 'state_details', 'task_dict', 'submission_id', 'formula']
-        infos = []
-        for j in self.jobs.find(crit, dict([(p, 1) for p in props])):
-            infos.append(dict([(p, j[p]) for p in props]))
-        return infos
+    def get_states(self, crit, limit=0):
+        fields = {'state': 1, 'about.authors': 1, 'about.projects': 1,
+                  'state_details': 1, 'task_dict': 1, 'submission_id': 1,
+                  'formula': 1, '_id': 0}
+        return list(self.jobs.find(crit, fields, sort=[("submission_id", DESCENDING)]).limit(limit))
 
     def to_dict(self):
         """
