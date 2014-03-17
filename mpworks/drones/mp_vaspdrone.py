@@ -111,9 +111,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 self.process_fw(path, d)
 
-                #Add oxide_type
-                struct=Structure.from_dict(d["output"]["crystal"])
                 try:
+                    #Add oxide_type
+                    struct=Structure.from_dict(d["output"]["crystal"])
                     d["oxide_type"]=oxide_type(struct)
                 except:
                     logger.error("can't get oxide_type for {}".format(d["task_id"]))
