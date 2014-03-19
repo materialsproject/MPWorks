@@ -54,7 +54,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             print bs_id, type(bs_id)
             fs = gridfs.GridFS(tdb, 'band_structure_fs')
             bs_dict = json.loads(fs.get(bs_id).read())
-            bs_dict['structure'] = Structure.from_dict(m_task['calculations'][0]['output']['crystal'])
+            bs_dict['structure'] = m_task['calculations'][0]['output']['crystal']
             bs = BandStructure.from_dict(bs_dict)
             print 'Band Structure found:', bool(bs)
             print nelect
