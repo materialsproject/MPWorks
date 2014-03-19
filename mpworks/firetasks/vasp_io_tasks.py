@@ -128,14 +128,14 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
-            update_spec = {}
+            update_spec = {}  # add this later when creating new FW
             fizzled_parent = True
             parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
             update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
-                           'run_tags': fw_spec['run_tags']}
+                           'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
         if 'run_tags' in fw_spec:
@@ -195,6 +195,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                         'task_type': fw_spec['prev_task_type'],
                         'run_tags': list(fw_spec['run_tags']),
+                        'parameters': fw_spec.get('parameters'),
                         '_dupefinder': DupeFinderVasp().to_dict(),
                         '_priority': fw_spec['_priority']}
 

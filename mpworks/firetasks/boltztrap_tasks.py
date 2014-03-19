@@ -83,6 +83,6 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
                        'prev_task_type': fw_spec['task_type'],
                        'mpsnl': fw_spec['mpsnl'],
                        'snlgroup_id': fw_spec['snlgroup_id'],
-                       'run_tags': fw_spec['run_tags']}
+                       'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
 
         return FWAction(update_spec=update_spec)
