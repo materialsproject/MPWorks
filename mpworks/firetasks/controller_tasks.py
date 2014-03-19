@@ -99,12 +99,14 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             fws.append(FireWork([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
             connections[-6] = -5
 
-            # run Boltztrap
-            spec = {'task_type': '{} Boltztrap'.format(type_name), '_queueadapter': QA_DB,
-                    '_dupefinder': DupeFinderDB().to_dict(), '_priority': priority}
-            fws.append(FireWork(
-                [BoltztrapRunTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-4))
-            connections[-7].append(-4)
+
+            if fw_spec.get('parameters', {}).get('boltztrap'):
+                # run Boltztrap
+                spec = {'task_type': '{} Boltztrap'.format(type_name), '_queueadapter': QA_DB,
+                        '_dupefinder': DupeFinderDB().to_dict(), '_priority': priority}
+                fws.append(FireWork(
+                    [BoltztrapRunTask()], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-4))
+                connections[-7].append(-4)
 
             wf = Workflow(fws, connections)
 
