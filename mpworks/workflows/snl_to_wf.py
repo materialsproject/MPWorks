@@ -91,7 +91,7 @@ def snl_to_wf(snl, parameters=None):
     trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'), Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
     trackers_db = [Tracker('FW_job.out'), Tracker('FW_job.error')]
     # run GGA structure optimization
-    spec = _snl_to_spec(snl, enforce_gga=True)
+    spec = _snl_to_spec(snl, enforce_gga=True, parameters=parameters)
     spec.update(snl_spec)
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
