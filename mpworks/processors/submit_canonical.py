@@ -34,6 +34,7 @@ def clear_env():
     db = conn[db_creds['database']]
     db.authenticate(db_creds['admin_user'], db_creds['admin_password'])
     db.tasks.remove()
+    db.boltztrap.remove()
     db.counter.remove()
     db['dos_fs.chunks'].remove()
     db['dos_fs.files'].remove()
