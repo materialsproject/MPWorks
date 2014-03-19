@@ -74,8 +74,8 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             data['dir_name_full'] = dir
             data['dir_name'] = get_block_part(dir)
             data['task_id'] = m_task['task_id']
-            data['hall'] = {}
-            data['hall_doping'] = {}
+            data['hall'] = {}  # remove because it is too large and not useful
+            data['hall_doping'] = {}  # remove because it is too large and not useful
             tdb.boltztrap.insert(clean_json(data))
 
         update_spec = {'prev_vasp_dir': fw_spec['prev_vasp_dir'],
