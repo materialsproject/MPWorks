@@ -1,7 +1,8 @@
 import logging
 import socket
 from monty.os.path import which
-from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
+from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
+    FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
