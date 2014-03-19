@@ -7,6 +7,7 @@ from fireworks.core.firework import FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from monty.os.path import zpath
 from mpworks.workflows.wf_utils import get_loc, get_block_part
+from pymatgen import Structure
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
 from pymatgen.io.vaspio.vasp_output import Vasprun
@@ -47,12 +48,14 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             tdb = connection[creds['database']]
             tdb.authenticate(creds['admin_user'], creds['admin_password'])
 
-            m_task = tdb.tasks.find_one({"dir_name": block_part})
+            m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1})
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
             bs_id = m_task['calculations'][0]['band_structure_fs_id']
             print bs_id, type(bs_id)
             fs = gridfs.GridFS(tdb, 'band_structure_fs')
-            bs = BandStructure.from_dict(json.loads(fs.get(bs_id).read()))
+            bs_dict = json.loads(fs.get(bs_id).read())
+            bs_dict['structure'] = Structure.from_dict(m_task['calculations'][0]['output']['crystal'])
+            bs = BandStructure.from_dict(bs_dict)
             print 'Band Structure found:', bool(bs)
             print nelect
 
