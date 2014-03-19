@@ -6,6 +6,7 @@ from pymongo import MongoClient
 from fireworks.core.firework import FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from monty.os.path import zpath
+from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_loc, get_block_part
 from pymatgen import Structure
 from pymatgen.electronic_structure.bandstructure import BandStructure
@@ -66,10 +67,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             # put the data in the database
             bta = BoltztrapAnalyzer.from_files(dir)
             data = bta.to_dict
-            data['composition'] = bs.composition.to_dict
-            data['composition_reduced'] = bs.composition.reduced_composition.to_dict
-            data['elements'] = bs._structure.composition.elements
-            data['num_elements'] = len(bs._structure.composition.elements)
+            data.update(get_meta_from_structure(bs._structure))
             data['snlgroup_id'] = fw_spec['snlgroup_id']
             data['run_tags'] = fw_spec['run_tags']
             data['snl'] = fw_spec['mpsnl']
