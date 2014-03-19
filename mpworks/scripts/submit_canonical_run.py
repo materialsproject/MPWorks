@@ -27,10 +27,18 @@ def go_testing():
     parser = ArgumentParser(description=m_description)
     parser.add_argument('-c', '--clear', help='clear old databases', action='store_true')
     parser.add_argument('-n', '--names', help='csv of compound names', default=None)
+    parser.add_argument('--boltztrap', help='run boltztrap', default=None)
+    parser.add_argument('--exact', help='exact structure', default=None)
     args = parser.parse_args()
 
     names = [x.strip() for x in args.names.split(',')] if args.names else None
-    clear_and_submit(args.clear, names)
+
+    params = {}
+    if args.boltztrap:
+        params['boltztrap'] = True
+    if args.exact:
+        params['exact_structure'] = True
+    clear_and_submit(args.clear, names, params)
 
 if __name__ == '__main__':
     go_testing()

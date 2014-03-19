@@ -41,7 +41,7 @@ def clear_env():
     db['band_structure_fs.files'].remove()
 
 
-def submit_tests(names=None):
+def submit_tests(names=None, params=None):
     sma = SubmissionMongoAdapter.auto_load()
 
     # note: TiO2 is duplicated twice purposely, duplicate check should catch this
@@ -66,10 +66,12 @@ def submit_tests(names=None):
             snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
 
             parameters = {'priority': 10} if name == 'Si' else None
+            if params:
+                parameters.update(params)
             sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=parameters)
 
 
-def clear_and_submit(clear=False, names=None):
+def clear_and_submit(clear=False, names=None, params=None):
     if clear:
         clear_env()
-    submit_tests(names=names)
+    submit_tests(names=names, params=params)

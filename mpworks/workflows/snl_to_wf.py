@@ -24,8 +24,10 @@ __date__ = 'Mar 15, 2013'
 
 
 def _snl_to_spec(snl, enforce_gga=False, parameters=None):
-    spec = {}
+
     parameters = parameters if parameters else {}
+
+    spec = {'parameters': parameters}
 
     incar_enforce = {'NPAR': 2}
     if 'exact_structure' in parameters and parameters['exact_structure']:
