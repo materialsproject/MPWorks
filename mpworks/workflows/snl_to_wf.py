@@ -62,6 +62,10 @@ def _snl_to_spec(snl, enforce_gga=False, parameters=None):
         spec['run_tags'].extend(parameters['run_tags'])
         del spec['parameters']['run_tags']
 
+    # add exact structure run tag automatically if we have a unique situation
+    if 'exact_structure' in parameters and parameters['exact_structure'] and snl.structure != snl.structure.get_primitive_structure():
+        spec['run_tags'].extend('exact_structure')
+
     spec['_dupefinder'] = DupeFinderVasp().to_dict()
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA+U optimize structure (2x)' if spec['vasp'][
