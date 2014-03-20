@@ -52,6 +52,10 @@ def _snl_to_spec(snl, enforce_gga=False, parameters=None):
     spec['run_tags'] = spec.get('run_tags', [potcar.functional])
     spec['run_tags'].extend(potcar.symbols)
 
+    if 'run_tags' in parameters:
+        spec['run_tags'].extend(parameters['run_tags'])
+        del spec['parameters']['run_tags']
+
     # Add run tags of +U
     u_tags = ['%s=%s' % t for t in
               zip(poscar.site_symbols, incar.get('LDAUU', [0] * len(poscar.site_symbols)))]
