@@ -87,7 +87,7 @@ class SubmissionProcessor():
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
+        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED', 'CANCELLED']}},
                                          {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:
