@@ -16,7 +16,10 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
+from pymatgen import Composition
 from pymatgen.core.structure import Structure
+from pymatgen.entries.compatibility import MaterialsProjectCompatibility
+from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.analysis.structure_analyzer import oxide_type
@@ -144,6 +147,28 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         logger.error("Bad run stats for {}.".format(path))
 
                     d["run_stats"] = run_stats
+
+                # add is_compatible
+                mpc = MaterialsProjectCompatibility("Advanced")
+
+                try:
+                    func = d["pseudo_potential"]["functional"]
+                    labels = d["pseudo_potential"]["labels"]
+                    symbols = ["{} {}".format(func, label) for label in labels]
+                    parameters = {"run_type": d["run_type"],
+                              "is_hubbard": d["is_hubbard"],
+                              "hubbards": d["hubbards"],
+                              "potcar_symbols": symbols}
+                    entry = ComputedEntry(Composition(d["unit_cell_formula"]),
+                                          0.0, 0.0, parameters=parameters,
+                                          entry_id=d["task_id"])
+
+                    d['is_compatible'] = bool(mpc.process_entry(entry))
+                except:
+                    traceback.print_exc()
+                    print 'ERROR in getting compatibility'
+                    d['is_compatible'] = "ERROR"
+
 
                 #task_type dependent processing
                 if 'static' in d['task_type']:
