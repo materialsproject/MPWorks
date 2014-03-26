@@ -117,6 +117,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d["oxide_type"]=oxide_type(struct)
                 except:
                     logger.error("can't get oxide_type for {}".format(d["task_id"]))
+                    d["oxide_type"]="ERROR"
 
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
