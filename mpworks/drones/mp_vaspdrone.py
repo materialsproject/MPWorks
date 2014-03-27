@@ -120,7 +120,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d["oxide_type"]=oxide_type(struct)
                 except:
                     logger.error("can't get oxide_type for {}".format(d["task_id"]))
-                    d["oxide_type"]="ERROR"
+                    d["oxide_type"] = None
 
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
@@ -167,7 +167,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 except:
                     traceback.print_exc()
                     print 'ERROR in getting compatibility'
-                    d['is_compatible'] = "ERROR"
+                    d['is_compatible'] = None
 
 
                 #task_type dependent processing
