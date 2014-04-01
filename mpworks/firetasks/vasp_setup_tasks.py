@@ -128,7 +128,8 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         ggau_incar = mpvis.get_incar(poscar.structure).to_dict
         incar_updates = {k: ggau_incar[k] for k in ggau_incar.keys() if 'LDAU' in k}
 
-        for k in ["LMAXMIX"]:
+        for k in ggau_incar:
+            # update any parameters not set explicitly in previous INCAR
             if k not in incar and k in ggau_incar:
                 incar_updates[k] = ggau_incar[k]
 
