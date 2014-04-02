@@ -46,3 +46,7 @@ mpworks/fix_scripts/*.yaml
 gulptmp_4_1
 
 octave-core
+
+*.xml
+
+mpworks/.idea/mpworks.iml

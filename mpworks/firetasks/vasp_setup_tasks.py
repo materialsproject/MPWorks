@@ -73,34 +73,14 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         self.line = parameters.get('mode', 'line').lower() == 'line'
 
     def run_task(self, fw_spec):
-
-        try:
-            vasp_run = Vasprun(zpath("vasprun.xml"), parse_dos=False,
-                               parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(), zpath("OUTCAR")))
-        except Exception as e:
-            raise RuntimeError("Can't get valid results from relaxed run: " +
-                               str(e))
-
-        user_incar_settings = MPNonSCFVaspInputSet.get_incar_settings(
-            vasp_run, outcar)
-        user_incar_settings.update({"NPAR": 2})
-        structure = MPNonSCFVaspInputSet.get_structure(vasp_run, outcar,
-                                                       initial_structure=True)
-
+        user_incar_settings= {"NPAR": 2}
         if self.line:
-            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings, mode="Line")
-            for k, v in mpnscfvip.get_all_vasp_input(
-                    structure, generate_potcar=True).items():
-                v.write_file(os.path.join(os.getcwd(), k))
             kpath = HighSymmKpath(structure)
+            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Line", copy_chgcar=False,
+                                                        user_incar_settings=user_incar_settings,)
         else:
-            mpnscfvip = MPNonSCFVaspInputSet(user_incar_settings,
-                                             mode="Uniform")
-            for k, v in mpnscfvip.get_all_vasp_input(
-                    structure, generate_potcar=True).items():
-                v.write_file(os.path.join(os.getcwd(), k))
-
+            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
+                                 user_incar_settings=user_incar_settings)
         if self.line:
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
