@@ -75,16 +75,14 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         user_incar_settings= {"NPAR": 2}
         if self.line:
-            kpath = HighSymmKpath(structure)
             MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Line", copy_chgcar=False,
                                                         user_incar_settings=user_incar_settings,)
-        else:
-            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
-                                 user_incar_settings=user_incar_settings)
-        if self.line:
+            kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure)
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
         else:
+            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
+                                 user_incar_settings=user_incar_settings)
             return FWAction()
 
 
