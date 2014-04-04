@@ -100,7 +100,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             connections[-6] = -5
 
 
-            if fw_spec.get('parameters', {}).get('boltztrap'):
+            if fw_spec.get('parameters') and fw_spec['parameters']['boltztrap']:
                 # run Boltztrap
                 spec = {'task_type': '{} Boltztrap'.format(type_name), '_queueadapter': QA_DB,
                         '_dupefinder': DupeFinderDB().to_dict(), '_priority': priority}
