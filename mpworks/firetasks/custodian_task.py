@@ -11,6 +11,7 @@ import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.workflows.wf_utils import j_decorate
+from pymatgen.io.vaspio.vasp_input import Incar
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
@@ -19,6 +20,39 @@ __version__ = '0.1'
 __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
+
+def check_incar(task_type):
+    errors = []
+    incar = Incar.from_file("INCAR")
+
+    if 'static' in task_type or 'Uniform' in task_type or 'band structure' in task_type:
+        if incar["IBRION"] != -1:
+            errors.append("IBRION should be -1 for non structure optimization runs")
+
+        if "NSW" in incar and incar["NSW"] != 0:
+            errors.append("NSW must be 0 for non structure optimization runs")
+
+    if 'static' in task_type and not incar["LCHARG"]:
+            errors.append("LCHARG must be True for static runs")
+
+    if 'Uniform' in task_type and incar["ICHARG"]!=11:
+            errors.append("ICHARG must be 11 for Uniform runs")
+
+    if 'band structure' in task_type and incar["ICHARG"]!=11:
+            errors.append("ICHARG must be 11 for band structure runs")
+
+    if 'GGA+U' in task_type:
+        # check LDAU
+        if not incar["LDAU"]:
+            errors.append("GGA+U requires LDAU parameter")
+
+        if not incar["LMAXMIX"] >= 4:
+            errors.append("GGA+U requires LMAXMIX >= 4")
+
+        if not sum(incar["LDAUU"]) > 0:
+            errors.append("GGA+U requires sum(LDAUU)>0")
+
+    return errors
 
 
 class VaspCustodianTask(FireTaskBase, FWSerializable):
@@ -57,6 +91,10 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         for job in self.jobs:
             job.vasp_cmd = v_exe
             job.gamma_vasp_cmd = gv_exe
+
+        incar_errors = check_incar(fw_spec['task_type'])
+        if incar_errors:
+            raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
         c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=self.gzip_output)
