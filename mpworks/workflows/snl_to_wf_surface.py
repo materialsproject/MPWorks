@@ -16,7 +16,7 @@ import re
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio_set import MPVaspInputSet
 from pymatgen.core.structure import Structure
-
+"""
 def get_surface_input(dir, perturb_struct=True):
     '''
     Read a directory containing vasp inputs and converted to snl
@@ -57,6 +57,7 @@ def get_surface_input(dir, perturb_struct=True):
                       remarks="Surface", data={"_vasp":vasp})
 
     return snl
+"""
 
 def snl_to_wf_surface(snl, parameters=None):
     fws = []
