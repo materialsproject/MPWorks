@@ -2,7 +2,9 @@ import json
 import os
 import datetime
 
-from pymongo import MongoClient
+from pymongo import MongoClient, DESCENDING
+from mpworks.snl_utils.mpsnl import MPStructureNL
+from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymatgen import Composition
 
 import yaml
@@ -81,11 +83,27 @@ class SubmissionMongoAdapter(object):
         self.jobs.insert(d)
         return d['submission_id']
 
-    def resubmit(self, submission_id):
-        self.jobs.update(
-            {'submission_id': submission_id},
-            {'$set': {'state': 'SUBMITTED', 'state_details': {},
-                      'task_dict': {}}})
+    def resubmit(self, submission_id, snl_db=None):
+        # see if an SNL object has already been created
+        if not snl_db:
+            snl_db = SNLMongoAdapter.auto_load()
+
+        mpsnl = None
+        snlgroup_id = None
+        snl_dict = snl_db.snl.find_one({"about._materialsproject.submission_id": submission_id})
+        if snl_dict:
+            mpsnl = MPStructureNL.from_dict(snl_dict)
+            snlgroup_id = snl_db.snlgroups.find_one({"all_snl_ids": snl_dict['snl_id']}, {"snlgroup_id":1})['snlgroup_id']
+
+        # Now reset the current submission parameters
+        updates = {'state': 'SUBMITTED', 'state_details': {}, 'task_dict': {}}
+
+        if mpsnl:
+            updates['parameters'] = self.jobs.find_one({'submission_id': submission_id}, {'parameters': 1})['parameters']
+            updates['parameters'].update({"mpsnl": mpsnl.to_dict, "snlgroup_id": snlgroup_id})
+
+        self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': updates})
+
 
     def cancel_submission(self, submission_id):
         # TODO: implement me
@@ -93,12 +111,11 @@ class SubmissionMongoAdapter(object):
         # in the SubmissionProcessor, detect this state and defuse the FW
         raise NotImplementedError()
 
-    def get_states(self, crit):
-        props = ['state', 'state_details', 'task_dict', 'submission_id', 'formula']
-        infos = []
-        for j in self.jobs.find(crit, dict([(p, 1) for p in props])):
-            infos.append(dict([(p, j[p]) for p in props]))
-        return infos
+    def get_states(self, crit, limit=0):
+        fields = {'state': 1, 'about.authors': 1, 'about.projects': 1,
+                  'state_details': 1, 'task_dict': 1, 'submission_id': 1,
+                  'formula': 1, '_id': 0}
+        return list(self.jobs.find(crit, fields, sort=[("submission_id", DESCENDING)]).limit(limit))
 
     def to_dict(self):
         """
@@ -209,5 +226,5 @@ def get_meta_from_structure(structure):
             'anonymized_formula': comp.anonymized_formula,
             'chemsystem': '-'.join(elsyms),
             'is_ordered': structure.is_ordered,
-            'is_valid': structure.is_valid()}
+            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
     return meta

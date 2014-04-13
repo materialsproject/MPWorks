@@ -5,6 +5,8 @@ import logging
 import pprint
 import re
 import traceback
+from monty.io import zopen
+from monty.os.path import zpath
 from pymongo import MongoClient
 import gridfs
 from matgendb.creator import VaspToDbTaskDrone
@@ -14,10 +16,13 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
+from pymatgen import Composition
 from pymatgen.core.structure import Structure
+from pymatgen.entries.compatibility import MaterialsProjectCompatibility
+from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar, Oszicar
-
+from pymatgen.analysis.structure_analyzer import oxide_type
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -35,7 +40,7 @@ def is_valid_vasp_dir(mydir):
     files = ["OUTCAR", "POSCAR", "INCAR", "KPOINTS"]
     for f in files:
         m_file = os.path.join(mydir, f)
-        if not (os.path.exists(m_file) and os.stat(m_file).st_size > 0):
+        if not os.path.exists(zpath(m_file)) or not(os.stat(m_file).st_size > 0 or os.stat(m_file+'.gz').st_size > 0):
             return False
     return True
 
@@ -51,8 +56,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        d = self.get_task_doc(path, self.parse_dos,
-                              self.additional_fields)
+        d = self.get_task_doc(path, self.parse_dos)
+        if self.additional_fields:
+            d.update(self.additional_fields)  # always add additional fields, even for failed jobs
         #Parse oszicar
         try:
             for i in [1,2]:
@@ -122,13 +128,23 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 self.process_fw(path, d)
 
+                try:
+                    #Add oxide_type
+                    struct=Structure.from_dict(d["output"]["crystal"])
+                    d["oxide_type"]=oxide_type(struct)
+                except:
+                    logger.error("can't get oxide_type for {}".format(d["task_id"]))
+                    d["oxide_type"] = None
+
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
                     os.path.exists(os.path.join(path, "relax2")):
                     try:
                         run_stats = {}
                         for i in [1,2]:
-                            outcar = Outcar(os.path.join(path,"relax"+str(i),"OUTCAR"))
+                            o_path = os.path.join(path,"relax"+str(i),"OUTCAR")
+                            o_path = o_path if os.path.exists(o_path) else o_path+".gz"
+                            outcar = Outcar(o_path)
                             d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
                             run_stats["relax"+str(i)] = outcar.run_stats
                     except:
@@ -146,6 +162,28 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                     d["run_stats"] = run_stats
 
+                # add is_compatible
+                mpc = MaterialsProjectCompatibility("Advanced")
+
+                try:
+                    func = d["pseudo_potential"]["functional"]
+                    labels = d["pseudo_potential"]["labels"]
+                    symbols = ["{} {}".format(func, label) for label in labels]
+                    parameters = {"run_type": d["run_type"],
+                              "is_hubbard": d["is_hubbard"],
+                              "hubbards": d["hubbards"],
+                              "potcar_symbols": symbols}
+                    entry = ComputedEntry(Composition(d["unit_cell_formula"]),
+                                          0.0, 0.0, parameters=parameters,
+                                          entry_id=d["task_id"])
+
+                    d['is_compatible'] = bool(mpc.process_entry(entry))
+                except:
+                    traceback.print_exc()
+                    print 'ERROR in getting compatibility'
+                    d['is_compatible'] = None
+
+
                 #task_type dependent processing
                 if 'static' in d['task_type']:
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}}, {"action.stored_data": 1})
@@ -161,11 +199,11 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
                                                         {"action.stored_data": 1})
-                    vasp_run = Vasprun(os.path.join(path, "vasprun.xml"), parse_projected_eigen=False)
+                    vasp_run = Vasprun(zpath(os.path.join(path, "vasprun.xml")), parse_projected_eigen=False)
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):
-                            g=re.search('([0-9\-\.]+)\s+([0-9\-\.]+)\s+([0-9\-\.]+)', stringlist)
+                            g=re.search('([0-9\-\.eE]+)\s+([0-9\-\.eE]+)\s+([0-9\-\.eE]+)', stringlist)
                             return [float(g.group(i)) for i in range(1,4)]
 
                         for i in ["kpath_name", "kpath"]:
@@ -183,8 +221,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
 
-                coll.update({"dir_name": d["dir_name"]}, {"$set": d},
-                            upsert=True)
+                coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
                 return d["task_id"], d
 
@@ -199,8 +236,16 @@ class MPVaspDrone(VaspToDbTaskDrone):
             return 0, d
 
     def process_fw(self, dir_name, d):
+        d["task_id_deprecated"] = int(d["task_id"].split('-')[-1])  # useful for WC and AJ
+
+        # update the run fields to give species group in root, if exists
+        for r in d['run_tags']:
+            if "species_group=" in r:
+                d["species_group"] = int(r.split("=")[-1])
+                break
+
         # custom Materials Project post-processing for FireWorks
-        with open(os.path.join(dir_name, 'FW.json')) as f:
+        with zopen(zpath(os.path.join(dir_name, 'FW.json'))) as f:
             fw_dict = json.load(f)
             d['fw_id'] = fw_dict['fw_id']
             d['snl'] = fw_dict['spec']['mpsnl']
@@ -229,7 +274,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     sma = SNLMongoAdapter.auto_load()
 
                     # add snl
-                    mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
+                    mpsnl, snlgroup_id, spec_group = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
                     d['snl_final'] = mpsnl.to_dict
                     d['snlgroup_id_final'] = snlgroup_id
                     d['snlgroup_changed'] = (d['snlgroup_id'] !=
@@ -240,7 +285,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['snlgroup_changed'] = False
 
         # custom processing for detecting errors
-        new_style = os.path.exists(os.path.join(dir_name, 'FW.json'))
+        new_style = os.path.exists(zpath(os.path.join(dir_name, 'FW.json')))
         vasp_signals = {}
         critical_errors = ["INPUTS_DONT_EXIST",
                            "OUTPUTS_DONT_EXIST", "INCOHERENT_POTCARS",

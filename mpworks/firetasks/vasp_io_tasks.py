@@ -3,11 +3,13 @@
 """
 
 """
+import gzip
 import json
 import logging
 import os
 import shutil
 import sys
+from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
 
@@ -18,8 +20,8 @@ from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN
-from mpworks.workflows.wf_utils import last_relax, get_loc, get_block_part, move_to_garden
+from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
+from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
@@ -61,9 +63,16 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         self.update(parameters)  # store the parameters explicitly set by the user
 
         default_files = ['INCAR', 'POSCAR', 'KPOINTS', 'POTCAR', 'OUTCAR',
-                         'vasprun.xml', 'CHGCAR', 'OSZICAR']
+                         'vasprun.xml', 'OSZICAR']
+
+        if not parameters.get('skip_CHGCAR'):
+            default_files.append('CHGCAR')
+
+        self.missing_CHGCAR_OK = parameters.get('missing_CHGCAR_OK', True)
+
         self.files = parameters.get('files', default_files)  # files to move
         self.use_contcar = parameters.get('use_CONTCAR', True)  # whether to move CONTCAR to POSCAR
+
         if self.use_contcar:
             self.files.append('CONTCAR')
             self.files = [x for x in self.files if x != 'POSCAR']  # remove POSCAR
@@ -77,8 +86,24 @@ class VaspCopyTask(FireTaskBase, FWSerializable):
         for file in self.files:
             prev_filename = last_relax(os.path.join(prev_dir, file))
             dest_file = 'POSCAR' if file == 'CONTCAR' and self.use_contcar else file
+            if prev_filename.endswith('.gz'):
+                dest_file += '.gz'
+
             print 'COPYING', prev_filename, dest_file
-            shutil.copy2(prev_filename, dest_file)
+            if self.missing_CHGCAR_OK and 'CHGCAR' in dest_file and not os.path.exists(zpath(prev_filename)):
+                print 'Skipping missing CHGCAR'
+            else:
+                shutil.copy2(prev_filename, dest_file)
+                if '.gz' in dest_file:
+                    # unzip dest file
+                    f = gzip.open(dest_file, 'rb')
+                    file_content = f.read()
+                    with open(dest_file[0:-3], 'wb') as f_out:
+                        f_out.writelines(file_content)
+                    f.close()
+                    os.remove(dest_file)
+
+
 
         return FWAction(stored_data={'copied_files': self.files})
 
@@ -103,20 +128,26 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
-            update_spec = {}
+            update_spec = {}  # add this later when creating new FW
             fizzled_parent = True
             parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
-            update_spec = {'prev_vasp_dir': get_block_part(prev_dir),
+            update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
-                           'run_tags': fw_spec['run_tags']}
-            self.additional_fields['run_tags'] = fw_spec['run_tags']
+                           'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
+        if 'run_tags' in fw_spec:
+            self.additional_fields['run_tags'] = fw_spec['run_tags']
+        else:
+            self.additional_fields['run_tags'] = fw_spec['_fizzled_parents'][0]['spec']['run_tags']
 
-        if MOVE_TO_GARDEN:
-            prev_dir = move_to_garden(prev_dir)
+        if MOVE_TO_GARDEN_DEV:
+            prev_dir = move_to_garden(prev_dir, prod=False)
+
+        elif MOVE_TO_GARDEN_PROD:
+            prev_dir = move_to_garden(prev_dir, prod=True)
 
         # get the directory containing the db file
         db_dir = os.environ['DB_LOC']
@@ -159,11 +190,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             if ueh.check() and unconverged_tag not in fw_spec['run_tags']:
                 print 'Unconverged run! Creating dynamic FW...'
 
-                spec = {'prev_vasp_dir': get_block_part(prev_dir),
+                spec = {'prev_vasp_dir': prev_dir,
                         'prev_task_type': fw_spec['task_type'],
                         'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                         'task_type': fw_spec['prev_task_type'],
                         'run_tags': list(fw_spec['run_tags']),
+                        'parameters': fw_spec.get('parameters'),
                         '_dupefinder': DupeFinderVasp().to_dict(),
                         '_priority': fw_spec['_priority']}
 
@@ -196,5 +228,5 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
 
                 return FWAction(detours=wf)
 
-        # not successful and not due to convergence problem - DEFUSE
-        return FWAction(stored_data=stored_data, defuse_children=True)
+        # not successful and not due to convergence problem - FIZZLE
+        raise ValueError("DB insertion successful, but don't know how to fix this FireWork! Can't continue with workflow...")

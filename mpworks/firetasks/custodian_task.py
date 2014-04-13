@@ -1,6 +1,8 @@
 import logging
 import socket
-from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler
+from monty.os.path import which
+from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
+    FrozenJobErrorHandler, MeshSymmetryErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -8,7 +10,7 @@ from custodian.vasp.jobs import VaspJob
 import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.workflows.wf_utils import get_block_part, j_decorate
+from mpworks.workflows.wf_utils import j_decorate
 from pymatgen.serializers.json_coders import PMGJSONDecoder
 
 __author__ = 'Anubhav Jain'
@@ -28,6 +30,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         dec = PMGJSONDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
+        self.gzip_output = self.get('gzip_output', True)
 
     def run_task(self, fw_spec):
 
@@ -35,28 +38,28 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        # TODO: make this better - is there a way to load an environment
-        # variable as the VASP_EXE?
-        if 'nid' in socket.gethostname():  # hopper compute nodes
-            # TODO: can base ncores on FW_submit.script
-            v_exe = shlex.split('aprun -n 48 vasp')
-            gv_exe = shlex.split('aprun -n 48 gvasp')
-            print 'running on HOPPER'
-        elif 'c' in socket.gethostname():  # mendel compute nodes
-            # TODO: can base ncores on FW_submit.script
-            v_exe = shlex.split('mpirun -n 32 vasp')
-            gv_exe = shlex.split('aprun -n 32 gvasp')
-            print 'running on MENDEL'
+        if which("mpirun"):
+            mpi_cmd = "mpirun"
+        elif which("aprun"):
+            mpi_cmd = "aprun"
         else:
+            raise ValueError("No MPI command found!")
 
-            raise ValueError('Unrecognized host!')
+        nproc = os.environ['PBS_NP']
+
+        v_exe = shlex.split('{} -n {} vasp'.format(mpi_cmd, nproc))
+        gv_exe = shlex.split('{} -n {} gvasp'.format(mpi_cmd, nproc))
+
+        print 'host:', os.environ['HOSTNAME']
+        print v_exe
+        print gv_exe
 
         for job in self.jobs:
             job.vasp_cmd = v_exe
             job.gamma_vasp_cmd = gv_exe
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, self.max_errors)
+        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=self.gzip_output)
         custodian_out = c.run()
 
         all_errors = set()
@@ -65,11 +68,11 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
                 all_errors.update(correction['errors'])
 
         stored_data = {'error_list': list(all_errors)}
-        update_spec = {'prev_vasp_dir': get_block_part(os.getcwd()),
+        update_spec = {'prev_vasp_dir': os.getcwd(),
                        'prev_task_type': fw_spec['task_type'],
                        'mpsnl': fw_spec['mpsnl'],
                        'snlgroup_id': fw_spec['snlgroup_id'],
-                       'run_tags': fw_spec['run_tags']}
+                       'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
@@ -88,11 +91,16 @@ def get_custodian_task(spec):
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
         handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
-    else:
+    elif 'static' in task_type:
         jobs = [VaspJob(v_exe)]
-        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler()]
+        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
+                    NonConvergingErrorHandler()]
+    else:
+        # non-SCF runs
+        jobs = [VaspJob(v_exe)]
+        handlers = []
 
     params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 10}
+              'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
 
     return VaspCustodianTask(params)

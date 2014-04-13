@@ -38,7 +38,7 @@ def snl_to_wf_phonon(snl, parameters=None):
     connections[0] = [1]
 
     # run GGA structure optimization for force convergence
-    spec = snl_to_wf._snl_to_spec(snl)
+    spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     spec = update_spec_force_convergence(spec)
     spec['run_tags'].append("origin")
     spec['_priority'] = priority

@@ -1,9 +1,10 @@
 import os
+from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import VaspInput, Incar
+from pymatgen.io.vaspio.vasp_input import VaspInput, Incar, Poscar, Kpoints, Potcar
 from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
     MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
@@ -31,7 +32,7 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
         MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
                                                     user_incar_settings=user_incar_settings)
-        structure = MPStaticVaspInputSet.get_structure(Vasprun("vasprun.xml"), Outcar("OUTCAR"),
+        structure = MPStaticVaspInputSet.get_structure(Vasprun(zpath("vasprun.xml")), Outcar(zpath("OUTCAR")),
                                                        initial_structure=False,
                                                        additional_info=True)
 
@@ -74,9 +75,9 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
 
         try:
-            vasp_run = Vasprun("vasprun.xml", parse_dos=False,
+            vasp_run = Vasprun(zpath("vasprun.xml"), parse_dos=False,
                                parse_eigen=False)
-            outcar = Outcar(os.path.join(os.getcwd(), "OUTCAR"))
+            outcar = Outcar(os.path.join(os.getcwd(), zpath("OUTCAR")))
         except Exception as e:
             raise RuntimeError("Can't get valid results from relaxed run: " +
                                str(e))
@@ -117,21 +118,22 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         chgcar_start = False
         # read the VaspInput from the previous run
-        vi = VaspInput.from_directory(".")
+
+        p = Poscar.from_file(zpath('POSCAR'))
+        i = Incar.from_file(zpath('INCAR'))
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use
         mpvis = MPVaspInputSet()
-        incar = mpvis.get_incar(vi['POSCAR'].structure).to_dict
+        incar = mpvis.get_incar(p.structure).to_dict
         incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}
-        vi['INCAR'].update(incar_updates)  # override the +U keys
+        i.update(incar_updates)  # override the +U keys
 
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
-            vi['INCAR']['ICHARG'] = 1
+            i['ICHARG'] = 1
             chgcar_start = True
 
         # write back the new INCAR to the current directory
-        vi['INCAR'].write_file('INCAR')
+        i.write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})
-

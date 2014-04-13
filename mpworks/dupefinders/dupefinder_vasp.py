@@ -22,3 +22,20 @@ class DupeFinderVasp(DupeFinderBase):
     def query(self, spec):
         return {'spec.task_type': spec['task_type'],
                 'spec.snlgroup_id': spec['snlgroup_id']}
+
+
+class DupeFinderDB(DupeFinderBase):
+    """
+    TODO: add docs
+    """
+
+    _fw_name = 'Dupe Finder DB'
+
+    def verify(self, spec1, spec2):
+        # assert: task_type and prev_vasp_dir have already been checked through query
+        return set(spec1['run_tags']) == set(spec2['run_tags'])
+
+    def query(self, spec):
+        if 'prev_task_type' in spec and 'prev_vasp_dir' in spec and '_fizzled_parents' not in spec:
+            return {'spec.task_type': spec['task_type'], 'spec.prev_task_type': spec['prev_task_type'], 'spec.prev_vasp_dir': spec['prev_vasp_dir']}
+        return {'fw_id': -1}
