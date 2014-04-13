@@ -160,6 +160,17 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         sh.setLevel(getattr(logging, 'INFO'))
         logger.addHandler(sh)
 
+        #Use drone_wc for ec and surface calculations
+        global MPVaspDrone
+        if fw_spec.get("elastic_constant"):
+            from mpworks.drones.mp_vaspdrone_wc import MPVaspDrone_ec as MPVaspDrone
+            MPVaspDrone._parse_type=fw_spec.get("elastic_constant")
+            MPVaspDrone._clean_task_doc=fw_spec.get("clean_task_doc")
+        elif fw_spec.get("surfaces"):
+            from mpworks.drones.mp_vaspdrone_wc import MPVaspDrone_surface as MPVaspDrone
+            MPVaspDrone._parse_type=fw_spec.get("surfaces")
+            MPVaspDrone._clean_task_doc=fw_spec.get("clean_task_doc")
+
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(
