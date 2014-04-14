@@ -80,7 +80,7 @@ def snl_to_wf_surface(snl, parameters=None):
     connections[0] = [1]
 
     # run GGA structure optimization for surfaces/bulk
-    spec={'vasp':{}}
+    spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     for i in ['incar', 'poscar', 'kpoints']:
         spec['vasp'][i] = snl.data['_vasp'][i].to_dict
     spec['vasp']['potcar'] = MPVaspInputSet().get_potcar(snl.data['_vasp']['poscar'].structure).to_dict

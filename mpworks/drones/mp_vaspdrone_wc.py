@@ -47,7 +47,7 @@ class MPVaspDrone_surface(MPVaspDrone):
     @classmethod
     def generate_doc(cls, dir_name, vasprun_files, parse_dos,
                      additional_fields, max_force_threshold=100.0):
-        d=super(MPVaspDrone_ec, cls).generate_doc(dir_name, vasprun_files, parse_dos, additional_fields)
+        d=super(MPVaspDrone_surface, cls).generate_doc(dir_name, vasprun_files, parse_dos, additional_fields)
         if cls._parse_type=="force_convergence":
             max_force_threshold=0.5
         try:
