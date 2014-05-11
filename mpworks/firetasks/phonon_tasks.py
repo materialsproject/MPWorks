@@ -22,7 +22,7 @@ from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
 
 def update_spec_force_convergence(spec):
     fw_spec = spec
-    update_set = {"ENCUT": 700, "EDIFF": 0.000001}
+    update_set = {"ENCUT": 700, "EDIFF": 0.000001, "ALGO":"N", "NPAR":2}
     fw_spec['vasp']['incar'].update(update_set)
     #old_struct=Structure.from_dict(fw_spec['output']['crystal'])
     old_struct=Poscar.from_dict(fw_spec["vasp"]["poscar"]).structure
