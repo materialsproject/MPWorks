@@ -29,7 +29,7 @@ def last_relax(filename):
     m_file = os.path.basename(filename)
 
     if os.path.exists(zpath(os.path.join(m_dir, 'relax2', m_file))):
-        return zpath(m_dir, 'relax2', m_file)
+        return zpath(os.path.join(m_dir, 'relax2', m_file))
 
     elif os.path.exists(zpath(filename)):
         return zpath(filename)
