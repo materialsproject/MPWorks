@@ -26,6 +26,7 @@ def snl_to_wf_customize(snl, parameters=None):
     fws = []
     connections = {}
     parameters = parameters if parameters else {}
+    additional_run_tags=parameters["run_tags"]
 
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
@@ -54,7 +55,7 @@ def snl_to_wf_customize(snl, parameters=None):
     # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [spec['vasp']['potcar']['functional']])
     #pec['run_tags'].extend(spec['vasp']['potcar']['symbols'])
-    spec["run_tags"].extend(parameters["run_tags"])
+    spec["run_tags"].extend(additional_run_tags)
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
