@@ -75,10 +75,20 @@ class SubmissionProcessor():
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
-                    # create a workflow
+                # create a workflow
+                if "Elasticity" in snl.projects:
+                    from mpworks.workflows.snl_to_wf_phonon import snl_to_wf_phonon
+                    wf=snl_to_wf_phonon(snl, job['parameters'])
+                elif "Surface" in snl.projects:
+                    from mpworks.workflows.snl_to_wf_surface import snl_to_wf_phonon
                     wf = snl_to_wf_surface(snl, job['parameters'])
-                    self.launchpad.add_wf(wf)
-                    print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
+                elif "Customized" in snl.projects:
+                    from mpworks.workflows.snl_to_wf_customize import snl_to_wf_customize
+                    wf = snl_to_wf_customize(snl, job['parameters'])
+                else:
+                    wf=snl_to_wf(snl, job["parameters"])
+                self.launchpad.add_wf(wf)
+                print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
                 self.jobs.find_and_modify({'submission_id': submission_id},
                                           {'$set': {'state': 'ERROR'}})
