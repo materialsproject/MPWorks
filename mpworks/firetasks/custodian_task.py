@@ -72,6 +72,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
+        if "mpi_cmd" in fw_spec["_fw_env"]:
+            mpi_cmd = fw_spec["_fw_env"]["mpi_cmd"]
         if which("mpirun"):
             mpi_cmd = "mpirun"
         elif which("aprun"):
@@ -81,8 +83,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         nproc = os.environ['PBS_NP']
 
-        v_exe = shlex.split('{} -n {} vasp'.format(mpi_cmd, nproc))
-        gv_exe = shlex.split('{} -n {} gvasp'.format(mpi_cmd, nproc))
+        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_spec["_fw_env"].get("vasp_cmd", "vasp")))
+        gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_spec["_fw_env"].get("gvasp_cmd", "gvasp")))
 
         print 'host:', os.environ['HOSTNAME']
         print v_exe
