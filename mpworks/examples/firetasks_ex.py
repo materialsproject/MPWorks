@@ -31,14 +31,16 @@ class VaspCustodianTaskEx(FireTaskBase, FWSerializable):
         self.max_errors = parameters['max_errors']
 
     def run_task(self, fw_spec):
+        nproc = os.environ['PBS_NP']
+
         # Figure out the appropriate Vasp Executable based on run machine
         if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 48 vasp')
-            gv_exe = shlex.split('aprun -n 48 gvasp')
+            v_exe = shlex.split('aprun -n '+str(nproc)+' vasp')
+            gv_exe = shlex.split('aprun -n '+str(nproc)+' gvasp')
             print 'running on HOPPER'
         elif 'c' in socket.gethostname():  # mendel compute nodes
-            v_exe = shlex.split('mpirun -n 32 vasp')
-            gv_exe = shlex.split('mpirun -n 32 gvasp')
+            v_exe = shlex.split('mpirun -n '+str(nproc)+' vasp')
+            gv_exe = shlex.split('mpirun -n '+str(nproc)+' gvasp')
             print 'running on MENDEL'
         else:
             raise ValueError('Unrecognized host!')
