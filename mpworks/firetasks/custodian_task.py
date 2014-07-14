@@ -72,9 +72,11 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         # easier file system browsing
         self._write_formula_file(fw_spec)
 
-        if "mpi_cmd" in fw_spec["_fw_env"]:
+        fw_env = fw_spec.get("_fw_env", {})
+
+        if "mpi_cmd" in fw_env:
             mpi_cmd = fw_spec["_fw_env"]["mpi_cmd"]
-        if which("mpirun"):
+        elif which("mpirun"):
             mpi_cmd = "mpirun"
         elif which("aprun"):
             mpi_cmd = "aprun"
@@ -83,8 +85,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         nproc = os.environ['PBS_NP']
 
-        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_spec["_fw_env"].get("vasp_cmd", "vasp")))
-        gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_spec["_fw_env"].get("gvasp_cmd", "gvasp")))
+        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
+        gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
 
         print 'host:', os.environ['HOSTNAME']
         print v_exe
@@ -112,7 +114,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
                        'prev_task_type': fw_spec['task_type'],
                        'mpsnl': fw_spec['mpsnl'],
                        'snlgroup_id': fw_spec['snlgroup_id'],
-                       'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
+                       'run_tags': fw_spec['run_tags'],
+                       'parameters': fw_spec.get('parameters')}
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
@@ -127,14 +130,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 def get_custodian_task(spec):
     task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
+    handlers = [VaspErrorHandler(), FrozenJobErrorHandler(),
+                MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
+
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
-        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                    NonConvergingErrorHandler()]
     elif 'static' in task_type:
         jobs = [VaspJob(v_exe)]
-        handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
-                    NonConvergingErrorHandler()]
     else:
         # non-SCF runs
         jobs = [VaspJob(v_exe)]
