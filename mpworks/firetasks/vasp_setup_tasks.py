@@ -133,3 +133,5 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # write back the new INCAR to the current directory
         incar.write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})
+
+dummy = 1
