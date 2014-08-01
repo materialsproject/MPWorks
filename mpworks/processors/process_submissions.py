@@ -127,3 +127,5 @@ class SubmissionProcessor():
         lp = LaunchPad.auto_load()
 
         return SubmissionProcessor(sma, lp)
+
+dummy = 6
