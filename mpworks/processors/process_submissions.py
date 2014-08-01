@@ -76,8 +76,8 @@ class SubmissionProcessor():
 
                     # create a workflow
                     if "Static Dielectrics" in snl.projects:
-                        from mpworks.workflows.snl_to_wf_staticDielectrics import snl_to_wf_staticDielectrics
-                        wf=snl_to_wf_staticDielectrics(snl, job['parameters'])
+                        from mpworks.workflows.snl_to_wf_dielectrics import snl_to_wf_static_dielectrics
+                        wf=snl_to_wf_static_dielectrics(snl, job['parameters'])
                     else:
                         wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
