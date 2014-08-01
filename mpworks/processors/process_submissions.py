@@ -75,7 +75,11 @@ class SubmissionProcessor():
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
                     # create a workflow
-                    wf = snl_to_wf(snl, job['parameters'])
+                    if "Static Dielectrics" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_staticDielectrics import snl_to_wf_staticDielectrics
+                        wf=snl_to_wf_staticDielectrics(snl, job['parameters'])
+                    else:
+                        wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
@@ -127,5 +131,3 @@ class SubmissionProcessor():
         lp = LaunchPad.auto_load()
 
         return SubmissionProcessor(sma, lp)
-
-dummy = 6
