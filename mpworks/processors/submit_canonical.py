@@ -54,7 +54,7 @@ def submit_tests(names=None, params=None):
                  "AgCl": 22922, "AgCl (2)": 570858, "SiO2 (2)": 555211, "Mg2SiO4": 2895, "CO2": 20066,
                  "PbSO4": 22298, "SrTiO3": 5532, "FeAl": 2658, "AlFeCo2": 10884, "NaCoO2": 554427,
                  "ReO3": 547271, "LaH2": 24153, "SiH3I": 28538, "LiBH4": 30209, "H8S5N2": 28143,
-                 "LiOH": 23856, "LiO2": 546422, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
+                 "LiOH": 23856, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
                  "PdF4": 13868, "Gd2WO6": 651333, 'MnO2': 19395, 'VO2': 504800}
 
     mpr = MPRester()
