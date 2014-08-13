@@ -57,7 +57,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        d = self.get_task_doc(path, self.parse_dos)
+        d = self.get_task_doc(path)
         if self.additional_fields:
             d.update(self.additional_fields)  # always add additional fields, even for failed jobs
 
