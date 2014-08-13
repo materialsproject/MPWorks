@@ -277,7 +277,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
                            "CHARGE_UNCONVERGED", "NETWORK_QUIESCED",
                            "HARD_KILLED", "WALLTIME_EXCEEDED",
-                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2"]
+                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2", "POSITIVE_ENERGY"]
 
         last_relax_dir = dir_name
 
@@ -322,6 +322,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
         if not new_style:
             root_dir = os.path.dirname(dir_name)  # one level above dir_name
             signals = signals.union(DiskSpaceExceededSignal().detect(root_dir))
+
+        if d['state'] == 'successful' and d['output']['final_energy'] > 0:
+            signals.add('POSITIVE_ENERGY')
 
         signals = list(signals)
 
