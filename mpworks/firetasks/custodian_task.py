@@ -2,7 +2,7 @@ import logging
 import socket
 from monty.os.path import which
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
-    FrozenJobErrorHandler, MeshSymmetryErrorHandler
+    FrozenJobErrorHandler, MeshSymmetryErrorHandler, PositiveEnergyErrorHandler
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -131,7 +131,7 @@ def get_custodian_task(spec):
     task_type = spec['task_type']
     v_exe = 'VASP_EXE'  # will be transformed to vasp executable on the node
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(),
-                MeshSymmetryErrorHandler(), NonConvergingErrorHandler()]
+                MeshSymmetryErrorHandler(), NonConvergingErrorHandler(), PositiveEnergyErrorHandler()]
 
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
