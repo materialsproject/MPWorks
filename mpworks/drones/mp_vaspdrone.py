@@ -323,7 +323,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             root_dir = os.path.dirname(dir_name)  # one level above dir_name
             signals = signals.union(DiskSpaceExceededSignal().detect(root_dir))
 
-        if 'output' in d and 'final_energy' in d['output'] and d['output']['final_energy'] > 0:
+        if d.get('output',{}).get('final_energy', None) > 0:
             signals.add('POSITIVE_ENERGY')
 
         signals = list(signals)
