@@ -123,7 +123,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.additional_fields = self.get('additional_fields', {})
-        self.update_duplicates = self.get('update_duplicates', False)
+        self.update_duplicates = self.get('update_duplicates', True)
 
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
