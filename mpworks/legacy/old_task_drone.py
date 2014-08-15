@@ -14,6 +14,7 @@ from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure
 from pymatgen.matproj.snl import StructureNL
+from pymatgen.serializers.json_coders import PMGJSONEncoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -71,7 +72,7 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
                 if self.parse_dos and "calculations" in d:
                     for calc in d["calculations"]:
                         if "dos" in calc:
-                            dos = json.dumps(calc["dos"])
+                            dos = json.dumps(calc["dos"], cls=PMGJSONEncoder)
                             fs = gridfs.GridFS(db, "dos_fs")
                             dosid = fs.put(dos)
                             calc["dos_fs_id"] = dosid
