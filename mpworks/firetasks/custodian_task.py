@@ -90,8 +90,6 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
 
         print 'host:', os.environ['HOSTNAME']
-        print v_exe
-        print gv_exe
 
         for job in self.jobs:
             job.vasp_cmd = v_exe
