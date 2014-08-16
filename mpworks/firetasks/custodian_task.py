@@ -1,3 +1,4 @@
+from gzip import GzipFile
 import logging
 import socket
 from monty.os.path import which
@@ -101,8 +102,16 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=self.gzip_output)
+        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=False)  # manual gzip
         custodian_out = c.run()
+
+        if self.gzip_output:
+            for f in os.listdir(os.getcwd()):
+                if not f.lower().endswith("gz") and not f.endswith(".OU") and not f.endswith(".ER"):
+                    with open(f, 'rb') as f_in, \
+                            GzipFile('{}.gz'.format(f), 'wb') as f_out:
+                        f_out.writelines(f_in)
+                    os.remove(f)
 
         all_errors = set()
         for run in custodian_out:
