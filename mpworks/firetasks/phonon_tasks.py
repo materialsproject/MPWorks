@@ -20,16 +20,18 @@ from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
 #from pymatgen.io.vaspio_set import MPVaspInputSet
 from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
 
-def update_spec_force_convergence(spec):
+def update_spec_force_convergence(spec, user_vasp_settings=None):
     fw_spec = spec
     update_set = {"ENCUT": 700, "EDIFF": 0.000001, "ALGO":"N", "NPAR":2}
+    if user_vasp_settings and user_vasp_settings.get("incar"):
+            update_set.update(user_vasp_settings["incar"])
     fw_spec['vasp']['incar'].update(update_set)
-    #old_struct=Structure.from_dict(fw_spec['output']['crystal'])
     old_struct=Poscar.from_dict(fw_spec["vasp"]["poscar"]).structure
-    #mp_kpoints = MPVaspInputSet().get_kpoints(old_struct)
-    #kpoints = mp_kpoints.to_dict
-    #k = [int(round(2.2*k)) if int(round(2.2*k))%2 else int(round(2.2*k))+1 for k in kpoints['kpoints'][0]]
-    k=Kpoints.automatic_density(old_struct, 7000)
+    if user_vasp_settings and user_vasp_settings.get("kpoints"):
+        kpoints_density = user_vasp_settings["kpoints"]["kpoints_density"]
+    else:
+        kpoints_density = 7000
+    k=Kpoints.automatic_density(old_struct, kpoints_density)
     fw_spec['vasp']['kpoints'] = k.to_dict
     return fw_spec
 
