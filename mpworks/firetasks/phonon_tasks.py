@@ -97,6 +97,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             spec['vasp']['kpoints']= kpoints
             spec['deformation_matrix'] = strain.deformation_matrix.tolist()
             spec['original_task_id']=fw_spec["task_id"]
+            spec['_priority'] = fw_spec['_priority']*2
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
 
@@ -104,7 +105,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             fws.append(FireWork([VaspWriterTask(), get_custodian_task(spec)],
                                 spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
 
-            priority = fw_spec['_priority']
+            priority = fw_spec['_priority']*3
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':"deformed_structure", 'clean_task_doc':True,
             'deformation_matrix':strain.deformation_matrix.tolist(), 'original_task_id':fw_spec["task_id"]}
