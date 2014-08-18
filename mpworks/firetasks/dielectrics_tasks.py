@@ -27,5 +27,5 @@ class SetupStaticDielectricsTask(FireTaskBase, FWSerializable):
     def run_task(self, fw_spec):
         poscar = Poscar.from_file(zpath('POSCAR'))
         incar = mpvis.get_incar(structure=poscar.structure)
-        incar.write_file("INCAR") # Over-write the INCAR file with the one for Static Dielectrics
+        incar.write_file(zpath('INCAR')) # Over-write the INCAR file with the one for Static Dielectrics
         return FWAction()
