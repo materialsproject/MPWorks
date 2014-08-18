@@ -1,18 +1,10 @@
+from monty.os.path import zpath
 
 
-
-
-
-
-
-def update_spec_static_dielectrics_convergence(spec):
-    fw_spec = spec
-    update_set = {"ENCUT": 600, "EDIFF": 0.00005}
-    fw_spec['vasp']['incar'].update(update_set)
-    kpoints = spec['vasp']['kpoints']
-    k = [2*k for k in kpoints['kpoints'][0]]
-    fw_spec['vasp']['kpoints']['kpoints'] = [k]
-    return fw_spec
+from fireworks.utilities.fw_serializers import FWSerializable
+from fireworks.core.firework import FireTaskBase, FWAction
+from pymatgen.io.vaspio.vasp_input import Incar, Poscar
+from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet
 
 
 class SetupStaticDielectricsConvergenceTask(FireTaskBase, FWSerializable):
@@ -33,7 +25,7 @@ class SetupStaticDielectricsTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Static Dielectrics Task"
 
     def run_task(self, fw_spec):
-        incar = Incar.from_file(zpath("INCAR"))
-        incar.update({"ISIF": 2})
-        incar.write_file("INCAR")
+        poscar = Poscar.from_file(zpath('POSCAR'))
+        incar = mpvis.get_incar(structure=poscar.structure)
+        incar.write_file("INCAR") # Over-write the INCAR file with the one for Static Dielectrics
         return FWAction()
