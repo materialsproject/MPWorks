@@ -33,15 +33,19 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         spec['static_dielectrics_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
-    connections[0] = [1]
+    connections[0] = [1] # define fw_id=1 is dependent on completion of fw_id=0
 
     # run GGA structure optimization for static dielectric convergence
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
-    spec = update_spec_static_dielectrics_convergence(spec)
-    spec['run_tags'].append("origin")
+    mpvis = MPStaticDielectricDFPTVaspInputSet()
+    incar = mpvis.get_incar(structure=poscar.structure)
+    spec['vasp']['incar'] = incar.to_dict
+    # spec = update_spec_static_dielectrics_convergence(spec)
+    del spec['dupefinder']
+    # spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
-    spec['task_type'] = "Vasp Static Dielectrics Convergence" # Change name here: delete Vasp? 
+    spec['task_type'] = "Static Dielectrics Calculation" # Change name here: delete Vasp? 
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
@@ -52,12 +56,12 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
-    spec = {'task_type': 'Setup Static Dielectrics Task', '_priority': priority,
-                '_queueadapter': QA_CONTROL}
-    fws.append(
-            FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
-                     fw_id=3))
-    connections[2] = [3]
+    # spec = {'task_type': 'Setup Static Dielectrics Task', '_priority': priority,
+    #             '_queueadapter': QA_CONTROL}
+    # fws.append(
+    #         FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+    #                  fw_id=3))
+    # connections[2] = [3]
 
     wf_meta = get_meta_from_structure(snl.structure)
     wf_meta['run_version'] = 'May 2013 (1)'
