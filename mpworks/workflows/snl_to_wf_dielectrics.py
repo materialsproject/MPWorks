@@ -2,17 +2,18 @@ from fireworks.core.firework import FireWork
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 
 from fireworks.utilities.fw_utilities import get_slug
+from mpworks.firetasks.custodian_task import get_custodian_task
+from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.firetasks.snl_tasks import AddSNLTask
-from mpworks.workflows.wf_settings import QA_DB
+from mpworks.workflows.wf_settings import QA_DB, QA_VASP
 from pymatgen import Composition
 from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet
+from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints
+from fireworks.core.firework import FireWork, Workflow
 
 from mpworks.workflows import snl_to_wf
 
-from mpworks.firetasks.dielectrics_tasks import update_spec_static_dielectrics_convergence
-
-
-
+# from mpworks.firetasks.dielectrics_tasks import update_spec_static_dielectrics_convergence
 
 
 
