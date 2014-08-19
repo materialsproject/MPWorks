@@ -38,7 +38,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     # run GGA structure optimization for static dielectric convergence
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     mpvis = MPStaticDielectricDFPTVaspInputSet()
-    incar = mpvis.get_incar(structure=poscar.structure)
+    incar = mpvis.get_incar(snl)
     spec['vasp']['incar'] = incar.to_dict
     # spec = update_spec_static_dielectrics_convergence(spec)
     del spec['dupefinder']
