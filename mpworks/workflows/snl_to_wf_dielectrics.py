@@ -1,6 +1,8 @@
 from fireworks.core.firework import FireWork
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 
+__author__ = 'Ioannis Petousis'
+
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
