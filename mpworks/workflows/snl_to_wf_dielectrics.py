@@ -41,12 +41,12 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     # run GGA structure optimization for static dielectric convergence
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     mpvis = MPStaticDielectricDFPTVaspInputSet()
-    incar = mpvis.get_incar(snl)
+    incar = mpvis.get_incar(snl.structure)
     incar.update({"EDIFF":"1.0E-6"})
     incar.update({"ENCUT":"520"})
     spec['vasp']['incar'] = incar.to_dict
     kpoints_density = 7000
-    k=Kpoints.automatic_density(snl, kpoints_density)
+    k=Kpoints.automatic_density(snl.structure, kpoints_density)
     spec['vasp']['kpoints'] = k.to_dict
     # spec = update_spec_static_dielectrics_convergence(spec)
     del spec['dupefinder']
