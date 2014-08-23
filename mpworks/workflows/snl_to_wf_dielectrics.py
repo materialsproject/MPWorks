@@ -49,7 +49,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     k=Kpoints.automatic_density(snl.structure, kpoints_density)
     spec['vasp']['kpoints'] = k.to_dict
     # spec = update_spec_static_dielectrics_convergence(spec)
-    del spec['dupefinder']
+    # del spec['dupefinder']
     # spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
