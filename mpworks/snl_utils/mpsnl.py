@@ -1,5 +1,5 @@
 import datetime
-from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
+from pymatgen import Structure, MontyDecoder, Molecule, Composition
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 from pymatgen.matproj.snl import StructureNL
 
@@ -69,7 +69,7 @@ class MPStructureNL(StructureNL):
     @staticmethod
     def from_dict(d):
         a = d["about"]
-        dec = PMGJSONDecoder()
+        dec = MontyDecoder()
 
         created_at = dec.process_decoded(a["created_at"]) if "created_at" in a \
             else None
