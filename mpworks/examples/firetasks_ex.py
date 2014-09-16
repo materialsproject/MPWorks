@@ -9,7 +9,7 @@ from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
-from pymatgen import PMGJSONDecoder
+from pymatgen import MontyDecoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -27,7 +27,7 @@ class VaspCustodianTaskEx(FireTaskBase, FWSerializable):
         # get VaspJob objects from 'jobs' parameter in FireWork
         self.jobs = map(VaspJob.from_dict, parameters['jobs'])
         # get VaspHandler objects from 'handlers' parameter in FireWork
-        self.handlers = map(PMGJSONDecoder().process_decoded, parameters['handlers'])
+        self.handlers = map(MontyDecoder().process_decoded, parameters['handlers'])
         self.max_errors = parameters['max_errors']
 
     def run_task(self, fw_spec):
