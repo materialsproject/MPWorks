@@ -24,9 +24,9 @@ class VaspCustodianTaskEx(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         parameters = parameters if parameters else {}
         self.update(parameters)
-        # get VaspJob objects from 'jobs' parameter in FireWork
+        # get VaspJob objects from 'jobs' parameter in Firework
         self.jobs = map(VaspJob.from_dict, parameters['jobs'])
-        # get VaspHandler objects from 'handlers' parameter in FireWork
+        # get VaspHandler objects from 'handlers' parameter in Firework
         self.handlers = map(MontyDecoder().process_decoded, parameters['handlers'])
         self.max_errors = parameters['max_errors']
 

@@ -3,7 +3,7 @@ from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenc
 
 __author__ = 'weichen'
 
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
@@ -34,7 +34,7 @@ def snl_to_wf_phonon(snl, parameters=None):
         spec['force_mpsnl'] = snl.to_dict
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 
     # run GGA structure optimization for force convergence
@@ -45,19 +45,19 @@ def snl_to_wf_phonon(snl, parameters=None):
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Vasp force convergence"
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
     fws.append(
-        FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+        Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     spec = {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
     fws.append(
-            FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+            Firework([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
     connections[2] = [3]
 

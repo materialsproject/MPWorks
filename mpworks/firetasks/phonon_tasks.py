@@ -7,7 +7,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar
 # from genstrain import DeformGeometry
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
 from fireworks.utilities.fw_utilities import get_slug
@@ -73,7 +73,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
                 spec['force_mpsnl'] = snl.to_dict
                 spec['force_snlgroup_id'] = fw_spec['snlgroup_id']
                 del spec['snl']
-            fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000+i*10))
+            fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000+i*10))
             connections[-1000+i*10] = [-999+i*10]
 
             spec = snl_to_wf._snl_to_spec(snl)
@@ -83,13 +83,13 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             del spec['_dupefinder']
 
             spec['task_type'] = "Calculate deformed structure"
-            fws.append(FireWork([VaspWriterTask(), SetupElastConstTask(),
+            fws.append(Firework([VaspWriterTask(), SetupElastConstTask(),
                                  get_custodian_task(spec)], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
 
             priority = fw_spec['_priority']
             spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
+            fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
 
             wf.append(Workflow(fws, connections))

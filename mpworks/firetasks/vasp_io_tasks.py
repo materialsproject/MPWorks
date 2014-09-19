@@ -14,7 +14,7 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
 
 from fireworks.utilities.fw_serializers import FWSerializable
-from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
+from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
@@ -209,7 +209,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 f = Composition.from_formula(
                     snl.structure.composition.reduced_formula).alphabetical_formula
 
-                fws.append(FireWork(
+                fws.append(Firework(
                     [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
                                    'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
                      get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
@@ -220,7 +220,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         'run_tags': list(fw_spec['run_tags'])}
                 spec['run_tags'].append(unconverged_tag)
                 fws.append(
-                    FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                    Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                              fw_id=-1))
                 connections[-2] = -1
 
@@ -229,4 +229,4 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 return FWAction(detours=wf)
 
         # not successful and not due to convergence problem - FIZZLE
-        raise ValueError("DB insertion successful, but don't know how to fix this FireWork! Can't continue with workflow...")
+        raise ValueError("DB insertion successful, but don't know how to fix this Firework! Can't continue with workflow...")

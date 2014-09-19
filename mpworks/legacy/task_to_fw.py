@@ -1,5 +1,5 @@
 import datetime
-from fireworks.core.firework import FireWork, Launch, FWAction, Workflow
+from fireworks.core.firework import Firework, Launch, FWAction, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.firetasks.controller_tasks import DummyLegacyTask
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
@@ -45,7 +45,7 @@ def task_dict_to_wf(task_dict, launchpad):
     f = Composition.from_formula(task_dict['pretty_formula']).alphabetical_formula
 
 
-    fw = FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), launches=launches, state='COMPLETED', created_on=None,
+    fw = Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), launches=launches, state='COMPLETED', created_on=None,
                  fw_id=fw_id)
 
     wf_meta = get_meta_from_structure(Structure.from_dict(task_dict['snl']))
