@@ -23,7 +23,7 @@ matcher = StructureMatcher(
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    id_range = {"$gte": args.start, "$lt": args.end}
+    id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
@@ -34,7 +34,7 @@ def check_snl_spacegroups(args):
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
-    id_range = {"$gte": args.start, "$lt": args.end}
+    id_range = {"$gt": args.start, "$lte": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
@@ -74,15 +74,15 @@ if __name__ == '__main__':
     # sub-command: spacegroups
     # This task can be split in multiple parallel jobs by SNL id ranges
     parser_task0 = subparsers.add_parser('spacegroups')
-    parser_task0.add_argument('--start', help='start SNL Id', default=1, type=int)
-    parser_task0.add_argument('--end', help='end SNL Id', default=11, type=int)
+    parser_task0.add_argument('--start', help='start SNL Id', default=0, type=int)
+    parser_task0.add_argument('--end', help='end SNL Id', default=10, type=int)
     parser_task0.set_defaults(func=check_snl_spacegroups)
 
     # sub-command: groupmembers
     # This task can be split in multiple parallel jobs by SNLGroup id ranges
     parser_task1 = subparsers.add_parser('groupmembers')
-    parser_task1.add_argument('--start', help='start SNLGroup Id', default=1, type=int)
-    parser_task1.add_argument('--end', help='end SNLGroup Id', default=11, type=int)
+    parser_task1.add_argument('--start', help='start SNLGroup Id', default=0, type=int)
+    parser_task1.add_argument('--end', help='end SNLGroup Id', default=10, type=int)
     parser_task1.set_defaults(func=check_snls_in_snlgroups)
 
     # sub-command: canonicals
