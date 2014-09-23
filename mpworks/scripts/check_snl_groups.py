@@ -15,20 +15,15 @@ from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 
-def check_snl_groups():
-    parser = ArgumentParser(description='program to check SNL groups')
-    parser.add_argument('--start', help='start Id', default=1, type=int)
-    parser.add_argument('--end', help='end Id', default=11, type=int)
-    args = parser.parse_args()
-    sma = SNLMongoAdapter.auto_load()
-    id_range = {"$gte": args.start, "$lt": args.end}
-    sm = StructureMatcher(
-        ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
-        attempt_supercell=False, comparator=ElementComparator()
-    )
+sma = SNLMongoAdapter.auto_load()
+matcher = StructureMatcher(
+    ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+    attempt_supercell=False, comparator=ElementComparator()
+)
 
-    # 0) check spacegroups of all available SNL's. This task can be split in
-    #    multiple parallel jobs by SNL id ranges
+def check_snl_spacegroups(args):
+    """check spacegroups of all available SNLs"""
+    id_range = {"$gte": args.start, "$lt": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
@@ -37,9 +32,9 @@ def check_snl_groups():
             mpsnl_dict['snl_id'], mpsnl.sg_num, sf.get_spacegroup_number()
         )
 
-    # 1) check whether every member of all_snl_ids in each snlgroup_id still
-    #    matches canonical_snl_id. This task can be split in multiple parallel
-    #    jobs by SNLGroup id ranges
+def check_snls_in_snlgroups(args):
+    """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
+    id_range = {"$gte": args.start, "$lt": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
@@ -51,27 +46,55 @@ def check_snl_groups():
             mpsnl_dict = sma.snl.find_one({ "snl_id": snl_id })
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
             print 'snl_id = %d: %d' % (
-                snl_id, sm.fit(mpsnl.structure, snlgrp.canonical_structure)
+                snl_id, matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
             )
 
-    # 2) check whether canonical SNLs of two different groups match. This task
-    #    can be split in multiple parallel jobs by SNLGroup combinations. Here,
-    #    use artificial reduced test set of SNLGroup's.
-    for id1 in range(args.start, args.end):
-        snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": id1 })
-        snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
-        for id2 in range(id1+1, args.end):
-            snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
-            snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
-            # check composition AND spacegroup via snlgroup_key
-            # TODO: add snlgroup_key attribute to SNLGroup for convenience
-            if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
-                print('.'),
-                sys.stdout.flush()
-                continue
-            # sm.fit only does composition check and returns None when different compositions
-            match = sm.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
-            print 'snlgroup_ids = (%d,%d): %d' % (id1, id2, match)
+def crosscheck_canonical_snls(args):
+    """check whether canonical SNLs of two different SNL groups match"""
+    snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": id1 })
+    snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
+    for id2 in range(args.secondary_start, args.secondary_end):
+        snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
+        snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
+        # check composition AND spacegroup via snlgroup_key
+        # TODO: add snlgroup_key attribute to SNLGroup for convenience
+        if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
+            print('.'),
+            sys.stdout.flush()
+            continue
+        # matcher.fit only does composition check and returns None when different compositions
+        match = matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
+        print 'snlgroup_ids = (%d,%d): %d' % (id1, id2, match)
 
 if __name__ == '__main__':
-    check_snl_groups()
+    # create top-level parser
+    parser = ArgumentParser()
+    subparsers = parser.add_subparsers()
+
+    # sub-command: check_snl_spacegroups
+    # This task can be split in multiple parallel jobs by SNL id ranges
+    parser_task0 = subparsers.add_parser('check_snl_spacegroups')
+    parser_task0.add_argument('--start', help='start SNL Id', default=1, type=int)
+    parser_task0.add_argument('--end', help='end SNL Id', default=11, type=int)
+    parser_task0.set_defaults(func=check_snl_spacegroups)
+
+    # sub-command: check_snls_in_snlgroups
+    # This task can be split in multiple parallel jobs by SNLGroup id ranges
+    parser_task1 = subparsers.add_parser('check_snls_in_snlgroups')
+    parser_task1.add_argument('--start', help='start SNLGroup Id', default=1, type=int)
+    parser_task1.add_argument('--end', help='end SNLGroup Id', default=11, type=int)
+    parser_task1.set_defaults(func=check_snls_in_snlgroups)
+
+    # sub-command: crosscheck_canonical_snls
+    # This task can be split in multiple parallel jobs by SNLGroup combinations
+    # of (primary, secondary) ID's. The range for the secondary id always starts
+    # at primary+1 (to avoid dupes)
+    parser_task2 = subparsers.add_parser('crosscheck_canonical_snls')
+    parser_task2.add_argument('--primary', help='primary SNLGroup Id', default=1, type=int)
+    parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=10, type=int)
+    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=15, type=int)
+    parser_task2.set_defaults(func=crosscheck_canonical_snls)
+
+    # parse args and call function
+    args = parser.parse_args()
+    args.func(args)
