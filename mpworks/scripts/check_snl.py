@@ -51,7 +51,7 @@ def check_snls_in_snlgroups(args):
 
 def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""
-    snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": id1 })
+    snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": args.primary })
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
     for id2 in range(args.secondary_start, args.secondary_end):
         snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
@@ -64,32 +64,32 @@ def crosscheck_canonical_snls(args):
             continue
         # matcher.fit only does composition check and returns None when different compositions
         match = matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
-        print 'snlgroup_ids = (%d,%d): %d' % (id1, id2, match)
+        print 'snlgroup_ids = (%d,%d): %d' % (args.primary, id2, match)
 
 if __name__ == '__main__':
     # create top-level parser
     parser = ArgumentParser()
     subparsers = parser.add_subparsers()
 
-    # sub-command: check_snl_spacegroups
+    # sub-command: spacegroups
     # This task can be split in multiple parallel jobs by SNL id ranges
-    parser_task0 = subparsers.add_parser('check_snl_spacegroups')
+    parser_task0 = subparsers.add_parser('spacegroups')
     parser_task0.add_argument('--start', help='start SNL Id', default=1, type=int)
     parser_task0.add_argument('--end', help='end SNL Id', default=11, type=int)
     parser_task0.set_defaults(func=check_snl_spacegroups)
 
-    # sub-command: check_snls_in_snlgroups
+    # sub-command: groupmembers
     # This task can be split in multiple parallel jobs by SNLGroup id ranges
-    parser_task1 = subparsers.add_parser('check_snls_in_snlgroups')
+    parser_task1 = subparsers.add_parser('groupmembers')
     parser_task1.add_argument('--start', help='start SNLGroup Id', default=1, type=int)
     parser_task1.add_argument('--end', help='end SNLGroup Id', default=11, type=int)
     parser_task1.set_defaults(func=check_snls_in_snlgroups)
 
-    # sub-command: crosscheck_canonical_snls
+    # sub-command: canonicals
     # This task can be split in multiple parallel jobs by SNLGroup combinations
     # of (primary, secondary) ID's. The range for the secondary id always starts
     # at primary+1 (to avoid dupes)
-    parser_task2 = subparsers.add_parser('crosscheck_canonical_snls')
+    parser_task2 = subparsers.add_parser('canonicals')
     parser_task2.add_argument('--primary', help='primary SNLGroup Id', default=1, type=int)
     parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=10, type=int)
     parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=15, type=int)
