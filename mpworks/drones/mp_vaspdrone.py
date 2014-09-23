@@ -16,7 +16,7 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
-from pymatgen import Composition, PMGJSONEncoder
+from pymatgen import Composition, MontyEncoder
 from pymatgen.core.structure import Structure
 from pymatgen.entries.compatibility import MaterialsProjectCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
@@ -90,7 +90,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 if self.parse_dos and "calculations" in d:
                     for calc in d["calculations"]:
                         if "dos" in calc:
-                            dos = json.dumps(calc["dos"], cls=PMGJSONEncoder)
+                            dos = json.dumps(calc["dos"], cls=MontyEncoder)
                             fs = gridfs.GridFS(db, "dos_fs")
                             dosid = fs.put(dos)
                             calc["dos_fs_id"] = dosid
@@ -202,7 +202,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     else:
                         bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
                                                        line_mode=False)
-                    bs_json = json.dumps(bs.to_dict, cls=PMGJSONEncoder)
+                    bs_json = json.dumps(bs.to_dict, cls=MontyEncoder)
                     fs = gridfs.GridFS(db, "band_structure_fs")
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id

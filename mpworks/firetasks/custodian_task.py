@@ -13,7 +13,7 @@ import os
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.workflows.wf_utils import j_decorate
 from pymatgen.io.vaspio.vasp_input import Incar
-from pymatgen.serializers.json_coders import PMGJSONDecoder
+from pymatgen.serializers.json_coders import MontyDecoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -62,7 +62,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         self.update(parameters)
         self.jobs = map(VaspJob.from_dict, self['jobs'])
-        dec = PMGJSONDecoder()
+        dec = MontyDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
         self.gzip_output = self.get('gzip_output', True)

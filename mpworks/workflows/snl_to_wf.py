@@ -1,5 +1,5 @@
 from collections import defaultdict
-from fireworks.core.firework import FireWork, Workflow, Tracker
+from fireworks.core.firework import Firework, Workflow, Tracker
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp, DupeFinderDB
 from mpworks.firetasks.controller_tasks import AddEStructureTask
@@ -96,7 +96,7 @@ def snl_to_wf(snl, parameters=None):
         # add the SNL to the SNL DB and figure out duplicate group
         tasks = [AddSNLTask()]
         spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
-        fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+        fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
         connections[0] = [1]
 
     trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'), Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
@@ -108,20 +108,20 @@ def snl_to_wf(snl, parameters=None):
     spec['_queueadapter'] = QA_VASP
     spec['_trackers'] = trackers
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority*2,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
     fws.append(
-        FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+        Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     if not parameters.get('skip_bandstructure', False):
         spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
         fws.append(
-            FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+            Firework([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
         connections[2] = [3]
 
@@ -134,7 +134,7 @@ def snl_to_wf(snl, parameters=None):
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
         spec['_trackers'] = trackers
-        fws.append(FireWork(
+        fws.append(Firework(
             [VaspCopyTask(), SetupGGAUTask(),
              get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
             fw_id=10))
@@ -143,14 +143,14 @@ def snl_to_wf(snl, parameters=None):
         spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
                 '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
         fws.append(
-            FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
+            Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if not parameters.get('skip_bandstructure', False):
             spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                     '_queueadapter': QA_CONTROL}
             fws.append(
-                FireWork([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                Firework([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                          fw_id=12))
             connections[11] = [12]
 
@@ -174,12 +174,12 @@ def snl_to_wf_ggau(snl):
     # add the root FW (GGA+U)
     spec = _snl_to_spec(snl, enforce_gga=False)
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, fw_id=1))
+    fws.append(Firework(tasks, spec, fw_id=1))
 
     # add GGA insertion to DB
     spec = {'task_type': 'VASP db insertion', '_priority': 2,
             '_category': 'VASP', '_queueadapter': QA_VASP}
-    fws.append(FireWork([VaspToDBTask()], spec, fw_id=2))
+    fws.append(Firework([VaspToDBTask()], spec, fw_id=2))
     connections[1] = 2
     mpvis = MPVaspInputSet()
 

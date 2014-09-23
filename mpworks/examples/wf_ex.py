@@ -2,7 +2,7 @@ from collections import defaultdict
 from pprint import pprint
 from custodian.vasp.handlers import VaspErrorHandler, FrozenJobErrorHandler, MeshSymmetryErrorHandler, NonConvergingErrorHandler
 from custodian.vasp.jobs import VaspJob
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.examples.firetasks_ex import VaspCustodianTaskEx, VaspToDBTaskEx
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspCopyTask
@@ -59,19 +59,19 @@ def structure_to_wf(structure):
     c_params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
     custodiantask = VaspCustodianTaskEx(c_params)
 
-    # 1st FireWork - run GGA optimize structure
+    # 1st Firework - run GGA optimize structure
     # VaspWriterTask - write input files (INCAR, POSCAR, KPOINTS, POSCAR) based on spec
     # CustodianTaskEx - run VASP within a custodian
     tasks = [VaspWriterTask(), custodiantask]
-    fws.append(FireWork(tasks, spec, name=get_name(structure, spec['task_type']), fw_id=1))
+    fws.append(Firework(tasks, spec, name=get_name(structure, spec['task_type']), fw_id=1))
 
-    # 2nd FireWork - insert previous run into DB
+    # 2nd Firework - insert previous run into DB
     spec = {'task_type': 'VASP db insertion example'}
     fws.append(
-        FireWork([VaspToDBTaskEx()], spec, name=get_name(structure, spec['task_type']), fw_id=2))
+        Firework([VaspToDBTaskEx()], spec, name=get_name(structure, spec['task_type']), fw_id=2))
     connections[1] = [2]
 
-    # 3rd FireWork - static run.
+    # 3rd Firework - static run.
     # VaspCopyTask - copy output from previous run to this directory
     # SetupStaticRunTask - override old parameters for static run
     # CustodianTaskEx - run VASP within a custodian
@@ -79,13 +79,13 @@ def structure_to_wf(structure):
     copytask = VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True})
     setuptask = SetupStaticRunTask()
     custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).to_dict], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5})
-    fws.append(FireWork([copytask, setuptask, custodiantask], spec, name=get_name(structure, spec['task_type']), fw_id=3))
+    fws.append(Firework([copytask, setuptask, custodiantask], spec, name=get_name(structure, spec['task_type']), fw_id=3))
     connections[2] = [3]
 
-    # 4th FireWork - insert previous run into DB
+    # 4th Firework - insert previous run into DB
     spec = {'task_type': 'VASP db insertion example'}
     fws.append(
-        FireWork([VaspToDBTaskEx()], spec, name=get_name(structure, spec['task_type']), fw_id=4))
+        Firework([VaspToDBTaskEx()], spec, name=get_name(structure, spec['task_type']), fw_id=4))
     connections[3] = [4]
 
     return Workflow(fws, connections, name=get_slug(structure.formula))
