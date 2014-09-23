@@ -44,7 +44,10 @@ def check_snl_groups():
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
         print snlgrp.all_snl_ids
-        for snl_id in snlgrp.all_snl_ids[1:]: # first one is canonical id
+        for snl_id in snlgrp.all_snl_ids:
+            if snl_id == snlgrp.canonical_snl.snl_id or \
+               len(snlgrp.all_snl_ids) <= 1: # TODO: add num_snl attribute in SNLGroup
+                continue
             mpsnl_dict = sma.snl.find_one({ "snl_id": snl_id })
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
             print 'snl_id = %d: %d' % (
@@ -56,16 +59,19 @@ def check_snl_groups():
     #    use artificial reduced test set of SNLGroup's.
     for id1 in range(args.start, args.end):
         snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": id1 })
-        struc1 = SNLGroup.from_dict(snlgrp_dict1).canonical_structure
+        snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
         for id2 in range(id1+1, args.end):
             snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
-            struc2 = SNLGroup.from_dict(snlgrp_dict2).canonical_structure
-            match = sm.fit(struc1, struc2) # most return None due to different composition
-            if match is not None:
-                print 'snlgroup_ids = (%d,%d): %d' % (id1, id2, match)
-            else:
+            snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
+            # check composition AND spacegroup via snlgroup_key
+            # TODO: add snlgroup_key attribute to SNLGroup for convenience
+            if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
                 print('.'),
                 sys.stdout.flush()
+                continue
+            # sm.fit only does composition check and returns None when different compositions
+            match = sm.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
+            print 'snlgroup_ids = (%d,%d): %d' % (id1, id2, match)
 
 if __name__ == '__main__':
     check_snl_groups()
