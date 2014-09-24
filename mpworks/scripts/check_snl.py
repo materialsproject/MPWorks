@@ -43,17 +43,25 @@ def check_snl_spacegroups(args):
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     s = py.Stream(stream_ids[0]) # keep open in HPC env
     s.open()
-    for i,mpsnl_dict in enumerate(mpsnl_cursor):
+    data = dict(x=[], y=[])
+    start_time = time.clock()
+    for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        is_match = (sf.get_spacegroup_number() == mpsnl.sg_num)
-        xval_index = xvals.index(mpsnl_dict['snl_id'])
-        heatmap['z'][yvals.index('spacegroups')][xval_index] = int(is_match)
-        print heatmap
-        #text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
-        #if not i%2 or i == len(mpsnl_cursor)+1:
-        s.write(heatmap)
-        time.sleep(0.08)
+        if sf.get_spacegroup_number() == mpsnl.sg_num:
+            data['x'].append(mpsnl_dict['snl_id'])
+            data['y'].append(1)
+            time_diff = time.clock() - start_time
+            if time_diff > 0.08:
+                print data
+                s.write(data)
+                data['x'][:] = []
+                data['y'][:] = []
+                start_time = time.clock()
+    sleep_time =  0.08 - time.clock() + start_time
+    time.sleep(sleep_time)
+    print data
+    s.write(data)
     s.close()
 
 def check_snls_in_snlgroups(args):
