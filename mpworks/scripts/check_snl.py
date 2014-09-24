@@ -18,6 +18,7 @@ import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
 stream_ids = tls.get_credentials_file()['stream_ids']
+plotly_stream = py.Stream(stream_ids[0])
 
 sma = SNLMongoAdapter.auto_load()
 matcher = StructureMatcher(
@@ -33,6 +34,7 @@ def init_plotly(args):
         ybins=YBins(start=0.5,end=3.5,size=1), # 'sg', 'gm', 'can'
     )])
     xaxis = XAxis(title='SNL or SNL Group ID')
+    yaxis = YAxis(title='check number/id')
     layout = Layout(title='SNL group checks', xaxis=xaxis)
     fig = Figure(data=data, layout=layout)
     unique_url = py.plot(fig, filename='snl_group_check_stream')
@@ -41,23 +43,18 @@ def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
     id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
-    s = py.Stream(stream_ids[0]) # keep open in HPC env
-    s.open()
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
         if sf.get_spacegroup_number() == mpsnl.sg_num:
             data = dict(x=mpsnl_dict['snl_id'], y=1)
-            s.write(data)
+            plotly_stream.write(data)
             time.sleep(0.08)
-    s.close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
     id_range = {"$gt": args.start, "$lte": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
-    s = py.Stream(stream_ids[0]) # keep open in HPC env
-    s.open()
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
         num_snl = len(snlgrp.all_snl_ids)
@@ -76,15 +73,12 @@ def check_snls_in_snlgroups(args):
             data = dict(x=snlgrp.canonical_snl.snl_id, y=2)
             sleep_time = 0.08 - time_diff
             if sleep_time > 0: time.sleep(sleep_time)
-            s.write(data)
-    s.close()
+            plotly_stream.write(data)
 
 def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""
     snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": args.primary })
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
-    s = py.Stream(stream_ids[2]) # keep open in HPC env
-    s.open()
     secondary_range = range(args.secondary_start, args.secondary_end)
     num_id2 = len(secondary_range)
     for i,id2 in enumerate(secondary_range):
@@ -94,7 +88,7 @@ def crosscheck_canonical_snls(args):
         # TODO: add snlgroup_key attribute to SNLGroup for convenience
         if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
             if not i%1000:
-                s.write({"x":"\n"}) # needs to be once a minute to keep stream open
+                plotly_stream.write({"x":"\n"}) # needs to be once a minute to keep stream open
                 print '-->', id2
             continue
         # matcher.fit only does composition check and returns None when different compositions
@@ -106,11 +100,13 @@ def crosscheck_canonical_snls(args):
             text = 'snlgroup_id: %d' % id2
         )
         print data_point
-        s.write(data_point)
+        plotly_stream.write(data_point)
         time.sleep(0.08)
-    s.close()
 
 if __name__ == '__main__':
+    # open plotly stream
+    plotly_stream.open()
+
     # create top-level parser
     parser = ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -146,3 +142,6 @@ if __name__ == '__main__':
     # parse args and call function
     args = parser.parse_args()
     args.func(args)
+
+    # close plotly stream
+    plotly_stream.close()
