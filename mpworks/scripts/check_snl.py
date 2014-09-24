@@ -12,7 +12,6 @@ import sys, time
 from argparse import ArgumentParser
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from mpworks.scripts.init_check_snl_plotly import names
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 import plotly.plotly as py
@@ -26,13 +25,25 @@ matcher = StructureMatcher(
     attempt_supercell=False, comparator=ElementComparator()
 )
 
+xvals = range(1,100) # TODO = sma.snl.count()+1
+yvals = ['spacegroups', 'groupmembers', 'canonicals']
+zvals = [z[:] for z in [[0]*len(xvals)]*len(yvals)]
+heatmap = Heatmap(x=xvals, y=yvals, z=zvals)
+
+def init_plotly(args):
+    stream = Stream(token=stream_ids[0], maxpoints=300) # TODO maxpoints
+    heatmap.update(dict(stream=stream))
+    data = Data([heatmap])
+    layout = Layout(
+        title='SNL group checks', xaxis=XAxis(title='SNL or SNL Group ID')
+    )
+    fig = Figure(data=data, layout=layout)
+    unique_url = py.plot(fig, filename='snl_group_check_stream')
+
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
     id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
-    xvals = range(args.start+1, args.end+1)
-    zvals = [z[:] for z in [[0]*(args.end-args.start)]*len(names)]
-    heatmap = Heatmap(z = zvals)
     s = py.Stream(stream_ids[0]) # keep open in HPC env
     s.open()
     for i,mpsnl_dict in enumerate(mpsnl_cursor):
@@ -40,7 +51,7 @@ def check_snl_spacegroups(args):
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
         is_match = (sf.get_spacegroup_number() == mpsnl.sg_num)
         xval_index = xvals.index(mpsnl_dict['snl_id'])
-        heatmap['z'][names.index('spacegroups')][xval_index] = int(is_match)
+        heatmap['z'][yvals.index('spacegroups')][xval_index] = int(is_match)
         print heatmap
         #text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
         #if not i%2 or i == len(mpsnl_cursor)+1:
@@ -110,6 +121,10 @@ if __name__ == '__main__':
     # create top-level parser
     parser = ArgumentParser()
     subparsers = parser.add_subparsers()
+
+    # sub-command: init
+    parser_init = subparsers.add_parser('init')
+    parser_init.set_defaults(func=init_plotly)
 
     # sub-command: spacegroups
     # This task can be split in multiple parallel jobs by SNL id ranges
