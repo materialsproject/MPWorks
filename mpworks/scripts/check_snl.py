@@ -56,27 +56,27 @@ def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
     id_range = {"$gt": args.start, "$lte": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
-    s = py.Stream(stream_ids[1]) # keep open in HPC env
+    s = py.Stream(stream_ids[0]) # keep open in HPC env
     s.open()
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
-        print snlgrp.all_snl_ids
         num_snl = len(snlgrp.all_snl_ids)
-        for i,snl_id in enumerate(snlgrp.all_snl_ids):
+        all_snls_match = True
+        start_time = time.clock()
+        for snl_id in snlgrp.all_snl_ids:
             # TODO: add num_snl attribute in SNLGroup
             if snl_id == snlgrp.canonical_snl.snl_id or num_snl <= 1: continue
             mpsnl_dict = sma.snl.find_one({ "snl_id": snl_id })
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-            structures_match = matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
-            offset = 0.3/num_snl * i
-            data_point = dict(
-                x = snlgrp.canonical_snl.snl_id + offset,
-                y = int(structures_match) + offset,
-                text = 'snl_id: %d' % snl_id
-            )
-            print data_point
-            s.write(data_point)
-            time.sleep(0.08)
+            if not matcher.fit(mpsnl.structure, snlgrp.canonical_structure):
+                all_snls_match = False
+                break
+        time_diff = time.clock() - start_time
+        if all_snls_match:
+            data = dict(x=snlgrp.canonical_snl.snl_id, y=2)
+            sleep_time = 0.08 - time_diff
+            if sleep_time > 0: time.sleep(sleep_time)
+            s.write(data)
     s.close()
 
 def crosscheck_canonical_snls(args):
