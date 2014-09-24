@@ -8,12 +8,16 @@ __maintainer__ = 'Patrick Huck'
 __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
-import sys
+import sys, time
 from argparse import ArgumentParser
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
+import plotly.plotly as py
+import plotly.tools as tls
+from plotly.graph_objs import *
+stream_ids = tls.get_credentials_file()['stream_ids']
 
 sma = SNLMongoAdapter.auto_load()
 matcher = StructureMatcher(
@@ -25,29 +29,47 @@ def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
     id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
+    s = py.Stream(stream_ids[0]) # keep open in HPC env
+    s.open()
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        print 'snl_id = %d: %d %d' % (
-            mpsnl_dict['snl_id'], mpsnl.sg_num, sf.get_spacegroup_number()
+        data_point = dict(
+            x = mpsnl_dict['snl_id'],
+            y = sf.get_spacegroup_number() - mpsnl.sg_num, # new - old
+            text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
         )
+        print data_point
+        s.write(data_point)
+        time.sleep(0.08)
+    s.close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
     id_range = {"$gt": args.start, "$lte": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
+    s = py.Stream(stream_ids[1]) # keep open in HPC env
+    s.open()
     for snlgrp_dict in snlgrp_cursor:
         snlgrp = SNLGroup.from_dict(snlgrp_dict)
         print snlgrp.all_snl_ids
-        for snl_id in snlgrp.all_snl_ids:
-            if snl_id == snlgrp.canonical_snl.snl_id or \
-               len(snlgrp.all_snl_ids) <= 1: # TODO: add num_snl attribute in SNLGroup
-                continue
+        num_snl = len(snlgrp.all_snl_ids)
+        for i,snl_id in enumerate(snlgrp.all_snl_ids):
+            # TODO: add num_snl attribute in SNLGroup
+            if snl_id == snlgrp.canonical_snl.snl_id or num_snl <= 1: continue
             mpsnl_dict = sma.snl.find_one({ "snl_id": snl_id })
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-            print 'snl_id = %d: %d' % (
-                snl_id, matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
+            structures_match = matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
+            offset = 0.3/num_snl * i
+            data_point = dict(
+                x = snlgrp.canonical_snl.snl_id + offset,
+                y = int(structures_match) + offset,
+                text = 'snl_id: %d' % snl_id
             )
+            print data_point
+            s.write(data_point)
+            time.sleep(0.08)
+    s.close()
 
 def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""

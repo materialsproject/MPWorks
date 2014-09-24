@@ -7,7 +7,7 @@ names = ['spacegroups', 'groupmembers', 'canonicals']
 data = Data([
     Scatter(
         x=[], y=[], text=[],
-        stream = Stream(token=stream_ids[i], maxpoints=100),
+        stream = Stream(token=stream_ids[i], maxpoints=300),
         mode='markers', name=name
     ) for i,name in enumerate(names)
 ])
