@@ -36,7 +36,7 @@ def check_snl_spacegroups(args):
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
         data_point = dict(
             x = mpsnl_dict['snl_id'],
-            y = sf.get_spacegroup_number() - mpsnl.sg_num, # new - old
+            y = int(sf.get_spacegroup_number() == mpsnl.sg_num),
             text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
         )
         print data_point
@@ -75,18 +75,32 @@ def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""
     snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": args.primary })
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
-    for id2 in range(args.secondary_start, args.secondary_end):
+    s = py.Stream(stream_ids[2]) # keep open in HPC env
+    s.open()
+    secondary_range = range(args.secondary_start, args.secondary_end)
+    num_id2 = len(secondary_range)
+    for i,id2 in enumerate(secondary_range):
         snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
         snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
         # check composition AND spacegroup via snlgroup_key
         # TODO: add snlgroup_key attribute to SNLGroup for convenience
         if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
-            print('.'),
-            sys.stdout.flush()
+            if not i%1000:
+                s.write({"x":"\n"}) # needs to be once a minute to keep stream open
+                print '-->', id2
             continue
         # matcher.fit only does composition check and returns None when different compositions
         match = matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
-        print 'snlgroup_ids = (%d,%d): %d' % (args.primary, id2, match)
+        offset = 0.3/num_id2 * i
+        data_point = dict(
+            x = args.primary + offset + 0.1,
+            y = int(match) + offset,
+            text = 'snlgroup_id: %d' % id2
+        )
+        print data_point
+        s.write(data_point)
+        time.sleep(0.08)
+    s.close()
 
 if __name__ == '__main__':
     # create top-level parser
@@ -113,8 +127,8 @@ if __name__ == '__main__':
     # at primary+1 (to avoid dupes)
     parser_task2 = subparsers.add_parser('canonicals')
     parser_task2.add_argument('--primary', help='primary SNLGroup Id', default=1, type=int)
-    parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=10, type=int)
-    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=15, type=int)
+    parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=2, type=int)
+    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=10000, type=int)
     parser_task2.set_defaults(func=crosscheck_canonical_snls)
 
     # parse args and call function

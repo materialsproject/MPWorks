@@ -12,7 +12,9 @@ data = Data([
     ) for i,name in enumerate(names)
 ])
 layout = Layout(
-    title='SNL group checks', xaxis=XAxis(title='SNL or SNL Group ID')
+    title='SNL group checks',
+    xaxis=XAxis(title='SNL or SNL Group ID'),
+    yaxis=YAxis(title='match (>=1) or no-match (<1)')
 )
 fig = Figure(data=data, layout=layout)
 unique_url = py.plot(fig, filename='snl_group_check_stream')
