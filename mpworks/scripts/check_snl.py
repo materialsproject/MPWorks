@@ -12,6 +12,7 @@ import sys, time
 from argparse import ArgumentParser
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
+from mpworks.scripts.init_check_snl_plotly import names
 from pymatgen.symmetry.finder import SymmetryFinder
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 import plotly.plotly as py
@@ -29,18 +30,21 @@ def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
     id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
+    xvals = range(args.start+1, args.end+1)
+    zvals = [z[:] for z in [[0]*(args.end-args.start)]*len(names)]
+    heatmap = Heatmap(z = zvals)
     s = py.Stream(stream_ids[0]) # keep open in HPC env
     s.open()
-    for mpsnl_dict in mpsnl_cursor:
+    for i,mpsnl_dict in enumerate(mpsnl_cursor):
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        data_point = dict(
-            x = mpsnl_dict['snl_id'],
-            y = int(sf.get_spacegroup_number() == mpsnl.sg_num),
-            text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
-        )
-        print data_point
-        s.write(data_point)
+        is_match = (sf.get_spacegroup_number() == mpsnl.sg_num)
+        xval_index = xvals.index(mpsnl_dict['snl_id'])
+        heatmap['z'][names.index('spacegroups')][xval_index] = int(is_match)
+        print heatmap
+        #text = '%d => %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
+        #if not i%2 or i == len(mpsnl_cursor)+1:
+        s.write(heatmap)
         time.sleep(0.08)
     s.close()
 
