@@ -24,6 +24,44 @@ DATETIME_HANDLER = lambda obj: obj.isoformat() \
 YAML_STYLE = False  # False = YAML is formatted as blocks
 
 
+def reconstitute_dates(obj_dict):
+    if obj_dict is None:
+        return None
+
+    if isinstance(obj_dict, dict):
+        return {k: reconstitute_dates(v) for k, v in obj_dict.items()}
+
+    if isinstance(obj_dict, list):
+        return [reconstitute_dates(v) for v in obj_dict]
+
+    if isinstance(obj_dict, basestring):
+        try:
+            return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
+        except ValueError:
+            try:
+                return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                pass
+
+    return obj_dict
+
+
+def get_meta_from_structure(structure):
+    comp = structure.composition
+    elsyms = sorted(set([e.symbol for e in comp.elements]))
+    meta = {'nsites': len(structure),
+            'elements': elsyms,
+            'nelements': len(elsyms),
+            'formula': comp.formula,
+            'reduced_cell_formula': comp.reduced_formula,
+            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
+            .alphabetical_formula,
+            'anonymized_formula': comp.anonymized_formula,
+            'chemsystem': '-'.join(elsyms),
+            'is_ordered': structure.is_ordered,
+            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
+    return meta
+
 class SubmissionMongoAdapter(object):
     # This is the user interface to submissions
 
@@ -162,9 +200,9 @@ class SubmissionMongoAdapter(object):
         :param f_format: serialization format of the String (default json)
         """
         if f_format == 'json':
-            return cls.from_dict(_reconstitute_dates(json.loads(f_str)))
+            return cls.from_dict(reconstitute_dates(json.loads(f_str)))
         elif f_format == 'yaml':
-            return cls.from_dict(_reconstitute_dates(yaml.load(f_str)))
+            return cls.from_dict(reconstitute_dates(yaml.load(f_str)))
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
@@ -194,37 +232,3 @@ class SubmissionMongoAdapter(object):
             return cls.from_format(f.read(), f_format=f_format)
 
 
-def _reconstitute_dates(obj_dict):
-    if obj_dict is None:
-        return None
-
-    if isinstance(obj_dict, dict):
-        return {k: _reconstitute_dates(v) for k, v in obj_dict.items()}
-
-    if isinstance(obj_dict, list):
-        return [_reconstitute_dates(v) for v in obj_dict]
-
-    if isinstance(obj_dict, basestring):
-        try:
-            return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
-        except ValueError:
-            pass
-
-    return obj_dict
-
-
-def get_meta_from_structure(structure):
-    comp = structure.composition
-    elsyms = sorted(set([e.symbol for e in comp.elements]))
-    meta = {'nsites': len(structure),
-            'elements': elsyms,
-            'nelements': len(elsyms),
-            'formula': comp.formula,
-            'reduced_cell_formula': comp.reduced_formula,
-            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
-            .alphabetical_formula,
-            'anonymized_formula': comp.anonymized_formula,
-            'chemsystem': '-'.join(elsyms),
-            'is_ordered': structure.is_ordered,
-            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
-    return meta
