@@ -25,18 +25,15 @@ matcher = StructureMatcher(
     attempt_supercell=False, comparator=ElementComparator()
 )
 
-xvals = range(1,100) # TODO = sma.snl.count()+1
-yvals = ['spacegroups', 'groupmembers', 'canonicals']
-zvals = [z[:] for z in [[0]*len(xvals)]*len(yvals)]
-heatmap = Heatmap(x=xvals, y=yvals, z=zvals)
-
 def init_plotly(args):
-    stream = Stream(token=stream_ids[0], maxpoints=300) # TODO maxpoints
-    heatmap.update(dict(stream=stream))
-    data = Data([heatmap])
-    layout = Layout(
-        title='SNL group checks', xaxis=XAxis(title='SNL or SNL Group ID')
-    )
+    stream = Stream(token=stream_ids[0], maxpoints=500) # TODO maxpoints
+    data = Data([Histogram2d(
+        x=[], y=[], autobinx=False, autobiny=False, stream=stream,
+        xbins=XBins(start=0.5,end=100.5,size=1),
+        ybins=YBins(start=0.5,end=3.5,size=1), # 'sg', 'gm', 'can'
+    )])
+    xaxis = XAxis(title='SNL or SNL Group ID')
+    layout = Layout(title='SNL group checks', xaxis=xaxis)
     fig = Figure(data=data, layout=layout)
     unique_url = py.plot(fig, filename='snl_group_check_stream')
 
