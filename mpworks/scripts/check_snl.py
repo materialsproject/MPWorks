@@ -97,14 +97,13 @@ def check_snl_spacegroups(args):
         if is_match: # Bar
             num_good_ids += 1
             data = dict(
-                x=[num_good_ids], y=[idxs[0]], text=['%.3g / %dk, sg_num: %d' % (
-                    float(num_good_ids)/1000., num_ids_per_stream/1000, mpsnl.sg_num
-                )]
+                x=[num_good_ids], y=[idxs[0]],
+                text=['current SG: %d' % (mpsnl.sg_num)]
             )
         else: # Scatter
             data = dict(
                 x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
-                text='sg_num: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
+                text='SG change: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
             )
         s[is_match].write(data)
         time.sleep(0.055) # needed b/c the above only takes 3-6ms
