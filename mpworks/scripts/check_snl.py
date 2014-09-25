@@ -18,7 +18,6 @@ import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
 stream_ids = tls.get_credentials_file()['stream_ids']
-plotly_stream = py.Stream(stream_ids[0])
 
 sma = SNLMongoAdapter.auto_load()
 matcher = StructureMatcher(
@@ -27,21 +26,31 @@ matcher = StructureMatcher(
 )
 
 def init_plotly(args):
-    num_snls = sma.snl.count()
-    stream = Stream(token=stream_ids[0], maxpoints=num_snls*3)
-    data = Data([Histogram2d(
-        x=[], y=[], autobinx=False, autobiny=False, stream=stream,
-        xbins=XBins(start=0.5,end=float(num_snls)+0.5,size=1),
-        ybins=YBins(start=0.5,end=3.5,size=1), # 'sg', 'gm', 'can'
-    )])
-    xaxis = XAxis(title='SNL or SNL Group ID')
-    yaxis = YAxis(title='check ID (1:spacegroups, 2:groupmembers, 3:canonicals)')
-    layout = Layout(title='SNL group checks', xaxis=xaxis)
-    fig = Figure(data=data, layout=layout)
-    unique_url = py.plot(fig, filename='snl_group_check_stream')
+    checks = ['spacegroups', 'groupmembers', 'canonicals']
+    num_ids_per_stream = 20000
+    streams_counter = 0
+    for check in checks:
+        num_ids = sma.snl.count() if check == 'spacegroups' else sma.snlgroups.count()
+        num_streams = num_ids / num_ids_per_stream
+        if num_ids % num_ids_per_stream: num_streams += 1
+        data = []
+        for index in range(num_streams):
+            stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
+            name = '%d - %d' % (index*num_ids_per_stream, (index+1)*num_ids_per_stream)
+            data.append(Scatter(
+                x=[], y=[], text=[], stream=stream, mode='markers', name=name
+            ))
+            streams_counter += 1
+        xaxis = XAxis(title='SNL ID' if check == 'spacegroups' else 'SNL Group ID')
+        yaxis = YAxis(title='Status (-1: !run, 0: !ok, 1: ok)')
+        layout = Layout(title=check, xaxis=xaxis)
+        fig = Figure(data=Data(data), layout=layout)
+        unique_url = py.plot(fig, filename='snl_group_check_%s' % check)
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
+    plotly_stream = py.Stream(stream_ids[0])
+    plotly_stream.open()
     id_range = {"$gt": args.start, "$lte": args.end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     for mpsnl_dict in mpsnl_cursor:
@@ -51,9 +60,12 @@ def check_snl_spacegroups(args):
             data = dict(x=mpsnl_dict['snl_id'], y=1)
             plotly_stream.write(data)
             time.sleep(0.08)
+    plotly_stream.close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
+    plotly_stream = py.Stream(stream_ids[-1]) #TODO
+    plotly_stream.open()
     id_range = {"$gt": args.start, "$lte": args.end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
     for snlgrp_dict in snlgrp_cursor:
@@ -75,9 +87,12 @@ def check_snls_in_snlgroups(args):
             sleep_time = 0.08 - time_diff
             if sleep_time > 0: time.sleep(sleep_time)
             plotly_stream.write(data)
+    plotly_stream.close()
 
 def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""
+    plotly_stream = py.Stream(stream_ids[-1]) #TODO
+    plotly_stream.open()
     snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": args.primary })
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
     secondary_range = range(args.secondary_start, args.secondary_end)
@@ -99,11 +114,9 @@ def crosscheck_canonical_snls(args):
             data = dict(x=args.primary, y=3)
             plotly_stream.write(data)
             time.sleep(0.08)
+    plotly_stream.close()
 
 if __name__ == '__main__':
-    # open plotly stream
-    plotly_stream.open()
-
     # create top-level parser
     parser = ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -139,6 +152,3 @@ if __name__ == '__main__':
     # parse args and call function
     args = parser.parse_args()
     args.func(args)
-
-    # close plotly stream
-    plotly_stream.close()
