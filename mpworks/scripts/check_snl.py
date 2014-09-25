@@ -24,13 +24,15 @@ matcher = StructureMatcher(
     ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
     attempt_supercell=False, comparator=ElementComparator()
 )
+num_ids_per_stream = 20000
+num_snls = sma.snl.count()
+num_snlgroups = sma.snlgroups.count()
 
 def init_plotly(args):
     checks = ['spacegroups', 'groupmembers', 'canonicals']
-    num_ids_per_stream = 20000
     streams_counter = 0
     for check in checks:
-        num_ids = sma.snl.count() if check == 'spacegroups' else sma.snlgroups.count()
+        num_ids = num_snls if check == 'spacegroups' else num_snlgroups
         num_streams = num_ids / num_ids_per_stream
         if num_ids % num_ids_per_stream: num_streams += 1
         data = []
@@ -42,10 +44,11 @@ def init_plotly(args):
             ))
             streams_counter += 1
         xaxis = XAxis(title='SNL ID' if check == 'spacegroups' else 'SNL Group ID')
-        yaxis = YAxis(title='Status (-1: !run, 0: !ok, 1: ok)')
-        layout = Layout(title=check, xaxis=xaxis)
+        yaxis = YAxis(title='Status (>=1: ok, <1: !ok)')
+        layout = Layout(title=check, xaxis=xaxis, yaxis=yaxis)
         fig = Figure(data=Data(data), layout=layout)
         unique_url = py.plot(fig, filename='snl_group_check_%s' % check)
+        break # remove to also init groupmembers and canonicals
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
