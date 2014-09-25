@@ -35,18 +35,44 @@ def init_plotly(args):
         num_ids = num_snls if check == 'spacegroups' else num_snlgroups
         num_streams = num_ids / num_ids_per_stream
         if num_ids % num_ids_per_stream: num_streams += 1
-        data = []
+        data1 = []
         for index in range(num_streams):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
-            data.append(Scatter(
-                x=[], y=[], text=[], stream=stream, mode='markers', name=name
+            data1.append(Scatter(
+                x=[0], y=[index], text=[], stream=stream, mode='markers',
+                name=name, xaxis='x1', yaxis='y1'
             ))
             streams_counter += 1
-        xaxis = XAxis(title='SNL ID' if check == 'spacegroups' else 'SNL Group ID')
-        yaxis = YAxis(title='Status (>=1: ok, <1: !ok)')
-        layout = Layout(title=check, xaxis=xaxis, yaxis=yaxis)
-        fig = Figure(data=Data(data), layout=layout)
+        data2 = []
+        for index in range(num_streams):
+            stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
+            name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
+            data2.append(Bar(
+                x=[5000+index*100], y=[index], stream=stream, name=name,
+                text=['%d/20k' % (5+index)], orientation='h', xaxis='x2', yaxis='y2'
+            ))
+            streams_counter += 1
+        #yaxis = YAxis(title='Status (>=1: ok, <1: !ok)')
+        fig = tls.get_subplots(rows=2)
+        fig['data'] += data1
+        fig['data'] += data2
+        fig['layout'].update(title=check)
+        fig['layout'].update(showlegend=False)
+        fig['layout'].update(xaxis1=XAxis(
+            title='relative SNL ID' if check == 'spacegroups' else 'SNL Group ID',
+            range=[-1,num_ids_per_stream+1]
+        ))
+        fig['layout'].update(yaxis1=YAxis(
+            title='ID range index', range=[-1,num_streams+1]
+        ))
+        fig['layout'].update(xaxis2=XAxis(
+            title='# good SNL IDs' if check == 'spacegroups' else 'SNL Group ID',
+            range=[-1,num_ids_per_stream+1]
+        ))
+        fig['layout'].update(yaxis2=YAxis(
+            title='ID range index', range=[-1,num_streams+1]
+        ))
         unique_url = py.plot(fig, filename='snl_group_check_%s' % check)
         break # remove to also init groupmembers and canonicals
 
