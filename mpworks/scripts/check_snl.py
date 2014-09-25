@@ -38,7 +38,7 @@ def init_plotly(args):
         data = []
         for index in range(num_streams):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
-            name = '%d - %d' % (index*num_ids_per_stream, (index+1)*num_ids_per_stream)
+            name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data.append(Scatter(
                 x=[], y=[], text=[], stream=stream, mode='markers', name=name
             ))
@@ -69,7 +69,7 @@ def check_snl_spacegroups(args):
             else 'sg_num: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
         )
         s.write(data)
-        time.sleep(0.08)
+        time.sleep(0.055) # needed b/c the above only takes 3-6ms
     s.close()
 
 def check_snls_in_snlgroups(args):
