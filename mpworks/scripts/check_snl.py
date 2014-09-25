@@ -40,7 +40,7 @@ def init_plotly(args):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data1.append(Scatter(
-                x=[0], y=[index], text=[], stream=stream, mode='markers',
+                x=[], y=[], text=[], stream=stream, mode='markers',
                 name=name, xaxis='x1', yaxis='y1'
             ))
             streams_counter += 1
@@ -49,54 +49,66 @@ def init_plotly(args):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data2.append(Bar(
-                x=[5000+index*100], y=[index], stream=stream, name=name,
-                text=['%d/20k' % (5+index)], orientation='h', xaxis='x2', yaxis='y2'
+                x=[], y=[], stream=stream, name=name,
+                text=[], orientation='h', xaxis='x2', yaxis='y2'
             ))
             streams_counter += 1
-        #yaxis = YAxis(title='Status (>=1: ok, <1: !ok)')
         fig = tls.get_subplots(rows=2)
         fig['data'] += data1
         fig['data'] += data2
         fig['layout'].update(title=check)
         fig['layout'].update(showlegend=False)
         fig['layout'].update(xaxis1=XAxis(
-            title='relative SNL ID' if check == 'spacegroups' else 'SNL Group ID',
+            title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % (num_ids_per_stream/1000) \
+            if check == 'spacegroups' else 'SNL Group ID',
             range=[-1,num_ids_per_stream+1]
         ))
         fig['layout'].update(yaxis1=YAxis(
-            title='ID range index', range=[-1,num_streams+1]
+            title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
+            range=[-1,num_streams+1]
         ))
         fig['layout'].update(xaxis2=XAxis(
-            title='# good SNL IDs' if check == 'spacegroups' else 'SNL Group ID',
+            title='# good SNLs (max. %dk)' % (num_ids_per_stream/1000) \
+            if check == 'spacegroups' else 'SNL Group ID',
             range=[-1,num_ids_per_stream+1]
         ))
         fig['layout'].update(yaxis2=YAxis(
-            title='ID range index', range=[-1,num_streams+1]
+            title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
+            range=[-1,num_streams+1]
         ))
         unique_url = py.plot(fig, filename='snl_group_check_%s' % check)
         break # remove to also init groupmembers and canonicals
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    stream_index = args.start/num_ids_per_stream
-    s = py.Stream(stream_ids[stream_index])
-    s.open()
+    num_streams = num_snls / num_ids_per_stream
+    idxs = [args.start / num_ids_per_stream]
+    idxs += [idxs[0] + num_streams]
+    s = [py.Stream(stream_ids[i]) for i in idxs]
+    for i in range(len(idxs)): s[i].open()
     end = num_snls if args.end > num_snls else args.end
     id_range = {"$gt": args.start, "$lte": end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
+    num_good_ids = 0
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        is_match = sf.get_spacegroup_number() == mpsnl.sg_num
-        data = dict(
-            x=mpsnl_dict['snl_id']%num_ids_per_stream,
-            y=int(is_match) + stream_index*0.05,
-            text='sg_num: %d' % (mpsnl.sg_num) if is_match \
-            else 'sg_num: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
-        )
-        s.write(data)
+        is_match = int(sf.get_spacegroup_number() == mpsnl.sg_num)
+        if is_match: # Bar
+            num_good_ids += 1
+            data = dict(
+                x=[num_good_ids], y=[idxs[0]], text=['%.3g / %dk\nsg_num: %d' % (
+                    float(num_good_ids)/1000., num_ids_per_stream/1000, mpsnl.sg_num
+                )]
+            )
+        else: # Scatter
+            data = dict(
+                x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
+                text='sg_num: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
+            )
+        s[is_match].write(data)
         time.sleep(0.055) # needed b/c the above only takes 3-6ms
-    s.close()
+    for i in range(len(idxs)): s[i].close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
