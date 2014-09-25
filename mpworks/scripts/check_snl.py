@@ -52,18 +52,25 @@ def init_plotly(args):
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    plotly_stream = py.Stream(stream_ids[0])
-    plotly_stream.open()
-    id_range = {"$gt": args.start, "$lte": args.end}
+    stream_index = args.start/num_ids_per_stream
+    s = py.Stream(stream_ids[stream_index])
+    s.open()
+    end = num_snls if args.end > num_snls else args.end
+    id_range = {"$gt": args.start, "$lte": end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     for mpsnl_dict in mpsnl_cursor:
         mpsnl = MPStructureNL.from_dict(mpsnl_dict)
         sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        if sf.get_spacegroup_number() == mpsnl.sg_num:
-            data = dict(x=mpsnl_dict['snl_id'], y=1)
-            plotly_stream.write(data)
-            time.sleep(0.08)
-    plotly_stream.close()
+        is_match = sf.get_spacegroup_number() == mpsnl.sg_num
+        data = dict(
+            x=mpsnl_dict['snl_id']%num_ids_per_stream,
+            y=int(is_match) + stream_index*0.05,
+            text='sg_num: %d' % (mpsnl.sg_num) if is_match \
+            else 'sg_num: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
+        )
+        s.write(data)
+        time.sleep(0.08)
+    s.close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
