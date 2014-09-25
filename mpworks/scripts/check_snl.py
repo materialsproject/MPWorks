@@ -97,7 +97,7 @@ def check_snl_spacegroups(args):
         if is_match: # Bar
             num_good_ids += 1
             data = dict(
-                x=[num_good_ids], y=[idxs[0]], text=['%.3g / %dk\nsg_num: %d' % (
+                x=[num_good_ids], y=[idxs[0]], text=['%.3g / %dk, sg_num: %d' % (
                     float(num_good_ids)/1000., num_ids_per_stream/1000, mpsnl.sg_num
                 )]
             )
