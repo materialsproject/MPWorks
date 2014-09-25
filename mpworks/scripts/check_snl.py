@@ -27,14 +27,15 @@ matcher = StructureMatcher(
 )
 
 def init_plotly(args):
-    stream = Stream(token=stream_ids[0], maxpoints=500) # TODO maxpoints
+    num_snls = sma.snl.count()
+    stream = Stream(token=stream_ids[0], maxpoints=num_snls*3)
     data = Data([Histogram2d(
         x=[], y=[], autobinx=False, autobiny=False, stream=stream,
-        xbins=XBins(start=0.5,end=100.5,size=1),
+        xbins=XBins(start=0.5,end=float(num_snls)+0.5,size=1),
         ybins=YBins(start=0.5,end=3.5,size=1), # 'sg', 'gm', 'can'
     )])
     xaxis = XAxis(title='SNL or SNL Group ID')
-    yaxis = YAxis(title='check number/id')
+    yaxis = YAxis(title='check ID (1:spacegroups, 2:groupmembers, 3:canonicals)')
     layout = Layout(title='SNL group checks', xaxis=xaxis)
     fig = Figure(data=data, layout=layout)
     unique_url = py.plot(fig, filename='snl_group_check_stream')
@@ -81,27 +82,23 @@ def crosscheck_canonical_snls(args):
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
     secondary_range = range(args.secondary_start, args.secondary_end)
     num_id2 = len(secondary_range)
-    for i,id2 in enumerate(secondary_range):
+    start_time = time.clock()
+    for id2 in secondary_range:
         snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
         snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
         # check composition AND spacegroup via snlgroup_key
-        # TODO: add snlgroup_key attribute to SNLGroup for convenience
-        if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
-            if not i%1000:
-                plotly_stream.write({"x":"\n"}) # needs to be once a minute to keep stream open
-                print '-->', id2
-            continue
         # matcher.fit only does composition check and returns None when different compositions
-        match = matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure)
-        offset = 0.3/num_id2 * i
-        data_point = dict(
-            x = args.primary + offset + 0.1,
-            y = int(match) + offset,
-            text = 'snlgroup_id: %d' % id2
-        )
-        print data_point
-        plotly_stream.write(data_point)
-        time.sleep(0.08)
+        # TODO: add snlgroup_key attribute to SNLGroup for convenience
+        if time.clock() - start_time > 5.: # heartbeat
+            print id2
+            start_time = time.clock()
+        if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
+            continue
+        if matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure):
+            # how many other SNLGroups match the current (primary) group?
+            data = dict(x=args.primary, y=3)
+            plotly_stream.write(data)
+            time.sleep(0.08)
 
 if __name__ == '__main__':
     # open plotly stream
@@ -136,7 +133,7 @@ if __name__ == '__main__':
     parser_task2 = subparsers.add_parser('canonicals')
     parser_task2.add_argument('--primary', help='primary SNLGroup Id', default=1, type=int)
     parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=2, type=int)
-    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=10000, type=int)
+    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=1000, type=int)
     parser_task2.set_defaults(func=crosscheck_canonical_snls)
 
     # parse args and call function
