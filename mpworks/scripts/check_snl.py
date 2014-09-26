@@ -82,6 +82,7 @@ def init_plotly(args):
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
     num_streams = num_snls / num_ids_per_stream
+    if num_snls % num_ids_per_stream: num_streams += 1
     idxs = [args.start / num_ids_per_stream]
     idxs += [idxs[0] + num_streams]
     s = [py.Stream(stream_ids[i]) for i in idxs]
