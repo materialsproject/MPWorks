@@ -10,6 +10,7 @@ __date__ = 'September 22, 2014'
 
 import sys, time, datetime
 from argparse import ArgumentParser
+from fnmatch import fnmatch
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.symmetry.finder import SymmetryFinder
@@ -57,7 +58,7 @@ def init_plotly(args):
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             color = get_shades_of_gray(num_streams)[index]
             data2.append(Bar(
-                x=[2500+index], y=[index], stream=stream, name=name,
+                x=[], y=[], stream=stream, name=name,
                 xaxis='x2', yaxis='y2', orientation='h',
                 marker=Marker(color=color)
             ))
@@ -68,6 +69,7 @@ def init_plotly(args):
         # TODO Give general description somewhere in figure
         fig['layout'].update(title="SNL Group Checks")
         fig['layout'].update(showlegend=False)
+        fig['layout'].update(hovermode='closest')
         fig['layout'].update(xaxis1=XAxis(
             title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % (num_ids_per_stream/1000) \
             if check == 'spacegroups' else 'SNL Group ID',
@@ -92,6 +94,8 @@ def init_plotly(args):
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
+    # error_categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
+    category_colors = ['red', 'blue', 'green', 'orange']
     num_streams = num_snls / num_ids_per_stream
     if num_snls % num_ids_per_stream: num_streams += 1
     idxs = [args.start / num_ids_per_stream]
@@ -102,26 +106,33 @@ def check_snl_spacegroups(args):
     id_range = {"$gt": args.start, "$lte": end}
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     num_good_ids = 0
+    colors=[]
     for mpsnl_dict in mpsnl_cursor:
         start_time = time.clock()
-        no_exc = True
+        exc_raised = False
         try:
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
             sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            no_exc = False
-        is_match = (no_exc and sf.get_spacegroup_number() == mpsnl.sg_num)
-        if is_match: # Bar
+            exc_raised = True
+        is_good = (not exc_raised and sf.get_spacegroup_number() == mpsnl.sg_num)
+        if is_good: # Bar (good)
             num_good_ids += 1
             data = dict(x=[num_good_ids], y=[idxs[0]])
-        else: # Scatter
+        else: # Scatter (bad)
+            if exc_raised:
+                category = 2 if fnmatch(str(exc_type), '*pybtex*') else 3
+                text = ' '.join([str(exc_type), str(exc_value)])
+            else:
+                category = int(sf.get_spacegroup_number() == 0)
+                text = '%s: %d' % (mpsnl.snlgroup_key, sf.get_spacegroup_number())
+            colors.append(category_colors[category])
             data = dict(
                 x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
-                text='%s -> %d' % (mpsnl.snlgroup_key, sf.get_spacegroup_number()) \
-                if no_exc else ' '.join([str(exc_type), str(exc_value)])
+                text=text, marker=Marker(color=colors)
             )
-        s[is_match].write(data)
+        s[is_good].write(data)
         sleep_time = 0.052 - time.clock() + start_time
         if sleep_time > 0: time.sleep(sleep_time)
     for i in range(len(idxs)): s[i].close()
