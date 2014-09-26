@@ -76,7 +76,8 @@ def init_plotly(args):
             title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
             range=[-1,num_streams+1]
         ))
-        unique_url = py.plot(fig, filename='snl_group_check_%s' % check)
+        day = datetime.datetime.utcnow().strftime('%Y-%m-%d')
+        unique_url = py.plot(fig, filename='snl_group_check_%s_%s' % (check, day))
         break # remove to also init groupmembers and canonicals
 
 def check_snl_spacegroups(args):
