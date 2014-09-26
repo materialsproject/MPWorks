@@ -50,13 +50,13 @@ def init_plotly(args):
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data2.append(Bar(
                 x=[], y=[], stream=stream, name=name,
-                text=[], orientation='h', xaxis='x2', yaxis='y2'
+                orientation='h', xaxis='x2', yaxis='y2'
             ))
             streams_counter += 1
         fig = tls.get_subplots(rows=2)
         fig['data'] += data1
         fig['data'] += data2
-        fig['layout'].update(title=check)
+        fig['layout'].update(title="SNL Group Checks<br>TODO Give general description")
         fig['layout'].update(showlegend=False)
         fig['layout'].update(xaxis1=XAxis(
             title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % (num_ids_per_stream/1000) \
@@ -104,14 +104,11 @@ def check_snl_spacegroups(args):
         is_match = (no_exc and sf.get_spacegroup_number() == mpsnl.sg_num)
         if is_match: # Bar
             num_good_ids += 1
-            data = dict(
-                x=[num_good_ids], y=[idxs[0]],
-                text=['current SG: %d' % (mpsnl.sg_num)]
-            )
+            data = dict(x=[num_good_ids], y=[idxs[0]]])
         else: # Scatter
             data = dict(
                 x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
-                text='SG change: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number()) \
+                text='%s -> %d' % (mpsnl.snlgroup_key, sf.get_spacegroup_number()) \
                 if no_exc else ' '.join([str(exc_type), str(exc_value)])
             )
         s[is_match].write(data)
