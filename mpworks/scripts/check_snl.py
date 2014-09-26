@@ -8,7 +8,7 @@ __maintainer__ = 'Patrick Huck'
 __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
-import sys, time
+import sys, time, datetime
 from argparse import ArgumentParser
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
@@ -28,7 +28,14 @@ num_ids_per_stream = 20000
 num_snls = sma.snl.count()
 num_snlgroups = sma.snlgroups.count()
 
+def get_shades_of_gray(num_colors):
+    colors=[]
+    for i in range(0, 8*num_colors, 8):
+        colors.append('rgb'+str((i, i, i)))
+    return colors
+
 def init_plotly(args):
+    """init all plots on plot.ly"""
     checks = ['spacegroups', 'groupmembers', 'canonicals']
     streams_counter = 0
     for check in checks:
@@ -48,15 +55,18 @@ def init_plotly(args):
         for index in range(num_streams):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
+            color = get_shades_of_gray(num_streams)[index]
             data2.append(Bar(
-                x=[], y=[], stream=stream, name=name,
-                orientation='h', xaxis='x2', yaxis='y2'
+                x=[2500+index], y=[index], stream=stream, name=name,
+                xaxis='x2', yaxis='y2', orientation='h',
+                marker=Marker(color=color)
             ))
             streams_counter += 1
         fig = tls.get_subplots(rows=2)
         fig['data'] += data1
         fig['data'] += data2
-        fig['layout'].update(title="SNL Group Checks<br>TODO Give general description")
+        # TODO Give general description somewhere in figure
+        fig['layout'].update(title="SNL Group Checks")
         fig['layout'].update(showlegend=False)
         fig['layout'].update(xaxis1=XAxis(
             title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % (num_ids_per_stream/1000) \
@@ -104,7 +114,7 @@ def check_snl_spacegroups(args):
         is_match = (no_exc and sf.get_spacegroup_number() == mpsnl.sg_num)
         if is_match: # Bar
             num_good_ids += 1
-            data = dict(x=[num_good_ids], y=[idxs[0]]])
+            data = dict(x=[num_good_ids], y=[idxs[0]])
         else: # Scatter
             data = dict(
                 x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
