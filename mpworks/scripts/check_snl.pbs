@@ -1,3 +1,4 @@
+#!/bin/bash -login
 #PBS -A matcomp
 #PBS -q matgen_prior
 #PBS -l nodes=3:ppn=7
@@ -5,4 +6,4 @@
 #PBS -l pvmem=2925MB
  
 cd $PBS_O_WORKDIR
-pbsdsh bash -l -c '$PBS_O_WORKDIR/mpworks/scripts/run_check_snl_spacegroups.sh'
+pbsdsh bash -l -c "$PBS_O_WORKDIR/mpworks/scripts/run_check_snl_spacegroups.sh"
