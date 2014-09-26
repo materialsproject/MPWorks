@@ -91,9 +91,15 @@ def check_snl_spacegroups(args):
     mpsnl_cursor = sma.snl.find({ "snl_id": id_range})
     num_good_ids = 0
     for mpsnl_dict in mpsnl_cursor:
-        mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-        sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-        is_match = int(sf.get_spacegroup_number() == mpsnl.sg_num)
+        start_time = time.clock()
+        no_exc = True
+        try:
+            mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+            sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            no_exc = False
+        is_match = (no_exc and sf.get_spacegroup_number() == mpsnl.sg_num)
         if is_match: # Bar
             num_good_ids += 1
             data = dict(
@@ -103,10 +109,12 @@ def check_snl_spacegroups(args):
         else: # Scatter
             data = dict(
                 x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
-                text='SG change: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number())
+                text='SG change: %d -> %d' % (mpsnl.sg_num, sf.get_spacegroup_number()) \
+                if no_exc else ' '.join([str(exc_type), str(exc_value)])
             )
         s[is_match].write(data)
-        time.sleep(0.055) # needed b/c the above only takes 3-6ms
+        sleep_time = 0.052 - time.clock() + start_time
+        if sleep_time > 0: time.sleep(sleep_time)
     for i in range(len(idxs)): s[i].close()
 
 def check_snls_in_snlgroups(args):
