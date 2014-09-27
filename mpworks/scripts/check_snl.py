@@ -36,10 +36,8 @@ num_categories = len(categories)
 category_colors = ['red', 'blue', 'green', 'orange']
 
 def _get_filename(check, day=True):
-    filename = 'snl_group_check_%s' % check
-    if day: filename += datetime.datetime.now().strftime('_%Y-%m-%d')
-    else: filename += '_stream'
-    return filename
+    today = datetime.datetime.now().strftime('_%Y-%m-%d')
+    return check + today if day else 'snl_group_check_%s_stream' % check
 
 def _get_shades_of_gray(num_colors):
     colors=[]
@@ -232,11 +230,12 @@ def analyze(args):
                 start_id + d['x'][idx] for idx,color in enumerate(marker_colors)
                 if color == category_colors[0]
             ]
-    # NOTE: following worked shortly, then spinning wheel only
-    #fig['layout'].update(annotations=Annotations([Annotation(
-    #    x=0, y=1.2875, text=str(errors), showarrow=False, align='left'
-    #)]))
-    #py.plot(fig, filename=_get_filename(args.check))
+    print errors
+    fig_data = fig['data'][-1]
+    fig_data['x'] = [ errors[color] for color in fig_data['marker']['color'] ]
+    filename = _get_filename(args.check)
+    print filename
+    py.plot(fig, filename=filename)
     with open('mpworks/scripts/bad_snls.csv', 'wb') as f:
         writer = csv.writer(f)
         for row in sg_change_snls:
@@ -257,7 +256,7 @@ if __name__ == '__main__':
     # sub-command: analyze
     parser_ana = subparsers.add_parser('analyze')
     parser_ana.add_argument('check', help='which check to analyze')
-    parser_ana.add_argument('--fig-id', help='plotly figure id', default=2, type=int)
+    parser_ana.add_argument('--fig-id', help='plotly figure id', default=6, type=int)
     parser_ana.set_defaults(func=analyze)
 
     # sub-command: spacegroups
