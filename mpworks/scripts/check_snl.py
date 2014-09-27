@@ -53,53 +53,54 @@ def init_plotly(args):
         num_ids = num_snls if check == 'spacegroups' else num_snlgroups
         num_streams = num_ids / num_ids_per_stream
         if num_ids % num_ids_per_stream: num_streams += 1
-        data1 = []
+        # data
+        data = Data()
         for index in range(num_streams):
             # TODO: it seems only maxpoints <= 10000 allowed
             # => problematic if more than half of IDs in Stream are bad
             stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
-            data1.append(Scatter(
+            data.append(Scatter(
                 x=[], y=[], text=[], stream=stream, mode='markers',
                 name=name, xaxis='x1', yaxis='y1'
             ))
             streams_counter += 1
-        data2 = []
         for index in range(num_streams):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             color = _get_shades_of_gray(num_streams)[index]
-            data2.append(Bar(
+            data.append(Bar(
                 x=[], y=[], stream=stream, name=name,
                 xaxis='x2', yaxis='y2', orientation='h',
                 marker=Marker(color=color)
             ))
             streams_counter += 1
-        fig = tls.get_subplots(rows=2)
-        fig['data'] += data1
-        fig['data'] += data2
+        # layout
         # TODO Give general description somewhere in figure
-        fig['layout'].update(title="SNL Group Checks Stream")
-        fig['layout'].update(showlegend=False)
-        fig['layout'].update(hovermode='closest')
-        fig['layout'].update(xaxis1=XAxis(
-            title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % (num_ids_per_stream/1000) \
-            if check == 'spacegroups' else 'SNL Group ID',
-            range=[-1,num_ids_per_stream+1]
-        ))
-        fig['layout'].update(yaxis1=YAxis(
-            title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
-            range=[-1,num_streams+1]
-        ))
-        fig['layout'].update(xaxis2=XAxis(
-            title='# good SNLs (max. %dk)' % (num_ids_per_stream/1000) \
-            if check == 'spacegroups' else 'SNL Group ID',
-            range=[-1,num_ids_per_stream+1]
-        ))
-        fig['layout'].update(yaxis2=YAxis(
-            title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
-            range=[-1,num_streams+1]
-        ))
+        layout = Layout(
+            title="SNL Group Checks Stream",
+            showlegend=False, hovermode='closest',
+            xaxis1=XAxis(
+                domain=[0,1], range=[-1,num_ids_per_stream+1], anchor='y1',
+                showgrid=False,
+                title='"relative" ID of bad SNL%ss (= SNL ID %% %dk)' % (
+                    'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
+            ),
+            yaxis1=YAxis(
+                domain=[0,.45], range=[-1,num_streams+1], anchor='x1', showgrid=False,
+                title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
+            ),
+            xaxis2=XAxis(
+                domain=[0,.45], range=[-1,num_ids_per_stream+1], anchor='y2',
+                side='top', showgrid=False, title='# good SNL%ss (max. %dk)' % (
+                    'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
+            ),
+            yaxis2=YAxis(
+                domain=[.55,1], range=[-1,num_streams+1], anchor='x1', showgrid=False,
+                title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
+            )
+        )
+        fig = Figure(data=data, layout=layout)
         filename = _get_filename(check, day=False)
         py.plot(fig, filename=filename, auto_open=False)
         break # remove to also init groupmembers and canonicals
