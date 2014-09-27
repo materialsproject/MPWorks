@@ -18,7 +18,8 @@ from pymatgen.analysis.structure_matcher import StructureMatcher, ElementCompara
 import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
-stream_ids = tls.get_credentials_file()['stream_ids']
+creds = tls.get_credentials_file()
+stream_ids = creds['stream_ids']
 
 sma = SNLMongoAdapter.auto_load()
 matcher = StructureMatcher(
@@ -28,8 +29,15 @@ matcher = StructureMatcher(
 num_ids_per_stream = 20000
 num_snls = sma.snl.count()
 num_snlgroups = sma.snlgroups.count()
+checks = ['spacegroups', 'groupmembers', 'canonicals']
 
-def get_shades_of_gray(num_colors):
+def _get_filename(check, day=True):
+    filename = 'snl_group_check_%s' % check
+    if day: filename += datetime.datetime.utcnow().strftime('_%Y-%m-%d')
+    else: filename += '_stream'
+    return filename
+
+def _get_shades_of_gray(num_colors):
     colors=[]
     for i in range(0, 8*num_colors, 8):
         colors.append('rgb'+str((i, i, i)))
@@ -37,7 +45,6 @@ def get_shades_of_gray(num_colors):
 
 def init_plotly(args):
     """init all plots on plot.ly"""
-    checks = ['spacegroups', 'groupmembers', 'canonicals']
     streams_counter = 0
     for check in checks:
         num_ids = num_snls if check == 'spacegroups' else num_snlgroups
@@ -45,6 +52,8 @@ def init_plotly(args):
         if num_ids % num_ids_per_stream: num_streams += 1
         data1 = []
         for index in range(num_streams):
+            # TODO: it seems only maxpoints <= 10000 allowed
+            # => problematic if more than half of IDs in Stream are bad
             stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data1.append(Scatter(
@@ -56,7 +65,7 @@ def init_plotly(args):
         for index in range(num_streams):
             stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
-            color = get_shades_of_gray(num_streams)[index]
+            color = _get_shades_of_gray(num_streams)[index]
             data2.append(Bar(
                 x=[], y=[], stream=stream, name=name,
                 xaxis='x2', yaxis='y2', orientation='h',
@@ -67,7 +76,7 @@ def init_plotly(args):
         fig['data'] += data1
         fig['data'] += data2
         # TODO Give general description somewhere in figure
-        fig['layout'].update(title="SNL Group Checks")
+        fig['layout'].update(title="SNL Group Checks Stream")
         fig['layout'].update(showlegend=False)
         fig['layout'].update(hovermode='closest')
         fig['layout'].update(xaxis1=XAxis(
@@ -88,8 +97,8 @@ def init_plotly(args):
             title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000),
             range=[-1,num_streams+1]
         ))
-        day = datetime.datetime.utcnow().strftime('%Y-%m-%d')
-        unique_url = py.plot(fig, filename='snl_group_check_%s_%s' % (check, day))
+        filename = _get_filename(check, day=False)
+        unique_url = py.plot(fig, filename=filename, auto_open=False)
         break # remove to also init groupmembers and canonicals
 
 def check_snl_spacegroups(args):
@@ -191,6 +200,16 @@ def crosscheck_canonical_snls(args):
             time.sleep(0.08)
     plotly_stream.close()
 
+def analyze(args):
+    """analyze data at any point for a copy of the streaming figure"""
+    if args.check not in checks:
+        print "no analysis available for %s. Choose one of %r" % (args.check, checks)
+        return
+    # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
+    fig = py.get_figure(creds['username'], args.fig_id)
+    print fig['data'].to_string()
+    #py.image.save_as(fig, _get_filename(args.check, day=True)+'.png') # NOTE: service unavailable!?
+
 if __name__ == '__main__':
     # create top-level parser
     parser = ArgumentParser()
@@ -199,6 +218,12 @@ if __name__ == '__main__':
     # sub-command: init
     parser_init = subparsers.add_parser('init')
     parser_init.set_defaults(func=init_plotly)
+
+    # sub-command: analyze
+    parser_ana = subparsers.add_parser('analyze')
+    parser_ana.add_argument('check', help='which check to analyze')
+    parser_ana.add_argument('--fig-id', help='plotly figure id', default=2, type=int)
+    parser_ana.set_defaults(func=analyze)
 
     # sub-command: spacegroups
     # This task can be split in multiple parallel jobs by SNL id ranges
