@@ -88,21 +88,22 @@ def init_plotly(args):
     # layout
     layout = Layout(
         title="SNL Group Checks Stream", showlegend=False, hovermode='closest',
+        autosize=False, width=850, height=1400,
         # x-axes
         xaxis1=XAxis(
-            domain=[0,.49], range=[0,num_ids_per_stream], anchor='y2',
+            domain=[0,.49], range=[0,5000], anchor='y1',
             showgrid=False, title='# good SNLs'
         ),
         xaxis2=XAxis(
-            domain=[0,1], range=[0,num_ids_per_stream], anchor='y1', showgrid=False,
+            domain=[0,1], range=[0,5000], anchor='y2', showgrid=False,
             title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % num_ids_per_stream_k
         ),
         xaxis3=XAxis(
-            domain=[0,.49], range=[0,num_ids_per_stream], anchor='y3',
+            domain=[0,.49], range=[0,5000], anchor='y3',
             showgrid=False, title='# good SNL Groups'
         ),
         xaxis4=XAxis(
-            domain=[.51,1], anchor='y4', showgrid=False, range=[0,num_ids_per_stream],
+            domain=[.51,1], anchor='y4', showgrid=False, range=[0,5000],
             title='"relative" ID of bad SNL Groups (= SNL Group ID %% %dk)' % num_ids_per_stream_k
         ),
         xaxis5=XAxis(
@@ -110,11 +111,11 @@ def init_plotly(args):
         ),
         # y-axes
         yaxis1=YAxis(
-            domain=[.35,.65], range=[-.5,num_snl_streams-.5], anchor='x1', showgrid=False,
+            domain=[.7,1], range=[-.5,num_snl_streams-.5], anchor='x1', showgrid=False,
             title='range index (= SNL ID / %dk)' % num_ids_per_stream_k
         ),
         yaxis2=YAxis(
-            domain=[.7,1], range=[-.5,num_snl_streams-.5], anchor='x2', showgrid=False,
+            domain=[.35,.65], range=[-.5,num_snl_streams-.5], anchor='x2', showgrid=False,
             title='range index (= SNL ID / %dk)' % num_ids_per_stream_k
         ),
         yaxis3=YAxis(
