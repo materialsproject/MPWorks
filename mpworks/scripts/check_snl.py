@@ -219,10 +219,10 @@ def analyze(args):
                 start_id + d['x'][idx] for idx,color in enumerate(marker_colors)
                 if color == category_colors[0]
             ]
+    # NOTE: following worked shortly, then spinning wheel only
     #fig['layout'].update(annotations=Annotations([Annotation(
-    #    x=1000, y=10, xref='x2', yref='y2', text='TODO', showarrow=False
+    #    x=0, y=1.2875, text=str(errors), showarrow=False, align='left'
     #)]))
-    print fig
     #py.plot(fig, filename=_get_filename(args.check))
     with open('mpworks/scripts/bad_snls.csv', 'wb') as f:
         writer = csv.writer(f)
