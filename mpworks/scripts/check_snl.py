@@ -58,6 +58,10 @@ def _get_id_range_from_index(index):
     start_id_k = index*num_ids_per_stream_k
     return '%dk - %dk' % (start_id_k, start_id_k+num_ids_per_stream_k)
 
+def _sleep(start_time):
+    sleep_time = min_sleep - time.clock() + start_time
+    if sleep_time > 0: time.sleep(sleep_time)
+
 def init_plotly(args):
     """init all plots on plot.ly"""
     # data
@@ -167,8 +171,6 @@ def check_snl_spacegroups(args):
                 y=range_index, text=text, marker=Marker(color=colors)
             )
         s[is_good].write(data)
-        sleep_time = min_sleep - time.clock() + start_time
-        if sleep_time > 0: time.sleep(sleep_time)
     for i in range(len(idxs)): s[i].close()
 
 def check_snls_in_snlgroups(args):
@@ -184,6 +186,7 @@ def check_snls_in_snlgroups(args):
     colors = []
     num_good_ids = 0
     for snlgrp_dict in snlgrp_cursor:
+        start_time = time.clock()
         try:
             snlgrp = SNLGroup.from_dict(snlgrp_dict)
         except:
@@ -194,14 +197,14 @@ def check_snls_in_snlgroups(args):
                 x=snlgrp_dict['snlgroup_id']%num_ids_per_stream,
                 y=range_index, text=text, marker=Marker(color=colors)
             )
-            time.sleep(min_sleep)
             s[0].write(data)
+            _sleep(start_time)
             continue
         if len(snlgrp.all_snl_ids) <= 1:
             num_good_ids += 1
             data = dict(x=[num_good_ids], y=[range_index])
             s[1].write(data)
-            time.sleep(min_sleep)
+            _sleep(start_time)
             continue
         exc_raised = False
         all_snls_good = True
@@ -227,14 +230,14 @@ def check_snls_in_snlgroups(args):
                     y=range_index, text=text, marker=Marker(color=colors)
                 )
                 s[0].write(data)
-                time.sleep(min_sleep)
                 all_snls_good = False
+                _sleep(start_time)
                 break
         if all_snls_good: # Bar (good)
             num_good_ids += 1
             data = dict(x=[num_good_ids], y=[range_index])
             s[1].write(data)
-            time.sleep(min_sleep)
+            _sleep(start_time)
     for i in range(len(idxs)): s[i].close()
 
 def crosscheck_canonical_snls(args):
@@ -261,7 +264,7 @@ def crosscheck_canonical_snls(args):
             # how many other SNLGroups match the current (primary) group?
             data = dict(x=args.primary, y=3)
             plotly_stream.write(data)
-            time.sleep(0.08)
+            time.sleep(min_sleep)
     plotly_stream.close()
 
 def analyze(args):
