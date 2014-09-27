@@ -8,7 +8,7 @@ __maintainer__ = 'Patrick Huck'
 __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
-import sys, time, datetime
+import sys, time, datetime, csv
 from argparse import ArgumentParser
 from fnmatch import fnmatch
 from collections import Counter
@@ -36,7 +36,7 @@ category_colors = ['red', 'blue', 'green', 'orange']
 
 def _get_filename(check, day=True):
     filename = 'snl_group_check_%s' % check
-    if day: filename += datetime.datetime.utcnow().strftime('_%Y-%m-%d')
+    if day: filename += datetime.datetime.now().strftime('_%Y-%m-%d')
     else: filename += '_stream'
     return filename
 
@@ -101,7 +101,7 @@ def init_plotly(args):
             range=[-1,num_streams+1]
         ))
         filename = _get_filename(check, day=False)
-        unique_url = py.plot(fig, filename=filename, auto_open=False)
+        py.plot(fig, filename=filename, auto_open=False)
         break # remove to also init groupmembers and canonicals
 
 def check_snl_spacegroups(args):
@@ -207,10 +207,10 @@ def analyze(args):
         print "no analysis available for %s. Choose one of %r" % (args.check, checks)
         return
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
-    data = py.get_figure(creds['username'], args.fig_id)['data']
+    fig = py.get_figure(creds['username'], args.fig_id)
     errors = Counter()
     sg_change_snls = []
-    for d in data:
+    for d in fig['data']:
         if isinstance(d, Scatter) and 'x' in d and 'y' in d and 'text' in d:
             start_id = int(d['name'].split(' - ')[0][:-1])*1000
             marker_colors = d['marker']['color']
@@ -219,9 +219,18 @@ def analyze(args):
                 start_id + d['x'][idx] for idx,color in enumerate(marker_colors)
                 if color == category_colors[0]
             ]
-    print errors
-    print sg_change_snls
-    #py.image.save_as(fig, _get_filename(args.check, day=True)+'.png') # NOTE: service unavailable!?
+    #fig['layout'].update(annotations=Annotations([Annotation(
+    #    x=1000, y=10, xref='x2', yref='y2', text='TODO', showarrow=False
+    #)]))
+    print fig
+    #py.plot(fig, filename=_get_filename(args.check))
+    with open('mpworks/scripts/bad_snls.csv', 'wb') as f:
+        writer = csv.writer(f)
+        for row in sg_change_snls:
+            writer.writerow([row])
+    #py.image.save_as(fig, _get_filename(args.check)+'.png')
+    # NOTE: service unavailable!? static images can also be saved by appending
+    # the appropriate extension (pdf,jpg,png,eps) to the public URL
 
 if __name__ == '__main__':
     # create top-level parser
