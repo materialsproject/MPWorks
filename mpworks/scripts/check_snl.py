@@ -209,10 +209,18 @@ def analyze(args):
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     data = py.get_figure(creds['username'], args.fig_id)['data']
     errors = Counter()
+    sg_change_snls = []
     for d in data:
         if isinstance(d, Scatter) and 'x' in d and 'y' in d and 'text' in d:
-            errors += Counter(d['marker']['color'])
+            start_id = int(d['name'].split(' - ')[0][:-1])*1000
+            marker_colors = d['marker']['color']
+            errors += Counter(marker_colors)
+            sg_change_snls += [
+                start_id + d['x'][idx] for idx,color in enumerate(marker_colors)
+                if color == category_colors[0]
+            ]
     print errors
+    print sg_change_snls
     #py.image.save_as(fig, _get_filename(args.check, day=True)+'.png') # NOTE: service unavailable!?
 
 if __name__ == '__main__':
