@@ -71,14 +71,13 @@ def init_plotly(args):
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             color = _get_shades_of_gray(num_streams)[index]
             data.append(Bar(
-                x=[15000], y=index, stream=stream, name=name,
+                x=[0], y=index, stream=stream, name=name,
                 xaxis='x2', yaxis='y2', orientation='h', marker=Marker(color=color)
             ))
             streams_counter += 1
-        stream = Stream(token=stream_ids[streams_counter], maxpoints=num_categories)
         data.append(Bar(
-            x=[0.1]*num_categories, y=categories, stream=stream, name='#bad SNLs',
-            xaxis='x3', yaxis='y3', orientation='h', marker=Marker(color=category_colors)
+            x=[0.1]*num_categories, y=categories, name='#bad SNLs', xaxis='x3',
+            yaxis='y3', orientation='h', marker=Marker(color=category_colors)
         ))
         # layout
         # TODO Give general description somewhere in figure
