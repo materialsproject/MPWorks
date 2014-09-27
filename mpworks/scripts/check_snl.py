@@ -11,6 +11,7 @@ __date__ = 'September 22, 2014'
 import sys, time, datetime
 from argparse import ArgumentParser
 from fnmatch import fnmatch
+from collections import Counter
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.symmetry.finder import SymmetryFinder
@@ -30,6 +31,8 @@ num_ids_per_stream = 20000
 num_snls = sma.snl.count()
 num_snlgroups = sma.snlgroups.count()
 checks = ['spacegroups', 'groupmembers', 'canonicals']
+# error_categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
+category_colors = ['red', 'blue', 'green', 'orange']
 
 def _get_filename(check, day=True):
     filename = 'snl_group_check_%s' % check
@@ -103,8 +106,6 @@ def init_plotly(args):
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    # error_categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
-    category_colors = ['red', 'blue', 'green', 'orange']
     num_streams = num_snls / num_ids_per_stream
     if num_snls % num_ids_per_stream: num_streams += 1
     idxs = [args.start / num_ids_per_stream]
@@ -206,8 +207,12 @@ def analyze(args):
         print "no analysis available for %s. Choose one of %r" % (args.check, checks)
         return
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
-    fig = py.get_figure(creds['username'], args.fig_id)
-    print fig['data'].to_string()
+    data = py.get_figure(creds['username'], args.fig_id)['data']
+    errors = Counter()
+    for d in data:
+        if isinstance(d, Scatter) and 'x' in d and 'y' in d and 'text' in d:
+            errors += Counter(d['marker']['color'])
+    print errors
     #py.image.save_as(fig, _get_filename(args.check, day=True)+'.png') # NOTE: service unavailable!?
 
 if __name__ == '__main__':
