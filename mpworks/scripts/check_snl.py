@@ -21,6 +21,7 @@ import plotly.tools as tls
 from plotly.graph_objs import *
 creds = tls.get_credentials_file()
 stream_ids = creds['stream_ids']
+min_sleep = 0.052
 
 sma = SNLMongoAdapter.auto_load()
 matcher = StructureMatcher(
@@ -68,13 +69,13 @@ def init_plotly(args):
                 x=[], y=[], text=[], stream=Stream(
                     token=next(stream_ids_iter), maxpoints=num_ids_per_stream),
                 mode='markers', name=_get_id_range_from_index(index),
-                xaxis='x%d' % (check_id+1), yaxis='y%d' % (check_id+1)
+                xaxis='x%d' % (2*check_id+2), yaxis='y%d' % (2*check_id+2)
             ))
             data.append(Bar(
                 x=[0], y=index, stream=Stream(token=next(stream_ids_iter), maxpoints=1),
                 name=_get_id_range_from_index(index), orientation='h',
                 marker=Marker(color=_get_shades_of_gray(num_streams)[index]),
-                xaxis='x%d' % (check_id+2), yaxis='y%d' % (check_id+2)
+                xaxis='x%d' % (2*check_id+1), yaxis='y%d' % (2*check_id+1)
             ))
     data.append(Bar(
         x=[0.1]*num_categories, y=categories, name='#bad SNLs', xaxis='x5',
@@ -85,12 +86,12 @@ def init_plotly(args):
         title="SNL Group Checks Stream", showlegend=False, hovermode='closest',
         # x-axes
         xaxis1=XAxis(
-            domain=[0,1], range=[0,num_ids_per_stream], anchor='y1', showgrid=False,
-            title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % num_ids_per_stream_k
-        ),
-        xaxis2=XAxis(
             domain=[0,.49], range=[0,num_ids_per_stream], anchor='y2',
             showgrid=False, title='# good SNLs'
+        ),
+        xaxis2=XAxis(
+            domain=[0,1], range=[0,num_ids_per_stream], anchor='y1', showgrid=False,
+            title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % num_ids_per_stream_k
         ),
         xaxis3=XAxis(
             domain=[0,.49], range=[0,num_ids_per_stream], anchor='y3',
@@ -130,8 +131,9 @@ def init_plotly(args):
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    idxs = [args.start / num_ids_per_stream]
-    idxs += [idxs[0] + num_snl_streams]
+    range_index = args.start / num_ids_per_stream
+    idxs = [range_index*2]
+    idxs += [idxs[0]+1]
     s = [py.Stream(stream_ids[i]) for i in idxs]
     for i in range(len(idxs)): s[i].open()
     end = num_snls if args.end > num_snls else args.end
@@ -151,7 +153,7 @@ def check_snl_spacegroups(args):
         is_good = (not exc_raised and sf.get_spacegroup_number() == mpsnl.sg_num)
         if is_good: # Bar (good)
             num_good_ids += 1
-            data = dict(x=[num_good_ids], y=[idxs[0]])
+            data = dict(x=[num_good_ids], y=[range_index])
         else: # Scatter (bad)
             if exc_raised:
                 category = 2 if fnmatch(str(exc_type), '*pybtex*') else 3
@@ -161,40 +163,79 @@ def check_snl_spacegroups(args):
                 text = '%s: %d' % (mpsnl.snlgroup_key, sf.get_spacegroup_number())
             colors.append(category_colors[category])
             data = dict(
-                x=mpsnl_dict['snl_id']%num_ids_per_stream, y=idxs[0],
-                text=text, marker=Marker(color=colors)
+                x=mpsnl_dict['snl_id']%num_ids_per_stream,
+                y=range_index, text=text, marker=Marker(color=colors)
             )
         s[is_good].write(data)
-        sleep_time = 0.052 - time.clock() + start_time
+        sleep_time = min_sleep - time.clock() + start_time
         if sleep_time > 0: time.sleep(sleep_time)
     for i in range(len(idxs)): s[i].close()
 
 def check_snls_in_snlgroups(args):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
-    plotly_stream = py.Stream(stream_ids[-1]) #TODO
-    plotly_stream.open()
-    id_range = {"$gt": args.start, "$lte": args.end}
+    range_index = args.start / num_ids_per_stream
+    idxs = [2*(num_snl_streams+range_index)]
+    idxs += [idxs[0]+1]
+    s = [py.Stream(stream_ids[i]) for i in idxs]
+    for i in range(len(idxs)): s[i].open()
+    end = num_snlgroups if args.end > num_snlgroups else args.end
+    id_range = {"$gt": args.start, "$lte": end}
     snlgrp_cursor = sma.snlgroups.find({ "snlgroup_id": id_range})
+    colors = []
+    num_good_ids = 0
     for snlgrp_dict in snlgrp_cursor:
-        snlgrp = SNLGroup.from_dict(snlgrp_dict)
-        num_snl = len(snlgrp.all_snl_ids)
-        all_snls_match = True
-        start_time = time.clock()
+        try:
+            snlgrp = SNLGroup.from_dict(snlgrp_dict)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            text = ' '.join([str(exc_type), str(exc_value)])
+            colors.append(category_colors[-1]) # Others
+            data = dict(
+                x=snlgrp_dict['snlgroup_id']%num_ids_per_stream,
+                y=range_index, text=text, marker=Marker(color=colors)
+            )
+            time.sleep(min_sleep)
+            s[0].write(data)
+            continue
+        if len(snlgrp.all_snl_ids) <= 1:
+            num_good_ids += 1
+            data = dict(x=[num_good_ids], y=[range_index])
+            s[1].write(data)
+            time.sleep(min_sleep)
+            continue
+        exc_raised = False
+        all_snls_good = True
         for snl_id in snlgrp.all_snl_ids:
-            # TODO: add num_snl attribute in SNLGroup
-            if snl_id == snlgrp.canonical_snl.snl_id or num_snl <= 1: continue
+            if snl_id == snlgrp.canonical_snl.snl_id: continue
             mpsnl_dict = sma.snl.find_one({ "snl_id": snl_id })
-            mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-            if not matcher.fit(mpsnl.structure, snlgrp.canonical_structure):
-                all_snls_match = False
+            try:
+                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                is_match = matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                exc_raised = True
+            if exc_raised or not is_match: # Scatter (bad)
+                if exc_raised:
+                    category = 2 if fnmatch(str(exc_type), '*pybtex*') else 3
+                    text = ' '.join([str(exc_type), str(exc_value)])
+                else:
+                    category = 0
+                    text = '%d != can:%d' % (mpsnl_dict['snl_id'], snlgrp.canonical_snl.snl_id)
+                colors.append(category_colors[category])
+                data = dict(
+                    x=snlgrp_dict['snlgroup_id']%num_ids_per_stream,
+                    y=range_index, text=text, marker=Marker(color=colors)
+                )
+                s[0].write(data)
+                time.sleep(min_sleep)
+                all_snls_good = False
                 break
-        time_diff = time.clock() - start_time
-        if all_snls_match:
-            data = dict(x=snlgrp.canonical_snl.snl_id, y=2)
-            sleep_time = 0.08 - time_diff
-            if sleep_time > 0: time.sleep(sleep_time)
-            plotly_stream.write(data)
-    plotly_stream.close()
+        if all_snls_good: # Bar (good)
+            num_good_ids += 1
+            data = dict(x=[num_good_ids], y=[range_index])
+            s[1].write(data)
+            time.sleep(min_sleep)
+    for i in range(len(idxs)): s[i].close()
 
 def crosscheck_canonical_snls(args):
     """check whether canonical SNLs of two different SNL groups match"""
