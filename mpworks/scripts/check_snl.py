@@ -27,17 +27,25 @@ matcher = StructureMatcher(
     ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
     attempt_supercell=False, comparator=ElementComparator()
 )
+
 num_ids_per_stream = 20000
+num_ids_per_stream_k = num_ids_per_stream/1000
 num_snls = sma.snl.count()
+num_snl_streams = num_snls / num_ids_per_stream
+if num_snls % num_ids_per_stream: num_snl_streams += 1
 num_snlgroups = sma.snlgroups.count()
+num_snlgroup_streams = num_snlgroups / num_ids_per_stream
+if num_snlgroups % num_ids_per_stream: num_snlgroup_streams += 1
+
 checks = ['spacegroups', 'groupmembers', 'canonicals']
 categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
 num_categories = len(categories)
 category_colors = ['red', 'blue', 'green', 'orange']
 
-def _get_filename(check, day=True):
-    today = datetime.datetime.now().strftime('_%Y-%m-%d')
-    return check + today if day else 'snl_group_check_%s_stream' % check
+def _get_filename(day=True):
+    filename = 'snl_group_check_'
+    filename += datetime.datetime.now().strftime('%Y-%m-%d') if day else 'stream'
+    return filename
 
 def _get_shades_of_gray(num_colors):
     colors=[]
@@ -45,82 +53,85 @@ def _get_shades_of_gray(num_colors):
         colors.append('rgb'+str((i, i, i)))
     return colors
 
+def _get_id_range_from_index(index):
+    start_id_k = index*num_ids_per_stream_k
+    return '%dk - %dk' % (start_id_k, start_id_k+num_ids_per_stream_k)
+
 def init_plotly(args):
     """init all plots on plot.ly"""
-    streams_counter = 0
-    for check in checks:
-        num_ids = num_snls if check == 'spacegroups' else num_snlgroups
-        num_streams = num_ids / num_ids_per_stream
-        if num_ids % num_ids_per_stream: num_streams += 1
-        # data
-        data = Data()
+    # data
+    stream_ids_iter = iter(stream_ids)
+    data = Data()
+    for check_id,num_streams in enumerate([num_snl_streams, num_snlgroup_streams]):
         for index in range(num_streams):
-            # TODO: it seems only maxpoints <= 10000 allowed
-            # => problematic if more than half of IDs in Stream are bad
-            stream = Stream(token=stream_ids[streams_counter], maxpoints=num_ids_per_stream)
-            name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             data.append(Scatter(
-                x=[], y=[], text=[], stream=stream, mode='markers',
-                name=name, xaxis='x1', yaxis='y1'
+                x=[], y=[], text=[], stream=Stream(
+                    token=next(stream_ids_iter), maxpoints=num_ids_per_stream),
+                mode='markers', name=_get_id_range_from_index(index),
+                xaxis='x%d' % (check_id+1), yaxis='y%d' % (check_id+1)
             ))
-            streams_counter += 1
-        for index in range(num_streams):
-            stream = Stream(token=stream_ids[streams_counter], maxpoints=1)
-            name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
-            color = _get_shades_of_gray(num_streams)[index]
             data.append(Bar(
-                x=[0], y=index, stream=stream, name=name,
-                xaxis='x2', yaxis='y2', orientation='h', marker=Marker(color=color)
+                x=[0], y=index, stream=Stream(token=next(stream_ids_iter), maxpoints=1),
+                name=_get_id_range_from_index(index), orientation='h',
+                marker=Marker(color=_get_shades_of_gray(num_streams)[index]),
+                xaxis='x%d' % (check_id+2), yaxis='y%d' % (check_id+2)
             ))
-            streams_counter += 1
-        data.append(Bar(
-            x=[0.1]*num_categories, y=categories, name='#bad SNLs', xaxis='x3',
-            yaxis='y3', orientation='h', marker=Marker(color=category_colors)
-        ))
-        # layout
-        # TODO Give general description somewhere in figure
-        layout = Layout(
-            title="SNL Group Checks Stream",
-            showlegend=False, hovermode='closest',
-            xaxis1=XAxis(
-                domain=[0,1], range=[0,num_ids_per_stream], anchor='y1',
-                showgrid=False,
-                title='"relative" ID of bad SNL%ss (= SNL ID %% %dk)' % (
-                    'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
-            ),
-            yaxis1=YAxis(
-                domain=[0,.49], range=[-.5,num_streams-.5], anchor='x1', showgrid=False,
-                title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
-            ),
-            xaxis2=XAxis(
-                domain=[0,.49], range=[0,num_ids_per_stream], anchor='y2',
-                side='top', showgrid=False, title='# good SNL%ss (max. %dk)' % (
-                    'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
-            ),
-            yaxis2=YAxis(
-                domain=[.51,1], range=[-.5,num_streams-.5], anchor='x2', showgrid=False,
-                title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
-            ),
-            xaxis3=XAxis(
-                domain=[.51,1], anchor='y3', side='top', showgrid=False,
-                title='# bad SNL%ss' % ('Group' if check != 'spacegroups' else '')
-            ),
-            yaxis3=YAxis(
-                domain=[.51,1], anchor='x3', side='right',
-                showgrid=False, title='error category'
-            )
-        )
-        fig = Figure(data=data, layout=layout)
-        filename = _get_filename(check, day=False)
-        py.plot(fig, filename=filename, auto_open=False)
-        break # remove to also init groupmembers and canonicals
+    data.append(Bar(
+        x=[0.1]*num_categories, y=categories, name='#bad SNLs', xaxis='x5',
+        yaxis='y5', orientation='h', marker=Marker(color=category_colors)
+    ))
+    # layout
+    layout = Layout(
+        title="SNL Group Checks Stream", showlegend=False, hovermode='closest',
+        # x-axes
+        xaxis1=XAxis(
+            domain=[0,1], range=[0,num_ids_per_stream], anchor='y1', showgrid=False,
+            title='"relative" ID of bad SNLs (= SNL ID %% %dk)' % num_ids_per_stream_k
+        ),
+        xaxis2=XAxis(
+            domain=[0,.49], range=[0,num_ids_per_stream], anchor='y2',
+            showgrid=False, title='# good SNLs'
+        ),
+        xaxis3=XAxis(
+            domain=[0,.49], range=[0,num_ids_per_stream], anchor='y3',
+            showgrid=False, title='# good SNL Groups'
+        ),
+        xaxis4=XAxis(
+            domain=[.51,1], anchor='y4', showgrid=False, range=[0,num_ids_per_stream],
+            title='"relative" ID of bad SNL Groups (= SNL Group ID %% %dk)' % num_ids_per_stream_k
+        ),
+        xaxis5=XAxis(
+            domain=[.51,1], anchor='y5', showgrid=False, title='# bad SNLs'
+        ),
+        # y-axes
+        yaxis1=YAxis(
+            domain=[.35,.65], range=[-.5,num_snl_streams-.5], anchor='x1', showgrid=False,
+            title='range index (= SNL ID / %dk)' % num_ids_per_stream_k
+        ),
+        yaxis2=YAxis(
+            domain=[.7,1], range=[-.5,num_snl_streams-.5], anchor='x2', showgrid=False,
+            title='range index (= SNL ID / %dk)' % num_ids_per_stream_k
+        ),
+        yaxis3=YAxis(
+            domain=[0,.3], range=[-.5,num_snlgroup_streams-.5], anchor='x3', showgrid=False,
+            title='range index (= SNL Group ID / %dk)' % num_ids_per_stream_k
+        ),
+        yaxis4=YAxis(
+            domain=[0,.3], range=[-.5,num_snlgroup_streams-.5], anchor='x4',
+            showgrid=False, zeroline=False
+        ),
+        yaxis5=YAxis(
+            domain=[.7,1], anchor='x5', side='right', showgrid=False, title='category'
+        ),
+    )
+    fig = Figure(data=data, layout=layout)
+    filename = _get_filename(day=False)
+    py.plot(fig, filename=filename, auto_open=False)
 
 def check_snl_spacegroups(args):
     """check spacegroups of all available SNLs"""
-    num_streams = num_snls / num_ids_per_stream
-    if num_snls % num_ids_per_stream: num_streams += 1
     idxs = [args.start / num_ids_per_stream]
-    idxs += [idxs[0] + num_streams]
+    idxs += [idxs[0] + num_snl_streams]
     s = [py.Stream(stream_ids[i]) for i in idxs]
     for i in range(len(idxs)): s[i].open()
     end = num_snls if args.end > num_snls else args.end
@@ -214,9 +225,6 @@ def crosscheck_canonical_snls(args):
 
 def analyze(args):
     """analyze data at any point for a copy of the streaming figure"""
-    if args.check not in checks:
-        print "no analysis available for %s. Choose one of %r" % (args.check, checks)
-        return
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     fig = py.get_figure(creds['username'], args.fig_id)
     errors = Counter()
@@ -233,14 +241,14 @@ def analyze(args):
     print errors
     fig_data = fig['data'][-1]
     fig_data['x'] = [ errors[color] for color in fig_data['marker']['color'] ]
-    filename = _get_filename(args.check)
+    filename = _get_filename()
     print filename
     py.plot(fig, filename=filename)
     with open('mpworks/scripts/bad_snls.csv', 'wb') as f:
         writer = csv.writer(f)
         for row in sg_change_snls:
             writer.writerow([row])
-    #py.image.save_as(fig, _get_filename(args.check)+'.png')
+    #py.image.save_as(fig, _get_filename()+'.png')
     # NOTE: service unavailable!? static images can also be saved by appending
     # the appropriate extension (pdf,jpg,png,eps) to the public URL
 
@@ -255,7 +263,6 @@ if __name__ == '__main__':
 
     # sub-command: analyze
     parser_ana = subparsers.add_parser('analyze')
-    parser_ana.add_argument('check', help='which check to analyze')
     parser_ana.add_argument('--fig-id', help='plotly figure id', default=6, type=int)
     parser_ana.set_defaults(func=analyze)
 
