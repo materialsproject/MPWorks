@@ -88,7 +88,7 @@ def init_plotly(args):
     # layout
     layout = Layout(
         title="SNL Group Checks Stream", showlegend=False, hovermode='closest',
-        autosize=False, width=850, height=1400,
+        autosize=False, width=850, height=1300,
         # x-axes
         xaxis1=XAxis(
             domain=[0,.49], range=[0,5000], anchor='y1',
