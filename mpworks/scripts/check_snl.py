@@ -31,7 +31,8 @@ num_ids_per_stream = 20000
 num_snls = sma.snl.count()
 num_snlgroups = sma.snlgroups.count()
 checks = ['spacegroups', 'groupmembers', 'canonicals']
-# error_categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
+categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
+num_categories = len(categories)
 category_colors = ['red', 'blue', 'green', 'orange']
 
 def _get_filename(check, day=True):
@@ -70,34 +71,46 @@ def init_plotly(args):
             name = '%dk - %dk' % (index*num_ids_per_stream/1000, (index+1)*num_ids_per_stream/1000)
             color = _get_shades_of_gray(num_streams)[index]
             data.append(Bar(
-                x=[], y=[], stream=stream, name=name,
-                xaxis='x2', yaxis='y2', orientation='h',
-                marker=Marker(color=color)
+                x=[15000], y=index, stream=stream, name=name,
+                xaxis='x2', yaxis='y2', orientation='h', marker=Marker(color=color)
             ))
             streams_counter += 1
+        stream = Stream(token=stream_ids[streams_counter], maxpoints=num_categories)
+        data.append(Bar(
+            x=[0.1]*num_categories, y=categories, stream=stream, name='#bad SNLs',
+            xaxis='x3', yaxis='y3', orientation='h', marker=Marker(color=category_colors)
+        ))
         # layout
         # TODO Give general description somewhere in figure
         layout = Layout(
             title="SNL Group Checks Stream",
             showlegend=False, hovermode='closest',
             xaxis1=XAxis(
-                domain=[0,1], range=[-1,num_ids_per_stream+1], anchor='y1',
+                domain=[0,1], range=[0,num_ids_per_stream], anchor='y1',
                 showgrid=False,
                 title='"relative" ID of bad SNL%ss (= SNL ID %% %dk)' % (
                     'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
             ),
             yaxis1=YAxis(
-                domain=[0,.45], range=[-1,num_streams+1], anchor='x1', showgrid=False,
+                domain=[0,.49], range=[-.5,num_streams-.5], anchor='x1', showgrid=False,
                 title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
             ),
             xaxis2=XAxis(
-                domain=[0,.45], range=[-1,num_ids_per_stream+1], anchor='y2',
+                domain=[0,.49], range=[0,num_ids_per_stream], anchor='y2',
                 side='top', showgrid=False, title='# good SNL%ss (max. %dk)' % (
                     'Group' if check != 'spacegroups' else '', num_ids_per_stream/1000)
             ),
             yaxis2=YAxis(
-                domain=[.55,1], range=[-1,num_streams+1], anchor='x1', showgrid=False,
+                domain=[.51,1], range=[-.5,num_streams-.5], anchor='x2', showgrid=False,
                 title='range index (= SNL ID / %dk)' % (num_ids_per_stream/1000)
+            ),
+            xaxis3=XAxis(
+                domain=[.51,1], anchor='y3', side='top', showgrid=False,
+                title='# bad SNL%ss' % ('Group' if check != 'spacegroups' else '')
+            ),
+            yaxis3=YAxis(
+                domain=[.51,1], anchor='x3', side='right',
+                showgrid=False, title='error category'
             )
         )
         fig = Figure(data=data, layout=layout)
