@@ -9,6 +9,8 @@ __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
 import sys, time, datetime, csv
+from itertools import izip_longest
+from collections import OrderedDict
 from argparse import ArgumentParser
 from fnmatch import fnmatch
 from collections import Counter
@@ -273,26 +275,29 @@ def analyze(args):
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     fig = py.get_figure(creds['username'], args.fig_id)
     errors = Counter()
-    sg_change_snls = []
-    for d in fig['data']:
-        if isinstance(d, Scatter) and 'x' in d and 'y' in d and 'text' in d:
+    bad_snls = OrderedDict((cat,[]) for cat in categories)
+    print bad_snls
+    for i,d in enumerate(fig['data']):
+        if i < 2*num_snl_streams and isinstance(d, Scatter) and \
+           'x' in d and 'y' in d and 'text' in d:
             start_id = int(d['name'].split(' - ')[0][:-1])*1000
             marker_colors = d['marker']['color']
             errors += Counter(marker_colors)
-            sg_change_snls += [
-                start_id + d['x'][idx] for idx,color in enumerate(marker_colors)
-                if color == category_colors[0]
-            ]
+            for idx,color in enumerate(marker_colors):
+                snl_id = start_id + d['x'][idx]
+                color_index = category_colors.index(color)
+                bad_snls[categories[color_index]].append(snl_id)
     print errors
     fig_data = fig['data'][-1]
     fig_data['x'] = [ errors[color] for color in fig_data['marker']['color'] ]
     filename = _get_filename()
     print filename
     py.plot(fig, filename=filename)
-    with open('mpworks/scripts/bad_snls.csv', 'wb') as f:
+    with open('mpworks/check_snl/bad_snls.csv', 'wb') as f:
         writer = csv.writer(f)
-        for row in sg_change_snls:
-            writer.writerow([row])
+        writer.writerow(categories)
+        for row in izip_longest(*bad_snls.values()):
+            writer.writerow(row)
     #py.image.save_as(fig, _get_filename()+'.png')
     # NOTE: service unavailable!? static images can also be saved by appending
     # the appropriate extension (pdf,jpg,png,eps) to the public URL
