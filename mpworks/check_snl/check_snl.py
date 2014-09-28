@@ -276,27 +276,40 @@ def analyze(args):
     fig = py.get_figure(creds['username'], args.fig_id)
     errors = Counter()
     bad_snls = OrderedDict((cat,[]) for cat in categories)
-    print bad_snls
+    bad_snlgroups = []
     for i,d in enumerate(fig['data']):
-        if i < 2*num_snl_streams and isinstance(d, Scatter) and \
-           'x' in d and 'y' in d and 'text' in d:
-            start_id = int(d['name'].split(' - ')[0][:-1])*1000
-            marker_colors = d['marker']['color']
+        if not isinstance(d, Scatter): continue
+        if not 'x' in d or not 'y' in d or not 'text' in d: continue
+        start_id = int(d['name'].split(' - ')[0][:-1])*1000
+        marker_colors = d['marker']['color']
+        if i < 2*num_snl_streams: # spacegroups
             errors += Counter(marker_colors)
             for idx,color in enumerate(marker_colors):
                 snl_id = start_id + d['x'][idx]
                 color_index = category_colors.index(color)
                 bad_snls[categories[color_index]].append(snl_id)
+        else: # groupmembers
+            for idx,color in enumerate(marker_colors):
+                if color != category_colors[0]: continue
+                snlgroup_id = start_id + d['x'][idx]
+                mismatch_snl_id, canonical_snl_id = d['text'][idx].split(' != ')
+                canonical_snl_id = canonical_snl_id[4:]
+                bad_snlgroups.append([snlgroup_id, canonical_snl_id, mismatch_snl_id])
     print errors
     fig_data = fig['data'][-1]
     fig_data['x'] = [ errors[color] for color in fig_data['marker']['color'] ]
     filename = _get_filename()
     print filename
-    py.plot(fig, filename=filename)
+    #py.plot(fig, filename=filename)
     with open('mpworks/check_snl/bad_snls.csv', 'wb') as f:
         writer = csv.writer(f)
         writer.writerow(categories)
         for row in izip_longest(*bad_snls.values()):
+            writer.writerow(row)
+    with open('mpworks/check_snl/bad_snlgroups.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerow(['snlgroup_id', 'canonical_snl_id', 'first_mismatching_snl_id'])
+        for row in bad_snlgroups:
             writer.writerow(row)
     #py.image.save_as(fig, _get_filename()+'.png')
     # NOTE: service unavailable!? static images can also be saved by appending
