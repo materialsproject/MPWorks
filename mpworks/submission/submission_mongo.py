@@ -104,7 +104,7 @@ class SubmissionMongoAdapter(object):
     def submit_snl(self, snl, submitter_email, parameters=None):
         parameters = parameters if parameters else {}
 
-        d = snl.to_dict
+        d = snl.as_dict()
         d['submitter_email'] = submitter_email
         d['parameters'] = parameters
         d['state'] = 'SUBMITTED'
@@ -116,7 +116,7 @@ class SubmissionMongoAdapter(object):
             d.update(get_meta_from_structure(snl.structure))
 
         sorted_structure = snl.structure.get_sorted_structure()
-        d.update(sorted_structure.to_dict)
+        d.update(sorted_structure.as_dict())
 
         self.jobs.insert(d)
         return d['submission_id']
@@ -138,7 +138,7 @@ class SubmissionMongoAdapter(object):
 
         if mpsnl:
             updates['parameters'] = self.jobs.find_one({'submission_id': submission_id}, {'parameters': 1})['parameters']
-            updates['parameters'].update({"mpsnl": mpsnl.to_dict, "snlgroup_id": snlgroup_id})
+            updates['parameters'].update({"mpsnl": mpsnl.as_dict(), "snlgroup_id": snlgroup_id})
 
         self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': updates})
 

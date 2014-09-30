@@ -43,10 +43,10 @@ def _snl_to_spec(snl, enforce_gga=False, parameters=None):
     potcar = mpvis.get_potcar(structure)
 
     spec['vasp'] = {}
-    spec['vasp']['incar'] = incar.to_dict
-    spec['vasp']['poscar'] = poscar.to_dict
-    spec['vasp']['kpoints'] = kpoints.to_dict
-    spec['vasp']['potcar'] = potcar.to_dict
+    spec['vasp']['incar'] = incar.as_dict()
+    spec['vasp']['poscar'] = poscar.as_dict()
+    spec['vasp']['kpoints'] = kpoints.as_dict()
+    spec['vasp']['potcar'] = potcar.as_dict()
 
     # Add run tags of pseudopotential
     spec['run_tags'] = spec.get('run_tags', [potcar.functional])
@@ -88,14 +88,14 @@ def snl_to_wf(snl, parameters=None):
         if 'mpsnl' in parameters:
             snl_spec['mpsnl'] = parameters['mpsnl']
         elif isinstance(snl, MPStructureNL):
-            snl_spec['mpsnl'] = snl.to_dict
+            snl_spec['mpsnl'] = snl.as_dict()
         else:
             raise ValueError("improper use of force SNL")
         snl_spec['snlgroup_id'] = parameters['snlgroup_id']
     else:
         # add the SNL to the SNL DB and figure out duplicate group
         tasks = [AddSNLTask()]
-        spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+        spec = {'task_type': 'Add to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
         fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
         connections[0] = [1]
 
@@ -126,7 +126,7 @@ def snl_to_wf(snl, parameters=None):
         connections[2] = [3]
 
     # determine if GGA+U FW is needed
-    incar = MPVaspInputSet().get_incar(snl.structure).to_dict
+    incar = MPVaspInputSet().get_incar(snl.structure).as_dict()
 
     if 'LDAU' in incar and incar['LDAU']:
         spec = _snl_to_spec(snl, enforce_gga=False, parameters=parameters)

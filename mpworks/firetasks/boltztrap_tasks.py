@@ -66,7 +66,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
             # put the data in the database
             bta = BoltztrapAnalyzer.from_files(dir)
-            data = bta.to_dict
+            data = bta.as_dict()
             data.update(get_meta_from_structure(bs._structure))
             data['snlgroup_id'] = fw_spec['snlgroup_id']
             data['run_tags'] = fw_spec['run_tags']

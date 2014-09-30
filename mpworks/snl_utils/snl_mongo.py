@@ -114,7 +114,7 @@ class SNLMongoAdapter(FWSerializable):
 
 
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
-        snl_d = mpsnl.to_dict
+        snl_d = mpsnl.as_dict()
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
         self.snl.insert(snl_d)
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
@@ -124,7 +124,7 @@ class SNLMongoAdapter(FWSerializable):
         if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
-                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
+                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
 
         return match_found, spec_group
 
@@ -155,7 +155,7 @@ class SNLMongoAdapter(FWSerializable):
             if snlgroup.species_groups:
                 spec_group = snlgroup.species_groups.keys()[0]
             if not testing_mode:
-                self.snlgroups.insert(snlgroup.to_dict)
+                self.snlgroups.insert(snlgroup.as_dict())
 
         return snlgroup, not match_found, spec_group
 
@@ -169,7 +169,7 @@ class SNLMongoAdapter(FWSerializable):
             raise ValueError('Canonical SNL must already be in snlgroup to switch!')
 
         new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
-        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.to_dict)
+        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.as_dict())
 
     def lock_db(self):
         x = self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': True}}, fields={'lock':1})

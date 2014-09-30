@@ -128,13 +128,13 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
         elif 'mps' in old_task and old_task['mps']:
             snl = mps_dict_to_snl(old_task['mps'])
             mpsnl, snlgroup_id = sma.add_snl(snl)
-            d['snl'] = mpsnl.to_dict
+            d['snl'] = mpsnl.as_dict()
             d['snlgroup_id'] = snlgroup_id
         else:
             s = Structure.from_dict(old_task['input']['crystal'])
             snl = StructureNL(s, 'Anubhav Jain <ajain@lbl.gov>', remarks=['origin unknown'])
             mpsnl, snlgroup_id = sma.add_snl(snl)
-            d['snl'] = mpsnl.to_dict
+            d['snl'] = mpsnl.as_dict()
             d['snlgroup_id'] = snlgroup_id
 
 
@@ -156,7 +156,7 @@ class MPVaspDrone_CONVERSION(VaspToDbTaskDrone):
             # add snl
             mpsnl, snlgroup_id = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
 
-            d['snl_final'] = mpsnl.to_dict
+            d['snl_final'] = mpsnl.as_dict()
             d['snlgroup_id_final'] = snlgroup_id
             d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                      d['snlgroup_id_final'])

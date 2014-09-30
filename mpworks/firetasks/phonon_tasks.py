@@ -68,9 +68,9 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
-            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
             if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
-                spec['force_mpsnl'] = snl.to_dict
+                spec['force_mpsnl'] = snl.as_dict()
                 spec['force_snlgroup_id'] = fw_spec['snlgroup_id']
                 del spec['snl']
             fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000+i*10))

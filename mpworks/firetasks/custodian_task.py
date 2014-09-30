@@ -149,7 +149,7 @@ def get_custodian_task(spec):
         jobs = [VaspJob(v_exe)]
         handlers = []
 
-    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
+    params = {'jobs': [j_decorate(j.as_dict()) for j in jobs],
+              'handlers': [h.as_dict() for h in handlers], 'max_errors': 5}
 
     return VaspCustodianTask(params)

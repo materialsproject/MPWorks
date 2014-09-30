@@ -131,7 +131,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             o_path = os.path.join(path,"relax"+str(i),"OUTCAR")
                             o_path = o_path if os.path.exists(o_path) else o_path+".gz"
                             outcar = Outcar(o_path)
-                            d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
+                            d["calculations"][i-1]["output"]["outcar"] = outcar.as_dict()
                             run_stats["relax"+str(i)] = outcar.run_stats
                     except:
                         logger.error("Bad OUTCAR for {}.".format(path))
@@ -202,7 +202,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     else:
                         bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
                                                        line_mode=False)
-                    bs_json = json.dumps(bs.to_dict, cls=MontyEncoder)
+                    bs_json = json.dumps(bs.as_dict(), cls=MontyEncoder)
                     fs = gridfs.GridFS(db, "band_structure_fs")
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
@@ -260,7 +260,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                     # add snl
                     mpsnl, snlgroup_id, spec_group = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
-                    d['snl_final'] = mpsnl.to_dict
+                    d['snl_final'] = mpsnl.as_dict()
                     d['snlgroup_id_final'] = snlgroup_id
                     d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                              d['snlgroup_id_final'])

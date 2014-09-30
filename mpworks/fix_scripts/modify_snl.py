@@ -54,7 +54,7 @@ def modify_snl(snl_id, new_snl, colls, reject_bad_tasks=False):
     snl_old = colls.snl.find_one({'snl_id': snl_id}, {'lattice': 1, 'sites': 1, 'snl_timestamp': 1})
 
     # enforce the new SNL's lattice/sites to be same as old
-    snl_d = new_snl.to_dict
+    snl_d = new_snl.as_dict()
     snl_d['lattice'] = snl_old['lattice']
     snl_d['sites'] = snl_old['sites']
     snl_d['snl_timestamp'] = snl_old['snl_timestamp']
@@ -122,6 +122,6 @@ if __name__ == '__main__':
     snl_id = 1579
 
     snl_new = get_deprecated_snl(snl_id, colls)
-    print snl_new.to_dict
+    print snl_new.as_dict()
 
     modify_snl(snl_id, snl_new, colls, reject_bad_tasks=True)

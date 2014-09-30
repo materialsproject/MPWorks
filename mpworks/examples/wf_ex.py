@@ -43,10 +43,10 @@ def structure_to_wf(structure):
     # serialize the VASP input objects to the FW spec
     spec = {}
     spec['vasp'] = {}
-    spec['vasp']['incar'] = incar.to_dict
-    spec['vasp']['poscar'] = poscar.to_dict
-    spec['vasp']['kpoints'] = kpoints.to_dict
-    spec['vasp']['potcar'] = potcar.to_dict
+    spec['vasp']['incar'] = incar.as_dict()
+    spec['vasp']['poscar'] = poscar.as_dict()
+    spec['vasp']['kpoints'] = kpoints.as_dict()
+    spec['vasp']['potcar'] = potcar.as_dict()
     spec['vaspinputset_name'] = mpvis.__class__.__name__
     spec['task_type'] = 'GGA optimize structure (2x) example'
 
@@ -56,7 +56,7 @@ def structure_to_wf(structure):
             j.auto_npar = False
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),
                     NonConvergingErrorHandler()]
-    c_params = {'jobs': [j.to_dict for j in jobs], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
+    c_params = {'jobs': [j.as_dict() for j in jobs], 'handlers': [h.as_dict() for h in handlers], 'max_errors': 5}
     custodiantask = VaspCustodianTaskEx(c_params)
 
     # 1st Firework - run GGA optimize structure
@@ -78,7 +78,7 @@ def structure_to_wf(structure):
     spec = {'task_type': 'GGA static example'}
     copytask = VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True})
     setuptask = SetupStaticRunTask()
-    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).to_dict], 'handlers': [h.to_dict for h in handlers], 'max_errors': 5})
+    custodiantask = VaspCustodianTaskEx({'jobs': [VaspJob('', auto_npar=False).as_dict()], 'handlers': [h.as_dict() for h in handlers], 'max_errors': 5})
     fws.append(Firework([copytask, setuptask, custodiantask], spec, name=get_name(structure, spec['task_type']), fw_id=3))
     connections[2] = [3]
 
