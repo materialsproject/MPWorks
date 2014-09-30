@@ -39,6 +39,7 @@ if num_snls % num_ids_per_stream: num_snl_streams += 1
 num_snlgroups = sma.snlgroups.count()
 num_snlgroup_streams = num_snlgroups / num_ids_per_stream
 if num_snlgroups % num_ids_per_stream: num_snlgroup_streams += 1
+num_pairs_per_job = 200000
 
 checks = ['spacegroups', 'groupmembers', 'canonicals']
 categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
@@ -63,6 +64,39 @@ def _get_id_range_from_index(index):
 def _sleep(start_time):
     sleep_time = min_sleep - time.clock() + start_time
     if sleep_time > 0: time.sleep(sleep_time)
+
+class Pair:
+    """simple pair of integers with some properties and methods"""
+    def __init__(self, i, j):
+        self.primary = i
+        self.secondary = j
+    def copy(self):
+        return Pair(self.primary, self.secondary)
+    def next_pair(self):
+        self.secondary += 1
+        if self.secondary > num_snlgroups:
+            self.primary += 1
+            self.secondary = self.primary + 1
+    def __repr__(self):
+        return 'Pair(%d,%d)' % (self.primary, self.secondary)
+
+class PairIterator:
+    """iterator of specific length for pairs (i,j) w/ j>i"""
+    def __init__(self, job_id):
+        # TODO: get proper initial pair from job_id
+        self.current_pair = Pair(1,178134)
+        self.num_pairs = 1
+    def __iter__(self):
+        return self
+    def next(self):
+        if self.num_pairs > num_pairs_per_job:
+            raise StopIteration
+        else:
+            self.num_pairs += 1
+            current_pair_copy = self.current_pair.copy()
+            self.current_pair.next_pair()
+            return current_pair_copy
+
 
 def init_plotly(args):
     """init all plots on plot.ly"""
