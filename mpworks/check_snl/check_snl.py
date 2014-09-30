@@ -66,7 +66,7 @@ def _sleep(start_time):
 
 def init_plotly(args):
     """init all plots on plot.ly"""
-    # data
+    # 'spacegroups' & 'groupmembers'
     stream_ids_iter = iter(stream_ids)
     data = Data()
     for check_id,num_streams in enumerate([num_snl_streams, num_snlgroup_streams]):
@@ -83,6 +83,7 @@ def init_plotly(args):
                 marker=Marker(color=_get_shades_of_gray(num_streams)[index]),
                 xaxis='x%d' % (2*check_id+1), yaxis='y%d' % (2*check_id+1)
             ))
+    # total error counts in 'spacegroups' check
     data.append(Bar(
         x=[0.1]*num_categories, y=categories, name='#bad SNLs', xaxis='x5',
         yaxis='y5', orientation='h', marker=Marker(color=category_colors)
@@ -251,16 +252,10 @@ def crosscheck_canonical_snls(args):
     snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
     secondary_range = range(args.secondary_start, args.secondary_end)
     num_id2 = len(secondary_range)
-    start_time = time.clock()
     for id2 in secondary_range:
         snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
         snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
         # check composition AND spacegroup via snlgroup_key
-        # matcher.fit only does composition check and returns None when different compositions
-        # TODO: add snlgroup_key attribute to SNLGroup for convenience
-        if time.clock() - start_time > 5.: # heartbeat
-            print id2
-            start_time = time.clock()
         if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
             continue
         if matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure):
@@ -347,10 +342,11 @@ if __name__ == '__main__':
     # This task can be split in multiple parallel jobs by SNLGroup combinations
     # of (primary, secondary) ID's. The range for the secondary id always starts
     # at primary+1 (to avoid dupes)
+    # To keep the load balanced for each job, a constant number of
+    # primary-secondary-id combination/pairs is submitted with each. Hence, the
+    # respective job/pair-range id is given as a mandatory arg on the command line.
     parser_task2 = subparsers.add_parser('canonicals')
-    parser_task2.add_argument('--primary', help='primary SNLGroup Id', default=1, type=int)
-    parser_task2.add_argument('--secondary-start', help='secondary start SNLGroup Id', default=2, type=int)
-    parser_task2.add_argument('--secondary-end', help='secondary end SNLGroup Id', default=1000, type=int)
+    parser_task2.add_argument('job-id', help='index/id for job/pair-range', type=int)
     parser_task2.set_defaults(func=crosscheck_canonical_snls)
 
     # parse args and call function
