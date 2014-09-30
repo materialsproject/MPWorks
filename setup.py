@@ -25,7 +25,7 @@ if __name__ == "__main__":
           license='modified BSD',
           packages=find_packages(),
           zip_safe=False,
-          install_requires=['pymatgen>=2.5', 'fireworks>=0.1dev1.7', 'custodian>=0.4', 'monty>=0.1.3'],
+          install_requires=["pymatgen>=3.04", "FireWorks>=0.94", "custodian>=0.8.0"],
           classifiers=["Programming Language :: Python :: 2.7", "Development Status :: 2 - Pre-Alpha",
                        "Intended Audience :: Science/Research", "Intended Audience :: System Administrators",
                        "Intended Audience :: Information Technology",
