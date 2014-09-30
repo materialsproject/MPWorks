@@ -63,7 +63,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
         for i, strain in enumerate(deformed_structs.keys()):
             d_struct = deformed_structs[strain]
-            f = Composition.from_formula(d_struct.formula).alphabetical_formula
+            f = Composition(d_struct.formula).alphabetical_formula
             snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>')
 
             tasks = [AddSNLTask()]

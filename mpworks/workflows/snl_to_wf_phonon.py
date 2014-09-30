@@ -25,7 +25,7 @@ def snl_to_wf_phonon(snl, parameters=None):
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
 
-    f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+    f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
@@ -67,5 +67,5 @@ def snl_to_wf_phonon(snl, parameters=None):
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
 
-    return Workflow(fws, connections, name=Composition.from_formula(
+    return Workflow(fws, connections, name=Composition(
         snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)

@@ -42,7 +42,7 @@ def task_dict_to_wf(task_dict, launchpad):
     launches = [Launch('COMPLETED', launch_dir, fworker=None, host=None, ip=None, action=fwaction,
                        state_history=state_history, launch_id=l_id, fw_id=fw_id)]
 
-    f = Composition.from_formula(task_dict['pretty_formula']).alphabetical_formula
+    f = Composition(task_dict['pretty_formula']).alphabetical_formula
 
 
     fw = Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), launches=launches, state='COMPLETED', created_on=None,

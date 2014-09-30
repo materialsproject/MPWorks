@@ -81,7 +81,7 @@ def snl_to_wf(snl, parameters=None):
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
 
-    f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+    f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
     snl_spec = {}
     if 'snlgroup_id' in parameters:
@@ -159,7 +159,7 @@ def snl_to_wf(snl, parameters=None):
 
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
-    return Workflow(fws, connections, name=Composition.from_formula(
+    return Workflow(fws, connections, name=Composition(
         snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
 
 
@@ -185,7 +185,7 @@ def snl_to_wf_ggau(snl):
 
     spec['vaspinputset_name'] = mpvis.__class__.__name__
 
-    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula)
+    return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula)
 """
 
 
