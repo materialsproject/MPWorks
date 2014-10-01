@@ -35,12 +35,16 @@ matcher = StructureMatcher(
 num_ids_per_stream = 20000
 num_ids_per_stream_k = num_ids_per_stream/1000
 num_snls = sma.snl.count()
-num_snl_streams = num_snls / num_ids_per_stream
-if num_snls % num_ids_per_stream: num_snl_streams += 1
 num_snlgroups = sma.snlgroups.count()
-num_snlgroup_streams = num_snlgroups / num_ids_per_stream
-if num_snlgroups % num_ids_per_stream: num_snlgroup_streams += 1
 num_pairs_per_job = 1000 * num_ids_per_stream
+num_pairs_max = num_snlgroups*(num_snlgroups-1)/2
+
+def _div_plus_mod(a, b): return a/b + bool(a%b)
+
+num_snl_streams = _div_plus_mod(num_snls, num_ids_per_stream)
+num_snlgroup_streams = _div_plus_mod(num_snlgroups, num_ids_per_stream)
+num_jobs = _div_plus_mod(num_pairs_max, num_pairs_per_job)
+print num_snl_streams, num_snlgroup_streams, num_jobs
 
 checks = ['spacegroups', 'groupmembers', 'canonicals']
 categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
@@ -86,12 +90,8 @@ class Pair:
 class PairIterator:
     """iterator of specific length for pairs (i,j) w/ j>i"""
     def __init__(self, job_id):
-        num_pairs_max = num_snlgroups*(num_snlgroups-1)/2
         if job_id * num_pairs_per_job > num_pairs_max:
-            raise ValueError(
-                'job_id cannot be larger than %d',
-                num_pairs_max/num_pairs_per_job+1
-            )
+            raise ValueError('job_id cannot be larger than %d', num_jobs-1)
         self.current_pair = self._get_initial_pair(job_id)
         self.num_pairs = 1
     def __iter__(self):
