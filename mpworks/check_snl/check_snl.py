@@ -9,6 +9,7 @@ __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
 import sys, time, datetime, csv
+from math import sqrt
 from itertools import izip_longest
 from collections import OrderedDict
 from argparse import ArgumentParser
@@ -39,7 +40,7 @@ if num_snls % num_ids_per_stream: num_snl_streams += 1
 num_snlgroups = sma.snlgroups.count()
 num_snlgroup_streams = num_snlgroups / num_ids_per_stream
 if num_snlgroups % num_ids_per_stream: num_snlgroup_streams += 1
-num_pairs_per_job = 200000
+num_pairs_per_job = 1000 * num_ids_per_stream
 
 checks = ['spacegroups', 'groupmembers', 'canonicals']
 categories = [ 'SG Change', 'SG Default', 'PybTeX', 'Others' ]
@@ -68,14 +69,16 @@ def _sleep(start_time):
 class Pair:
     """simple pair of integers with some properties and methods"""
     def __init__(self, i, j):
-        self.primary = i
-        self.secondary = j
+        self.primary = i if i < num_snlgroups else num_snlgroups
+        self.secondary = j if j <= num_snlgroups else num_snlgroups
     def copy(self):
         return Pair(self.primary, self.secondary)
     def next_pair(self):
         self.secondary += 1
         if self.secondary > num_snlgroups:
             self.primary += 1
+            if self.primary > num_snlgroups:
+                raise StopIteration
             self.secondary = self.primary + 1
     def __repr__(self):
         return 'Pair(%d,%d)' % (self.primary, self.secondary)
@@ -83,11 +86,21 @@ class Pair:
 class PairIterator:
     """iterator of specific length for pairs (i,j) w/ j>i"""
     def __init__(self, job_id):
-        # TODO: get proper initial pair from job_id
-        self.current_pair = Pair(1,178134)
+        num_pairs_max = num_snlgroups*(num_snlgroups-1)/2
+        if job_id * num_pairs_per_job > num_pairs_max:
+            raise ValueError(
+                'job_id cannot be larger than %d',
+                num_pairs_max/num_pairs_per_job+1
+            )
+        self.current_pair = self._get_initial_pair(job_id)
         self.num_pairs = 1
     def __iter__(self):
         return self
+    def _get_initial_pair(self, job_id):
+        N, J, M = num_snlgroups, job_id, num_pairs_per_job
+        i = int(N+.5-sqrt(N*(N-1)+.25-2*J*M))
+        j = J*M-(i-1)*(2*N-i)/2+i+1
+        return Pair(i,j)
     def next(self):
         if self.num_pairs > num_pairs_per_job:
             raise StopIteration
@@ -96,6 +109,8 @@ class PairIterator:
             current_pair_copy = self.current_pair.copy()
             self.current_pair.next_pair()
             return current_pair_copy
+    def __repr__(self):
+        return 'PairIterator(%r, %d)' % (self.current_pair, self.num_pairs)
 
 
 def init_plotly(args):
