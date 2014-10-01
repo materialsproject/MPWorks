@@ -100,7 +100,7 @@ class SNLMongoAdapter(FWSerializable):
             sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
                 else 'unknown'
             sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
-            sgpoint = unicode(sf.get_point_group(), errors="ignore")
+            sgpoint = sf.get_point_group()
 
             mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                            sgxtal, sglatt, sgpoint)
