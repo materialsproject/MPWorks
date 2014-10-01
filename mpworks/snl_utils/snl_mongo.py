@@ -5,7 +5,7 @@ import datetime
 from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen.symmetry.finder import SymmetryFinder
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 
 __author__ = 'Anubhav Jain'
@@ -90,7 +90,7 @@ class SNLMongoAdapter(FWSerializable):
 
             spstruc = snl.structure.copy()
             spstruc.remove_oxidation_states()
-            sf = SymmetryFinder(spstruc, SPACEGROUP_TOLERANCE)
+            sf = SpacegroupAnalyzer(spstruc, SPACEGROUP_TOLERANCE)
             sf.get_spacegroup()
             sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
                 else -1
