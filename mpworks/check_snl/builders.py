@@ -1,3 +1,4 @@
+import sys
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
@@ -35,18 +36,25 @@ class SNLGroupCrossChecker(Builder):
 
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
-        snlgroups = {}
+        snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
 
         def _get_snl_group(gid):
             if gid not in snlgroups:
-                snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": gid })
-                snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
+                try:
+                    snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": gid })
+                    snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    _log.info(exc_type, exc_value)
+                    return None # TODO: return error category
             return snlgroups[gid]
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             primary_group = _get_snl_group(primary_id)
+            if primary_group is None: continue
             for secondary_id in item['snlgroup_ids'][idx+1:]:
                 secondary_group = _get_snl_group(secondary_id)
+                if secondary_group is None: continue
                 is_match = self._matcher.fit(
                     primary_group.canonical_structure,
                     secondary_group.canonical_structure
