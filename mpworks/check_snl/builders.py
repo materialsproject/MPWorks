@@ -28,13 +28,13 @@ class SNLGroupCrossChecker(Builder):
             'snlgroup_ids': { '$addToSet': "$snlgroup_id" }
         }
         pipeline.append({ '$group': group_expression })
+        pipeline.append({ '$match': { 'num_snlgroups': { '$gt': 1 } } })
         pipeline.append({ '$sort': { 'num_snlgroups': -1 } })
         pipeline.append({ '$project': { 'snlgroup_ids': 1 } })
         return self._snlgroups.collection.aggregate(pipeline)['result']
 
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
-        if len(item['snlgroup_ids']) < 2: return 0
         snlgroups = {}
 
         def _get_snl_group(gid):
