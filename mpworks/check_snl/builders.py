@@ -1,4 +1,4 @@
-import sys, multiprocessing
+import sys, multiprocessing, os
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
@@ -83,3 +83,23 @@ class SNLGroupCrossChecker(Builder):
             _increase_counter()
         _log.info('%r, %s', snlgroups.keys(), self._snlgroup_counter)
 
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+    import plotly.plotly as py
+    from plotly.graph_objs import *
+    parser = ArgumentParser()
+    parser.add_argument('ncols', help='number of columns', type=int)
+    parser.add_argument('nrows', help='number of rows', type=int)
+    args = parser.parse_args()
+    min_sleep = 0.052
+    data = Data()
+    token = os.environ.get('TEST_TOKEN')
+    if token is None:
+        print 'export TEST_TOKEN!'
+        sys.exit(0)
+    data.append(Heatmap(
+        z=[[0]*args.ncols for i in range(args.nrows)],
+        stream=Stream(token=token, maxpoints=args.ncols*args.nrows)
+    ))
+    fig = Figure(data=data)
+    py.plot(fig, filename='test', auto_open=False)
