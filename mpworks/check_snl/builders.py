@@ -55,6 +55,13 @@ class SNLGroupCrossChecker(Builder):
                     return None # TODO: return error category
             return snlgroups[gid]
 
+        def _increase_counter():
+            # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
+            nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
+            currow = self._snlgroup_counter[nrow]
+            currow[ncol] += 1
+            self._snlgroup_counter[nrow] = currow
+
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             primary_group = _get_snl_group(primary_id)
             if primary_group is None: continue
@@ -70,6 +77,6 @@ class SNLGroupCrossChecker(Builder):
                     secondary_id, secondary_group.canonical_snl.snlgroup_key,
                     is_match
                 ))
-            self._snlgroup_counter[proc_id/self._ncols][proc_id%self._ncols] += 1
-        _log.info('%r, %r', snlgroups.keys(), self._snlgroup_counter)
+            _increase_counter()
+        _log.info('%r, %s', snlgroups.keys(), self._snlgroup_counter)
 
