@@ -14,6 +14,7 @@ class SNLGroupCrossChecker(Builder):
             attempt_supercell=False, comparator=ElementComparator()
         )
         Builder.__init__(self, *args, **kwargs)
+        self._lock = self._mgr.Lock()
         def _div_plus_mod(a, b): return a/b + bool(a%b)
         self._ncols = 2 if not self._seq else 1
         self._nrows = _div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
@@ -57,10 +58,12 @@ class SNLGroupCrossChecker(Builder):
 
         def _increase_counter():
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
+            self._lock.acquire()
             nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
             self._snlgroup_counter[nrow] = currow
+            self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             primary_group = _get_snl_group(primary_id)
