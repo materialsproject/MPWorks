@@ -100,7 +100,7 @@ class SNLGroupCrossChecker(Builder):
                     primary_group.canonical_structure,
                     secondary_group.canonical_structure
                 )
-                if is_match: continue
+                if not is_match: continue
                 secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
                 local_mismatch_counter[primary_sg_num==secondary_sg_num] += 1
                 _log.info('%s: %d(%s), %d(%s)' % (
