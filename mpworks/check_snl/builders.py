@@ -9,7 +9,7 @@ from plotly.graph_objs import *
 from mpworks.check_snl.utils import div_plus_mod, sleep
 
 creds = tls.get_credentials_file()
-stream_ids = creds['stream_ids'][:2] # NOTE index
+stream_ids = creds['stream_ids'][:3] # NOTE index
 _log = get_builder_log("cross_checker")
 
 class SNLGroupCrossChecker(Builder):
@@ -33,6 +33,8 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter_total = multiprocessing.Value('d', 0)
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0, 0])
+        self._mismatch_dict = self.shared_dict()
+        self._mismatch_dict.update({'same SGs': [], 'diff. SGs': []})
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
         self._snlgroups = snlgroups
@@ -70,13 +72,15 @@ class SNLGroupCrossChecker(Builder):
                     return None # TODO: return error category
             return snlgroups[gid]
 
-        def _increase_counter(a, b):
+        def _increase_counter(mismatch_dict):
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
             self._lock.acquire()
             mc = self._mismatch_counter
-            mc[0] += a
-            mc[1] += b
+            mc[0] += len(mismatch_dict['diff. SGs'])
+            mc[1] += len(mismatch_dict['same SGs'])
             self._mismatch_counter = mc
+            for k,v in mismatch_dict.iteritems():
+                self._mismatch_dict[k] += v
             nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
@@ -86,10 +90,17 @@ class SNLGroupCrossChecker(Builder):
                or self._snlgroup_counter_total.value == self._num_snlgroups:
                 self._streams[0].write(Heatmap(z=self._snlgroup_counter._getvalue()))
                 self._streams[1].write(Bar(x=self._mismatch_counter._getvalue()))
+                for k,v in self._mismatch_dict._getvalue().iteritems():
+                    self._streams[2].write(Scatter(
+                        x=self._mismatch_counter[k=='same SGs'], y=k, text='<br>'.join(v)
+                    ))
+                    time.sleep(0.052)
+                self._mismatch_dict.update({'same SGs': [], 'diff. SGs': []}) # clean
             self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
-            local_mismatch_counter = [0, 0]
+            cat_key = ''
+            local_mismatch_dict = { 'same SGs': [], 'diff. SGs': [] } # TODO: don't hardcode
             primary_group = _get_snl_group(primary_id)
             if primary_group is None: continue
             composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
@@ -102,11 +113,10 @@ class SNLGroupCrossChecker(Builder):
                 )
                 if not is_match: continue
                 secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
-                local_mismatch_counter[primary_sg_num==secondary_sg_num] += 1
-                _log.info('%s: %d(%s), %d(%s)' % (
-                    composition, primary_id, primary_sg_num, secondary_id, secondary_sg_num
-                ))
-            _increase_counter(*local_mismatch_counter)
+                cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
+                local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
+            if cat_key: _log.info(local_mismatch_dict)
+            _increase_counter(local_mismatch_dict)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -125,6 +135,10 @@ if __name__ == '__main__':
         z=[[0]*args.ncols for i in range(args.nrows)],
         stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
         xaxis='x2', yaxis='y2'
+    ))
+    data.append(Scatter(
+        y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
+        stream=Stream(token=stream_ids[2], maxpoints=10000)
     ))
     fig = tls.get_subplots(rows=1, columns=2)
     fig['data'] = data
