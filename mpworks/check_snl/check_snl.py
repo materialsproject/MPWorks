@@ -84,7 +84,16 @@ class Pair:
         return 'Pair(%d,%d)' % (self.primary, self.secondary)
 
 class PairIterator:
-    """iterator of specific length for pairs (i,j) w/ j>i"""
+    """iterator of specific length for pairs (i,j) w/ j>i
+
+    The combinatorial task of comparing pairs of SNLGroups can be split in
+    multiple parallel jobs by SNLGroup combinations of (primary, secondary)
+    ID's. The range for the secondary id always starts at primary+1 (to avoid
+    dupes) To keep the load balanced for each job, a constant number of
+    primary-secondary-id combination/pairs is submitted with each. Hence, the
+    respective job/pair-range id is given as a mandatory arg on the command
+    line.
+    """
     def __init__(self, job_id):
         if job_id * num_pairs_per_job > num_pairs_max:
             raise ValueError('job_id cannot be larger than %d', num_jobs-1)
@@ -289,27 +298,6 @@ def check_snls_in_snlgroups(args):
             sleep(start_time)
     for i in range(len(idxs)): s[i].close()
 
-def crosscheck_canonical_snls(args):
-    """check whether canonical SNLs of two different SNL groups match"""
-    plotly_stream = py.Stream(stream_ids[-1]) #TODO
-    plotly_stream.open()
-    snlgrp_dict1 = sma.snlgroups.find_one({ "snlgroup_id": args.primary })
-    snlgrp1 = SNLGroup.from_dict(snlgrp_dict1)
-    secondary_range = range(args.secondary_start, args.secondary_end)
-    num_id2 = len(secondary_range)
-    for id2 in secondary_range:
-        snlgrp_dict2 = sma.snlgroups.find_one({ "snlgroup_id": id2 })
-        snlgrp2 = SNLGroup.from_dict(snlgrp_dict2)
-        # check composition AND spacegroup via snlgroup_key
-        if snlgrp1.canonical_snl.snlgroup_key != snlgrp2.canonical_snl.snlgroup_key:
-            continue
-        if matcher.fit(snlgrp1.canonical_structure, snlgrp2.canonical_structure):
-            # how many other SNLGroups match the current (primary) group?
-            data = dict(x=args.primary, y=3)
-            plotly_stream.write(data)
-            time.sleep(min_sleep)
-    plotly_stream.close()
-
 def analyze(args):
     """analyze data at any point for a copy of the streaming figure"""
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
@@ -382,17 +370,6 @@ if __name__ == '__main__':
     parser_task1.add_argument('--start', help='start SNLGroup Id', default=0, type=int)
     parser_task1.add_argument('--end', help='end SNLGroup Id', default=10, type=int)
     parser_task1.set_defaults(func=check_snls_in_snlgroups)
-
-    # sub-command: canonicals
-    # This task can be split in multiple parallel jobs by SNLGroup combinations
-    # of (primary, secondary) ID's. The range for the secondary id always starts
-    # at primary+1 (to avoid dupes)
-    # To keep the load balanced for each job, a constant number of
-    # primary-secondary-id combination/pairs is submitted with each. Hence, the
-    # respective job/pair-range id is given as a mandatory arg on the command line.
-    parser_task2 = subparsers.add_parser('canonicals')
-    parser_task2.add_argument('job-id', help='index/id for job/pair-range', type=int)
-    parser_task2.set_defaults(func=crosscheck_canonical_snls)
 
     # parse args and call function
     args = parser.parse_args()
