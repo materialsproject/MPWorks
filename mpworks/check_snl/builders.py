@@ -30,10 +30,12 @@ class SNLGroupCrossChecker(Builder):
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
+        self._snlgroup_counter_total = multiprocessing.Value('d', 0)
         self._stream = py.Stream(stream_id)
         self._stream.open()
         self._snlgroups = snlgroups
-        pipeline = [ { '$limit': 1000 } ]
+        # start pipeline to prepare aggregation of items
+        pipeline = [ { '$limit': 5000 } ]
         group_expression = {
             '_id': '$reduced_cell_formula_abc',
             'num_snlgroups': { '$sum': 1 },
@@ -43,7 +45,12 @@ class SNLGroupCrossChecker(Builder):
         pipeline.append({ '$match': { 'num_snlgroups': { '$gt': 1 } } })
         pipeline.append({ '$sort': { 'num_snlgroups': -1 } })
         pipeline.append({ '$project': { 'snlgroup_ids': 1 } })
-        return self._snlgroups.collection.aggregate(pipeline)['result']
+        result = self._snlgroups.collection.aggregate(pipeline)['result']
+        self._num_snlgroups = sum(
+            len(v)-1 for d in result for k,v in d.iteritems() if k == 'snlgroup_ids'
+        )
+        _log.info('#snlgroups = %d', self._num_snlgroups)
+        return result
 
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
@@ -68,8 +75,11 @@ class SNLGroupCrossChecker(Builder):
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
             self._snlgroup_counter[nrow] = currow
-            self._stream.write(Heatmap(z=self._snlgroup_counter._getvalue()))
-            time.sleep(0.052)
+            self._snlgroup_counter_total.value += 1
+            if not self._snlgroup_counter_total.value % (13*self._ncols*self._nrows) \
+               or self._snlgroup_counter_total.value == self._num_snlgroups:
+                _log.info('%d: stream', self._snlgroup_counter_total.value)
+                self._stream.write(Heatmap(z=self._snlgroup_counter._getvalue()))
             self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
