@@ -1,9 +1,15 @@
-import sys, multiprocessing, os
+import sys, multiprocessing, os, time
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
+import plotly.plotly as py
+import plotly.tools as tls
+from plotly.graph_objs import *
+from mpworks.check_snl.utils import div_plus_mod, sleep
 
+creds = tls.get_credentials_file()
+stream_id = creds['stream_ids'][0] # NOTE index
 _log = get_builder_log("cross_checker")
 
 class SNLGroupCrossChecker(Builder):
@@ -20,11 +26,12 @@ class SNLGroupCrossChecker(Builder):
             attempt_supercell=False, comparator=ElementComparator()
         )
         self._lock = self._mgr.Lock()
-        def _div_plus_mod(a, b): return a/b + bool(a%b)
-        self._ncols = 2 if not self._seq else 1
-        self._nrows = _div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._ncols = 2 if not self._seq else 1 # TODO increase from 2 for more proc
+        self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
+        self._stream = py.Stream(stream_id)
+        self._stream.open()
         self._snlgroups = snlgroups
         pipeline = [ { '$limit': 1000 } ]
         group_expression = {
@@ -61,6 +68,8 @@ class SNLGroupCrossChecker(Builder):
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
             self._snlgroup_counter[nrow] = currow
+            self._stream.write(Heatmap(z=self._snlgroup_counter._getvalue()))
+            time.sleep(0.052)
             self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
@@ -83,21 +92,15 @@ class SNLGroupCrossChecker(Builder):
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
-    import plotly.plotly as py
-    from plotly.graph_objs import *
     parser = ArgumentParser()
     parser.add_argument('ncols', help='number of columns', type=int)
     parser.add_argument('nrows', help='number of rows', type=int)
     args = parser.parse_args()
-    min_sleep = 0.052
+    maxpoints = args.ncols*args.nrows
     data = Data()
-    token = os.environ.get('TEST_TOKEN')
-    if token is None:
-        print 'export TEST_TOKEN!'
-        sys.exit(0)
     data.append(Heatmap(
         z=[[0]*args.ncols for i in range(args.nrows)],
-        stream=Stream(token=token, maxpoints=args.ncols*args.nrows)
+        stream=Stream(token=stream_id, maxpoints=maxpoints)
     ))
     fig = Figure(data=data)
     py.plot(fig, filename='test', auto_open=False)

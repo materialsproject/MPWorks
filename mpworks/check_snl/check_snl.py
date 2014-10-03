@@ -22,6 +22,8 @@ from pymatgen.analysis.structure_matcher import StructureMatcher, ElementCompara
 import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
+from mpworks.check_snl.utils import div_plus_mod, sleep
+
 creds = tls.get_credentials_file()
 stream_ids = creds['stream_ids']
 min_sleep = 0.052
@@ -39,11 +41,9 @@ num_snlgroups = sma.snlgroups.count()
 num_pairs_per_job = 1000 * num_ids_per_stream
 num_pairs_max = num_snlgroups*(num_snlgroups-1)/2
 
-def _div_plus_mod(a, b): return a/b + bool(a%b)
-
-num_snl_streams = _div_plus_mod(num_snls, num_ids_per_stream)
-num_snlgroup_streams = _div_plus_mod(num_snlgroups, num_ids_per_stream)
-num_jobs = _div_plus_mod(num_pairs_max, num_pairs_per_job)
+num_snl_streams = div_plus_mod(num_snls, num_ids_per_stream)
+num_snlgroup_streams = div_plus_mod(num_snlgroups, num_ids_per_stream)
+num_jobs = div_plus_mod(num_pairs_max, num_pairs_per_job)
 print num_snl_streams, num_snlgroup_streams, num_jobs
 
 checks = ['spacegroups', 'groupmembers', 'canonicals']
@@ -65,10 +65,6 @@ def _get_shades_of_gray(num_colors):
 def _get_id_range_from_index(index):
     start_id_k = index*num_ids_per_stream_k
     return '%dk - %dk' % (start_id_k, start_id_k+num_ids_per_stream_k)
-
-def _sleep(start_time):
-    sleep_time = min_sleep - time.clock() + start_time
-    if sleep_time > 0: time.sleep(sleep_time)
 
 class Pair:
     """simple pair of integers with some properties and methods"""
@@ -251,13 +247,13 @@ def check_snls_in_snlgroups(args):
                 y=range_index, text=text, marker=Marker(color=colors)
             )
             s[0].write(data)
-            _sleep(start_time)
+            sleep(start_time)
             continue
         if len(snlgrp.all_snl_ids) <= 1:
             num_good_ids += 1
             data = dict(x=[num_good_ids], y=[range_index])
             s[1].write(data)
-            _sleep(start_time)
+            sleep(start_time)
             continue
         exc_raised = False
         all_snls_good = True
@@ -284,13 +280,13 @@ def check_snls_in_snlgroups(args):
                 )
                 s[0].write(data)
                 all_snls_good = False
-                _sleep(start_time)
+                sleep(start_time)
                 break
         if all_snls_good: # Bar (good)
             num_good_ids += 1
             data = dict(x=[num_good_ids], y=[range_index])
             s[1].write(data)
-            _sleep(start_time)
+            sleep(start_time)
     for i in range(len(idxs)): s[i].close()
 
 def crosscheck_canonical_snls(args):
