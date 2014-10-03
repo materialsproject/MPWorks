@@ -8,18 +8,6 @@ _log = get_builder_log("cross_checker")
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
-    def __init__(self, *args, **kwargs):
-        self._matcher = StructureMatcher(
-            ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
-            attempt_supercell=False, comparator=ElementComparator()
-        )
-        Builder.__init__(self, *args, **kwargs)
-        self._lock = self._mgr.Lock()
-        def _div_plus_mod(a, b): return a/b + bool(a%b)
-        self._ncols = 2 if not self._seq else 1
-        self._nrows = _div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
-        self._snlgroup_counter = self.shared_list()
-        self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
 
     def get_items(self, snlgroups=None):
         """iterator over same-composition groups of SNLGroups rev-sorted by size
@@ -27,6 +15,16 @@ class SNLGroupCrossChecker(Builder):
         :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
         :type snlgroups: QueryEngine
         """
+        self._matcher = StructureMatcher(
+            ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+            attempt_supercell=False, comparator=ElementComparator()
+        )
+        self._lock = self._mgr.Lock()
+        def _div_plus_mod(a, b): return a/b + bool(a%b)
+        self._ncols = 2 if not self._seq else 1
+        self._nrows = _div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snlgroup_counter = self.shared_list()
+        self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snlgroups = snlgroups
         pipeline = [ { '$limit': 1000 } ]
         group_expression = {
