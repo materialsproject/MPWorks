@@ -31,6 +31,8 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snlgroup_counter_total = multiprocessing.Value('d', 0)
+        self._mismatch_counter = self.shared_list()
+        self._mismatch_counter.extend([0, 0])
         self._stream = py.Stream(stream_id)
         self._stream.open()
         self._snlgroups = snlgroups
@@ -68,9 +70,13 @@ class SNLGroupCrossChecker(Builder):
                     return None # TODO: return error category
             return snlgroups[gid]
 
-        def _increase_counter():
+        def _increase_counter(a, b):
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
             self._lock.acquire()
+            mc = self._mismatch_counter
+            mc[0] += a
+            mc[1] += b
+            self._mismatch_counter = mc
             nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
@@ -83,8 +89,10 @@ class SNLGroupCrossChecker(Builder):
             self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
+            local_mismatch_counter = [0, 0]
             primary_group = _get_snl_group(primary_id)
             if primary_group is None: continue
+            composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
             for secondary_id in item['snlgroup_ids'][idx+1:]:
                 secondary_group = _get_snl_group(secondary_id)
                 if secondary_group is None: continue
@@ -92,12 +100,13 @@ class SNLGroupCrossChecker(Builder):
                     primary_group.canonical_structure,
                     secondary_group.canonical_structure
                 )
-                _log.info('%d:%s, %d:%s = %r' % (
-                    primary_id, primary_group.canonical_snl.snlgroup_key,
-                    secondary_id, secondary_group.canonical_snl.snlgroup_key,
-                    is_match
+                if is_match: continue
+                secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
+                local_mismatch_counter[primary_sg_num==secondary_sg_num] += 1
+                _log.info('%s: %d(%s), %d(%s)' % (
+                    composition, primary_id, primary_sg_num, secondary_id, secondary_sg_num
                 ))
-            _increase_counter()
+            _increase_counter(*local_mismatch_counter)
         _log.info('%r, %s', snlgroups.keys(), self._snlgroup_counter)
 
 if __name__ == '__main__':
