@@ -1,4 +1,4 @@
-import sys
+import sys, multiprocessing
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
@@ -14,6 +14,11 @@ class SNLGroupCrossChecker(Builder):
             attempt_supercell=False, comparator=ElementComparator()
         )
         Builder.__init__(self, *args, **kwargs)
+        def _div_plus_mod(a, b): return a/b + bool(a%b)
+        self._ncols = 2 if not self._seq else 1
+        self._nrows = _div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snlgroup_counter = self.shared_list()
+        self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
 
     def get_items(self, snlgroups=None):
         """iterator over same-composition groups of SNLGroups rev-sorted by size
@@ -36,6 +41,7 @@ class SNLGroupCrossChecker(Builder):
 
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
+        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
         snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
 
         def _get_snl_group(gid):
@@ -64,5 +70,6 @@ class SNLGroupCrossChecker(Builder):
                     secondary_id, secondary_group.canonical_snl.snlgroup_key,
                     is_match
                 ))
-        _log.info(snlgroups.keys())
+            self._snlgroup_counter[proc_id/self._ncols][proc_id%self._ncols] += 1
+        _log.info('%r, %r', snlgroups.keys(), self._snlgroup_counter)
 
