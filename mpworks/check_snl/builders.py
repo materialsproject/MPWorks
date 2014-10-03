@@ -9,7 +9,7 @@ from plotly.graph_objs import *
 from mpworks.check_snl.utils import div_plus_mod, sleep
 
 creds = tls.get_credentials_file()
-stream_id = creds['stream_ids'][0] # NOTE index
+stream_ids = creds['stream_ids'][:2] # NOTE index
 _log = get_builder_log("cross_checker")
 
 class SNLGroupCrossChecker(Builder):
@@ -33,8 +33,8 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter_total = multiprocessing.Value('d', 0)
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0, 0])
-        self._stream = py.Stream(stream_id)
-        self._stream.open()
+        self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+        for s in self._streams: s.open()
         self._snlgroups = snlgroups
         # start pipeline to prepare aggregation of items
         pipeline = [ { '$limit': 5000 } ]
@@ -82,10 +82,10 @@ class SNLGroupCrossChecker(Builder):
             currow[ncol] += 1
             self._snlgroup_counter[nrow] = currow
             self._snlgroup_counter_total.value += 1
-            if not self._snlgroup_counter_total.value % (13*self._ncols*self._nrows) \
+            if not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows) \
                or self._snlgroup_counter_total.value == self._num_snlgroups:
-                _log.info('%d: stream', self._snlgroup_counter_total.value)
-                self._stream.write(Heatmap(z=self._snlgroup_counter._getvalue()))
+                self._streams[0].write(Heatmap(z=self._snlgroup_counter._getvalue()))
+                self._streams[1].write(Bar(x=self._mismatch_counter._getvalue()))
             self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
@@ -107,7 +107,6 @@ class SNLGroupCrossChecker(Builder):
                     composition, primary_id, primary_sg_num, secondary_id, secondary_sg_num
                 ))
             _increase_counter(*local_mismatch_counter)
-        _log.info('%r, %s', snlgroups.keys(), self._snlgroup_counter)
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
@@ -117,9 +116,17 @@ if __name__ == '__main__':
     args = parser.parse_args()
     maxpoints = args.ncols*args.nrows
     data = Data()
+    data.append(Bar(
+        y=['diff. SGs', 'same SGs'], x=[0, 0], orientation='h',
+        stream=Stream(token=stream_ids[1], maxpoints=2),
+        xaxis='x1', yaxis='y1'
+    ))
     data.append(Heatmap(
         z=[[0]*args.ncols for i in range(args.nrows)],
-        stream=Stream(token=stream_id, maxpoints=maxpoints)
+        stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
+        xaxis='x2', yaxis='y2'
     ))
-    fig = Figure(data=data)
+    fig = tls.get_subplots(rows=1, columns=2)
+    fig['data'] = data
+    fig['layout'].update({'showlegend':False})
     py.plot(fig, filename='test', auto_open=False)
