@@ -25,8 +25,8 @@ class SNLGroupCrossChecker(Builder):
             ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
             attempt_supercell=False, comparator=ElementComparator()
         )
-        self._lock = self._mgr.Lock()
-        self._ncols = 2 if not self._seq else 1 # TODO increase from 2 for more proc
+        self._lock = self._mgr.Lock() if not self._seq else None
+        self._ncols = 3 if not self._seq else 1 # TODO increase from 2 for more proc
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
@@ -74,7 +74,7 @@ class SNLGroupCrossChecker(Builder):
 
         def _increase_counter(mismatch_dict):
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
-            self._lock.acquire()
+	    if self._lock is not None: self._lock.acquire()
             mc = self._mismatch_counter
             mc[0] += len(mismatch_dict['diff. SGs'])
             mc[1] += len(mismatch_dict['same SGs'])
@@ -88,15 +88,18 @@ class SNLGroupCrossChecker(Builder):
             self._snlgroup_counter_total.value += 1
             if not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows) \
                or self._snlgroup_counter_total.value == self._num_snlgroups:
-                self._streams[0].write(Heatmap(z=self._snlgroup_counter._getvalue()))
-                self._streams[1].write(Bar(x=self._mismatch_counter._getvalue()))
-                for k,v in self._mismatch_dict._getvalue().iteritems():
+		heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
+		bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
+                self._streams[0].write(Heatmap(z=heatmap_z))
+                self._streams[1].write(Bar(x=bar_x))
+		md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+                for k,v in md.iteritems():
                     self._streams[2].write(Scatter(
                         x=self._mismatch_counter[k=='same SGs'], y=k, text='<br>'.join(v)
                     ))
                     time.sleep(0.052)
                 self._mismatch_dict.update({'same SGs': [], 'diff. SGs': []}) # clean
-            self._lock.release()
+	    if self._lock is not None: self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             cat_key = ''
