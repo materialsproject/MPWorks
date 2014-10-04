@@ -96,6 +96,7 @@ class SNLGroupCrossChecker(Builder):
                 self._streams[1].write(Bar(x=bar_x))
 		md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
                 for k,v in md.iteritems():
+                    if len(v) < 1: continue
                     self._streams[2].write(Scatter(
                         x=self._mismatch_counter[categories.index(k)], y=k,
                         text='<br>'.join(v)
