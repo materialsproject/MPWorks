@@ -130,7 +130,9 @@ class SNLGroupCrossChecker(Builder):
                 if not is_match: continue
                 cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
-            if cat_key: _log.info(local_mismatch_dict)
+            if cat_key:
+		cnt = self._snlgroup_counter_total.value if not self._seq else self._snlgroup_counter_total
+		_log.info('(%d) %r', cnt, local_mismatch_dict)
             _increase_counter(local_mismatch_dict)
 
 if __name__ == '__main__':
