@@ -5,4 +5,8 @@
 #PBS -l walltime=01:00:00
  
 cd $PBS_O_WORKDIR
-mpirun -np 8 mgbuild run -v mpworks.check_snl.builders.SNLGroupCrossChecker snlgroups=snlgroups.json -n 8
+workon env_mp_snl_group_check
+export PYTHONPATH=$PWD:$PYTHONPATH
+python -m mpworks.check_snl.builders 4 4
+sleep 5
+mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLGroupCrossChecker snlgroups=snlgroups.json -n 8

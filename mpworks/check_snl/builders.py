@@ -26,7 +26,7 @@ class SNLGroupCrossChecker(Builder):
             attempt_supercell=False, comparator=ElementComparator()
         )
         self._lock = self._mgr.Lock() if not self._seq else None
-        self._ncols = 3 if not self._seq else 1 # TODO increase from 2 for more proc
+        self._ncols = 4 if not self._seq else 1 # TODO increase from 2 for more proc
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
