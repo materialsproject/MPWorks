@@ -7,10 +7,12 @@ import plotly.plotly as py
 import plotly.tools as tls
 from plotly.graph_objs import *
 from mpworks.check_snl.utils import div_plus_mod, sleep
+from fnmatch import fnmatch
 
 creds = tls.get_credentials_file()
 stream_ids = creds['stream_ids'][:3] # NOTE index
 _log = get_builder_log("cross_checker")
+categories = ['diff. SGs', 'same SGs', 'pybtex', 'others']
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
@@ -31,10 +33,10 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snlgroup_counter_total = multiprocessing.Value('d', 0)
-        self._mismatch_counter = self.shared_list()
-        self._mismatch_counter.extend([0, 0])
         self._mismatch_dict = self.shared_dict()
-        self._mismatch_dict.update({'same SGs': [], 'diff. SGs': []})
+        self._mismatch_dict.update(dict((k,[]) for k in categories))
+        self._mismatch_counter = self.shared_list()
+        self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
         self._snlgroups = snlgroups
@@ -69,15 +71,15 @@ class SNLGroupCrossChecker(Builder):
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     _log.info('%r %r', exc_type, exc_value)
-                    return None # TODO: return error category
+                    return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
             return snlgroups[gid]
 
         def _increase_counter(mismatch_dict):
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
 	    if self._lock is not None: self._lock.acquire()
             mc = self._mismatch_counter
-            mc[0] += len(mismatch_dict['diff. SGs'])
-            mc[1] += len(mismatch_dict['same SGs'])
+            for k in categories:
+                mc[categories.index(k)] += len(mismatch_dict[k])
             self._mismatch_counter = mc
             for k,v in mismatch_dict.iteritems():
                 self._mismatch_dict[k] += v
@@ -95,27 +97,36 @@ class SNLGroupCrossChecker(Builder):
 		md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
                 for k,v in md.iteritems():
                     self._streams[2].write(Scatter(
-                        x=self._mismatch_counter[k=='same SGs'], y=k, text='<br>'.join(v)
+                        x=self._mismatch_counter[categories.index(k)], y=k,
+                        text='<br>'.join(v)
                     ))
                     time.sleep(0.052)
-                self._mismatch_dict.update({'same SGs': [], 'diff. SGs': []}) # clean
+                self._mismatch_dict.update(dict((k,[]) for k in categories)) # clean
 	    if self._lock is not None: self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             cat_key = ''
-            local_mismatch_dict = { 'same SGs': [], 'diff. SGs': [] } # TODO: don't hardcode
+            local_mismatch_dict = dict((k,[]) for k in categories)
             primary_group = _get_snl_group(primary_id)
-            if primary_group is None: continue
-            composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
+            if not isinstance(primary_group, str):
+                composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
+            else:
+                local_mismatch_dict[primary_group].append('%d' % primary_id)
+                _log.info(local_mismatch_dict)
+                _increase_counter(local_mismatch_dict)
+                continue
             for secondary_id in item['snlgroup_ids'][idx+1:]:
                 secondary_group = _get_snl_group(secondary_id)
-                if secondary_group is None: continue
+                if not isinstance(secondary_group, str):
+                    secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
+                else:
+                    local_mismatch_dict[secondary_group].append('%d' % secondary_id)
+                    continue
                 is_match = self._matcher.fit(
                     primary_group.canonical_structure,
                     secondary_group.canonical_structure
                 )
                 if not is_match: continue
-                secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
                 cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
             if cat_key: _log.info(local_mismatch_dict)
@@ -130,7 +141,7 @@ if __name__ == '__main__':
     maxpoints = args.ncols*args.nrows
     data = Data()
     data.append(Bar(
-        y=['diff. SGs', 'same SGs'], x=[0, 0], orientation='h',
+        y=categories, x=[0, 0], orientation='h',
         stream=Stream(token=stream_ids[1], maxpoints=2),
         xaxis='x1', yaxis='y1'
     ))
