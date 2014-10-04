@@ -12,8 +12,8 @@ plotly==1.2.9
 prettytable==0.7.2
 pybtex==0.18
 pyhull==1.5.3
-pymatgen==3.0.4
-pymatgen-db==0.4.2
+pymatgen==3.0.5
+-e git+github:materialsproject/pymatgen-db.git@ba22fa86f89bb902695cb9220d4186335b07bf40#egg=pymatgen_db-master
 pymongo==2.7.2
 python-dateutil==2.2
 requests==2.4.1
