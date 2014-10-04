@@ -141,7 +141,7 @@ if __name__ == '__main__':
     maxpoints = args.ncols*args.nrows
     data = Data()
     data.append(Bar(
-        y=categories, x=[0, 0], orientation='h',
+        y=categories, x=[0]*len(categories), orientation='h',
         stream=Stream(token=stream_ids[1], maxpoints=2),
         xaxis='x1', yaxis='y1'
     ))
