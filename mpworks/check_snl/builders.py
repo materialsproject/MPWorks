@@ -68,7 +68,7 @@ class SNLGroupCrossChecker(Builder):
                     snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
-                    _log.info(exc_type, exc_value)
+                    _log.info('%r %r', exc_type, exc_value)
                     return None # TODO: return error category
             return snlgroups[gid]
 
