@@ -101,7 +101,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=False, validators=[VasprunXMLValidator()])  # manual gzip
+        c = Custodian(self.handlers, self.jobs, max_errors=self.max_errors, gzipped_output=False, validators=[VasprunXMLValidator()])  # manual gzip
         custodian_out = c.run()
 
         if self.gzip_output:
