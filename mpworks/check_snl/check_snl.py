@@ -315,10 +315,14 @@ def analyze(args):
             snlgroups[snlgrp.snlgroup_id] = snlgroup_key
         with open('mpworks/check_snl/bad_snlgroups_2.csv', 'wb') as f:
             writer = csv.writer(f)
-            writer.writerow(['snlgroup_id 1', 'snlgroup_key 1', 'snlgroup_id 2', 'snlgroup_key 2'])
+            writer.writerow(['snlgroup_id 1', 'snlgroup_key 1', 'snlgroup_id 2', 'snlgroup_key 2', 'category'])
             for primary_id, secondary_id in pairs:
+                primary_sg_num = snlgroups[primary_id].split('--')[1]
+                secondary_sg_num = snlgroups[secondary_id].split('--')[1]
+                category = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 writer.writerow([
-                    primary_id, snlgroups[primary_id], secondary_id, snlgroups[secondary_id]
+                    primary_id, snlgroups[primary_id], secondary_id,
+                    snlgroups[secondary_id], category
                 ])
     else:
         errors = Counter()
