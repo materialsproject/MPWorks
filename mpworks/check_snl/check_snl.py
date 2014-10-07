@@ -67,6 +67,14 @@ def _get_id_range_from_index(index):
     start_id_k = index*num_ids_per_stream_k
     return '%dk - %dk' % (start_id_k, start_id_k+num_ids_per_stream_k)
 
+def _get_snl_extra_info(mpsnl):
+    return [
+        str(mpsnl.structure.num_sites),
+        ' / '.join(mpsnl.remarks),
+        ' / '.join(mpsnl.projects),
+        ' / '.join([author.email for author in mpsnl.authors])
+    ]
+
 class Pair:
     """simple pair of integers with some properties and methods"""
     def __init__(self, i, j):
@@ -326,7 +334,7 @@ def analyze(args):
     else:
         errors = Counter()
         bad_snls = OrderedDict()
-        bad_snlgroups = []
+        bad_snlgroups = OrderedDict()
         for i,d in enumerate(fig['data']):
             if not isinstance(d, Scatter): continue
             if not 'x' in d or not 'y' in d or not 'text' in d: continue
@@ -344,8 +352,7 @@ def analyze(args):
                     if color != category_colors[0]: continue
                     snlgroup_id = start_id + d['x'][idx]
                     mismatch_snl_id, canonical_snl_id = d['text'][idx].split(' != ')
-                    canonical_snl_id = canonical_snl_id[4:]
-                    bad_snlgroups.append([snlgroup_id, canonical_snl_id, mismatch_snl_id])
+                    bad_snlgroups[snlgroup_id] = int(mismatch_snl_id)
         print errors
         fig_data = fig['data'][-1]
         fig_data['x'] = [ errors[color] for color in fig_data['marker']['color'] ]
@@ -360,18 +367,36 @@ def analyze(args):
             ])
             for mpsnl_dict in mpsnl_cursor:
                 mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-                row = [
-                    mpsnl.snl_id, bad_snls[mpsnl.snl_id],
-                    mpsnl.snlgroup_key, mpsnl.structure.num_sites,
-                    ' / '.join(mpsnl.remarks),
-                    ' / '.join(mpsnl.projects),
-                    ' / '.join([author.email for author in mpsnl.authors])
-                ]
+                row = [ mpsnl.snl_id, bad_snls[mpsnl.snl_id], mpsnl.snlgroup_key ]
+                row += _get_snl_extra_info(mpsnl)
                 writer.writerow(row)
         with open('mpworks/check_snl/results/bad_snlgroups.csv', 'wb') as f:
+            snlgrp_cursor = sma.snlgroups.find({ 'snlgroup_id': { '$in': bad_snlgroups.keys() } })
+            first_mismatch_snls_cursor = sma.snl.find({ 'snl_id': { '$in': bad_snlgroups.values() } })
+            first_mismatch_snl_info = OrderedDict()
+            for mpsnl_dict in first_mismatch_snls_cursor:
+                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                first_mismatch_snl_info[mpsnl.snl_id] = _get_snl_extra_info(mpsnl)
             writer = csv.writer(f)
-            writer.writerow(['snlgroup_id', 'canonical_snl_id', 'first_mismatching_snl_id'])
-            for row in bad_snlgroups:
+            writer.writerow([
+                'snlgroup_id', 'snlgroup_key',
+                'canonical_snl_id', 'first_mismatching_snl_id',
+                 'nsites', 'remarks', 'projects', 'authors'
+            ])
+            for snlgrp_dict in snlgrp_cursor:
+                snlgrp = SNLGroup.from_dict(snlgrp_dict)
+                first_mismatch_snl_id = bad_snlgroups[snlgrp.snlgroup_id]
+                row = [
+                    snlgrp.snlgroup_id, snlgrp.canonical_snl.snlgroup_key,
+                    snlgrp.canonical_snl.snl_id, first_mismatch_snl_id
+                ]
+                row += [
+                    ' & '.join(pair) if pair[0] != pair[1] else pair[0]
+                    for pair in zip(
+                        _get_snl_extra_info(snlgrp.canonical_snl),
+                        first_mismatch_snl_info[int(first_mismatch_snl_id)]
+                    )
+                ]
                 writer.writerow(row)
         #py.image.save_as(fig, _get_filename()+'.png')
         # NOTE: service unavailable!? static images can also be saved by appending

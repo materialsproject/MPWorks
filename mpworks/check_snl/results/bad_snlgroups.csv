@@ -1,82 +1,80 @@
-snlgroup_id,canonical_snl_id,first_mismatching_snl_id
-19,20,70912
-396,413,130616
-899,996,45508
-917,1014,349128
-974,1072,177856
-1351,1511,37464
-1385,1548,127364
-1452,1619,45919
-1673,1888,127231
-1675,1891,45471
-1732,1959,73618
-1759,1990,4996
-1861,2111,30730
-2560,2951,76782
-2622,3027,177079
-2657,3089,319520
-2658,3090,197540
-2845,3316,165388
-3055,3574,3575
-3315,3883,269560
-3502,4143,137700
-3676,4359,24819
-3886,4600,150588
-4332,5189,5297
-4517,5435,5436
-4768,5754,161459
-20734,26479,28091
-20994,26830,124484
-21368,27361,150678
-21421,27432,124504
-21578,27621,171871
-21678,27770,27771
-21751,27875,149531
-22625,29083,46246
-23187,29912,169468
-23447,30266,177456
-24466,31699,36332
-24575,31887,165886
-24576,31888,176080
-24631,31990,158351
-24757,32165,274800
-24843,32265,56800
-24933,32377,46169
-40023,55668,333933
-40063,55720,162226
-40023,55668,333933
-40063,55720,162226
-40333,56168,175171
-40366,56222,188051
-60085,90986,91027
-60846,91756,91788
-60855,91774,91831
-84557,122108,348878
-84750,129536,349014
-84799,131940,351843
-84894,147998,204724
-84929,137518,378503
-84948,138112,348999
-100199,216214,338190
-100391,216721,336902
-100502,217023,242612
-100594,217414,346426
-101858,220777,338319
-104933,228594,228596
-120177,267048,267059
-120186,267058,278381
-120526,267700,267702
-120782,268285,268286
-121701,270343,270346
-121938,270906,270908
-122078,271259,271260
-122234,271748,271749
-123050,273853,296342
-123588,275139,275144
-123758,275465,275466
-124922,277302,277309
-124923,277303,277310
-124925,277305,277312
-163139,363080,386898
-164371,364432,383003
-164422,364487,382006
+snlgroup_id,snlgroup_key,canonical_snl_id,first_mismatching_snl_id,nsites,remarks,projects,authors
+19,Mn3 O4--141,20,70912,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+396,Eu2 Fe2 O7 Sr1--136,413,130616,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+899,O4 Sn1 Sr2--64,996,45508,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+917,Mn1 O4--69,1014,349128,30,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & ajain@lbl.gov
+974,Bi1 In1--129,1072,177856,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1351,Mo1 N1--186,1511,37464,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1385,Al1 K1 O2--92,1548,127364,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1452,Li1 O6 Sc1 Si2--14,1619,45919,40,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1673,Br3 Ru1--59,1888,127231,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1675,Ba2 O6 Pr1 Ru1--14,1891,45471,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1732,Nd2 O7 Ti2--4,1959,73618,88,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1759,Ga1 La1 O3--62,1990,4996,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+1861,Al1 La1 O3--167,2111,30730,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+2560,Ce1 O4 Ta1--14,2951,76782,24, & ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+2622,Co1 Fe3--123,3027,177079,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+2657,Ca1 H2--62,3089,319520,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+2658,H2 Sr1--62,3090,197540,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+2845,C6 Cu1 H8 N6 O2--12,3316,165388,23,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+3055,O2 Zr1--137,3574,3575,6,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+3315,Ba2 Co4 Nd2 O11.4996--47,3883,269560,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+3502,Bi1 I1 O1--129,4143,137700,6,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+3676,Cr1 La1 O3--62,4359,24819,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+3886,Ba2 Co4 Ho2 O11--51,4600,150588,38,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+4332,O2 Si1--122,5189,5297,6, & DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+4517,Ca3 N2--164,5435,5436,5,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+4768,Cu1 S1--194,5754,161459,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+20734,In1 Na3 O8 P2--11,26479,28091,28,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+20994,Nb1 O3 Sr1--62,26830,124484,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+21368,O5 Ta2--5,27361,150678,7,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+21421,Br2 Cu1--12,27432,124504,3,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+21578,Nb2 O5--5,27621,171871,7,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+21678,Ba1 Mn1 O3--185,27770,27771,30,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+21751,Cl2 Mg1--115,27875,149531,3,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+22625,Ca2 O4 Ru1--61,29083,46246,28,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+23187,O7 Sr1 V3--62,29912,169468,44,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+23447,Ge1 Li2 Zn1--164,30266,177456,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24466,Ge1 O2--60,31699,36332,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24575,Cu1 Se1--194,31887,165886,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24576,Cu1 Se1--194,31888,176080,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24631,O2 Si1--60,31990,158351,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24757,Ba1 Fe2 O5 Y1--51,32165,274800,18,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+24843,Br1 Cu1 Hg1 S1--55,32265,56800,32,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24933,Fe1 O6 Sr2 W1--14,32377,46169,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+40023,Ca2 Fe1 O6 W1--25,55668,333933,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+40063,K3 O18 S4 V2--4,55720,162226,108,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+40333,Li4 Mo3 O8--166,56168,175171,30,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+40366,O5 V3--13,56222,188051,32,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+60085,Co5 Li9 Mn2 O16--1,90986,91027,32,layered / lithium / battery / li-ion / Li ion battery electrode,CederDahn Challenge,shyue@mit.edu / ajain@lbl.gov / geoffroy.hautier@uclouvain.be
+60846,Li9 Mn7 O16--2,91756,91788,32,layered / lithium / battery / li-ion / Li ion battery electrode,CederDahn Challenge,shyue@mit.edu / ajain@lbl.gov / geoffroy.hautier@uclouvain.be
+60855,Li9 Mn7 O16--1,91774,91831,32,layered / lithium / battery / li-ion / Li ion battery electrode,CederDahn Challenge,shyue@mit.edu / ajain@lbl.gov / geoffroy.hautier@uclouvain.be
+84557,Fe1 O1--139,122108,348878,8,manual run,,shyue@mit.edu / ajain@lbl.gov & ajain@lbl.gov
+84750,Mo1 O2--4,129536,349014,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & ajain@lbl.gov
+84799,Fe3 O4--10,131940,351843,28,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & ajain@lbl.gov
+84894,Mo1 N1--191,147998,204724,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+84929,Li1 O3 V1--15,137518,378503,20, & supplementary compounds from MIT matgen database, & MIT matgen,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & ajain@lbl.gov / boxu14@mit.edu
+84948,O2 V1--139,138112,348999,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be & ajain@lbl.gov
+100199,Cd1 S1--59,216214,338190,4,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+100391,K1 P1--166,216721,336902,4 & 2,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+100502,Eu1--62,217023,242612,4,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+100594,K1 O8 P2 Zr1--13,217414,346426,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+101858,F3 Mn1 N1--62,220777,338319,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+104933,Ca0.2 Cu2 La3.8 O8--64,228594,228596,14,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+120177,Na1 Nd1 O6 Ti2--62,267048,267059,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+120186,Na1 O6 Pr1 Ti2--62,267058,278381,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+120526,Cr4 La3 O12 Sr1--62,267700,267702,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+120782,Ba0.4 La1 Mn2 O6 Sr0.6--140,268285,268286,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+121701,La2 Mn10 O26 Sr8--84,270343,270346,46,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+121938,Ga4 La3.76 Nd0.24 O12--62,270906,270908,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+122078,Fe2 La0.666 O6 Sr1.334--167,271259,271260,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+122234,Ca1.2 Co2 La2.8 Mn2 O12--14,271748,271749,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+123050,Cl1 Cu2 H3 O3--14,273853,296342,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+123588,Mn4 Na1 O12 Pr3--62,275139,275144,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+123758,B11 Li1--119,275465,275466,12,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+124922,Ba0.6 Ca1.4 La2 Mn4 O12--62,277302,277309,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+124923,Ba0.8 Ca1.2 La2 Mn4 O12--62,277303,277310,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+124925,Ba1.6 Ca0.4 La2 Mn4 O12--62,277305,277312,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+163139,F5 O1 V2--1,363080,386898,24,supplementary compounds from MIT matgen database,MIT matgen,geoffroy.hautier@uclouvain.be / boxu14@mit.edu
+164371,Li3 Mn4 O8--1,364432,383003,60 & 30,supplementary compounds from MIT matgen database,MIT matgen,c_moore@mit.edu / boxu14@mit.edu
+164422,Li2 O4 Ti1 V1--2,364487,382006,24,supplementary compounds from MIT matgen database,MIT matgen,c_moore@mit.edu / boxu14@mit.edu
