@@ -1,771 +1,1249 @@
-SG Change,SG Default,PybTeX,Others
-403339,24016,140050,81776
-403340,24017,140065,82162
-403342,24026,140080,203946
-403343,24121,140100,204077
-403349,24123,140125,204157
-403350,24124,140130,
-403352,24178,140158,
-403356,24179,140183,
-403374,60485,140189,
-403376,61230,140192,
-403377,62604,140207,
-403378,62607,140230,
-403379,80021,140261,
-403380,80036,140300,
-403381,80037,140302,
-403382,80072,140306,
-403384,80090,140365,
-403386,80091,140370,
-403387,80096,140374,
-403388,80126,140408,
-403391,80181,140415,
-403392,80200,140457,
-403393,80206,140505,
-403394,80259,140536,
-403395,80262,140570,
-403396,80285,140576,
-403397,80315,140593,
-403398,80352,140597,
-403399,80370,140598,
-403400,80383,140608,
-403401,80393,140619,
-403402,80415,140620,
-403404,80440,140633,
-403405,80460,140640,
-403406,80463,140641,
-403407,80480,140662,
-403409,80501,140686,
-403410,80516,140722,
-403411,80521,140770,
-403412,80541,140775,
-403413,80546,140777,
-403414,80568,140805,
-403415,80577,140806,
-403416,80585,140816,
-403417,80594,140854,
-403418,80612,140867,
-403419,80616,140913,
-403420,80628,140917,
-403421,80662,140932,
-403422,80678,140937,
-403423,80709,140942,
-403424,80721,140973,
-403425,80735,140977,
-403430,80736,140981,
-403431,80831,140996,
-403432,80926,141004,
-403435,80949,141042,
-403436,80972,141049,
-403437,81015,141051,
-403438,81018,141061,
-403439,81038,141086,
-403440,81160,141140,
-403441,81211,141145,
-403442,81255,141147,
-403443,81280,141155,
-403444,81301,141157,
-403445,81309,141171,
-403446,81318,141199,
-403447,81326,141203,
-403449,81389,141204,
-403450,81396,141216,
-403451,81451,141241,
-403452,81456,141244,
-403453,81496,141262,
-403454,81514,141281,
-403455,81564,141339,
-403456,81580,141376,
-403474,81597,141398,
-403476,81605,141451,
-403477,81628,141523,
-403478,81630,141525,
-403479,81726,141529,
-403480,81743,141533,
-403481,81823,141549,
-403482,81858,141561,
-403483,81891,141565,
-403484,81909,141583,
-403485,81973,141586,
-403486,82010,141590,
-403489,82035,141642,
-403490,82091,141654,
-403493,82114,141690,
-403494,82123,141730,
-403495,82141,141743,
-403497,82206,141754,
-403498,82219,141760,
-403499,82369,141779,
-403502,82375,141810,
-403504,82388,141814,
-403509,82391,141821,
-403510,82396,141835,
-403514,82407,141870,
-,82437,141873,
-,82453,141882,
-,82478,141899,
-,82492,141904,
-,82503,141921,
-,82656,141969,
-,82715,142007,
-,82731,142016,
-,83061,142029,
-,83315,142036,
-,83425,142044,
-,83551,142049,
-,83961,142060,
-,84491,142099,
-,100056,142100,
-,100097,142103,
-,100166,142110,
-,100276,142117,
-,100293,142152,
-,100359,142172,
-,100360,142181,
-,100361,142220,
-,100572,142228,
-,100661,142254,
-,100853,142264,
-,100893,142270,
-,100922,142274,
-,101122,142284,
-,101142,142285,
-,101387,142292,
-,101665,142312,
-,101837,142319,
-,101952,142336,
-,101953,142357,
-,102158,142375,
-,102380,142376,
-,102397,142378,
-,102720,142403,
-,103161,142410,
-,103288,142412,
-,103876,142423,
-,103877,142440,
-,103878,142465,
-,103879,142506,
-,120254,142514,
-,120276,142517,
-,120333,142531,
-,120391,142535,
-,120444,142549,
-,120491,142554,
-,120542,142562,
-,121422,142572,
-,121630,142574,
-,121652,142595,
-,121653,142599,
-,121659,142620,
-,121707,142624,
-,121708,142645,
-,121776,142648,
-,121802,142697,
-,122105,142706,
-,142396,142708,
-,142951,142716,
-,144514,142730,
-,144609,142732,
-,144642,142738,
-,144849,142752,
-,144952,142761,
-,144964,142784,
-,160817,142789,
-,161097,142798,
-,161288,142807,
-,161513,142816,
-,162198,142824,
-,162691,142831,
-,162895,142859,
-,163323,142872,
-,163831,142874,
-,163949,142878,
-,164034,142900,
-,164146,142925,
-,164287,142953,
-,164388,142962,
-,164433,142967,
-,184490,142972,
-,184688,142995,
-,200163,142997,
-,200164,143001,
-,200166,143002,
-,200168,143489,
-,200169,143515,
-,200172,143559,
-,200176,143600,
-,203403,143638,
-,203405,143647,
-,203406,143697,
-,203407,143789,
-,203408,143822,
-,203409,143826,
-,203410,143846,
-,203411,143895,
-,203412,143929,
-,203413,143960,
-,203414,144002,
-,203417,144053,
-,203433,144124,
-,203466,144134,
-,203467,144144,
-,203468,144171,
-,203469,144202,
-,203470,144212,
-,203471,144222,
-,203473,144246,
-,203474,144287,
-,203475,144305,
-,203476,144306,
-,203477,144350,
-,203478,144374,
-,203492,144378,
-,203504,144448,
-,203505,144469,
-,203506,144523,
-,203507,144545,
-,203515,144554,
-,203516,144616,
-,203517,144632,
-,203518,144676,
-,203520,144732,
-,203521,144733,
-,203522,144741,
-,203523,144779,
-,203524,144807,
-,203525,144852,
-,203526,144862,
-,203527,144902,
-,203528,144907,
-,203534,144927,
-,203535,160001,
-,203536,160008,
-,203537,160010,
-,203541,160020,
-,203542,160027,
-,203543,160029,
-,203544,160040,
-,203545,160042,
-,203546,160067,
-,203547,160068,
-,203606,160071,
-,203607,160091,
-,203608,160100,
-,203609,160132,
-,203704,160133,
-,203862,160134,
-,203863,160135,
-,203932,160156,
-,203933,160160,
-,203934,160180,
-,203941,160181,
-,203942,160193,
-,203945,160200,
-,203947,160204,
-,203950,160215,
-,203951,160230,
-,203952,160236,
-,203956,160238,
-,203967,160247,
-,203970,160252,
-,203975,160265,
-,203979,160267,
-,203983,160275,
-,203986,160284,
-,203992,160295,
-,203996,160303,
-,203997,160304,
-,204005,160315,
-,204029,160324,
-,204035,160331,
-,204039,160339,
-,204055,160346,
-,204056,160364,
-,204059,160368,
-,204064,160383,
-,204078,160387,
-,204091,160400,
-,204094,160403,
-,204104,160429,
-,204106,160435,
-,204109,160436,
-,204115,160464,
-,204119,160477,
-,204120,160480,
-,204124,160484,
-,204127,160489,
-,204128,160522,
-,204135,160528,
-,204139,160529,
-,204142,160552,
-,204149,160556,
-,204150,160575,
-,204151,160580,
-,204152,160591,
-,204153,160600,
-,204154,160610,
-,204155,160617,
-,204156,160634,
-,204158,160644,
-,204256,160663,
-,204257,160669,
-,204258,160670,
-,204259,160687,
-,204260,160695,
-,204261,160703,
-,204262,160718,
-,204263,160741,
-,204264,160742,
-,204267,160743,
-,204333,160763,
-,204334,160767,
-,204335,160774,
-,204486,160787,
-,204493,160807,
-,204877,160808,
-,204968,160813,
-,204969,160833,
-,241654,160851,
-,241662,160856,
-,260252,160857,
-,261288,160858,
-,261849,160882,
-,262558,160896,
-,264667,160912,
-,282224,160914,
-,340320,160934,
-,340341,160956,
-,340968,160972,
-,340970,161000,
-,341834,161012,
-,341837,161020,
-,341878,161029,
-,342145,161031,
-,342345,161058,
-,342504,161059,
-,342761,161062,
-,342796,161076,
-,342823,161080,
-,343012,161098,
-,343025,161099,
-,343265,161117,
-,343266,161123,
-,343284,161128,
-,343286,161136,
-,343290,161150,
-,343297,161160,
-,343298,161164,
-,343299,161169,
-,343300,161181,
-,343301,163859,
-,343305,163872,
-,343312,163888,
-,343313,163925,
-,343314,163953,
-,343316,163970,
-,343318,164000,
-,343319,164026,
-,343327,164043,
-,343336,164051,
-,343356,164075,
-,343362,164104,
-,343916,164111,
-,,164136,
-,,164137,
-,,164168,
-,,164183,
-,,164204,
-,,164205,
-,,164235,
-,,164249,
-,,164266,
-,,164267,
-,,164294,
-,,164298,
-,,164313,
-,,164323,
-,,164334,
-,,164337,
-,,164344,
-,,164350,
-,,164359,
-,,164360,
-,,164377,
-,,164392,
-,,164396,
-,,164398,
-,,164409,
-,,164422,
-,,164425,
-,,164427,
-,,164453,
-,,164459,
-,,164461,
-,,164466,
-,,164483,
-,,164494,
-,,164497,
-,,164499,
-,,164514,
-,,164525,
-,,164526,
-,,164527,
-,,164532,
-,,164544,
-,,164548,
-,,164549,
-,,164556,
-,,164568,
-,,164569,
-,,164570,
-,,164571,
-,,164576,
-,,164598,
-,,164599,
-,,164600,
-,,164607,
-,,164610,
-,,164624,
-,,164644,
-,,164658,
-,,164662,
-,,164666,
-,,164670,
-,,164684,
-,,164685,
-,,164686,
-,,164713,
-,,164714,
-,,164715,
-,,164739,
-,,164740,
-,,164741,
-,,164744,
-,,164758,
-,,164762,
-,,164773,
-,,164780,
-,,164792,
-,,164797,
-,,164811,
-,,164818,
-,,164829,
-,,164840,
-,,164841,
-,,164859,
-,,164860,
-,,164867,
-,,164868,
-,,164880,
-,,164881,
-,,164882,
-,,164896,
-,,164900,
-,,164911,
-,,164912,
-,,164922,
-,,164924,
-,,164931,
-,,164932,
-,,164941,
-,,164945,
-,,164963,
-,,164964,
-,,164970,
-,,164971,
-,,164973,
-,,164981,
-,,164983,
-,,164995,
-,,164998,
-,,164999,
-,,165000,
-,,280777,
-,,320434,
-,,320906,
-,,321588,
-,,321598,
-,,321600,
-,,321682,
-,,321938,
-,,323101,
-,,341391,
-,,341419,
-,,341423,
-,,341424,
-,,341425,
-,,341426,
-,,341427,
-,,341428,
-,,341429,
-,,341430,
-,,341431,
-,,341432,
-,,341433,
-,,341434,
-,,341435,
-,,341437,
-,,341440,
-,,341441,
-,,341442,
-,,341443,
-,,341444,
-,,341445,
-,,341448,
-,,341449,
-,,341450,
-,,341451,
-,,341452,
-,,341453,
-,,341454,
-,,341455,
-,,341456,
-,,341457,
-,,341458,
-,,341459,
-,,341460,
-,,341461,
-,,341462,
-,,341463,
-,,341464,
-,,341465,
-,,341467,
-,,341468,
-,,341470,
-,,341471,
-,,341472,
-,,341473,
-,,341474,
-,,341475,
-,,341476,
-,,341477,
-,,341478,
-,,341479,
-,,341480,
-,,341481,
-,,341483,
-,,341484,
-,,341485,
-,,341486,
-,,341487,
-,,341488,
-,,341489,
-,,341490,
-,,341491,
-,,341492,
-,,341493,
-,,341494,
-,,341495,
-,,341496,
-,,341497,
-,,341498,
-,,341499,
-,,341500,
-,,341501,
-,,341502,
-,,341503,
-,,341504,
-,,341505,
-,,341506,
-,,341507,
-,,341508,
-,,341509,
-,,341510,
-,,341511,
-,,341512,
-,,341513,
-,,341514,
-,,341515,
-,,341516,
-,,341517,
-,,341518,
-,,341519,
-,,341520,
-,,341521,
-,,341522,
-,,341523,
-,,341524,
-,,341525,
-,,341526,
-,,341527,
-,,341528,
-,,341529,
-,,341530,
-,,341531,
-,,341532,
-,,341533,
-,,341534,
-,,341535,
-,,341536,
-,,341537,
-,,341538,
-,,341539,
-,,341540,
-,,341541,
-,,341542,
-,,341543,
-,,341544,
-,,341545,
-,,341546,
-,,341547,
-,,341548,
-,,341549,
-,,341550,
-,,341551,
-,,341552,
-,,341553,
-,,341554,
-,,341555,
-,,341556,
-,,341557,
-,,341558,
-,,341559,
-,,341560,
-,,341561,
-,,341562,
-,,341563,
-,,341564,
-,,341565,
-,,341566,
-,,341567,
-,,341568,
-,,341569,
-,,341570,
-,,341571,
-,,341572,
-,,341573,
-,,341574,
-,,341575,
-,,341576,
-,,341577,
-,,341578,
-,,341579,
-,,341580,
-,,341581,
-,,341582,
-,,341583,
-,,341584,
-,,341585,
-,,341586,
-,,341587,
-,,341588,
-,,341589,
-,,341590,
-,,341591,
-,,341592,
-,,341593,
-,,341594,
-,,341595,
-,,341596,
-,,341597,
-,,341598,
-,,341599,
-,,341600,
-,,341601,
-,,341602,
-,,341603,
-,,341604,
-,,341605,
-,,341606,
-,,341607,
-,,341608,
-,,341609,
-,,341610,
-,,341611,
-,,341612,
-,,341613,
-,,341614,
-,,341615,
-,,341616,
-,,341617,
-,,341618,
-,,341619,
-,,341620,
-,,341621,
-,,341622,
-,,341623,
-,,341624,
-,,341625,
-,,341626,
-,,341627,
-,,341628,
-,,341629,
-,,341630,
-,,341631,
-,,341632,
-,,341633,
-,,341634,
-,,341636,
-,,341639,
-,,343914,
-,,343925,
-,,343926,
-,,343927,
-,,343928,
-,,343929,
-,,343930,
-,,343931,
-,,343932,
-,,343933,
-,,343934,
-,,343935,
-,,343936,
-,,343937,
-,,343938,
-,,343939,
-,,343940,
-,,343943,
-,,343944,
-,,343945,
-,,343946,
-,,343947,
-,,343948,
-,,343949,
-,,343950,
-,,343952,
-,,343953,
-,,343956,
-,,343957,
-,,343958,
-,,343959,
-,,343960,
-,,343962,
-,,343963,
-,,343964,
-,,343965,
-,,343966,
-,,343967,
-,,343969,
-,,343970,
-,,343971,
-,,343972,
-,,343973,
-,,343974,
-,,343975,
-,,343976,
-,,343977,
-,,343978,
-,,343979,
-,,343980,
-,,343981,
-,,343982,
-,,343983,
-,,343984,
-,,343985,
-,,343986,
-,,343987,
-,,343988,
-,,343989,
-,,343991,
-,,343992,
-,,343993,
-,,343994,
-,,343995,
-,,343996,
-,,343997,
-,,343998,
-,,343999,
-,,403341,
-,,403344,
-,,403354,
-,,403355,
+snl_id,category,snlgroup_key,nsites,remarks,projects,authors
+24016,SG Default,S1 Zn1---1,40,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24017,SG Default,S1 Zn1---1,40,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24026,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24121,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24123,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24124,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24178,SG Default,S1 Zn1---1,32,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+24179,SG Default,S1 Zn1---1,32,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+60485,SG Default,S1 Tl2---1,27,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+61230,SG Default,Cd1 I2---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+62604,SG Default,Ba8 Ca8 Cu12 O39 Tl7---1,74,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+62607,SG Default,Ba8 Ca8 Cu12 O39 Tl7---1,74,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80021,SG Default,Co43 Li7 O50---1,100,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80036,SG Default,Li7 Ni19 O38---1,64,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80037,SG Default,Fe7 O40 Zn32---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80072,SG Default,Ir13 Nb15 Se56---1,84,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80090,SG Default,Cl44 Sr16 Th3---1,63,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80091,SG Default,S33 Si7 U40---1,80,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80096,SG Default,F4 Zr1---1,15,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80126,SG Default,Ba5 Er1 F13---1,19,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80181,SG Default,O47 U13 Y7---1,67,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80200,SG Default,Cu6 Ga32 Se41---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80206,SG Default,O53 Sc6 Zr22---1,81,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80259,SG Default,Ce17 O50 Th10---1,77,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80262,SG Default,Ga39 Sb34 Te5---1,78,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80285,SG Default,Eu33 Li8 S41---1,82,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80315,SG Default,Ag7 S40 Ti20---1,67,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80352,SG Default,Nd6 O37 Th14---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80370,SG Default,Nd5 O46 U14---1,65,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80383,SG Default,Cl39 La1 Sr18---1,58,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80393,SG Default,Cl56 Sr22 Th3---1,81,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80415,SG Default,Bi14 O33 U6---1,53,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80440,SG Default,Ca3 O37 Zr17---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80460,SG Default,Cl36 La2 Sr15---1,53,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80463,SG Default,Ce13 O44 Yb12---1,69,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80480,SG Default,Fe2 O21 Zn18---1,82,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80501,SG Default,Er15 O52 U11---1,78,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80516,SG Default,Ce23 O47 Th5---1,75,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80521,SG Default,Cl58 Sr21 Th4---1,83,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80541,SG Default,N27 Si10 U37---1,74,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80546,SG Default,Se40 Ta20 Tl7---1,67,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80568,SG Default,Cu14 Ge11 Se25---1,50,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80577,SG Default,F2 Pb1---1,60,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80585,SG Default,Cl54 Sr23 Th2---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80594,SG Default,Br19 C6 Y19---1,88,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80612,SG Default,O49 Y6 Zr20---1,75,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80616,SG Default,Ag2 Hg1 I4---1,7,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80628,SG Default,O49 Pb17 Tl10---1,76,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80662,SG Default,Ce7 O52 Th20---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80678,SG Default,Mg22 N39 Ta17---1,78,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80709,SG Default,Li13 Ni20 O40---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80721,SG Default,Co14 Na11 O28---1,53,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80735,SG Default,Ce14 Gd6 O37---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80736,SG Default,La5 S44 Sr39---1,88,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80831,SG Default,Li28 Mg22 N25---1,75,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80926,SG Default,P39 Si8 U47---1,94,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80949,SG Default,O49 U12 Yb12---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+80972,SG Default,Er8 O42 U11---1,61,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81015,SG Default,Li19 N42 Ta23---1,84,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81018,SG Default,Li9 N20 Ta11---1,40,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81038,SG Default,Ce40 Ge13 S27---1,80,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81160,SG Default,Co19 Na6 O38---1,63,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81211,SG Default,Hf19 Ni7 S38---1,64,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81255,SG Default,Bi2 F35 Pb18---1,55,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81280,SG Default,Nd21 O55 U8---1,84,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81301,SG Default,La7 O41 U12---1,60,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81309,SG Default,Ag20 I41 Pb10---1,71,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81318,SG Default,Li10 Ni21 O42---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81326,SG Default,Ba1 F2---1,15,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81389,SG Default,Ca26 Dy10 Se41---1,77,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81396,SG Default,Cd9 In28 Te51---1,88,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81451,SG Default,Cu24 Na24 O43---1,91,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81456,SG Default,Bi14 O47 U13---1,74,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81496,SG Default,Co19 Na3 O38---1,60,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81514,SG Default,Li5 Ni43 O48---1,96,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81564,SG Default,K62 Sb16 Te7---1,85,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81580,SG Default,Li13 Ni21 O42---1,76,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81597,SG Default,C8 N18 Sm41---1,67,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81605,SG Default,O49 Sm12 U12---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81628,SG Default,Bi23 Mo5 O54---1,82,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81630,SG Default,Ag13 Ga23 Te41---1,77,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81726,SG Default,Cd9 In28 Se51---1,88,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81743,SG Default,Er5 O44 U14---1,63,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81776,Others,Ni29 Sb19 Te21---1,69,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81823,SG Default,Bi16 O42 U9---1,67,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81858,SG Default,O43 U12 Y7---1,62,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81891,SG Default,Ce14 Nd6 O37---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81909,SG Default,O51 Sr9 U19---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+81973,SG Default,O44 Sm6 U13---1,63,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82010,SG Default,Ag25 I41 Pb8---1,74,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82035,SG Default,In15 O51 V13---1,79,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82091,SG Default,Ge15 Sb16 Te39---1,70,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82114,SG Default,Cl40 Sr18 Th1---1,59,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82123,SG Default,Ce14 O37 Y6---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82141,SG Default,N17 Nb40 O17---1,74,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82162,Others,O49 Y6 Zr20---1,75,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82206,SG Default,O49 Sc12 U12---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82219,SG Default,O36 U9 Y8---1,53,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82369,SG Default,Dy18 O49 Zr11---1,78,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82375,SG Default,Mn11 S20 Y6---1,37,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82388,SG Default,Cd1 F2---1,60,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82391,SG Default,Cu8 Li49 N19---1,76,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82396,SG Default,Li11 Ni19 O38---1,68,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82407,SG Default,F46 Pb25---1,71,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82437,SG Default,Mg2 O5 Zr14---1,21,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82453,SG Default,As19 Li47 Mn5---1,71,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82478,SG Default,Bi6 Pb31 Te40---1,77,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82492,SG Default,Co14 Na9 O28---1,51,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82503,SG Default,Ce13 O44 U7---1,64,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82656,SG Default,Ca9 La29 N35---1,73,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82715,SG Default,O47 Ta5 Y23---1,75,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+82731,SG Default,Ca13 Ce12 N25---1,50,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+83061,SG Default,As13 Cu16 Ge5 In19 Se27---1,80,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+83315,SG Default,Ga16 La18 Mg4 O57 Sr2---1,97,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+83425,SG Default,Ba14 La6 Mg3 O60 Ti17---1,100,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+83551,SG Default,Ga16 La18 Mg4 O57 Sr2---1,97,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+83961,SG Default,Ir10 La7 Mn10 O60 Sr13---1,100,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+84491,SG Default,Ga16 La16 Mg4 O51 Sr4---1,91,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100056,SG Default,F1.98 Nb2 O3.96---1,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100097,SG Default,Ce0.836 Na2.144 Nb0.224 O12 Sr1.02 Ti3.776---1,32,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100166,SG Default,F3 Mg2---1,5,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100276,SG Default,O6 Pb1.88 Sr0.12 Ti0.8 Zr1.2---1,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100293,SG Default,Mn2 O6 Pr0.2 Sr1.8---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100359,SG Default,O6 Pb2 Ti0.2 Zr1.8---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100360,SG Default,O6 Pb2 Ti0.2 Zr1.8---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100361,SG Default,O6 Pb2 Ti0.2 Zr1.8---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100572,SG Default,As0.5 Sb1.5 Se4 Tl2---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100661,SG Default,Al3 Cu1 Sm1---1,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100853,SG Default,F0.125 O0.875---1,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100893,SG Default,Ag1 Ho1 Sn1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+100922,SG Default,Co1 Fe1 Sn1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101122,SG Default,Al1.412 Fe9.21 Yb1.382---1,30,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101142,SG Default,Bi1 K0.5 Na0.5 O6 Ti2---1,14,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101387,SG Default,Ba1 Co1 Mn1 O5 Y1---1,22,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101665,SG Default,Fe4 Gd1.332 O11.844 Sr2.668---1,24,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101837,SG Default,Li2.666 Pd5.334---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101952,SG Default,O2.36 Pb54.04 S144 Sb61.8---1,292,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+101953,SG Default,Ca2 Co1 O4---1,21,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+102158,SG Default,Sn1.998 Sr1.998 Zn1.998---1,18,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+102380,SG Default,Cu3 Ge1---1,8,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+102397,SG Default,Mo1.112 U6.888---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+102720,SG Default,K0.8 Na7.2 Nb8 O24---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103161,SG Default,C7 Fe34 Si7---1,83,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103288,SG Default,Nd3.332 Ni2 O8 Sr0.668---1,18,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103876,SG Default,Fe1 Nb1 O4 Sr2---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103877,SG Default,Fe1 Nb1 O4 Sr2---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103878,SG Default,Fe1 Nb1 O4 Sr2---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+103879,SG Default,Fe1 Nb1 O4 Sr2---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120254,SG Default,Hg6.4 In1.6---1,16,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120276,SG Default,Ir2.2 Ti1.8---1,6,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120333,SG Default,Mn1.1 Rh2 Sb0.9---1,6,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120391,SG Default,Ni3 Se1 Te1---1,28,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120444,SG Default,Ru1.6 Ta2.4---1,6,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120491,SG Default,Li2.74 Pd5.26---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+120542,SG Default,Ag1 Sn1 Tb1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121422,SG Default,Ag8 Ca5.6 Sr2.4---1,24,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121630,SG Default,Cu1 Ga3 Sc2---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121652,SG Default,Fe1 In1 Mn1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121653,SG Default,Fe1 In1 Ni1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121659,SG Default,Fe1 Ni1 Sn1---1,10,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121707,SG Default,Pr1 Y1---1,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121708,SG Default,Pr1.4 Y0.6---1,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121776,SG Default,Al1 O4 Ta1---1,20,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+121802,SG Default,K0.16 Na7.84 Nb8 O24---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+122105,SG Default,O9 U4---1,416,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140050,PybTeX,Li2 O12 P4 V1--15,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140065,PybTeX,Cr1 O7 P2--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140080,PybTeX,Li4 Mn1 O8 P2--14,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140100,PybTeX,O32 P9 V4--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140125,PybTeX,Cr1 Li4 O8 P2--14,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140130,PybTeX,Li2 Mn3 O14 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140158,PybTeX,Cr1 Li1 O13 P4--1,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140183,PybTeX,Li1 Mo1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140189,PybTeX,Bi2 Li1 O12 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140192,PybTeX,Mo1 O8 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140207,PybTeX,Li3 O16 P5 V2--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140230,PybTeX,Li1 O7 P2 V1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140261,PybTeX,Li1 Mn1 O4 P1--14,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140300,PybTeX,Fe3 O15 P4--33,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140302,PybTeX,Cr2 Li3 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140306,PybTeX,Li1 Ni2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140365,PybTeX,Cr2 O13 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140370,PybTeX,Li1 Mo1 O12 P4--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140374,PybTeX,Cr1 O7 P2--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140408,PybTeX,Co2 O15 P5--13,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140415,PybTeX,Bi2 Li3 O12 P3--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140457,PybTeX,Co1 Li1 O4 P1--14,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140505,PybTeX,Li1 Mo2 O8 P1--4,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140536,PybTeX,Li3 Mn2 O16 P5--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140570,PybTeX,Li1 Mo1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140576,PybTeX,Li1 O4 P1 Sn1--14,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140593,PybTeX,Li1 O9 P3 V1--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140597,PybTeX,Fe1 Li1 O7 P2--1,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140598,PybTeX,O7 P2 V1--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140608,PybTeX,Mn1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140619,PybTeX,Li1 Mo4 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140620,PybTeX,Li1 Ni1 O4 P1--146,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140633,PybTeX,Co3 O16 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140640,PybTeX,Li1 Mn1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140641,PybTeX,Co1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140662,PybTeX,Co1 Li1 O15 P5--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140686,PybTeX,Li1 Mo1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140722,PybTeX,Li1 Ni1 O12 P4--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140770,PybTeX,Cr1 Li2 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140775,PybTeX,Fe1 Li1 O7 P2--5,11,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140777,PybTeX,Li1 Mo1 O5 P1--62,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140805,PybTeX,Cr2 Li3 O12 P3--13,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140806,PybTeX,Li1 O15 P5 Sb1--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140816,PybTeX,Li1 Ni1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140854,PybTeX,Li3 Mn2 O12 P3--9,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140867,PybTeX,Cr1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140913,PybTeX,Cr2 Li1 O12 P3--167,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140917,PybTeX,Li1 Mn1 O12 P4--4,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140932,PybTeX,Cr1 Li1 O4 P1--15,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140937,PybTeX,Li1 O12 P3 V2--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140942,PybTeX,Cr1 Li2 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140973,PybTeX,Co1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140977,PybTeX,Li1 Mn4 O12 P3--58,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140981,PybTeX,Li2 Mn1 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+140996,PybTeX,Bi2 O12 P3--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141004,PybTeX,Li1 O16 P5 V2--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141042,PybTeX,Co1 Li1 O12 P4--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141049,PybTeX,Li1 O12 P4 V1--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141051,PybTeX,Fe1 Li3 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141061,PybTeX,Li1 Mo1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141086,PybTeX,Mo1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141140,PybTeX,Li2 Mn3 O14 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141145,PybTeX,Li1 Mn2 O16 P5--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141147,PybTeX,Co1 O12 P4--60,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141155,PybTeX,Li3 Mo2 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141157,PybTeX,Bi2 Li1 O12 P3--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141171,PybTeX,Li1 O11 P3 V2--5,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141199,PybTeX,Li1 Mn2 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141203,PybTeX,Li1 Mo1 O8 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141204,PybTeX,Mo2 O13 P3--1,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141216,PybTeX,Co1 Li1 O7 P2--1,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141241,PybTeX,Mo2 O8 P1--4,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141244,PybTeX,Li3 O16 P4 Sb3--1,78,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141262,PybTeX,Li1 Mo1 O12 P4--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141281,PybTeX,Co2 Li3 O16 P5--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141339,PybTeX,Cr1 Li3 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141376,PybTeX,Li2 O8 P2 V1--147,39,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141398,PybTeX,Cr4 O12 P3--15,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141451,PybTeX,Li3 Ni1 O8 P2--12,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141523,PybTeX,Fe4 Li3 O32 P9--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141525,PybTeX,Mo4 O24 P7--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141529,PybTeX,Li1 O24 P7 V6--11,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141533,PybTeX,Cr2 Li1 O12 P3--167,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141549,PybTeX,Cu1 Li4 O8 P2--14,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141561,PybTeX,Cr1 Li1 O4 P1--61,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141565,PybTeX,Fe2 Li3 O16 P5--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141583,PybTeX,Li1 O20 P6 V3--20,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141586,PybTeX,Mo2 O11 P3--5,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141590,PybTeX,Li3 Mn2 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141642,PybTeX,Fe3 Li3 O16 P4--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141654,PybTeX,Cr1 Li3 O8 P2--15,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141690,PybTeX,Fe1 Li1 O12 P4--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141730,PybTeX,Cr1 O4 P1--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141743,PybTeX,Co1 Li2 O7 P2--1,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141754,PybTeX,Li1 Mo2 O13 P3--4,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141760,PybTeX,Cr9 Li6 O32 P8--2,55,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141779,PybTeX,Bi2 Li1 O12 P3--7,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141810,PybTeX,Cr1 Li1 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141814,PybTeX,Li1 Mo1 O8 P2--19,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141821,PybTeX,Co1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141835,PybTeX,Li3 Mo2 O12 P3--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141870,PybTeX,Li1 Mn2 O12 P3--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141873,PybTeX,Cr2 Li1 O12 P3--167,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141882,PybTeX,Li1 O7 P2 Sb1--2,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141899,PybTeX,Cr1 Li1 O15 P5--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141904,PybTeX,Li1 Mo2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141921,PybTeX,O12 P3 V2--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+141969,PybTeX,Li3 Mn2 O12 P3--9,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142007,PybTeX,Co2 Li1 O12 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142016,PybTeX,Li1 Mn1 O4 P1--14,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142029,PybTeX,Cr1 O4 P1--61,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142036,PybTeX,Co2 Li1 O16 P5--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142044,PybTeX,Li2 Ni1 O8 P2--8,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142049,PybTeX,Mn1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142060,PybTeX,Cr1 Li1 O7 P2--11,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142099,PybTeX,Li7 O32 P9 V4--114,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142100,PybTeX,Co1 Li1 O7 P2--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142103,PybTeX,Li3 Ni1 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142110,PybTeX,Ni1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142117,PybTeX,Fe2 Li1 O16 P5--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142152,PybTeX,Fe2 Li3 O12 P3--13,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142172,PybTeX,Fe1 Li2 O8 P2--14,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142181,PybTeX,Li1 Mn1 O7 P2--1,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142220,PybTeX,Li3 O16 P4 V3--1,78,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142228,PybTeX,Mo1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142254,PybTeX,Mo1 O8 P2--19,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142264,PybTeX,O20 P6 V3--20,58,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142270,PybTeX,Li2 Mo1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142274,PybTeX,Li3 Mo2 O12 P3--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142284,PybTeX,O7 P2 Sb1--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142285,PybTeX,Cr1 Li2 O8 P2--9,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142292,PybTeX,O12 P4 V1--60,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142312,PybTeX,Fe1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142319,PybTeX,Cu1 Li3 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142336,PybTeX,Cr1 O4 P1--61,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142357,PybTeX,Li1 O10 P3 V2--11,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142375,PybTeX,Fe1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142376,PybTeX,Li1 Mn2 O16 P5--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142378,PybTeX,Cr2 Li3 O12 P3--5,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142396,SG Default,N1 Ti1---1,44,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142403,PybTeX,Li1 O12 P4 Sn1--134,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142410,PybTeX,Bi1 O12 P4--20,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142412,PybTeX,Co1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142423,PybTeX,Li1 O8 P2 V1--1,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142440,PybTeX,Fe2 Li1 O12 P3--167,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142465,PybTeX,Bi1 O7 P2--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142506,PybTeX,O12 P3 V2--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142514,PybTeX,Fe4 O32 P9--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142517,PybTeX,Co2 Li1 O16 P5--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142531,PybTeX,Li3 O12 P3 Ti2--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142535,PybTeX,Li3 Mo1 O8 P2--14,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142549,PybTeX,Fe3 O16 P4--4,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142554,PybTeX,Li1 O12 P3 Sb2--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142562,PybTeX,Li3 Mn2 O12 P3--148,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142572,PybTeX,Mn1 O9 P3--9,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142574,PybTeX,Li1 Mo2 O12 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142595,PybTeX,O24 P7 V6--11,74,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142599,PybTeX,Co1 Li1 O12 P4--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142620,PybTeX,Cr2 Li3 O12 P3--9,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142624,PybTeX,Li3 Ni3 O16 P4--1,78,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142645,PybTeX,Li1 Mn2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142648,PybTeX,Cr2 Li3 O12 P3--230,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142697,PybTeX,Cr2 Li1 O11 P3--5,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142706,PybTeX,O10 P3 V2--11,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142708,PybTeX,Cr3 Li3 O16 P4--15,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142716,PybTeX,Cr2 Li1 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142730,PybTeX,Bi2 O12 P3--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142732,PybTeX,Fe1 Li2 O15 P5--11,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142738,PybTeX,Li1 Ni1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142752,PybTeX,Li1 O7 P2 V1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142761,PybTeX,Li1 Mo2 O13 P3--2,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142784,PybTeX,Mo3 O16 P3--2,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142789,PybTeX,Li4 Ni7 O24 P6--8,41,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142798,PybTeX,Cu2 Li3 O16 P5--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142807,PybTeX,Li1 O12 P4 Sb1--60,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142816,PybTeX,Li6 Mn9 O32 P8--2,55,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142824,PybTeX,Li1 O4 P1 Sn1--159,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142831,PybTeX,Li1 Mn2 O12 P3--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142859,PybTeX,Li1 O9 P3 V1--19,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142872,PybTeX,Fe2 Li1 O12 P3--167,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142874,PybTeX,Li3 Mo3 O16 P4--14,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142878,PybTeX,Li3 Mn3 O16 P4--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142900,PybTeX,Li3 O8 P2 V1--14,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142925,PybTeX,Cr1 Li1 O7 P2--4,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142951,SG Default,Br6 Cs2 Sb1---1,36,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142953,PybTeX,Li1 O12 P3 Ti2--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142962,PybTeX,Li1 O9 P3 Sn1--19,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142967,PybTeX,Cr1 O7 P2--5,10,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142972,PybTeX,Li1 O9 P3 V1--19,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142995,PybTeX,Bi5 Li3 O24 P6--1,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+142997,PybTeX,Li3 O32 P9 V4--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143001,PybTeX,Cr2 O12 P3--167,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143002,PybTeX,Li1 O12 P3 V2--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143489,PybTeX,Cr4 Li7 O32 P9--114,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143515,PybTeX,Li14 Ni9 O56 P16--2,95,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143559,PybTeX,Cr4 Li3 O32 P9--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143600,PybTeX,Li1 Ni4 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143638,PybTeX,Li4 Ni3 O15 P4--33,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143647,PybTeX,Ni4 O24 P7--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143697,PybTeX,Li2 Ni1 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143789,PybTeX,Fe2 Li1 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143822,PybTeX,Li1 Ni1 O4 P1--9,112,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143826,PybTeX,Li1 Ni3 O15 P4--7,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143846,PybTeX,Li1 Ni2 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143895,PybTeX,Fe4 Li1 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143929,PybTeX,Fe4 Li7 O32 P9--114,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+143960,PybTeX,Ni1 O4 P1--9,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144002,PybTeX,Fe4 Li3 O32 P9--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144053,PybTeX,Li1 Nb2 O12 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144124,PybTeX,Li1 Mn4 O12 P3--62,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144134,PybTeX,Li5 Mn9 O56 P16--1,86,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144144,PybTeX,Fe3 Li1 O15 P4--7,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144171,PybTeX,Mn4 O12 P3--62,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144202,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144212,PybTeX,Mn9 O56 P16--2,81,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144222,PybTeX,Fe3 O15 P4--33,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144246,PybTeX,Ni1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144287,PybTeX,Li1 Mn4 O12 P3--58,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144305,PybTeX,Li2 O7 P2 Sn1--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144306,PybTeX,Li3 O32 P9 V4--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144350,PybTeX,Mn4 O12 P3--58,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144374,PybTeX,O32 P9 V4--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144378,PybTeX,Mo4 O24 P5--15,66,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144448,PybTeX,Li7 O32 P9 V4--114,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144469,PybTeX,Li1 Ni1 O15 P5--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144514,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144523,PybTeX,Li3 Ni2 O12 P3--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144545,PybTeX,Mo2 O12 P3--57,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144554,PybTeX,Li3 O32 P9 V4--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144609,SG Default,C1 Si1---1,78,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144616,PybTeX,Fe1 Li2 O7 P2--15,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144632,PybTeX,Li3 Mo4 O32 P9--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144642,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144676,PybTeX,Li3 Ni2 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144732,PybTeX,Li1 O7 P2 V1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144733,PybTeX,Mo4 O32 P9--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144741,PybTeX,Li2 Ni4 O15 P4--15,100,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144779,PybTeX,Cr1 Li1 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144807,PybTeX,Cu4 Li1 O12 P3--62,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144849,SG Default,Cd1 I2---1,36,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144852,PybTeX,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144862,PybTeX,Li1 Mo1 O12 P4--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144902,PybTeX,Co1 Li1 O9 P3--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144907,PybTeX,Ni4 O15 P4--15,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144927,PybTeX,Mo1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144952,SG Default,Cd1 I2---1,39,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+144964,SG Default,S1 Zn1---1,52,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160001,PybTeX,Co3 Li2 O14 P4--2,23,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160008,PybTeX,Fe1 Li1 O9 P3--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160010,PybTeX,Li4 Mn5 O22 P6--14,74,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160020,PybTeX,Co3 O14 P4--2,21,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160027,PybTeX,Li1 Mn1 O12 P4--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160029,PybTeX,Fe1 O9 P3--2,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160040,PybTeX,Li1 Mn1 O7 P2--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160042,PybTeX,Li1 Mn1 O9 P3--188,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160067,PybTeX,Mn1 O9 P3--9,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160068,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160071,PybTeX,O12 P4 Sb1--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160091,PybTeX,Li1 Mn1 O4 P1--4,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160100,PybTeX,Li2 Ni1 O7 P2--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160132,PybTeX,Li1 Ni1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160133,PybTeX,Mn1 O4 P1--4,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160134,PybTeX,Cr2 Li1 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160135,PybTeX,Co5 Li1 O28 P8--2,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160156,PybTeX,Li1 Mn1 O4 P1--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160160,PybTeX,Cr2 O12 P3--2,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160180,PybTeX,Mn3 O14 P4--2,21,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160181,PybTeX,Mn1 O4 P1--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160193,PybTeX,Co5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160200,PybTeX,Li2 Mn1 O12 P4--2,19,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160204,PybTeX,Mn1 O7 P2--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160215,PybTeX,Li1 Mn1 O12 P4--1,18,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160230,PybTeX,Fe1 O4 P1--7,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160236,PybTeX,Cr1 Li1 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160238,PybTeX,Li2 O8 P2 V1--7,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160247,PybTeX,Fe1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160252,PybTeX,Co1 Li2 O8 P2--1,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160265,PybTeX,O12 P3 V2--167,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160267,PybTeX,Li1 Mo1 O8 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160275,PybTeX,Fe1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160284,PybTeX,Cr1 Li2 O7 P2--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160295,PybTeX,Li1 O7 P2 V1--1,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160303,PybTeX,Cr1 Li1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160304,PybTeX,Co1 Li2 O12 P4--14,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160315,PybTeX,Fe1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160324,PybTeX,Mn1 O4 P1--62,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160331,PybTeX,O7 P2 V1--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160339,PybTeX,Li1 Mn1 O7 P2--4,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160346,PybTeX,Co1 Li1 O12 P4--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160364,PybTeX,Mn1 O12 P4--60,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160368,PybTeX,Co3 Li3 O16 P4--1,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160383,PybTeX,Li1 Mn5 O28 P8--2,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160387,PybTeX,Fe5 Li6 O28 P8--2,94,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160400,PybTeX,Co3 O16 P4--1,23,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160403,PybTeX,Fe3 O14 P4--14,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160429,PybTeX,Mn1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160435,PybTeX,Fe1 O7 P2--4,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160436,PybTeX,Mn5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160464,PybTeX,Co1 Li1 O4 P1--33,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160477,PybTeX,Li2 Ni1 O12 P4--62,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160480,PybTeX,Co1 O4 P1--33,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160484,PybTeX,Fe5 Li1 O28 P8--2,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160489,PybTeX,Co3 Li1 O11 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160522,PybTeX,Co1 O9 P3--19,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160528,PybTeX,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160529,PybTeX,Li1 Ni1 O12 P4--19,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160552,PybTeX,Fe1 Li2 O8 P2--8,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160556,PybTeX,Li1 O12 P4 V1--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160575,PybTeX,Co2 O10 P3--11,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160580,PybTeX,Ni1 O4 P1--146,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160591,PybTeX,Cr3 O16 P4--15,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160600,PybTeX,Co1 O7 P2--4,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160610,PybTeX,Fe2 O12 P3--167,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160617,PybTeX,O9 P3 Sn1--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160634,PybTeX,Co1 Li1 O12 P4--60,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160644,PybTeX,Li2 O15 P5 V1--11,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160663,PybTeX,Ni3 O11 P3--1,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160669,PybTeX,Cu1 O9 P3--19,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160670,PybTeX,Li1 Mn1 O12 P4--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160687,PybTeX,Fe1 Li1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160695,PybTeX,Nb2 O12 P3--2,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160703,PybTeX,Li1 Mo2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160718,PybTeX,Li2 Mn1 O12 P4--125,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160741,PybTeX,Fe2 O10 P3--11,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160742,PybTeX,Fe1 O7 P2--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160743,PybTeX,Li3 O18 P5 V2--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160763,PybTeX,Li1 Mn1 O12 P4--7,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160767,PybTeX,Mn1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160774,PybTeX,Co3 Li2 O14 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160787,PybTeX,Co6 O24 P7--11,74,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160807,PybTeX,Co3 O14 P4--14,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160808,PybTeX,Co1 O4 P1--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160813,PybTeX,Li1 O24 P7 V4--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160817,SG Default,S1 Zn1---1,52,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160833,PybTeX,Cr3 Li2 O14 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160851,PybTeX,Li2 Ni1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160856,PybTeX,O24 P7 V4--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160857,PybTeX,Cr3 O14 P4--14,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160858,PybTeX,Co3 Li9 O29 P8--9,98,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160882,PybTeX,Li1 Mo1 O8 P2--19,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160896,PybTeX,Fe3 Li1 O11 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160912,PybTeX,Li1 O7 P2 V1--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160914,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160934,PybTeX,Co3 Li6 O29 P8--1,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160956,PybTeX,Li6 O29 P8 V3--9,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+160972,PybTeX,Fe3 O11 P3--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161000,PybTeX,Li6 O29 P8 V3--9,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161012,PybTeX,Li3 O29 P8 V3--15,86,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161020,PybTeX,Cr4 Li1 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161029,PybTeX,Li1 O16 P5 V2--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161031,PybTeX,Cr2 Li1 O12 P3--1,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161058,PybTeX,Cr4 O24 P7--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161059,PybTeX,Li1 O7 P2 Sn1--9,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161062,PybTeX,Cr2 O12 P3--148,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161076,PybTeX,Cr1 Li2 O12 P4--14,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161080,PybTeX,Fe1 O4 P1--159,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161097,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161098,PybTeX,Ni1 O7 P2--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161099,PybTeX,Fe1 Li1 O12 P4--19,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161117,PybTeX,Fe1 O7 P2--12,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161123,PybTeX,Cr1 Li1 O12 P4--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161128,PybTeX,Fe1 O12 P4--62,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161136,PybTeX,Cr1 Li2 O8 P2--9,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161150,PybTeX,Li2 Mn1 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161160,PybTeX,Ni9 O56 P16--2,81,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161164,PybTeX,Bi1 Li1 O12 P4--20,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161169,PybTeX,Li3 O8 P2 V1--14,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161181,PybTeX,Li1 Mn1 O7 P2--1,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161288,SG Default,Ba8 Ca8 Cu12 O39 Tl7---1,74,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+161513,SG Default,S1 Zn1---1,52,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+162198,SG Default,C1 Si1---1,78,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+162691,SG Default,C1 Si1---1,54,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+162895,SG Default,Cd1 I2---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163323,SG Default,S1 Zn1---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163831,SG Default,Cd1 I2---1,39,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163859,PybTeX,Mo4 O32 P9--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163872,PybTeX,Li1 Mo1 O7 P2--2,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163888,PybTeX,Mo1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163925,PybTeX,Li1 O12 P3 Sn4--161,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163949,SG Default,C1 Si1---1,38,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163953,PybTeX,Li1 Ni3 O15 P4--7,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+163970,PybTeX,O12 P3 Sn4--161,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164000,PybTeX,Cu4 Li1 O12 P3--62,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164026,PybTeX,Li1 Ni1 O7 P2--2,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164034,SG Default,C1 Si1---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164043,PybTeX,Li2 Ni4 O15 P4--15,100,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164051,PybTeX,Ni1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164075,PybTeX,Li2 Mn1 O12 P4--15,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164104,PybTeX,Ni4 O15 P4--15,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164111,PybTeX,Li1 Mn1 O12 P4--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164136,PybTeX,Li3 Mn2 O12 P3--12,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164137,PybTeX,Li2 Nb1 O13 P4--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164146,SG Default,Cd1 I2---1,39,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164168,PybTeX,Li1 Mn2 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164183,PybTeX,Li3 O12 P3 Sn2--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164204,PybTeX,Li1 O12 P3 Sn2--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164205,PybTeX,Co1 Li2 O7 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164235,PybTeX,Co1 Li1 O7 P2--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164249,PybTeX,Li5 Mo2 O18 P5--2,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164266,PybTeX,Cr1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164267,PybTeX,Li3 Mo2 O18 P5--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164287,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164294,PybTeX,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164298,PybTeX,Li1 Ni3 O15 P4--7,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164313,PybTeX,Li2 Mn1 O7 P2--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164323,PybTeX,Cr2 O12 P3--60,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164334,PybTeX,Li1 Mn1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164337,PybTeX,Li14 Mn9 O56 P16--2,95,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164344,PybTeX,Co1 O9 P3--2,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164350,PybTeX,Cr1 Li2 O7 P2--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164359,PybTeX,Cr1 O15 P5--11,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164360,PybTeX,Ni3 O15 P4--33,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164377,PybTeX,Li1 O5 P1 V1--14,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164388,SG Default,As19 Li47 Mn5---1,71,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164392,PybTeX,Mo2 O13 P3--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164396,PybTeX,O5 P1 V1--14,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164398,PybTeX,Cr3 Li6 O29 P8--1,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164409,PybTeX,Cr4 Li3 O32 P9--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164422,PybTeX,Cr1 Li1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164425,PybTeX,Fe1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164427,PybTeX,Fe4 Li1 O12 P3--62,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164433,SG Default,C1 Si1---1,72,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164453,PybTeX,Li5 Mn9 O56 P16--1,86,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164459,PybTeX,Fe3 Li4 O15 P4--33,104,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164461,PybTeX,Li1 O12 P4 Sn1--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164466,PybTeX,Fe4 O12 P3--62,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164483,PybTeX,Bi1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164494,PybTeX,Li1 Ni2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164497,PybTeX,Li2 Ni1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164499,PybTeX,Fe1 Li1 O7 P2--1,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164514,PybTeX,Co5 Li1 O28 P8--2,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164525,PybTeX,Fe1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164526,PybTeX,Li1 O5 P1 V1--33,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164527,PybTeX,Fe3 Li1 O15 P4--7,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164532,PybTeX,Mn9 O32 P8--2,49,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164544,PybTeX,Cr1 Li1 O12 P4--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164548,PybTeX,O5 P1 V1--129,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164549,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164556,PybTeX,Fe5 Li1 O28 P8--2,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164568,PybTeX,Co1 Li2 O12 P4--2,19,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164569,PybTeX,Li1 Mn1 O4 P1--159,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164570,PybTeX,Cu1 Li1 O4 P1--14,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164571,PybTeX,O10 P3 V2--11,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164576,PybTeX,Ni1 O9 P3--57,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164598,PybTeX,Cu1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164599,PybTeX,Co1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164600,PybTeX,Co1 Li1 O12 P4--1,18,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164607,PybTeX,Fe5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164610,PybTeX,Fe1 Li1 O4 P1--14,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164624,PybTeX,Fe1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164644,PybTeX,Li3 Mn2 O12 P3--12,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164658,PybTeX,Li2 Ni3 O14 P4--2,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164662,PybTeX,Li1 Mn4 O12 P3--122,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164666,PybTeX,Co1 Li1 O7 P2--1,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164670,PybTeX,Bi3 Li9 O29 P8--165,98,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164684,PybTeX,Mn2 O15 P5--13,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164685,PybTeX,Li6 Ni5 O28 P8--2,94,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164686,PybTeX,Co1 Li1 O12 P4--4,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164713,PybTeX,Li1 Mo1 O8 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164714,PybTeX,Co1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164715,PybTeX,Cr3 O16 P4--1,69,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164739,PybTeX,Fe1 Li1 O12 P4--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164740,PybTeX,Bi1 Li1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164741,PybTeX,Ni5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164744,PybTeX,Li1 Mn1 O7 P2--2,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164758,PybTeX,Li2 O15 P5 V1--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164762,PybTeX,Co2 Li1 O10 P3--15,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164773,PybTeX,Co1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164780,PybTeX,Li2 O13 P4 V1--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164792,PybTeX,Co2 O10 P3--2,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164797,PybTeX,Li1 O15 P5 V1--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164811,PybTeX,O7 P2 Sb1--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164818,PybTeX,Li1 Mn1 O7 P2--11,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164829,PybTeX,Cr3 Li2 O14 P4--2,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164840,PybTeX,Bi3 Li6 O29 P8--9,92,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164841,PybTeX,Mn1 O7 P2--12,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164859,PybTeX,Mn2 O11 P3--15,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164860,PybTeX,Fe2 Li3 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164867,PybTeX,Li3 O16 P4 V3--15,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164868,PybTeX,Li1 Mn4 O12 P3--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164880,PybTeX,Li1 Mn1 O4 P1--33,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164881,PybTeX,Fe2 Li1 O12 P3--167,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164882,PybTeX,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164896,PybTeX,Li1 O20 P6 V3--41,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164900,PybTeX,Li1 Mn1 O4 P1--43,14,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164911,PybTeX,Mn4 O12 P3--2,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164912,PybTeX,Co1 Li2 O15 P5--11,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164922,PybTeX,O9 P3 V1--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164924,PybTeX,Fe5 Li4 O22 P6--14,74,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164931,PybTeX,Li1 O8 P2 V1--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164932,PybTeX,Li1 Mn1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164941,PybTeX,Fe1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164945,PybTeX,Fe2 Li1 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164963,PybTeX,Li1 Mn1 O4 P1--1,84,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164964,PybTeX,O7 P2 V1--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164970,PybTeX,Cr3 O14 P4--2,21,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164971,PybTeX,Li1 Mo1 O5 P1--33,64,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164973,PybTeX,Fe1 Li1 O12 P4--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164981,PybTeX,O7 P2 V1--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164983,PybTeX,Fe5 O22 P6--14,66,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164995,PybTeX,Cr3 Li2 O14 P4--2,23,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164998,PybTeX,Mo1 O5 P1--33,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+164999,PybTeX,Li1 O13 P4 V1--1,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+165000,PybTeX,Li1 Mn1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+184490,SG Default,Au1 Cl1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+184688,SG Default,Cd1 I2---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200163,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200164,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200166,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200168,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200169,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200172,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200176,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203403,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203405,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203406,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203407,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203408,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203409,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203410,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203411,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203412,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203413,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203414,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203417,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203433,SG Default,Cd1 I2---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203466,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203467,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203468,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203469,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203470,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203471,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203473,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203474,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203475,SG Default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203476,SG Default,Cd1 I2---1,51,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203477,SG Default,Cd1 I2---1,51,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203478,SG Default,Cd1 I2---1,54,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203492,SG Default,Cd1 I2---1,51,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203504,SG Default,Cd1 I2---1,30,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203505,SG Default,Cd1 I2---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203506,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203507,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203515,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203516,SG Default,Cd1 I2---1,57,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203517,SG Default,Cd1 I2---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203518,SG Default,Cd1 I2---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203520,SG Default,Cd1 I2---1,24,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203521,SG Default,Cd1 I2---1,24,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203522,SG Default,Cd1 I2---1,27,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203523,SG Default,Cd1 I2---1,33,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203524,SG Default,Cd1 I2---1,33,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203525,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203526,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203527,SG Default,Cd1 I2---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203528,SG Default,Cd1 I2---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203534,SG Default,Cd1 I2---1,57,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203535,SG Default,Cd1 I2---1,63,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203536,SG Default,Cd1 I2---1,75,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203537,SG Default,Cd1 I2---1,87,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203541,SG Default,Cd1 I2---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203542,SG Default,Cd1 I2---1,51,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203543,SG Default,Cd1 I2---1,24,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203544,SG Default,Cd1 I2---1,27,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203545,SG Default,Cd1 I2---1,27,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203546,SG Default,Cd1 I2---1,30,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203547,SG Default,Cd1 I2---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203606,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203607,SG Default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203608,SG Default,Cd1 I2---1,54,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203609,SG Default,Cd1 I2---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203704,SG Default,C1 Si1---1,70,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203862,SG Default,Cd1 I2---1,30,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203863,SG Default,Cd1 I2---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203932,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203933,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203934,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203941,SG Default,S1 Zn1---1,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203942,SG Default,S1 Zn1---1,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203945,SG Default,S1 Zn1---1,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203946,Others,S1 Zn1---1,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203947,SG Default,S1 Zn1---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203950,SG Default,S1 Zn1---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203951,SG Default,S1 Zn1---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203952,SG Default,S1 Zn1---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203956,SG Default,S1 Zn1---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203967,SG Default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203970,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203975,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203979,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203983,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203986,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203992,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203996,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+203997,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204005,SG Default,S1 Zn1---1,56,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204029,SG Default,S1 Zn1---1,56,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204035,SG Default,S1 Zn1---1,56,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204039,SG Default,S1 Zn1---1,56,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204055,SG Default,S1 Zn1---1,76,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204056,SG Default,S1 Zn1---1,76,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204059,SG Default,S1 Zn1---1,76,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204064,SG Default,S1 Zn1---1,76,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204077,Others,S1 Zn1---1,88,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204078,SG Default,S1 Zn1---1,88,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204091,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204094,SG Default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204104,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204106,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204109,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204115,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204119,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204120,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204124,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204127,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204128,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204135,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204139,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204142,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204149,SG Default,C1 Si1---1,72,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204150,SG Default,C1 Si1---1,78,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204151,SG Default,C1 Si1---1,34,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204152,SG Default,C1 Si1---1,46,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204153,SG Default,C1 Si1---1,58,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204154,SG Default,C1 Si1---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204155,SG Default,C1 Si1---1,70,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204156,SG Default,C1 Si1---1,94,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204157,Others,C1 Si1---1,112,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204158,SG Default,C1 Si1---1,116,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204256,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204257,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204258,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204259,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204260,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204261,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204262,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204263,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204264,SG Default,S1 Zn1---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204267,SG Default,C1 Si1---1,80,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204333,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204334,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204335,SG Default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204486,SG Default,C1 Si1---1,46,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204493,SG Default,Cd13 I28---1,41,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204877,SG Default,C1 Si1---1,116,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204968,SG Default,C1 Si1---1,62,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+204969,SG Default,C1 Si1---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+241654,SG Default,O2 Si1---1,18,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+241662,SG Default,Al1.66 Ca0.31 Fe1.56 Mg4.56 Mn6.2 Na5.26 O48 P12---1,82,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+260252,SG Default,C4 Mo1 O5 S1---1,176,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+261288,SG Default,Mn3 O6 Sr1---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+261849,SG Default,Cr4 Fe30 Y3.9992---1,86,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+262558,SG Default,Ba2 O6 Sr1 W1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+264667,SG Default,Al5.064 La2.30969031 O24 Sr5.69030969 Ta2.848---1,64,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+280777,PybTeX,Cu10 K11.5 O181 Si4 W36--2,254,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+282224,SG Default,O9 Si4---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+320434,PybTeX,Ce1.998 La4.002 Te8--220,14,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+320906,PybTeX,Co15 Cr2 Ho2--194,38,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+321588,PybTeX,Co14 Ho2 Mn3--194,38,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+321598,PybTeX,Co32.98 Ho4 Ti1.02--194,38,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+321600,PybTeX,Co32.98 Ho4 V1.02--194,38,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+321682,PybTeX,Co13 Mn4 Pr2--166,19,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+321938,PybTeX,Co17 Pr2--166,19,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+323101,PybTeX,Cu1 Ga1 Se2--122,8,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+340320,SG Default,P1---1,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+340341,SG Default,C1---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+340968,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+340970,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341391,PybTeX,Mn1 O4 P1--2,12,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341419,PybTeX,Fe1 Li1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341423,PybTeX,Fe1 Li1 O4 P1--146,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341424,PybTeX,Mn1 O4 P1--33,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341425,PybTeX,Fe1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341426,PybTeX,Li1 Mo2 O12 P3--5,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341427,PybTeX,Mn1 O4 P1--146,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341428,PybTeX,Li1 Mn4 O12 P3--43,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341429,PybTeX,Fe1 Li2 O24 P8--1,35,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341430,PybTeX,Mn3 O14 P4--14,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341431,PybTeX,Ni1 O9 P3--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341432,PybTeX,Li3 Mn1 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341433,PybTeX,Li1 Mn1 O12 P4--19,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341434,PybTeX,Cr1 O9 P3--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341435,PybTeX,Fe1 Li1 O4 P1--9,112,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341437,PybTeX,O16 P4 V3--1,69,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341440,PybTeX,Bi1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341441,PybTeX,Cr2 Li1 O10 P3--11,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341442,PybTeX,Li1 Mo4 O22 P4--2,31,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341443,PybTeX,Mo1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341444,PybTeX,O12 P4 Sb1--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341445,PybTeX,Mn1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341448,PybTeX,Fe2 Li3 O16 P5--13,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341449,PybTeX,Li1 O12 P4 Sb1--60,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341450,PybTeX,Cu1 Li2 O12 P4--2,19,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341451,PybTeX,O12 P4 V1--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341452,PybTeX,Li1 Ni1 O12 P4--19,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341453,PybTeX,Li3 Mn2 O12 P3--14,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341454,PybTeX,O12 P4 Sb1--60,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341455,PybTeX,Cr3 Li2 O14 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341456,PybTeX,Li1 Ni1 O12 P4--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341457,PybTeX,Cu1 Li1 O12 P4--1,18,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341458,PybTeX,Cr1 Li2 O12 P4--14,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341459,PybTeX,Fe1 Li1 O15 P5--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341460,PybTeX,Li1 Mn1 O7 P2--1,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341461,PybTeX,Ni1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341462,PybTeX,Cr1 Li1 O12 P4--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341463,PybTeX,O9 P3 Sn1--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341464,PybTeX,Li2 Mn1 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341465,PybTeX,Cr3 O16 P4--15,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341467,PybTeX,Li1 O9 P3 Sn1--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341468,PybTeX,Mo2 O13 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341470,PybTeX,Bi1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341471,PybTeX,Li5 Mo2 O18 P5--2,60,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341472,PybTeX,Bi1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341473,PybTeX,Co3 O16 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341474,PybTeX,Li3 Mo2 O18 P5--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341475,PybTeX,Cu1 Li1 O12 P4--19,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341476,PybTeX,Co1 Li1 O12 P4--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341477,PybTeX,O4 P1 Sn1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341478,PybTeX,Li1 Mn1 O12 P4--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341479,PybTeX,Fe1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341480,PybTeX,O24 P6 Sb5--1,35,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341481,PybTeX,Fe1 Li2 O8 P2--14,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341483,PybTeX,Li1 O12 P4 V1--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341484,PybTeX,Cr3 Li2 O14 P4--2,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341485,PybTeX,Fe1 Li2 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341486,PybTeX,Cr1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341487,PybTeX,Li2 Mo1 O24 P8--1,35,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341488,PybTeX,Mn3 O14 P4--2,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341489,PybTeX,Fe1 Li1 O7 P2--5,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341490,PybTeX,Mo1 O13 P4--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341491,PybTeX,Mn1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341492,PybTeX,Co1 Li1 O12 P4--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341493,PybTeX,Fe3 O16 P4--14,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341494,PybTeX,Ni1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341495,PybTeX,Co1 Li2 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341496,PybTeX,Li1 O12 P3 V2--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341497,PybTeX,Li1 Mn1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341498,PybTeX,Cr2 Li1 O12 P3--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341499,PybTeX,Li1 Ni2 O12 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341500,PybTeX,Cr1 Li2 O24 P8--1,35,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341501,PybTeX,Li7 O48 P12 V8--1,75,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341502,PybTeX,Cr2 Li3 O12 P3--9,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341503,PybTeX,Mo1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341504,PybTeX,Fe1 Li2 O12 P4--15,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341505,PybTeX,Cu1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341506,PybTeX,Li2 Mn1 O12 P4--15,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341507,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341508,PybTeX,Bi1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341509,PybTeX,Co1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341510,PybTeX,Li2 O12 P4 V1--14,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341511,PybTeX,Bi1 Li1 O12 P4--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341512,PybTeX,Li1 O12 P3 Sn4--161,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341513,PybTeX,Li1 Mn2 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341514,PybTeX,Cr1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341515,PybTeX,Cr1 Li2 O8 P2--4,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341516,PybTeX,Li1 O12 P4 V1--4,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341517,PybTeX,Li1 O16 P5 Sn2--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341518,PybTeX,Cr1 Li1 O5 P1--2,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341519,PybTeX,Li2 Mo1 O8 P2--4,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341520,PybTeX,Cr2 Li1 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341521,PybTeX,Fe2 Li1 O12 P3--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341522,PybTeX,Li1 Ni1 O7 P2--1,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341523,PybTeX,Cr1 Li2 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341524,PybTeX,Mo1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341525,PybTeX,Fe1 O9 P3--2,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341526,PybTeX,Fe1 Li1 O9 P3--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341527,PybTeX,Li2 O8 P2 V1--4,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341528,PybTeX,Fe1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341529,PybTeX,Co3 O14 P4--2,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341530,PybTeX,Li1 Mo2 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341531,PybTeX,Fe2 Li1 O13 P3--2,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341532,PybTeX,Li1 Mn1 O12 P4--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341533,PybTeX,Fe2 O13 P3--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341534,PybTeX,Fe1 O13 P4--2,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341535,PybTeX,Cu1 O4 P1--146,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341536,PybTeX,Li2 Mn1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341537,PybTeX,Li3 O18 P5 V2--2,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341538,PybTeX,Mn1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341539,PybTeX,Mn1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341540,PybTeX,Li1 Mo1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341541,PybTeX,Li1 Mn2 O12 P3--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341542,PybTeX,Cr1 Li1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341543,PybTeX,Fe1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341544,PybTeX,Li3 Mn2 O12 P3--9,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341545,PybTeX,Bi1 Li1 O8 P2--147,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341546,PybTeX,Mn1 O7 P2--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341547,PybTeX,Li1 O7 P2 Sb1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341548,PybTeX,Ni3 O16 P4--15,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341549,PybTeX,Co1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341550,PybTeX,Li3 Ni3 O16 P4--1,78,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341551,PybTeX,O7 P2 V1--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341552,PybTeX,Li1 O8 P2 V1--1,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341553,PybTeX,Cr1 O12 P4--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341554,PybTeX,Cr1 Li2 O7 P2--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341555,PybTeX,O12 P4 Sb1--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341556,PybTeX,Li1 Nb1 O8 P2--4,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341557,PybTeX,Li2 O7 P2 Sn1--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341558,PybTeX,O12 P4 V1--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341559,PybTeX,Li1 O7 P2 Sb1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341560,PybTeX,Co2 Li1 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341561,PybTeX,Fe2 Li1 O12 P3--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341562,PybTeX,O4 P1 Sn1--9,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341563,PybTeX,Cr1 O4 P1--15,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341564,PybTeX,Li1 Mn2 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341565,PybTeX,Li1 O15 P5 V1--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341566,PybTeX,Nb1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341567,PybTeX,Co2 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341568,PybTeX,Mn1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341569,PybTeX,Li1 O18 P5 Sb2--2,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341570,PybTeX,Li4 O18 P6 Sn1--1,29,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341571,PybTeX,Fe4 Li1 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341572,PybTeX,Cr1 Li2 O15 P5--11,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341573,PybTeX,Cr1 Li1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341574,PybTeX,Li3 O18 P6 Sn1--1,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341575,PybTeX,Bi1 Li1 O12 P4--4,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341576,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341577,PybTeX,Li1 Mn1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341578,PybTeX,Li1 O12 P3 Sn4--173,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341579,PybTeX,Ni1 O7 P2--2,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341580,PybTeX,Li2 Mn1 O7 P2--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341581,PybTeX,Li1 Mn1 O12 P4--4,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341582,PybTeX,Cu3 O14 P4--14,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341583,PybTeX,Cr4 Li1 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341584,PybTeX,Fe1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341585,PybTeX,Cr1 Li1 O8 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341586,PybTeX,Mn1 O9 P3--2,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341587,PybTeX,Mn3 O16 P4--15,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341588,PybTeX,Co1 O4 P1--33,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341589,PybTeX,Cr1 O4 P1--14,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341590,PybTeX,Fe5 Li2 O16 P4--2,27,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341591,PybTeX,Fe1 O7 P2--9,20,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341592,PybTeX,Li1 Ni1 O9 P3--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341593,PybTeX,Bi5 O24 P6--1,35,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341594,PybTeX,O10 P3 Sn2--15,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341595,PybTeX,O14 P4 Sn3--2,21,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341596,PybTeX,Li1 O10 P3 Sn2--15,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341597,PybTeX,Co1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341598,PybTeX,Fe1 O7 P2--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341599,PybTeX,Li1 Mn1 O9 P3--2,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341600,PybTeX,Fe3 Li2 O14 P4--2,23,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341601,PybTeX,Mn4 O24 P7--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341602,PybTeX,Fe3 O16 P4--15,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341603,PybTeX,Li1 O12 P4 Sb1--4,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341604,PybTeX,Cr1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341605,PybTeX,Cu1 Li1 O4 P1--1,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341606,PybTeX,O9 P3 Sn1--188,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341607,PybTeX,Fe2 Li1 O12 P3--15,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341608,PybTeX,Li1 O11 P3 V2--5,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341609,PybTeX,Li1 Mn1 O12 P4--1,18,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341610,PybTeX,Co1 O4 P1--33,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341611,PybTeX,Li1 O10 P3 Sn2--11,32,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341612,PybTeX,Li2 Mn1 O12 P4--2,19,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341613,PybTeX,Cr5 Li2 O16 P4--2,27,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341614,PybTeX,Li1 Mn1 O4 P1--4,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341615,PybTeX,Mn2 O10 P3--15,30,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341616,PybTeX,Fe1 O12 P4--4,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341617,PybTeX,Li1 Mn4 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341618,PybTeX,O12 P4 V1--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341619,PybTeX,Fe1 Li2 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341620,PybTeX,Cr1 O8 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341621,PybTeX,Li1 O7 P2 Sn1--9,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341622,PybTeX,Cu4 Li1 O12 P3--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341623,PybTeX,Li1 O12 P4 V1--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341624,PybTeX,Fe1 Li1 O7 P2--9,22,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341625,PybTeX,Cr1 Li1 O9 P3--9,28,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341626,PybTeX,Co1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341627,PybTeX,Cu4 O12 P3--2,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341628,PybTeX,Li1 Ni2 O11 P3--5,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341629,PybTeX,Mn1 O4 P1--2,24,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341630,PybTeX,Fe1 Li2 O7 P2--1,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341631,PybTeX,Li2 Nb1 O13 P4--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341632,PybTeX,Co1 Li1 O12 P4--1,18,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341633,PybTeX,Co1 Li2 O12 P4--2,19,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341634,PybTeX,Cr2 Li1 O12 P3--1,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341636,PybTeX,Li2 Mn1 O12 P4--14,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341639,PybTeX,Fe1 Li2 O8 P2--4,26,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341834,SG Default,Ca3 O37 Zr17---1,57,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341837,SG Default,Mg2 O5 Zr14---1,21,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+341878,SG Default,Ce16 O39 U3---1,58,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342145,SG Default,Mn11 O34 Ta9---1,54,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342345,SG Default,Hg3 In2 Te6---1,22,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342504,SG Default,Li9 N20 Ta11---1,40,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342761,SG Default,Cl40 Sr18 Th1---1,59,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342796,SG Default,Cu8 Li49 N19---1,76,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+342823,SG Default,N17 Nb40 O17---1,74,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343012,SG Default,Cu9 Li42 N19---1,70,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343025,SG Default,Cd1 F2---1,60,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343265,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343266,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343284,SG Default,S1 Zn1---1,88,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343286,SG Default,S1 Zn1---1,88,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343290,SG Default,Cd1 I2---1,60,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343297,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343298,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343299,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343300,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343301,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343305,SG Default,Cd1 I2---1,51,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343312,SG Default,Cd1 I2---1,57,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343313,SG Default,Cd1 I2---1,60,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343314,SG Default,Cd1 I2---1,57,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343316,SG Default,Cd1 I2---1,60,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343318,SG Default,Cd1 I2---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343319,SG Default,Cd1 I2---1,63,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343327,SG Default,Cd1 I2---1,75,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343336,SG Default,Cd1 I2---1,66,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343356,SG Default,Cd1 I2---1,87,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343362,SG Default,I2 Pb1---1,45,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343914,PybTeX,Bi1 Li3 O8 P2--147,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343916,SG Default,Cd1 I2---1,42,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343925,PybTeX,Ni2 O15 P5--13,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343926,PybTeX,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343927,PybTeX,Bi2 Li3 O12 P3--15,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343928,PybTeX,Fe2 Li1 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343929,PybTeX,Li1 Ni1 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343930,PybTeX,Cr1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343931,PybTeX,Li2 Ni1 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343932,PybTeX,Cr1 Li1 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343933,PybTeX,Mn3 O16 P4--4,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343934,PybTeX,Li1 Mo1 O12 P4--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343935,PybTeX,O32 P9 V4--114,90,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343936,PybTeX,Mo1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343937,PybTeX,Li3 O32 P9 V4--114,96,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343938,PybTeX,Li1 O24 P7 Sn6--11,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343939,PybTeX,O24 P7 Sn6--11,74,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343940,PybTeX,Li3 Mn3 O16 P4--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343943,PybTeX,Li1 Mn1 O7 P2--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343944,PybTeX,Cr1 O15 P5--7,42,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343945,PybTeX,Li1 O15 P5 Ti1--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343946,PybTeX,Fe2 O15 P5--7,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343947,PybTeX,Cr2 O15 P5--13,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343948,PybTeX,Mn1 O7 P2--14,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343949,PybTeX,Fe1 Li1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343950,PybTeX,Cr1 Li2 O13 P4--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343952,PybTeX,Li2 O15 P5 Ti1--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343953,PybTeX,Mn5 O22 P6--14,66,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343956,PybTeX,Cr1 Li2 O15 P5--7,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343957,PybTeX,Li1 Mo1 O8 P2--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343958,PybTeX,Cr1 Li1 O13 P4--1,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343959,PybTeX,Li5 Mn9 O56 P16--1,86,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343960,PybTeX,Li1 Ni1 O15 P5--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343962,PybTeX,Li1 O12 P4 Sb1--12,36,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343963,PybTeX,O12 P4 Sb1--12,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343964,PybTeX,O7 P2 V1--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343965,PybTeX,Li1 O8 P2 V1--14,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343966,PybTeX,Cr1 Li3 O8 P2--4,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343967,PybTeX,Li2 Ni1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343969,PybTeX,Li1 O7 P2 Sb1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343970,PybTeX,Li1 O7 P2 V1--1,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343971,PybTeX,Fe3 O11 P3--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343972,PybTeX,Bi1 Li1 O12 P4--20,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343973,PybTeX,Fe3 Li1 O11 P3--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343974,PybTeX,Bi1 O12 P4--14,68,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343975,PybTeX,Li1 Mn1 O12 P4--134,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343976,PybTeX,Cr4 O24 P7--2,70,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343977,PybTeX,Fe4 Li1 O12 P3--62,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343978,PybTeX,Cr4 Li1 O24 P7--2,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343979,PybTeX,Co1 O4 P1--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343980,PybTeX,Li3 Ni1 O8 P2--14,56,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343981,PybTeX,Li1 Mo2 O13 P3--4,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343982,PybTeX,Co1 Li2 O12 P4--14,38,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343983,PybTeX,Li1 O16 P5 Sb2--7,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343984,PybTeX,Li1 Mo2 O8 P1--4,48,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343985,PybTeX,Li1 O7 P2 Sb1--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343986,PybTeX,Fe1 O12 P4--15,34,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343987,PybTeX,Li2 O15 P5 Ti1--11,46,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343988,PybTeX,Bi1 Li1 O7 P2--15,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343989,PybTeX,Fe4 O12 P3--62,76,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343991,PybTeX,Li2 Mo1 O8 P2--4,52,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343992,PybTeX,Fe1 O4 P1--14,72,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343993,PybTeX,Fe9 O32 P8--2,49,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343994,PybTeX,Li3 Ni2 O12 P3--5,80,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343995,PybTeX,Mn5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343996,PybTeX,Co5 O28 P8--2,82,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343997,PybTeX,Li1 O15 P5 Ti1--14,88,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343998,PybTeX,Cu1 Li1 O7 P2--14,44,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+343999,PybTeX,Li2 O13 P4 V1--2,40,Li ion battery electrode,MIT battery project,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+403339,SG Change,Cr1 K3 O4--121,16,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403340,SG Change,Cr3 O8 Tl1--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403341,PybTeX,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403342,SG Change,Cr3 Li1 O8--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403343,SG Change,Cr1 O4 Sb1--65,12,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403344,PybTeX,Cr5 O16 P4--2,50,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403349,SG Change,Cr1 O4 Sb1--65,12,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403350,SG Change,Cr3 O8 Tl1--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403352,SG Change,Cr3 Li1 O8--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403354,PybTeX,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403355,PybTeX,Cr5 O16 P4--2,50,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403356,SG Change,Cr1 K3 O4--121,16,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
+403374,SG Change,Ni1 S2--129,6,,,ajain@lbl.gov
+403376,SG Change,Ni1 S2--194,6,,,ajain@lbl.gov
+403377,SG Change,Ni1 S2--58,6,,,ajain@lbl.gov
+403378,SG Change,Ni1 S2--225,6,,,ajain@lbl.gov
+403379,SG Change,S4 V3--12,14,,,ajain@lbl.gov
+403380,SG Change,S1 V1--194,4,,,ajain@lbl.gov
+403381,SG Change,Ni2 S1--139,6,,,ajain@lbl.gov
+403382,SG Change,S1 V1--62,8,,,ajain@lbl.gov
+403384,SG Change,S2 V1--5,6,,,ajain@lbl.gov
+403386,SG Change,S4 V5--87,18,,,ajain@lbl.gov
+403387,SG Change,S2 V1--51,6,,,ajain@lbl.gov
+403388,SG Change,S4 V3--12,14,,,ajain@lbl.gov
+403391,SG Change,S4 V1--15,20,,,ajain@lbl.gov
+403392,SG Change,S4 V3--12,14,,,ajain@lbl.gov
+403393,SG Change,Fe1 S1--194,4,ordering of disordered crystal,,ajain@lbl.gov
+403394,SG Change,S4 V3--176,14,,,ajain@lbl.gov
+403395,SG Change,S1 V3--121,16,,,ajain@lbl.gov
+403396,SG Change,S8 V5--12,26,,,ajain@lbl.gov
+403397,SG Change,S2 V1--194,6,,,ajain@lbl.gov
+403398,SG Change,S4 V3--12,14,,,ajain@lbl.gov
+403399,SG Change,S1 V1--194,4,ordering of disordered crystal,,ajain@lbl.gov
+403400,SG Change,Ni1 S2--194,6,,,ajain@lbl.gov
+403401,SG Change,S1 V1--194,4,,,ajain@lbl.gov
+403402,SG Change,Ni1 S1--194,4,ordering of disordered crystal,,ajain@lbl.gov
+403404,SG Change,Cr2 S3--148,10,,,ajain@lbl.gov
+403405,SG Change,Cr1 S1--194,4,,,ajain@lbl.gov
+403406,SG Change,Cr1 S1--15,4,,,ajain@lbl.gov
+403407,SG Change,Cr3 S4--12,14,,,ajain@lbl.gov
+403409,SG Change,Cr5 S6--163,22,,,ajain@lbl.gov
+403410,SG Change,Cr2 S3--163,20,,,ajain@lbl.gov
+403411,SG Change,Cr5 S8--12,26,,,ajain@lbl.gov
+403412,SG Change,Fe1 S2--205,12,,,ajain@lbl.gov
+403413,SG Change,Fe1 S2--58,6,,,ajain@lbl.gov
+403414,SG Change,Fe1 S1--194,4,,,ajain@lbl.gov
+403415,SG Change,Fe1 S1--190,24,,,ajain@lbl.gov
+403416,SG Change,Fe1 S1--62,8,,,ajain@lbl.gov
+403417,SG Change,Fe1 S2--29,12,,,ajain@lbl.gov
+403418,SG Change,Fe1 S1--186,16,,,ajain@lbl.gov
+403419,SG Change,Fe3 S4--160,14,,,ajain@lbl.gov
+403420,SG Change,Fe1 S1--14,24,,,ajain@lbl.gov
+403421,SG Change,Fe1 S1--129,4,,,ajain@lbl.gov
+403422,SG Change,Fe1 S1--186,4,,,ajain@lbl.gov
+403423,SG Change,Fe3 S4--166,14,,,ajain@lbl.gov
+403424,SG Change,Fe7 S8--15,30,,,ajain@lbl.gov
+403425,SG Change,Fe3 S4--227,14,,,ajain@lbl.gov
+403430,SG Change,Fe1 S1--190,24,ordering of disordered crystal,,ajain@lbl.gov
+403431,SG Change,Fe7 S8--14,30,ordering of disordered crystal,,ajain@lbl.gov
+403432,SG Change,Fe1 S2--54,12,,,ajain@lbl.gov
+403435,SG Change,Fe7 S8--14,30,ordering of disordered crystal,,ajain@lbl.gov
+403436,SG Change,Mn1 S1--225,4,,,ajain@lbl.gov
+403437,SG Change,Fe4 S5--75,18,,,ajain@lbl.gov
+403438,SG Change,Mn1 S2--205,12,,,ajain@lbl.gov
+403439,SG Change,Mn1 S1--216,4,,,ajain@lbl.gov
+403440,SG Change,Mn1 S1--186,4,,,ajain@lbl.gov
+403441,SG Change,Ni1 S1--160,12,,,ajain@lbl.gov
+403442,SG Change,Ni3 S2--155,10,,,ajain@lbl.gov
+403443,SG Change,Ni1 S2--205,12,,,ajain@lbl.gov
+403444,SG Change,Mn1 S1--221,4,,,ajain@lbl.gov
+403445,SG Change,Ni1 S2--1,12,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,ajain@lbl.gov
+403446,SG Change,Ni1 S1--194,4,,,ajain@lbl.gov
+403447,SG Change,Ni1 S1--186,4,,,ajain@lbl.gov
+403449,SG Change,Ni3 S2--5,10,,,ajain@lbl.gov
+403450,SG Change,Ni3 S4--227,14,,,ajain@lbl.gov
+403451,SG Change,Ni1 S2--198,12,,,ajain@lbl.gov
+403452,SG Change,Ni1 S1--8,12,,,ajain@lbl.gov
+403453,SG Change,Ni3 S2--38,10,,,ajain@lbl.gov
+403454,SG Change,Ni1 S2--60,12,,,ajain@lbl.gov
+403455,SG Change,Ni3 S2--63,10,,,ajain@lbl.gov
+403456,SG Change,Ni1 S2--62,12,,,ajain@lbl.gov
+403474,SG Change,Ni2 S1--139,6,,,ajain@lbl.gov
+403476,SG Change,Ni1 S2--225,6,,,ajain@lbl.gov
+403477,SG Change,Mo1 S2--194,6,,,ajain@lbl.gov
+403478,SG Change,Co1 S1--194,4,,,ajain@lbl.gov
+403479,SG Change,Cu2 S1--225,3,,,ajain@lbl.gov
+403480,SG Change,Co1 S2--205,12,,,ajain@lbl.gov
+403481,SG Change,Mo1 S2--166,6,,,ajain@lbl.gov
+403482,SG Change,Cu1 S2--115,6,ordering of disordered crystal,,ajain@lbl.gov
+403483,SG Change,Mo1 S2--160,6,,,ajain@lbl.gov
+403484,SG Change,Mo3 S4--2,14,,,ajain@lbl.gov
+403485,SG Change,Cu2 S1--96,12,,,ajain@lbl.gov
+403486,SG Change,Mo3 S4--148,14,,,ajain@lbl.gov
+403489,SG Change,Co3 S4--227,14,,,ajain@lbl.gov
+403490,SG Change,Cu1 S1--63,12,,,ajain@lbl.gov
+403493,SG Change,Cu1 S2--205,12,,,ajain@lbl.gov
+403494,SG Change,Cu1 S1--194,12,,,ajain@lbl.gov
+403495,SG Change,Cu2 S1--194,6,,,ajain@lbl.gov
+403497,SG Change,S2 W1--160,6,,,ajain@lbl.gov
+403498,SG Change,Cu1 S1--194,12,,,ajain@lbl.gov
+403499,SG Change,S2 W1--194,6,,,ajain@lbl.gov
+403502,SG Change,Cu1 S2--58,6,,,ajain@lbl.gov
+403504,SG Change,Cu2 S1--194,6,,,ajain@lbl.gov
+403509,SG Change,Cu1 S2--5,6,ordering of disordered crystal,,ajain@lbl.gov
+403510,SG Change,Cu1 S1--216,4,supplementary compounds from MIT matgen database,MIT matgen,ajain@lbl.gov
+403514,SG Change,Cu1 S2--115,6,ordering of disordered crystal,,ajain@lbl.gov

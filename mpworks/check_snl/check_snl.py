@@ -10,7 +10,6 @@ __date__ = 'September 22, 2014'
 
 import sys, time, datetime, csv
 from math import sqrt
-from itertools import izip_longest
 from collections import OrderedDict
 from argparse import ArgumentParser
 from fnmatch import fnmatch
@@ -326,7 +325,7 @@ def analyze(args):
                 ])
     else:
         errors = Counter()
-        bad_snls = OrderedDict((cat,[]) for cat in categories)
+        bad_snls = OrderedDict()
         bad_snlgroups = []
         for i,d in enumerate(fig['data']):
             if not isinstance(d, Scatter): continue
@@ -338,7 +337,8 @@ def analyze(args):
                 for idx,color in enumerate(marker_colors):
                     snl_id = start_id + d['x'][idx]
                     color_index = category_colors.index(color)
-                    bad_snls[categories[color_index]].append(snl_id)
+                    category = categories[color_index]
+                    bad_snls[snl_id] = category
             else: # groupmembers
                 for idx,color in enumerate(marker_colors):
                     if color != category_colors[0]: continue
@@ -352,12 +352,23 @@ def analyze(args):
         filename = _get_filename()
         print filename
         #py.plot(fig, filename=filename)
-        with open('mpworks/check_snl/bad_snls.csv', 'wb') as f:
+        with open('mpworks/check_snl/results/bad_snls.csv', 'wb') as f:
+            mpsnl_cursor = sma.snl.find({ 'snl_id': { '$in': bad_snls.keys() } })
             writer = csv.writer(f)
-            writer.writerow(categories)
-            for row in izip_longest(*bad_snls.values()):
+            writer.writerow([
+                'snl_id', 'category', 'snlgroup_key', 'nsites', 'remarks', 'projects', 'authors'
+            ])
+            for mpsnl_dict in mpsnl_cursor:
+                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                row = [
+                    mpsnl.snl_id, bad_snls[mpsnl.snl_id],
+                    mpsnl.snlgroup_key, mpsnl.structure.num_sites,
+                    ' / '.join(mpsnl.remarks),
+                    ' / '.join(mpsnl.projects),
+                    ' / '.join([author.email for author in mpsnl.authors])
+                ]
                 writer.writerow(row)
-        with open('mpworks/check_snl/bad_snlgroups.csv', 'wb') as f:
+        with open('mpworks/check_snl/results/bad_snlgroups.csv', 'wb') as f:
             writer = csv.writer(f)
             writer.writerow(['snlgroup_id', 'canonical_snl_id', 'first_mismatching_snl_id'])
             for row in bad_snlgroups:
@@ -378,7 +389,7 @@ if __name__ == '__main__':
     # sub-command: analyze
     parser_ana = subparsers.add_parser('analyze')
     parser_ana.add_argument('--fig-id', help='plotly figure id', default=6, type=int)
-    parser_ana.add_argument('-t', help='whether fig-id is a test plot', action='store_true', default=True)
+    parser_ana.add_argument('-t', help='whether fig-id is a test plot', action='store_true')
     parser_ana.set_defaults(func=analyze)
 
     # sub-command: spacegroups
