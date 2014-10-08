@@ -28,20 +28,40 @@ class SNLSpaceGroupChecker(Builder):
         :param snls: 'snl' collection in 'snl_mp_prod' DB
         :type snls: QueryEngine
         """
+        self._lock = self._mgr.Lock() if not self._seq else None
+        self._ncols = 2 if not self._seq else 1
+        self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snl_counter = self.shared_list()
+        self._snl_counter.extend([[0]*self._ncols for i in range(self._nrows)])
+        self._snl_counter_total = multiprocessing.Value('d', 0)
         return snls.query(limit=5000)
 
     def process_item(self, item):
         """compare SG in db with SG from SpacegroupAnalyzer"""
+        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
+        nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
+
+        def _increase_counter():
+	    if self._lock is not None: self._lock.acquire()
+            currow = self._snl_counter[nrow]
+            currow[ncol] += 1
+            self._snl_counter[nrow] = currow
+            self._snl_counter_total.value += 1
+	    if self._lock is not None: self._lock.release()
+
+        category = ''
         try:
             mpsnl = MPStructureNL.from_dict(item)
             sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
             if sf.get_spacegroup_number() != mpsnl.sg_num:
                 category = categories[0][int(sf.get_spacegroup_number() == 0)]
-                _log.info('%s: %s', mpsnl.snlgroup_key, category)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
-            _log.info('%s: %r', category, exc_value)
+        if category:
+            cnt = self._snl_counter_total.value if not self._seq else self._snl_counter_total
+            _log.info('(%d) %r', cnt, category)
+        _increase_counter()
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
@@ -90,6 +110,7 @@ class SNLGroupCrossChecker(Builder):
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
         proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
+        nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
         snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
 
         def _get_snl_group(gid):
@@ -112,7 +133,6 @@ class SNLGroupCrossChecker(Builder):
             self._mismatch_counter = mc
             for k,v in mismatch_dict.iteritems():
                 self._mismatch_dict[k] += v
-            nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
             currow = self._snlgroup_counter[nrow]
             currow[ncol] += 1
             self._snlgroup_counter[nrow] = currow
