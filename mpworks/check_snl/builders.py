@@ -167,15 +167,16 @@ class SNLGroupCrossChecker(Builder):
 if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser()
+    parser.add_argument('ntest', help='test number (0-2)', type=int)
     parser.add_argument('ncols', help='number of columns', type=int)
     parser.add_argument('nrows', help='number of rows', type=int)
     args = parser.parse_args()
     maxpoints = args.ncols*args.nrows
     data = Data()
     data.append(Bar(
-        y=categories[2], x=[0]*len(categories[2]), orientation='h',
-        stream=Stream(token=stream_ids[1], maxpoints=2),
-        xaxis='x1', yaxis='y1'
+        y=categories[args.ntest], x=[0]*len(categories[args.ntest]),
+        orientation='h', xaxis='x1', yaxis='y1',
+        stream=Stream(token=stream_ids[1], maxpoints=2)
     ))
     data.append(Heatmap(
         z=[[0]*args.ncols for i in range(args.nrows)],
