@@ -39,26 +39,26 @@ class SNLSpaceGroupChecker(Builder):
         self._snl_counter_total = multiprocessing.Value('d', 0)
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
+        _log.info('querying...')
         return snls.query(limit=limit)
+
+    def _increase_counter(self, nrow, ncol):
+        if self._lock is not None: self._lock.acquire()
+        currow = self._snl_counter[nrow]
+        currow[ncol] += 1
+        self._snl_counter[nrow] = currow
+        self._snl_counter_total.value += 1
+        if not self._snl_counter_total.value % (10*self._ncols*self._nrows) \
+           or self._snl_counter_total.value == self._num_snls:
+            heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
+            self._streams[0].write(Heatmap(z=heatmap_z))
+        if self._lock is not None: self._lock.release()
 
     def process_item(self, item):
         """compare SG in db with SG from SpacegroupAnalyzer"""
         proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
         nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
-
-        def _increase_counter():
-	    if self._lock is not None: self._lock.acquire()
-            currow = self._snl_counter[nrow]
-            currow[ncol] += 1
-            self._snl_counter[nrow] = currow
-            self._snl_counter_total.value += 1
-            if not self._snl_counter_total.value % (5*self._ncols*self._nrows) \
-               or self._snl_counter_total.value == self._num_snls:
-		heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
-                self._streams[0].write(Heatmap(z=heatmap_z))
-                time.sleep(0.052)
-	    if self._lock is not None: self._lock.release()
-
+        cnt = self._snl_counter_total.value if not self._seq else self._snl_counter_total
         category = ''
         try:
             mpsnl = MPStructureNL.from_dict(item)
@@ -68,10 +68,9 @@ class SNLSpaceGroupChecker(Builder):
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
-        if category:
-            cnt = self._snl_counter_total.value if not self._seq else self._snl_counter_total
+        if category or (not cnt%2500):
             _log.info('(%d) %r', cnt, category)
-        _increase_counter()
+        self._increase_counter(nrow, ncol)
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
