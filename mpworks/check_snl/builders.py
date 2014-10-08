@@ -28,7 +28,7 @@ class SNLSpaceGroupChecker(Builder):
         :param snls: 'snl' collection in 'snl_mp_prod' DB
         :type snls: QueryEngine
         """
-        return snls.query(limit=1000)
+        return snls.query(limit=5000)
 
     def process_item(self, item):
         """compare SG in db with SG from SpacegroupAnalyzer"""
@@ -36,10 +36,12 @@ class SNLSpaceGroupChecker(Builder):
             mpsnl = MPStructureNL.from_dict(item)
             sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
             if sf.get_spacegroup_number() != mpsnl.sg_num:
-                _log.info('%s: %d == %d', mpsnl.snlgroup_key, sf.get_spacegroup_number(), mpsnl.sg_num)
+                category = categories[0][int(sf.get_spacegroup_number() == 0)]
+                _log.info('%s: %s', mpsnl.snlgroup_key, category)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            _log.info('%r %r', exc_type, exc_value)
+            category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
+            _log.info('%s: %r', category, exc_value)
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
