@@ -37,13 +37,23 @@ class SNLSpaceGroupChecker(Builder):
         self._snl_counter = self.shared_list()
         self._snl_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snl_counter_total = multiprocessing.Value('d', 0)
+        self._mismatch_dict = self.shared_dict()
+        self._mismatch_dict.update(dict((k,[]) for k in categories[0]))
+        self._mismatch_counter = self.shared_list()
+        self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
         _log.info('querying...')
         return snls.query(limit=limit)
 
-    def _increase_counter(self, nrow, ncol):
+    def _increase_counter(self, nrow, ncol, mismatch_dict):
         if self._lock is not None: self._lock.acquire()
+        mc = self._mismatch_counter
+        for k in categories[0]:
+            mc[categories[0].index(k)] += len(mismatch_dict[k])
+        self._mismatch_counter = mc
+        for k,v in mismatch_dict.iteritems():
+            self._mismatch_dict[k] += v
         currow = self._snl_counter[nrow]
         currow[ncol] += 1
         self._snl_counter[nrow] = currow
@@ -51,7 +61,18 @@ class SNLSpaceGroupChecker(Builder):
         if not self._snl_counter_total.value % (10*self._ncols*self._nrows) \
            or self._snl_counter_total.value == self._num_snls:
             heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
+            bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
             self._streams[0].write(Heatmap(z=heatmap_z))
+            self._streams[1].write(Bar(x=bar_x))
+            md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+            for k,v in md.iteritems():
+                if len(v) < 1: continue
+                self._streams[2].write(Scatter(
+                    x=self._mismatch_counter[categories[0].index(k)], y=k,
+                    text='<br>'.join(v)
+                ))
+            self._mismatch_dict.update(dict((k,[]) for k in categories[0])) # clean
+            time.sleep(0.052)
         if self._lock is not None: self._lock.release()
 
     def process_item(self, item):
@@ -59,6 +80,7 @@ class SNLSpaceGroupChecker(Builder):
         proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
         nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
         cnt = self._snl_counter_total.value if not self._seq else self._snl_counter_total
+        local_mismatch_dict = dict((k,[]) for k in categories[0])
         category = ''
         try:
             mpsnl = MPStructureNL.from_dict(item)
@@ -68,9 +90,12 @@ class SNLSpaceGroupChecker(Builder):
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
-        if category or (not cnt%2500):
-            _log.info('(%d) %r', cnt, category)
-        self._increase_counter(nrow, ncol)
+        if category:
+            local_mismatch_dict[category].append(str(item['snl_id']))
+            _log.info('(%d) %r', cnt, local_mismatch_dict)
+        if (not cnt%2500):
+            _log.info('processed %d SNLs', cnt)
+        self._increase_counter(nrow, ncol, local_mismatch_dict)
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
