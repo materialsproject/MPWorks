@@ -13,7 +13,11 @@ from fnmatch import fnmatch
 creds = tls.get_credentials_file()
 stream_ids = creds['stream_ids'][:3] # NOTE index
 _log = get_builder_log("cross_checker")
-categories = ['diff. SGs', 'same SGs', 'pybtex', 'others']
+categories = [
+    ['SG change', 'SG default', 'pybtex', 'others' ], # SNLSpaceGroupChecker
+    [], # SNLGroupMemberChecker
+    ['diff. SGs', 'same SGs', 'pybtex', 'others'] # SNLGroupCrossChecker
+]
 
 class SNLSpaceGroupChecker(Builder):
     """check spacegroups of all available SNLs"""
@@ -57,7 +61,7 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snlgroup_counter_total = multiprocessing.Value('d', 0)
         self._mismatch_dict = self.shared_dict()
-        self._mismatch_dict.update(dict((k,[]) for k in categories))
+        self._mismatch_dict.update(dict((k,[]) for k in categories[2]))
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
@@ -101,8 +105,8 @@ class SNLGroupCrossChecker(Builder):
             # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
 	    if self._lock is not None: self._lock.acquire()
             mc = self._mismatch_counter
-            for k in categories:
-                mc[categories.index(k)] += len(mismatch_dict[k])
+            for k in categories[2]:
+                mc[categories[2].index(k)] += len(mismatch_dict[k])
             self._mismatch_counter = mc
             for k,v in mismatch_dict.iteritems():
                 self._mismatch_dict[k] += v
@@ -121,16 +125,16 @@ class SNLGroupCrossChecker(Builder):
                 for k,v in md.iteritems():
                     if len(v) < 1: continue
                     self._streams[2].write(Scatter(
-                        x=self._mismatch_counter[categories.index(k)], y=k,
+                        x=self._mismatch_counter[categories[2].index(k)], y=k,
                         text='<br>'.join(v)
                     ))
                     time.sleep(0.052)
-                self._mismatch_dict.update(dict((k,[]) for k in categories)) # clean
+                self._mismatch_dict.update(dict((k,[]) for k in categories[2])) # clean
 	    if self._lock is not None: self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             cat_key = ''
-            local_mismatch_dict = dict((k,[]) for k in categories)
+            local_mismatch_dict = dict((k,[]) for k in categories[2])
             primary_group = _get_snl_group(primary_id)
             if not isinstance(primary_group, str):
                 composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
@@ -167,7 +171,7 @@ if __name__ == '__main__':
     maxpoints = args.ncols*args.nrows
     data = Data()
     data.append(Bar(
-        y=categories, x=[0]*len(categories), orientation='h',
+        y=categories[2], x=[0]*len(categories[2]), orientation='h',
         stream=Stream(token=stream_ids[1], maxpoints=2),
         xaxis='x1', yaxis='y1'
     ))
