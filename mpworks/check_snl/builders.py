@@ -22,19 +22,24 @@ categories = [
 class SNLSpaceGroupChecker(Builder):
     """check spacegroups of all available SNLs"""
 
-    def get_items(self, snls=None):
+    def get_items(self, snls=None, limit=None):
         """SNLs iterator
 
         :param snls: 'snl' collection in 'snl_mp_prod' DB
         :type snls: QueryEngine
+        :param limit: limit number of SNLs
+        :type limit: int
         """
         self._lock = self._mgr.Lock() if not self._seq else None
         self._ncols = 2 if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._num_snls = self.collection.count() if limit is None else limit
         self._snl_counter = self.shared_list()
         self._snl_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snl_counter_total = multiprocessing.Value('d', 0)
-        return snls.query(limit=5000)
+        self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+        for s in self._streams: s.open()
+        return snls.query(limit=limit)
 
     def process_item(self, item):
         """compare SG in db with SG from SpacegroupAnalyzer"""
@@ -47,6 +52,11 @@ class SNLSpaceGroupChecker(Builder):
             currow[ncol] += 1
             self._snl_counter[nrow] = currow
             self._snl_counter_total.value += 1
+            if not self._snl_counter_total.value % (5*self._ncols*self._nrows) \
+               or self._snl_counter_total.value == self._num_snls:
+		heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
+                self._streams[0].write(Heatmap(z=heatmap_z))
+                time.sleep(0.052)
 	    if self._lock is not None: self._lock.release()
 
         category = ''
