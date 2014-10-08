@@ -16,7 +16,7 @@ from fnmatch import fnmatch
 from collections import Counter
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen.symmetry.finder import SymmetryFinder
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 import plotly.plotly as py
 import plotly.tools as tls
@@ -217,7 +217,7 @@ def check_snl_spacegroups(args):
         exc_raised = False
         try:
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-            sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
+            sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             exc_raised = True

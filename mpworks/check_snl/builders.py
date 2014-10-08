@@ -1,6 +1,6 @@
 import sys, multiprocessing, os, time
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen.symmetry.finder import SymmetryFinder
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
@@ -27,11 +27,12 @@ class SNLSpaceGroupChecker(Builder):
         return snls.query(limit=1000)
 
     def process_item(self, item):
-        """compare SG in db with SG from SymmetryFinder"""
+        """compare SG in db with SG from SpacegroupAnalyzer"""
         try:
             mpsnl = MPStructureNL.from_dict(item)
-            sf = SymmetryFinder(mpsnl.structure, symprec=0.1)
-            _log.info('%s: %d == %d', mpsnl.snlgroup_key, sf.get_spacegroup_number(), mpsnl.sg_num)
+            sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
+            if sf.get_spacegroup_number() != mpsnl.sg_num:
+                _log.info('%s: %d == %d', mpsnl.snlgroup_key, sf.get_spacegroup_number(), mpsnl.sg_num)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             _log.info('%r %r', exc_type, exc_value)
