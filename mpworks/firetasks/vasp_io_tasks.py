@@ -206,7 +206,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 fws = []
                 connections = {}
 
-                f = Composition.from_formula(
+                f = Composition(
                     snl.structure.composition.reduced_formula).alphabetical_formula
 
                 fws.append(Firework(

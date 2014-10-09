@@ -5,7 +5,7 @@ import datetime
 from pymongo import MongoClient, DESCENDING
 from fireworks.utilities.fw_serializers import FWSerializable
 from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen.symmetry.finder import SymmetryFinder
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 
 __author__ = 'Anubhav Jain'
@@ -90,7 +90,7 @@ class SNLMongoAdapter(FWSerializable):
 
             spstruc = snl.structure.copy()
             spstruc.remove_oxidation_states()
-            sf = SymmetryFinder(spstruc, SPACEGROUP_TOLERANCE)
+            sf = SpacegroupAnalyzer(spstruc, SPACEGROUP_TOLERANCE)
             sf.get_spacegroup()
             sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
                 else -1
@@ -100,7 +100,7 @@ class SNLMongoAdapter(FWSerializable):
             sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
                 else 'unknown'
             sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
-            sgpoint = unicode(sf.get_point_group(), errors="ignore")
+            sgpoint = sf.get_point_group()
 
             mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                            sgxtal, sglatt, sgpoint)
@@ -114,7 +114,7 @@ class SNLMongoAdapter(FWSerializable):
 
 
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
-        snl_d = mpsnl.to_dict
+        snl_d = mpsnl.as_dict()
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
         self.snl.insert(snl_d)
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
@@ -124,7 +124,7 @@ class SNLMongoAdapter(FWSerializable):
         if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
-                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.to_dict)
+                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
 
         return match_found, spec_group
 
@@ -155,7 +155,7 @@ class SNLMongoAdapter(FWSerializable):
             if snlgroup.species_groups:
                 spec_group = snlgroup.species_groups.keys()[0]
             if not testing_mode:
-                self.snlgroups.insert(snlgroup.to_dict)
+                self.snlgroups.insert(snlgroup.as_dict())
 
         return snlgroup, not match_found, spec_group
 
@@ -169,7 +169,7 @@ class SNLMongoAdapter(FWSerializable):
             raise ValueError('Canonical SNL must already be in snlgroup to switch!')
 
         new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
-        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.to_dict)
+        self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.as_dict())
 
     def lock_db(self):
         x = self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': True}}, fields={'lock':1})

@@ -25,13 +25,13 @@ def snl_to_wf_phonon(snl, parameters=None):
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
 
-    f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+    f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+    spec = {'task_type': 'Add to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
-        spec['force_mpsnl'] = snl.to_dict
+        spec['force_mpsnl'] = snl.as_dict()
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
     fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
@@ -67,5 +67,5 @@ def snl_to_wf_phonon(snl, parameters=None):
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
 
-    return Workflow(fws, connections, name=Composition.from_formula(
+    return Workflow(fws, connections, name=Composition(
         snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
