@@ -1,7 +1,7 @@
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 sma = SNLMongoAdapter.auto_load()
 for doc in sma.snl.aggregate([
-    { '$match': { 'about._icsd.icsd_id': { '$exists': True } } },
+    #{ '$match': { 'about._icsd.icsd_id': { '$exists': True } } },
     { '$unwind': '$sites' },
     { '$unwind': '$sites.species' },
     { '$project': {
