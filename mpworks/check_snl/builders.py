@@ -30,6 +30,7 @@ class SNLSpaceGroupChecker(Builder):
         :param limit: limit number of SNLs
         :type limit: int
         """
+        self._snls = snls
         self._lock = self._mgr.Lock() if not self._seq else None
         self._ncols = 2 if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
@@ -44,7 +45,24 @@ class SNLSpaceGroupChecker(Builder):
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
         _log.info('querying...')
-        return snls.query(limit=limit)
+        self._items = self._snls.query(limit=limit, distinct_key='snl_id')
+        _log.info('... done')
+        return self._items
+
+    def _push_to_plotly(self):
+        heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
+        bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
+        self._streams[0].write(Heatmap(z=heatmap_z))
+        self._streams[1].write(Bar(x=bar_x))
+        md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+        for k,v in md.iteritems():
+            if len(v) < 1: continue
+            self._streams[2].write(Scatter(
+                x=self._mismatch_counter[categories[0].index(k)], y=k,
+                text='<br>'.join(v)
+            ))
+        self._mismatch_dict.update(dict((k,[]) for k in categories[0])) # clean
+        time.sleep(0.052)
 
     def _increase_counter(self, nrow, ncol, mismatch_dict):
         if self._lock is not None: self._lock.acquire()
@@ -60,30 +78,18 @@ class SNLSpaceGroupChecker(Builder):
         self._snl_counter_total.value += 1
         if not self._snl_counter_total.value % (10*self._ncols*self._nrows) \
            or self._snl_counter_total.value == self._num_snls:
-            heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
-            bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
-            self._streams[0].write(Heatmap(z=heatmap_z))
-            self._streams[1].write(Bar(x=bar_x))
-            md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
-            for k,v in md.iteritems():
-                if len(v) < 1: continue
-                self._streams[2].write(Scatter(
-                    x=self._mismatch_counter[categories[0].index(k)], y=k,
-                    text='<br>'.join(v)
-                ))
-            self._mismatch_dict.update(dict((k,[]) for k in categories[0])) # clean
-            time.sleep(0.052)
+            self._push_to_plotly()
         if self._lock is not None: self._lock.release()
 
     def process_item(self, item):
         """compare SG in db with SG from SpacegroupAnalyzer"""
-        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
+        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets id=1
         nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
-        cnt = self._snl_counter_total.value if not self._seq else self._snl_counter_total
         local_mismatch_dict = dict((k,[]) for k in categories[0])
         category = ''
         try:
-            mpsnl = MPStructureNL.from_dict(item)
+            mpsnl_dict = self._snls.collection.find_one({ 'snl_id': item })
+            mpsnl = MPStructureNL.from_dict(mpsnl_dict)
             sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
             if sf.get_spacegroup_number() != mpsnl.sg_num:
                 category = categories[0][int(sf.get_spacegroup_number() == 0)]
@@ -91,10 +97,10 @@ class SNLSpaceGroupChecker(Builder):
             exc_type, exc_value, exc_traceback = sys.exc_info()
             category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
         if category:
-            local_mismatch_dict[category].append(str(item['snl_id']))
-            _log.info('(%d) %r', cnt, local_mismatch_dict)
-        if (not cnt%2500):
-            _log.info('processed %d SNLs', cnt)
+            local_mismatch_dict[category].append(str(item))
+            _log.info('(%d) %r', self._snl_counter_total.value, local_mismatch_dict)
+        if (not self._snl_counter_total.value%2500):
+            _log.info('processed %d SNLs', self._snl_counter_total.value)
         self._increase_counter(nrow, ncol, local_mismatch_dict)
 
 class SNLGroupCrossChecker(Builder):
@@ -212,14 +218,12 @@ class SNLGroupCrossChecker(Builder):
                 cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
             if cat_key:
-		cnt = self._snlgroup_counter_total.value if not self._seq else self._snlgroup_counter_total
-		_log.info('(%d) %r', cnt, local_mismatch_dict)
+		_log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
             _increase_counter(local_mismatch_dict)
 
     def finalize(self, errors):
         self._push_to_plotly()
-        cnt = self._snlgroup_counter_total.value if not self._seq else self._snlgroup_counter_total
-        _log.info("%d snlgroups processed.", cnt)
+        _log.info("%d snlgroups processed.", self._snlgroup_counter_total.value)
         return True
 
 if __name__ == '__main__':
