@@ -22,19 +22,20 @@ categories = [
 class SNLSpaceGroupChecker(Builder):
     """check spacegroups of all available SNLs"""
 
-    def get_items(self, snls=None, limit=None):
+    def get_items(self, snls=None, ncols=None):
         """SNLs iterator
 
-        :param snls: 'snl' collection in 'snl_mp_prod' DB
-        :type snls: QueryEngine
-        :param limit: limit number of SNLs
-        :type limit: int
+	:param snls: 'snl' collection in 'snl_mp_prod' DB
+	:type snls: QueryEngine
+	:param ncols: number of columns for 2D plotly
+	:type ncols: int
         """
         self._snls = snls
         self._lock = self._mgr.Lock() if not self._seq else None
-        self._ncols = 2 if not self._seq else 1
+        self._ncols = ncols if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
-        self._num_snls = self.collection.count() if limit is None else limit
+	self._num_snls = snls.collection.count()
+        _log.info('#SNLs = %d', self._num_snls)
         self._snl_counter = self.shared_list()
         self._snl_counter.extend([[0]*self._ncols for i in range(self._nrows)])
         self._snl_counter_total = multiprocessing.Value('d', 0)
@@ -44,10 +45,7 @@ class SNLSpaceGroupChecker(Builder):
         self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
         self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
         for s in self._streams: s.open()
-        _log.info('querying...')
-        self._items = self._snls.query(limit=limit, distinct_key='snl_id')
-        _log.info('... done')
-        return self._items
+        return self._snls.query(distinct_key='snl_id')
 
     def _push_to_plotly(self):
         heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
@@ -76,7 +74,7 @@ class SNLSpaceGroupChecker(Builder):
         currow[ncol] += 1
         self._snl_counter[nrow] = currow
         self._snl_counter_total.value += 1
-        if not self._snl_counter_total.value % (10*self._ncols*self._nrows) \
+        if not self._snl_counter_total.value % (30*self._ncols*self._nrows) \
            or self._snl_counter_total.value == self._num_snls:
             self._push_to_plotly()
         if self._lock is not None: self._lock.release()

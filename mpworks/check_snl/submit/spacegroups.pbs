@@ -9,4 +9,4 @@ workon env_mp_snl_group_check
 export PYTHONPATH=$PWD:$PYTHONPATH
 python -m mpworks.check_snl.builders 0 4 8
 sleep 5
-mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLSpaceGroupChecker snls=snls.json limit=15000 -n 32
+mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLSpaceGroupChecker snls=snls.json ncols=4 -n 32
