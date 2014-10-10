@@ -330,7 +330,8 @@ def analyze(args):
             { '$project': {
                 'snlgroup_id_final': 1, '_id': 0, 'task_id': 1,
                 'final_energy_per_atom': 1,
-                'band_gap.search_gap.band_gap': 1
+                'band_gap.search_gap.band_gap': 1,
+                'volume': 1, 'nsites': 1
             }}
         ], cursor={})
         snlgroup_data = {}
@@ -338,9 +339,11 @@ def analyze(args):
             snlgroup_id = material['snlgroup_id_final']
             final_energy_per_atom = material['final_energy_per_atom']
             band_gap = material['band_gap']['search_gap']['band_gap']
+            volume_per_atom = material['volume'] / material['nsites']
             snlgroup_data[snlgroup_id] = {
                 'final_energy_per_atom': final_energy_per_atom,
-                'band_gap': band_gap, 'task_id': material['task_id']
+                'band_gap': band_gap, 'task_id': material['task_id'],
+                'volume_per_atom': volume_per_atom
             }
         print snlgroup_data[40890]
         with open('mpworks/check_snl/results/bad_snlgroups_2.csv', 'wb') as f:
@@ -349,14 +352,15 @@ def analyze(args):
                 'category', 'composition',
                 'snlgroup_id 1', 'sg_num 1', 'task_id 1',
                 'snlgroup_id 2', 'sg_num 2', 'task_id 2',
-                'delta_energy', 'delta_bandgap', 'scenario'
+                'delta_energy', 'delta_bandgap', 'delta_volume_per_atom',
+                'scenario'
             ])
             for primary_id, secondary_id in pairs:
                 composition, primary_sg_num = snlgroup_keys[primary_id].split('--')
                 secondary_sg_num = snlgroup_keys[secondary_id].split('--')[1]
                 category = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 if primary_id not in snlgroup_data or secondary_id not in snlgroup_data:
-                    delta_energy, delta_bandgap = '', ''
+                    delta_energy, delta_bandgap, delta_volume_per_atom = '', '', ''
                 else:
                     delta_energy = "{0:.3g}".format(abs(
                         snlgroup_data[primary_id]['final_energy_per_atom'] - \
@@ -366,10 +370,14 @@ def analyze(args):
                         snlgroup_data[primary_id]['band_gap'] - \
                         snlgroup_data[secondary_id]['band_gap']
                     ))
+                    delta_volume_per_atom = "{0:.3g}".format(abs(
+                        snlgroup_data[primary_id]['volume_per_atom'] - \
+                        snlgroup_data[secondary_id]['volume_per_atom']
+                    ))
                 scenario = ''
                 if category == 'diff. SGs' and delta_energy and delta_bandgap:
                     scenario = 'different' if (
-                        float(delta_energy) > 0.05 or float(delta_bandgap) > 0.5
+                        float(delta_energy) > 0.01 or float(delta_bandgap) > 0.1
                     ) else 'similar'
                 writer.writerow([
                     category, composition,
@@ -379,7 +387,8 @@ def analyze(args):
                     secondary_id, secondary_sg_num,
                     snlgroup_data[secondary_id]['task_id'] \
                     if secondary_id in snlgroup_data else '',
-                    delta_energy, delta_bandgap, scenario
+                    delta_energy, delta_bandgap, delta_volume_per_atom,
+                    scenario
                 ])
     else:
         errors = Counter()
