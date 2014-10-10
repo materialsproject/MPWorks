@@ -24,6 +24,44 @@ DATETIME_HANDLER = lambda obj: obj.isoformat() \
 YAML_STYLE = False  # False = YAML is formatted as blocks
 
 
+def reconstitute_dates(obj_dict):
+    if obj_dict is None:
+        return None
+
+    if isinstance(obj_dict, dict):
+        return {k: reconstitute_dates(v) for k, v in obj_dict.items()}
+
+    if isinstance(obj_dict, list):
+        return [reconstitute_dates(v) for v in obj_dict]
+
+    if isinstance(obj_dict, basestring):
+        try:
+            return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
+        except ValueError:
+            try:
+                return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                pass
+
+    return obj_dict
+
+
+def get_meta_from_structure(structure):
+    comp = structure.composition
+    elsyms = sorted(set([e.symbol for e in comp.elements]))
+    meta = {'nsites': len(structure),
+            'elements': elsyms,
+            'nelements': len(elsyms),
+            'formula': comp.formula,
+            'reduced_cell_formula': comp.reduced_formula,
+            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
+            .alphabetical_formula,
+            'anonymized_formula': comp.anonymized_formula,
+            'chemsystem': '-'.join(elsyms),
+            'is_ordered': structure.is_ordered,
+            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
+    return meta
+
 class SubmissionMongoAdapter(object):
     # This is the user interface to submissions
 
@@ -66,7 +104,7 @@ class SubmissionMongoAdapter(object):
     def submit_snl(self, snl, submitter_email, parameters=None):
         parameters = parameters if parameters else {}
 
-        d = snl.to_dict
+        d = snl.as_dict()
         d['submitter_email'] = submitter_email
         d['parameters'] = parameters
         d['state'] = 'SUBMITTED'
@@ -78,7 +116,7 @@ class SubmissionMongoAdapter(object):
             d.update(get_meta_from_structure(snl.structure))
 
         sorted_structure = snl.structure.get_sorted_structure()
-        d.update(sorted_structure.to_dict)
+        d.update(sorted_structure.as_dict())
 
         self.jobs.insert(d)
         return d['submission_id']
@@ -100,7 +138,7 @@ class SubmissionMongoAdapter(object):
 
         if mpsnl:
             updates['parameters'] = self.jobs.find_one({'submission_id': submission_id}, {'parameters': 1})['parameters']
-            updates['parameters'].update({"mpsnl": mpsnl.to_dict, "snlgroup_id": snlgroup_id})
+            updates['parameters'].update({"mpsnl": mpsnl.as_dict(), "snlgroup_id": snlgroup_id})
 
         self.jobs.find_and_modify({'submission_id': submission_id}, {'$set': updates})
 
@@ -162,9 +200,9 @@ class SubmissionMongoAdapter(object):
         :param f_format: serialization format of the String (default json)
         """
         if f_format == 'json':
-            return cls.from_dict(_reconstitute_dates(json.loads(f_str)))
+            return cls.from_dict(reconstitute_dates(json.loads(f_str)))
         elif f_format == 'yaml':
-            return cls.from_dict(_reconstitute_dates(yaml.load(f_str)))
+            return cls.from_dict(reconstitute_dates(yaml.load(f_str)))
         else:
             raise ValueError('Unsupported format {}'.format(f_format))
 
@@ -194,37 +232,3 @@ class SubmissionMongoAdapter(object):
             return cls.from_format(f.read(), f_format=f_format)
 
 
-def _reconstitute_dates(obj_dict):
-    if obj_dict is None:
-        return None
-
-    if isinstance(obj_dict, dict):
-        return {k: _reconstitute_dates(v) for k, v in obj_dict.items()}
-
-    if isinstance(obj_dict, list):
-        return [_reconstitute_dates(v) for v in obj_dict]
-
-    if isinstance(obj_dict, basestring):
-        try:
-            return datetime.datetime.strptime(obj_dict, "%Y-%m-%dT%H:%M:%S.%f")
-        except ValueError:
-            pass
-
-    return obj_dict
-
-
-def get_meta_from_structure(structure):
-    comp = structure.composition
-    elsyms = sorted(set([e.symbol for e in comp.elements]))
-    meta = {'nsites': len(structure),
-            'elements': elsyms,
-            'nelements': len(elsyms),
-            'formula': comp.formula,
-            'reduced_cell_formula': comp.reduced_formula,
-            'reduced_cell_formula_abc': Composition(comp.reduced_formula)
-            .alphabetical_formula,
-            'anonymized_formula': comp.anonymized_formula,
-            'chemsystem': '-'.join(elsyms),
-            'is_ordered': structure.is_ordered,
-            'is_valid': bool(structure.is_valid())} # guard against pymatgen returning numpy.bool_ nonsense
-    return meta

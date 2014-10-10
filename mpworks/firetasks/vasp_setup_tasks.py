@@ -36,10 +36,10 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
                                                        initial_structure=False,
                                                        additional_info=True)
 
-        return FWAction(stored_data={'refined_structure': structure[1][0].to_dict,
-                                     'conventional_standard_structure': structure[1][1].to_dict,
+        return FWAction(stored_data={'refined_structure': structure[1][0].as_dict(),
+                                     'conventional_standard_structure': structure[1][1].as_dict(),
                                      'symmetry_dataset': structure[1][2],
-                                     'symmetry_operations': [x.to_dict for x in structure[1][3]]})
+                                     'symmetry_operations': [x.as_dict() for x in structure[1][3]]})
 
 
 class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
@@ -103,7 +103,7 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         # figure out what GGA+U values to use and override them
         # LDAU values to use
         mpvis = MPVaspInputSet()
-        ggau_incar = mpvis.get_incar(poscar.structure).to_dict
+        ggau_incar = mpvis.get_incar(poscar.structure).as_dict()
         incar_updates = {k: ggau_incar[k] for k in ggau_incar.keys() if 'LDAU' in k}
 
         for k in ggau_incar:

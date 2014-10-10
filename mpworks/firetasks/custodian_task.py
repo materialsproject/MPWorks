@@ -4,6 +4,7 @@ import socket
 from monty.os.path import which
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     FrozenJobErrorHandler, MeshSymmetryErrorHandler, PositiveEnergyErrorHandler
+from custodian.vasp.validators import VasprunXMLValidator
 from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from custodian.custodian import Custodian
@@ -100,7 +101,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, self.max_errors, gzipped_output=False)  # manual gzip
+        c = Custodian(self.handlers, self.jobs, max_errors=self.max_errors, gzipped_output=False, validators=[VasprunXMLValidator()])  # manual gzip
         custodian_out = c.run()
 
         if self.gzip_output:
@@ -149,7 +150,7 @@ def get_custodian_task(spec):
         jobs = [VaspJob(v_exe)]
         handlers = []
 
-    params = {'jobs': [j_decorate(j.to_dict) for j in jobs],
-              'handlers': [h.to_dict for h in handlers], 'max_errors': 5}
+    params = {'jobs': [j_decorate(j.as_dict()) for j in jobs],
+              'handlers': [h.as_dict() for h in handlers], 'max_errors': 5}
 
     return VaspCustodianTask(params)

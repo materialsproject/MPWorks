@@ -57,7 +57,7 @@ class OldTaskFixer():
                     for i in [1,2]:
                         outcar = Outcar(zpath(os.path.join(path,"relax"+str(i), "OUTCAR")))
                         m_key = "calculations."+str(i-1)+".output.outcar"
-                        self.tasks.update({'dir_name_full': path}, {'$set': {m_key: outcar.to_dict}})
+                        self.tasks.update({'dir_name_full': path}, {'$set': {m_key: outcar.as_dict()}})
                         run_stats["relax"+str(i)] = outcar.run_stats
                 except:
                     logger.error("Bad OUTCAR for {}.".format(path))
