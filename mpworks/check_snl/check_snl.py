@@ -8,7 +8,7 @@ __maintainer__ = 'Patrick Huck'
 __email__ = 'phuck@lbl.gov'
 __date__ = 'September 22, 2014'
 
-import sys, time, datetime, csv
+import sys, time, datetime, csv, os
 from math import sqrt
 from collections import OrderedDict
 from argparse import ArgumentParser
@@ -312,24 +312,74 @@ def analyze(args):
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     fig = py.get_figure(creds['username'], args.fig_id)
     if args.t:
-        pairs = map(make_tuple, filter( None, '<br>'.join(fig['data'][2]['text']).split('<br>')))
+        pairs = map(make_tuple, filter(None, '<br>'.join(fig['data'][2]['text']).split('<br>')))
         grps = set(chain.from_iterable(pairs))
-        snlgrp_cursor = sma.snlgroups.find({ 'snlgroup_id': { '$in': list(grps) } })
-        snlgroups = {}
-        for snlgrp_dict in snlgrp_cursor:
-            snlgrp = SNLGroup.from_dict(snlgrp_dict)
-            snlgroup_key = snlgrp.canonical_snl.snlgroup_key
-            snlgroups[snlgrp.snlgroup_id] = snlgroup_key
-        with open('mpworks/check_snl/bad_snlgroups_2.csv', 'wb') as f:
+        snlgrp_cursor = sma.snlgroups.aggregate([
+            { '$match': { 'snlgroup_id': { '$in': list(grps) } } },
+            { '$project': { 'snlgroup_id': 1, 'canonical_snl.snlgroup_key': 1, '_id': 0 } }
+        ], cursor={})
+        snlgroup_keys = {}
+        for d in snlgrp_cursor:
+            snlgroup_keys[d['snlgroup_id']] = d['canonical_snl']['snlgroup_key']
+        print snlgroup_keys[40890]
+        sma2 = SNLMongoAdapter.from_file(
+            os.path.join(os.environ['DB_LOC'], 'materials_db.yaml')
+        )
+        materials_cursor = sma2.database.materials.aggregate([
+            { '$match': { 'snlgroup_id_final': { '$in': list(grps) } } },
+            { '$project': {
+                'snlgroup_id_final': 1, '_id': 0, 'task_id': 1,
+                'final_energy_per_atom': 1,
+                'band_gap.search_gap.band_gap': 1
+            }}
+        ], cursor={})
+        snlgroup_data = {}
+        for material in materials_cursor:
+            snlgroup_id = material['snlgroup_id_final']
+            final_energy_per_atom = material['final_energy_per_atom']
+            band_gap = material['band_gap']['search_gap']['band_gap']
+            snlgroup_data[snlgroup_id] = {
+                'final_energy_per_atom': final_energy_per_atom,
+                'band_gap': band_gap, 'task_id': material['task_id']
+            }
+        print snlgroup_data[40890]
+        with open('mpworks/check_snl/results/bad_snlgroups_2.csv', 'wb') as f:
             writer = csv.writer(f)
-            writer.writerow(['snlgroup_id 1', 'snlgroup_key 1', 'snlgroup_id 2', 'snlgroup_key 2', 'category'])
+            writer.writerow([
+                'category',
+                'snlgroup_id 1', 'snlgroup_key 1', 'task_id 1',
+                'snlgroup_id 2', 'snlgroup_key 2', 'task_id 2',
+                'delta_energy', 'delta_bandgap', 'scenario'
+            ])
             for primary_id, secondary_id in pairs:
-                primary_sg_num = snlgroups[primary_id].split('--')[1]
-                secondary_sg_num = snlgroups[secondary_id].split('--')[1]
+                primary_sg_num = snlgroup_keys[primary_id].split('--')[1]
+                secondary_sg_num = snlgroup_keys[secondary_id].split('--')[1]
                 category = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
+                if primary_id not in snlgroup_data or secondary_id not in snlgroup_data:
+                    delta_energy, delta_bandgap = '', ''
+                else:
+                    delta_energy = "{0:.3g}".format(abs(
+                        snlgroup_data[primary_id]['final_energy_per_atom'] - \
+                        snlgroup_data[secondary_id]['final_energy_per_atom']
+                    ))
+                    delta_bandgap = "{0:.3g}".format(abs(
+                        snlgroup_data[primary_id]['band_gap'] - \
+                        snlgroup_data[secondary_id]['band_gap']
+                    ))
+                scenario = ''
+                if category == 'diff. SGs' and delta_energy and delta_bandgap:
+                    scenario = 'different' if (
+                        float(delta_energy) > 0.05 or float(delta_bandgap) > 0.5
+                    ) else 'similar'
                 writer.writerow([
-                    primary_id, snlgroups[primary_id], secondary_id,
-                    snlgroups[secondary_id], category
+                    category,
+                    primary_id, snlgroup_keys[primary_id],
+                    snlgroup_data[primary_id]['task_id'] \
+                    if primary_id in snlgroup_data else '',
+                    secondary_id, snlgroup_keys[secondary_id],
+                    snlgroup_data[secondary_id]['task_id'] \
+                    if secondary_id in snlgroup_data else '',
+                    delta_energy, delta_bandgap, scenario
                 ])
     else:
         errors = Counter()
