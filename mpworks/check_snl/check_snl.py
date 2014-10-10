@@ -353,7 +353,7 @@ def analyze(args):
                 'snlgroup_id 1', 'sg_num 1', 'task_id 1',
                 'snlgroup_id 2', 'sg_num 2', 'task_id 2',
                 'delta_energy', 'delta_bandgap', 'delta_volume_per_atom',
-                'scenario'
+                'rms_dist', 'scenario'
             ])
             for primary_id, secondary_id in pairs:
                 composition, primary_sg_num = snlgroup_keys[primary_id].split('--')
@@ -374,11 +374,20 @@ def analyze(args):
                         snlgroup_data[primary_id]['volume_per_atom'] - \
                         snlgroup_data[secondary_id]['volume_per_atom']
                     ))
-                scenario = ''
+                scenario, rms_dist_str = '', ''
                 if category == 'diff. SGs' and delta_energy and delta_bandgap:
                     scenario = 'different' if (
                         float(delta_energy) > 0.01 or float(delta_bandgap) > 0.1
                     ) else 'similar'
+                    snlgrp1_dict = sma.snlgroups.find_one({ "snlgroup_id": primary_id })
+                    snlgrp2_dict = sma.snlgroups.find_one({ "snlgroup_id": secondary_id })
+                    snlgrp1 = SNLGroup.from_dict(snlgrp1_dict)
+                    snlgrp2 = SNLGroup.from_dict(snlgrp2_dict)
+                    primary_structure = snlgrp1.canonical_structure
+                    secondary_structure = snlgrp2.canonical_structure
+                    rms_dist = matcher.get_rms_dist(primary_structure, secondary_structure)
+                    rms_dist_str = "({0:.3g},{1:.3g})".format(*rms_dist)
+                    print rms_dist_str
                 writer.writerow([
                     category, composition,
                     primary_id, primary_sg_num,
@@ -388,7 +397,7 @@ def analyze(args):
                     snlgroup_data[secondary_id]['task_id'] \
                     if secondary_id in snlgroup_data else '',
                     delta_energy, delta_bandgap, delta_volume_per_atom,
-                    scenario
+                    rms_dist_str, scenario
                 ])
     else:
         errors = Counter()
