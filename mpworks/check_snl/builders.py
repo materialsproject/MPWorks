@@ -134,16 +134,44 @@ class SNLGroupCrossChecker(Builder):
         pipeline.append({ '$match': { 'num_snlgroups': { '$gt': 1 } } })
         pipeline.append({ '$sort': { 'num_snlgroups': -1 } })
         pipeline.append({ '$project': { 'snlgroup_ids': 1 } })
-        result = self._snlgroups.collection.aggregate(pipeline)['result']
-        self._num_snlgroups = sum(
-            len(v)-1 for d in result for k,v in d.iteritems() if k == 'snlgroup_ids'
-        )
-        _log.info('#snlgroups = %d', self._num_snlgroups)
-        return result
+        self._items = self._snlgroups.collection.aggregate(pipeline, cursor={})
+        return self._items
+
+    def _push_to_plotly(self):
+        heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
+        bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
+        self._streams[0].write(Heatmap(z=heatmap_z))
+        self._streams[1].write(Bar(x=bar_x))
+        md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+        for k,v in md.iteritems():
+            if len(v) < 1: continue
+            self._streams[2].write(Scatter(
+                x=self._mismatch_counter[categories[2].index(k)], y=k,
+                text='<br>'.join(v)
+            ))
+            time.sleep(0.052)
+        self._mismatch_dict.update(dict((k,[]) for k in categories[2])) # clean
+
+    def _increase_counter(self, mismatch_dict):
+        # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
+        if self._lock is not None: self._lock.acquire()
+        mc = self._mismatch_counter
+        for k in categories[2]:
+            mc[categories[2].index(k)] += len(mismatch_dict[k])
+        self._mismatch_counter = mc
+        for k,v in mismatch_dict.iteritems():
+            self._mismatch_dict[k] += v
+        currow = self._snlgroup_counter[nrow]
+        currow[ncol] += 1
+        self._snlgroup_counter[nrow] = currow
+        self._snlgroup_counter_total.value += 1
+        if not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows):
+            self._push_to_plotly()
+        if self._lock is not None: self._lock.release()
 
     def process_item(self, item):
         """combine all SNL Groups for current composition (item)"""
-        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets first id(=1)
+        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets id=1
         nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
         snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
 
@@ -157,36 +185,6 @@ class SNLGroupCrossChecker(Builder):
                     _log.info('%r %r', exc_type, exc_value)
                     return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
             return snlgroups[gid]
-
-        def _increase_counter(mismatch_dict):
-            # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
-	    if self._lock is not None: self._lock.acquire()
-            mc = self._mismatch_counter
-            for k in categories[2]:
-                mc[categories[2].index(k)] += len(mismatch_dict[k])
-            self._mismatch_counter = mc
-            for k,v in mismatch_dict.iteritems():
-                self._mismatch_dict[k] += v
-            currow = self._snlgroup_counter[nrow]
-            currow[ncol] += 1
-            self._snlgroup_counter[nrow] = currow
-            self._snlgroup_counter_total.value += 1
-            if not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows) \
-               or self._snlgroup_counter_total.value == self._num_snlgroups:
-		heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
-		bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
-                self._streams[0].write(Heatmap(z=heatmap_z))
-                self._streams[1].write(Bar(x=bar_x))
-		md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
-                for k,v in md.iteritems():
-                    if len(v) < 1: continue
-                    self._streams[2].write(Scatter(
-                        x=self._mismatch_counter[categories[2].index(k)], y=k,
-                        text='<br>'.join(v)
-                    ))
-                    time.sleep(0.052)
-                self._mismatch_dict.update(dict((k,[]) for k in categories[2])) # clean
-	    if self._lock is not None: self._lock.release()
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             cat_key = ''
@@ -217,6 +215,12 @@ class SNLGroupCrossChecker(Builder):
 		cnt = self._snlgroup_counter_total.value if not self._seq else self._snlgroup_counter_total
 		_log.info('(%d) %r', cnt, local_mismatch_dict)
             _increase_counter(local_mismatch_dict)
+
+    def finalize(self, errors):
+        self._push_to_plotly()
+        cnt = self._snlgroup_counter_total.value if not self._seq else self._snlgroup_counter_total
+        _log.info("%d snlgroups processed.", cnt)
+        return True
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
