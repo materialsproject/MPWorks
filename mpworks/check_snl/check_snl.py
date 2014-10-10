@@ -346,13 +346,13 @@ def analyze(args):
         with open('mpworks/check_snl/results/bad_snlgroups_2.csv', 'wb') as f:
             writer = csv.writer(f)
             writer.writerow([
-                'category',
-                'snlgroup_id 1', 'snlgroup_key 1', 'task_id 1',
-                'snlgroup_id 2', 'snlgroup_key 2', 'task_id 2',
+                'category', 'composition',
+                'snlgroup_id 1', 'sg_num 1', 'task_id 1',
+                'snlgroup_id 2', 'sg_num 2', 'task_id 2',
                 'delta_energy', 'delta_bandgap', 'scenario'
             ])
             for primary_id, secondary_id in pairs:
-                primary_sg_num = snlgroup_keys[primary_id].split('--')[1]
+                composition, primary_sg_num = snlgroup_keys[primary_id].split('--')
                 secondary_sg_num = snlgroup_keys[secondary_id].split('--')[1]
                 category = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 if primary_id not in snlgroup_data or secondary_id not in snlgroup_data:
@@ -372,11 +372,11 @@ def analyze(args):
                         float(delta_energy) > 0.05 or float(delta_bandgap) > 0.5
                     ) else 'similar'
                 writer.writerow([
-                    category,
-                    primary_id, snlgroup_keys[primary_id],
+                    category, composition,
+                    primary_id, primary_sg_num,
                     snlgroup_data[primary_id]['task_id'] \
                     if primary_id in snlgroup_data else '',
-                    secondary_id, snlgroup_keys[secondary_id],
+                    secondary_id, secondary_sg_num,
                     snlgroup_data[secondary_id]['task_id'] \
                     if secondary_id in snlgroup_data else '',
                     delta_energy, delta_bandgap, scenario
