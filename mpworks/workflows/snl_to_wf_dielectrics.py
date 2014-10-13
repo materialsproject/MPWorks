@@ -45,7 +45,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     incar.update({"EDIFF":"1.0E-6"})
     incar.update({"ENCUT":"520"})
     spec['vasp']['incar'] = incar.to_dict
-    kpoints_density = 7000
+    kpoints_density = 3000
     k=Kpoints.automatic_density(snl.structure, kpoints_density)
     spec['vasp']['kpoints'] = k.to_dict
     # spec = update_spec_static_dielectrics_convergence(spec)
