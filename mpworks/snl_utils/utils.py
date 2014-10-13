@@ -13,11 +13,11 @@ def deprecate_snl(snl_db, snl_id, remarks):
     remarks = list(set(remarks))
 
     # push existing remarks
-    print('PUSH these', remarks)
     snl_db.snl.update({'snl_id': snl_id}, {'$set': {"about.remarks": remarks}})
 
     # FIX SNLGROUPS
-    sg = snl_db.snlgroups.find_one({'canonical_snl.snl_id': snl_id}, {'snlgroup_id': 1}).get('snlgroup_id')
-    if sg is not None:
-        snl_db.snlgroups.update({'snlgroup_id': sg}, {'$set': {"canonical_snl.about.remarks": remarks}})
-        print('also need to update snlgroup {}'.format(sg))
+    sg = snl_db.snlgroups.find_one({'canonical_snl.snl_id': snl_id}, {'snlgroup_id': 1})
+    if sg:
+        snl_db.snlgroups.update({'snlgroup_id': sg['snlgroup_id']}, {'$set': {"canonical_snl.about.remarks": remarks}})
+
+    print('FINISHED deprecating {}'.format(snl_id))
