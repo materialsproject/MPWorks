@@ -4,14 +4,20 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
-import plotly.plotly as py
-import plotly.tools as tls
-from plotly.graph_objs import *
 from mpworks.check_snl.utils import div_plus_mod, sleep
 from fnmatch import fnmatch
 
-creds = tls.get_credentials_file()
-stream_ids = creds['stream_ids'][:3] # NOTE index
+try:
+  import plotly.plotly as py
+  import plotly.tools as tls
+  from plotly.graph_objs import *
+except ImportError:
+  py, tls = None, None
+
+if py is not None:
+  creds = tls.get_credentials_file()
+  stream_ids = creds['stream_ids'][:3] # NOTE index
+
 _log = get_builder_log("cross_checker")
 categories = [
     ['SG change', 'SG default', 'pybtex', 'others' ], # SNLSpaceGroupChecker
@@ -43,8 +49,9 @@ class SNLSpaceGroupChecker(Builder):
         self._mismatch_dict.update(dict((k,[]) for k in categories[0]))
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
-        self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
-        for s in self._streams: s.open()
+	if py is not None:
+	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+	  for s in self._streams: s.open()
         return self._snls.query(distinct_key='snl_id')
 
     def _push_to_plotly(self):
@@ -74,8 +81,9 @@ class SNLSpaceGroupChecker(Builder):
         currow[ncol] += 1
         self._snl_counter[nrow] = currow
         self._snl_counter_total.value += 1
-        if not self._snl_counter_total.value % (30*self._ncols*self._nrows) \
-           or self._snl_counter_total.value == self._num_snls:
+	if py is not None and (
+	    not self._snl_counter_total.value % (30*self._ncols*self._nrows)
+	    or self._snl_counter_total.value == self._num_snls):
             self._push_to_plotly()
         if (not self._snl_counter_total.value%2500):
             _log.info('processed %d SNLs', self._snl_counter_total.value)
@@ -126,8 +134,9 @@ class SNLGroupCrossChecker(Builder):
         self._mismatch_dict.update(dict((k,[]) for k in categories[2]))
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
-        self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
-        for s in self._streams: s.open()
+	if py is not None:
+	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+	  for s in self._streams: s.open()
         self._snlgroups = snlgroups
         # start pipeline to prepare aggregation of items
         pipeline = [ { '$limit': 5000 } ]
@@ -171,7 +180,7 @@ class SNLGroupCrossChecker(Builder):
         currow[ncol] += 1
         self._snlgroup_counter[nrow] = currow
         self._snlgroup_counter_total.value += 1
-        if not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows):
+        if py is not None and not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows):
             self._push_to_plotly()
         if self._lock is not None: self._lock.release()
 
@@ -222,7 +231,7 @@ class SNLGroupCrossChecker(Builder):
             _increase_counter(local_mismatch_dict)
 
     def finalize(self, errors):
-        self._push_to_plotly()
+	if py is not None: self._push_to_plotly()
         _log.info("%d snlgroups processed.", self._snlgroup_counter_total.value)
         return True
 
@@ -233,23 +242,26 @@ if __name__ == '__main__':
     parser.add_argument('ncols', help='number of columns', type=int)
     parser.add_argument('nrows', help='number of rows', type=int)
     args = parser.parse_args()
-    maxpoints = args.ncols*args.nrows
-    data = Data()
-    data.append(Bar(
-        y=categories[args.ntest], x=[0]*len(categories[args.ntest]),
-        orientation='h', xaxis='x1', yaxis='y1',
-        stream=Stream(token=stream_ids[1], maxpoints=2)
-    ))
-    data.append(Heatmap(
-        z=[[0]*args.ncols for i in range(args.nrows)],
-        stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
-        xaxis='x2', yaxis='y2'
-    ))
-    data.append(Scatter(
-        y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
-        stream=Stream(token=stream_ids[2], maxpoints=10000)
-    ))
-    fig = tls.get_subplots(rows=1, columns=2)
-    fig['data'] = data
-    fig['layout'].update({'showlegend':False})
-    py.plot(fig, filename='test', auto_open=False)
+    if py is not None:
+      maxpoints = args.ncols*args.nrows
+      data = Data()
+      data.append(Bar(
+	  y=categories[args.ntest], x=[0]*len(categories[args.ntest]),
+	  orientation='h', xaxis='x1', yaxis='y1',
+	  stream=Stream(token=stream_ids[1], maxpoints=2)
+      ))
+      data.append(Heatmap(
+	  z=[[0]*args.ncols for i in range(args.nrows)],
+	  stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
+	  xaxis='x2', yaxis='y2'
+      ))
+      data.append(Scatter(
+	  y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
+	  stream=Stream(token=stream_ids[2], maxpoints=10000)
+      ))
+      fig = tls.get_subplots(rows=1, columns=2)
+      fig['data'] = data
+      fig['layout'].update({'showlegend':False})
+      py.plot(fig, filename='test', auto_open=False)
+    else:
+      print 'plotly ImportError'
