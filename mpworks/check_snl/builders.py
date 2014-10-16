@@ -31,16 +31,16 @@ class SNLSpaceGroupChecker(Builder):
     def get_items(self, snls=None, ncols=None):
         """SNLs iterator
 
-	:param snls: 'snl' collection in 'snl_mp_prod' DB
-	:type snls: QueryEngine
-	:param ncols: number of columns for 2D plotly
-	:type ncols: int
+        :param snls: 'snl' collection in 'snl_mp_prod' DB
+        :type snls: QueryEngine
+        :param ncols: number of columns for 2D plotly
+        :type ncols: int
         """
         self._snls = snls
         self._lock = self._mgr.Lock() if not self._seq else None
         self._ncols = ncols if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
-	self._num_snls = snls.collection.count()
+        self._num_snls = snls.collection.count()
         _log.info('#SNLs = %d', self._num_snls)
         self._snl_counter = self.shared_list()
         self._snl_counter.extend([[0]*self._ncols for i in range(self._nrows)])
@@ -49,10 +49,10 @@ class SNLSpaceGroupChecker(Builder):
         self._mismatch_dict.update(dict((k,[]) for k in categories[0]))
         self._mismatch_counter = self.shared_list()
         self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
-	if py is not None:
-	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
-	  for s in self._streams: s.open()
-        return self._snls.query(distinct_key='snl_id')
+        if py is not None:
+          self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+          for s in self._streams: s.open()
+        return self._snls.query(index=7000,distinct_key='snl_id')
 
     def _push_to_plotly(self):
         heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
@@ -81,10 +81,10 @@ class SNLSpaceGroupChecker(Builder):
         currow[ncol] += 1
         self._snl_counter[nrow] = currow
         self._snl_counter_total.value += 1
-	if py is not None and (
-	    not self._snl_counter_total.value % (30*self._ncols*self._nrows)
-	    or self._snl_counter_total.value == self._num_snls):
-            self._push_to_plotly()
+        if py is not None and (
+            not self._snl_counter_total.value % (30*self._ncols*self._nrows)
+            or self._snl_counter_total.value == self._num_snls):
+                  self._push_to_plotly()
         if (not self._snl_counter_total.value%2500):
             _log.info('processed %d SNLs', self._snl_counter_total.value)
         if self._lock is not None: self._lock.release()
@@ -93,8 +93,8 @@ class SNLSpaceGroupChecker(Builder):
         """compare SG in db with SG from SpacegroupAnalyzer"""
         proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets id=1
         nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
-	if nrow >= self._nrows: nrow -= self._nrows
-	if ncol >= self._ncols: ncol -= self._ncols
+        if nrow >= self._nrows: nrow -= self._nrows
+        if ncol >= self._ncols: ncol -= self._ncols
         local_mismatch_dict = dict((k,[]) for k in categories[0])
         category = ''
         try:
