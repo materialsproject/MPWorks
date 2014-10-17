@@ -24,6 +24,16 @@ categories = [
     [], # SNLGroupMemberChecker
     ['diff. SGs', 'same SGs', 'pybtex', 'others'] # SNLGroupCrossChecker
 ]
+titles = [
+    'Cross-Check of Canonical SNLs / SNLGroups', # SNLSpaceGroupChecker
+    '', # SNLGroupMemberChecker
+    '', # SNLGroupCrossChecker
+]
+xtitles = [
+    '# affected SNLs', # SNLSpaceGroupChecker
+    '', # SNLGroupMemberChecker
+    '', # SNLGroupCrossChecker
+]
 
 class SNLSpaceGroupChecker(Builder):
     """check spacegroups of all available SNLs"""
@@ -52,7 +62,7 @@ class SNLSpaceGroupChecker(Builder):
         if py is not None:
           self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
           for s in self._streams: s.open()
-        return self._snls.query(index=7000,distinct_key='snl_id')
+        return self._snls.query(distinct_key='snl_id')
 
     def _push_to_plotly(self):
         heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
@@ -256,15 +266,36 @@ if __name__ == '__main__':
       data.append(Heatmap(
 	  z=[[0]*args.ncols for i in range(args.nrows)],
 	  stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
-	  xaxis='x2', yaxis='y2'
+	  xaxis='x2', yaxis='y2', colorscale='Bluered'
       ))
       data.append(Scatter(
 	  y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
 	  stream=Stream(token=stream_ids[2], maxpoints=10000)
       ))
       fig = tls.get_subplots(rows=1, columns=2)
+      layout = Layout(
+          showlegend=False,
+          title = titles[args.ntest],
+          xaxis1=XAxis(
+              domain=[0,0.49], showgrid=False, anchor='y1',
+              title=xtitles[args.ntest]
+          ),
+          yaxis1=YAxis(
+              showgrid=False, title='error category', anchor='x1'
+          ),
+          xaxis2=XAxis(
+              domain=[0.51,1.], showgrid=False, anchor='y2',
+              title='process-id = x+%dy' % args.ncols,
+              autotick=False, tick0=0, dtick=1
+          ),
+          yaxis2=YAxis(
+              showgrid=False, anchor='x2',
+              autotick=False, tick0=0, dtick=1
+          ),
+      )
       fig['data'] = data
-      fig['layout'].update({'showlegend':False})
+      fig['layout'] = layout
       py.plot(fig, filename='test', auto_open=False)
+      #py.image.save_as(fig, 'test.png')
     else:
       print 'plotly ImportError'
