@@ -140,6 +140,9 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroups = snlgroups
         # start pipeline to prepare aggregation of items
         pipeline = [ { '$limit': 5000 } ]
+        pipeline.append({ '$project': {
+          'reduced_cell_formula_abc': 1, 'snlgroup_id': 1, '_id': 0
+        }})
         group_expression = {
             '_id': '$reduced_cell_formula_abc',
             'num_snlgroups': { '$sum': 1 },
