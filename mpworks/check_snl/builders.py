@@ -99,12 +99,9 @@ class SNLSpaceGroupChecker(Builder):
             _log.info('processed %d SNLs', self._snl_counter_total.value)
         if self._lock is not None: self._lock.release()
 
-    def process_item(self, item):
+    def process_item(self, item, index):
         """compare SG in db with SG from SpacegroupAnalyzer"""
-        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets id=1
-        nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
-        if nrow >= self._nrows: nrow -= self._nrows
-        if ncol >= self._ncols: ncol -= self._ncols
+        nrow, ncol = index/self._ncols, index%self._ncols
         local_mismatch_dict = dict((k,[]) for k in categories[0])
         category = ''
         try:
@@ -197,10 +194,9 @@ class SNLGroupCrossChecker(Builder):
             self._push_to_plotly()
         if self._lock is not None: self._lock.release()
 
-    def process_item(self, item):
+    def process_item(self, item, index):
         """combine all SNL Groups for current composition (item)"""
-        proc_id = multiprocessing.current_process()._identity[0]-2 if not self._seq else 0 # parent gets id=1
-        nrow, ncol = proc_id/self._ncols, proc_id%self._ncols
+        nrow, ncol = index/self._ncols, index%self._ncols
         snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
 
         def _get_snl_group(gid):
