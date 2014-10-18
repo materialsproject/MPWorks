@@ -25,14 +25,14 @@ categories = [
     ['diff. SGs', 'same SGs', 'pybtex', 'others'] # SNLGroupCrossChecker
 ]
 titles = [
-    'Cross-Check of Canonical SNLs / SNLGroups', # SNLSpaceGroupChecker
+    'Spacegroup Consistency Check', # SNLSpaceGroupChecker
     '', # SNLGroupMemberChecker
-    '', # SNLGroupCrossChecker
+    'Cross-Check of Canonical SNLs / SNLGroups', # SNLGroupCrossChecker
 ]
 xtitles = [
     '# affected SNLs', # SNLSpaceGroupChecker
     '', # SNLGroupMemberChecker
-    '', # SNLGroupCrossChecker
+    '# affected SNLGroups', # SNLGroupCrossChecker
 ]
 
 class SNLSpaceGroupChecker(Builder):
@@ -67,17 +67,32 @@ class SNLSpaceGroupChecker(Builder):
     def _push_to_plotly(self):
         heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
         bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
-        self._streams[0].write(Heatmap(z=heatmap_z))
-        self._streams[1].write(Bar(x=bar_x))
         md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
-        for k,v in md.iteritems():
-            if len(v) < 1: continue
-            self._streams[2].write(Scatter(
-                x=self._mismatch_counter[categories[0].index(k)], y=k,
-                text='<br>'.join(v)
-            ))
-        self._mismatch_dict.update(dict((k,[]) for k in categories[0])) # clean
-        time.sleep(0.052)
+	try:
+	  self._streams[0].write(Heatmap(z=heatmap_z))
+	except:
+	  _log.info('_push_to_plotly ERROR: heatmap=%r', heatmap_z)
+	try:
+	  self._streams[1].write(Bar(x=bar_x))
+	except:
+	  _log.info('_push_to_plotly ERROR: bar=%r', bar_x)
+	for k,v in md.iteritems():
+	  if len(v) < 1: continue
+	  try:
+	    self._streams[2].write(Scatter(
+	      x=self._mismatch_counter[categories[0].index(k)], y=k,
+	      text='<br>'.join(v)
+	    ))
+	    _log.info('_push_to_plotly: mismatch_dict[%r]=%r', k, v)
+	    self._mismatch_dict.update({k:[]}) # clean
+	    time.sleep(0.052)
+	  except:
+	    _log.info('_push_to_plotly ERROR: mismatch_dict=%r', md)
+	    _log.info(
+	      'self._mismatch_dict=%r',
+	      self._mismatch_dict._getvalue() if not self._seq
+	      else self._mismatch_dict
+	    )
 
     def _increase_counter(self, nrow, ncol, mismatch_dict):
         if self._lock is not None: self._lock.acquire()
@@ -92,7 +107,7 @@ class SNLSpaceGroupChecker(Builder):
         self._snl_counter[nrow] = currow
         self._snl_counter_total.value += 1
         if py is not None and (
-            not self._snl_counter_total.value % (30*self._ncols*self._nrows)
+            not self._snl_counter_total.value % (100*self._ncols*self._nrows)
             or self._snl_counter_total.value == self._num_snls):
                   self._push_to_plotly()
         if (not self._snl_counter_total.value%2500):
@@ -262,7 +277,8 @@ if __name__ == '__main__':
       data.append(Heatmap(
 	  z=[[0]*args.ncols for i in range(args.nrows)],
 	  stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
-	  xaxis='x2', yaxis='y2', colorscale='Bluered'
+	  xaxis='x2', yaxis='y2', colorscale='Bluered',
+	  colorbar=ColorBar(title='#SNLs')
       ))
       data.append(Scatter(
 	  y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
@@ -270,7 +286,7 @@ if __name__ == '__main__':
       ))
       fig = tls.get_subplots(rows=1, columns=2)
       layout = Layout(
-          showlegend=False,
+          showlegend=False, hovermode='closest',
           title = titles[args.ntest],
           xaxis1=XAxis(
               domain=[0,0.49], showgrid=False, anchor='y1',
@@ -281,7 +297,7 @@ if __name__ == '__main__':
           ),
           xaxis2=XAxis(
               domain=[0.51,1.], showgrid=False, anchor='y2',
-              title='process-id = x+%dy' % args.ncols,
+              title='CPU index = x+%dy' % args.ncols,
               autotick=False, tick0=0, dtick=1
           ),
           yaxis2=YAxis(
