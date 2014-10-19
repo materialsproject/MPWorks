@@ -34,6 +34,11 @@ xtitles = [
     '', # SNLGroupMemberChecker
     '# affected SNLGroups', # SNLGroupCrossChecker
 ]
+colorbar_titles = [
+    '#SNLs', # SNLSpaceGroupChecker
+    '', # SNLGroupMemberChecker
+    '#SNLGroups', # SNLGroupCrossChecker
+]
 
 class SNLSpaceGroupChecker(Builder):
     """check spacegroups of all available SNLs"""
@@ -136,18 +141,20 @@ class SNLSpaceGroupChecker(Builder):
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
 
-    def get_items(self, snlgroups=None):
+    def get_items(self, snlgroups=None, ncols=None):
         """iterator over same-composition groups of SNLGroups rev-sorted by size
 
         :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
         :type snlgroups: QueryEngine
+        :param ncols: number of columns for 2D plotly
+        :type ncols: int
         """
         self._matcher = StructureMatcher(
             ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
             attempt_supercell=False, comparator=ElementComparator()
         )
         self._lock = self._mgr.Lock() if not self._seq else None
-        self._ncols = 4 if not self._seq else 1 # TODO increase from 2 for more proc
+        self._ncols = ncols if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
         self._snlgroup_counter = self.shared_list()
         self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
@@ -174,25 +181,39 @@ class SNLGroupCrossChecker(Builder):
         pipeline.append({ '$match': { 'num_snlgroups': { '$gt': 1 } } })
         pipeline.append({ '$sort': { 'num_snlgroups': -1 } })
         pipeline.append({ '$project': { 'snlgroup_ids': 1 } })
-        self._items = self._snlgroups.collection.aggregate(pipeline, cursor={})
-        return self._items
+        return self._snlgroups.collection.aggregate(pipeline, cursor={})
 
     def _push_to_plotly(self):
         heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
         bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
-        self._streams[0].write(Heatmap(z=heatmap_z))
-        self._streams[1].write(Bar(x=bar_x))
         md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+	try:
+	  self._streams[0].write(Heatmap(z=heatmap_z))
+	except:
+	  _log.info('_push_to_plotly ERROR: heatmap=%r', heatmap_z)
+	try:
+	  self._streams[1].write(Bar(x=bar_x))
+	except:
+	  _log.info('_push_to_plotly ERROR: bar=%r', bar_x)
         for k,v in md.iteritems():
             if len(v) < 1: continue
-            self._streams[2].write(Scatter(
-                x=self._mismatch_counter[categories[2].index(k)], y=k,
-                text='<br>'.join(v)
-            ))
-            time.sleep(0.052)
-        self._mismatch_dict.update(dict((k,[]) for k in categories[2])) # clean
+            try:
+                self._streams[2].write(Scatter(
+                    x=self._mismatch_counter[categories[2].index(k)], y=k,
+                    text='<br>'.join(v)
+                ))
+                _log.info('_push_to_plotly: mismatch_dict[%r]=%r', k, v)
+                self._mismatch_dict.update({k:[]}) # clean
+                time.sleep(0.052)
+            except:
+                _log.info('_push_to_plotly ERROR: mismatch_dict=%r', md)
+                _log.info(
+                    'self._mismatch_dict=%r',
+                    self._mismatch_dict._getvalue() if not self._seq
+                    else self._mismatch_dict
+                )
 
-    def _increase_counter(self, mismatch_dict):
+    def _increase_counter(self, nrow, ncol, mismatch_dict):
         # https://docs.python.org/2/library/multiprocessing.html#multiprocessing.managers.SyncManager.list
         if self._lock is not None: self._lock.acquire()
         mc = self._mismatch_counter
@@ -205,8 +226,11 @@ class SNLGroupCrossChecker(Builder):
         currow[ncol] += 1
         self._snlgroup_counter[nrow] = currow
         self._snlgroup_counter_total.value += 1
-        if py is not None and not self._snlgroup_counter_total.value % (5*self._ncols*self._nrows):
+        if py is not None and not \
+           self._snlgroup_counter_total.value % (50*self._ncols*self._nrows):
             self._push_to_plotly()
+        if (not self._snlgroup_counter_total.value%2500):
+            _log.info('processed %d SNLGroups', self._snlgroup_counter_total.value)
         if self._lock is not None: self._lock.release()
 
     def process_item(self, item, index):
@@ -234,7 +258,7 @@ class SNLGroupCrossChecker(Builder):
             else:
                 local_mismatch_dict[primary_group].append('%d' % primary_id)
                 _log.info(local_mismatch_dict)
-                _increase_counter(local_mismatch_dict)
+                self._increase_counter(nrow, ncol, local_mismatch_dict)
                 continue
             for secondary_id in item['snlgroup_ids'][idx+1:]:
                 secondary_group = _get_snl_group(secondary_id)
@@ -252,11 +276,11 @@ class SNLGroupCrossChecker(Builder):
                 local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
             if cat_key:
 		_log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
-            _increase_counter(local_mismatch_dict)
+            self._increase_counter(nrow, ncol, local_mismatch_dict)
 
     def finalize(self, errors):
 	if py is not None: self._push_to_plotly()
-        _log.info("%d snlgroups processed.", self._snlgroup_counter_total.value)
+        _log.info("%d SNLGroups processed.", self._snlgroup_counter_total.value)
         return True
 
 if __name__ == '__main__':
@@ -278,7 +302,7 @@ if __name__ == '__main__':
         z=[[0]*args.ncols for i in range(args.nrows)],
         stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
         xaxis='x2', yaxis='y2', colorscale='Bluered',
-        colorbar=ColorBar(title='#SNLs')
+        colorbar=ColorBar(title=colorbar_titles[args.ntest])
       ))
       data.append(Scatter(
         y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
