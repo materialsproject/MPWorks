@@ -402,21 +402,43 @@ def analyze(args):
                         rms_dist_str, scenario
                     ])
         elif args.fig_id == 10:
+            out_fig = Figure()
+            badsnls_trace = Scatter(x=[], y=[], text=[], mode='markers', name='SG Changes')
+            bisectrix = Scatter(x=[0,230], y=[0,230], mode='lines', name='bisectrix')
+            print 'pulling bad snls from plotly ...'
             bad_snls = OrderedDict()
             for category, text in zip(fig['data'][2]['y'], fig['data'][2]['text']):
                 for snl_id in map(int, text.split('<br>')):
                     bad_snls[snl_id] = category
             with open('mpworks/check_snl/results/bad_snls.csv', 'wb') as f:
+                print 'pulling bad snls from database ...'
                 mpsnl_cursor = sma.snl.find({ 'snl_id': { '$in': bad_snls.keys() } })
                 writer = csv.writer(f)
                 writer.writerow([
                     'snl_id', 'category', 'snlgroup_key', 'nsites', 'remarks', 'projects', 'authors'
                 ])
+                print 'writing bad snls to file ...'
                 for mpsnl_dict in mpsnl_cursor:
                     mpsnl = MPStructureNL.from_dict(mpsnl_dict)
                     row = [ mpsnl.snl_id, bad_snls[mpsnl.snl_id], mpsnl.snlgroup_key ]
                     row += _get_snl_extra_info(mpsnl)
                     writer.writerow(row)
+                    if bad_snls[mpsnl.snl_id] == 'SG change':
+                        sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
+                        badsnls_trace['x'].append(mpsnl.sg_num)
+                        badsnls_trace['y'].append(sf.get_spacegroup_number())
+                        badsnls_trace['text'].append(mpsnl.snl_id)
+                print 'plotting out-fig ...'
+                out_fig['data'] = Data([bisectrix, badsnls_trace])
+                out_fig['layout'] = Layout(
+                    showlegend=False, hovermode='closest',
+                    title='Spacegroup Assignment Changes',
+                    xaxis=XAxis(showgrid=False, title='old SG number', range=[0,230]),
+                    yaxis=YAxis(showgrid=False, title='new SG number', range=[0,230]),
+                )
+                filename = 'spacegroup_changes_'
+                filename += datetime.datetime.now().strftime('%Y-%m-%d') 
+                py.plot(out_fig, filename=filename, auto_open=False)
     else:
         errors = Counter()
         bad_snls = OrderedDict()

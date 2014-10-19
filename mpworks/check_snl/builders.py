@@ -270,19 +270,19 @@ if __name__ == '__main__':
       maxpoints = args.ncols*args.nrows
       data = Data()
       data.append(Bar(
-	  y=categories[args.ntest], x=[0]*len(categories[args.ntest]),
-	  orientation='h', xaxis='x1', yaxis='y1',
-	  stream=Stream(token=stream_ids[1], maxpoints=2)
+        y=categories[args.ntest], x=[0]*len(categories[args.ntest]),
+        orientation='h', xaxis='x1', yaxis='y1',
+        stream=Stream(token=stream_ids[1], maxpoints=2)
       ))
       data.append(Heatmap(
-	  z=[[0]*args.ncols for i in range(args.nrows)],
-	  stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
-	  xaxis='x2', yaxis='y2', colorscale='Bluered',
-	  colorbar=ColorBar(title='#SNLs')
+        z=[[0]*args.ncols for i in range(args.nrows)],
+        stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
+        xaxis='x2', yaxis='y2', colorscale='Bluered',
+        colorbar=ColorBar(title='#SNLs')
       ))
       data.append(Scatter(
-	  y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
-	  stream=Stream(token=stream_ids[2], maxpoints=10000)
+        y=[], x=[], xaxis='x1', yaxis='y1', mode='markers',
+        stream=Stream(token=stream_ids[2], maxpoints=10000)
       ))
       fig = tls.get_subplots(rows=1, columns=2)
       layout = Layout(
