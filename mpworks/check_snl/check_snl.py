@@ -312,7 +312,7 @@ def analyze(args):
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     fig = py.get_figure(creds['username'], args.fig_id)
     if args.t:
-        if args.fig_id == 8:
+        if args.fig_id == 12:
             label_entries = filter(None, '<br>'.join(fig['data'][2]['text']).split('<br>'))
             pairs = map(make_tuple, label_entries)
             grps = set(chain.from_iterable(pairs))
@@ -388,8 +388,9 @@ def analyze(args):
                         primary_structure = snlgrp1.canonical_structure
                         secondary_structure = snlgrp2.canonical_structure
                         rms_dist = matcher.get_rms_dist(primary_structure, secondary_structure)
-                        rms_dist_str = "({0:.3g},{1:.3g})".format(*rms_dist)
-                        print rms_dist_str
+                        if rms_dist is not None:
+                            rms_dist_str = "({0:.3g},{1:.3g})".format(*rms_dist)
+                            print rms_dist_str
                     writer.writerow([
                         category, composition,
                         primary_id, primary_sg_num,
