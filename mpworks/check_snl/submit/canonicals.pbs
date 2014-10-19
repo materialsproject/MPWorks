@@ -1,12 +1,10 @@
 #!/bin/bash -login
+#PBS -V
 #PBS -A matcomp
 #PBS -q matgen_prior
-#PBS -l nodes=2:ppn=16
-#PBS -l walltime=12:00:00
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=80:00:00
  
-cd $PBS_O_WORKDIR
-workon env_mp_snl_group_check
-export PYTHONPATH=$PWD:$PYTHONPATH
-python -m mpworks.check_snl.builders 0 4 8
+python -m mpworks.check_snl.builders 2 4 2
 sleep 5
-mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLGroupCrossChecker snlgroups=snlgroups.json -n 32
+mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLGroupCrossChecker snlgroups=$HOME/snlgroups_mpirun.json ncols=4 -n 8

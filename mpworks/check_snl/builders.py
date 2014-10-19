@@ -167,11 +167,11 @@ class SNLGroupCrossChecker(Builder):
 	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
 	  for s in self._streams: s.open()
         self._snlgroups = snlgroups
+        _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
         # start pipeline to prepare aggregation of items
-        pipeline = [ { '$limit': 5000 } ]
-        pipeline.append({ '$project': {
+        pipeline = [{ '$project': {
           'reduced_cell_formula_abc': 1, 'snlgroup_id': 1, '_id': 0
-        }})
+        }}]
         group_expression = {
             '_id': '$reduced_cell_formula_abc',
             'num_snlgroups': { '$sum': 1 },
@@ -227,7 +227,7 @@ class SNLGroupCrossChecker(Builder):
         self._snlgroup_counter[nrow] = currow
         self._snlgroup_counter_total.value += 1
         if py is not None and not \
-           self._snlgroup_counter_total.value % (50*self._ncols*self._nrows):
+           self._snlgroup_counter_total.value % (10*self._ncols*self._nrows):
             self._push_to_plotly()
         if (not self._snlgroup_counter_total.value%2500):
             _log.info('processed %d SNLGroups', self._snlgroup_counter_total.value)
