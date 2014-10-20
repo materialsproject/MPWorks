@@ -1,12 +1,26 @@
-import datetime
+import datetime, math
 from pandas.io.parsers import read_csv
 from pyana.ccsgp.ccsgp import make_plot
 from pyana.ccsgp.utils import getOpts
 from pandas import Series
 from collections import OrderedDict
+import numpy as np
+from itertools import tee, izip
 
 import plotly.plotly as py
 from plotly.graph_objs import *
+
+def pairwise(iterable):
+    "s -> (s0,s1), (s1,s2), (s2, s3), ..."
+    a, b = tee(iterable)
+    next(b, None)
+    return izip(a, b)
+
+def _get_shades_of_gray(num_colors):
+    colors=[]
+    for i in range(0, 8*num_colors, 8):
+        colors.append('rgb'+str((i, i, i)))
+    return colors
 
 def sg1_vs_sg2():
     """plot SG #1 vs #2 via ccsgp"""
@@ -74,11 +88,25 @@ def delta_bandgap_vs_delta_energy():
     inmatdb_text = map(','.join, zip(
         inmatdb_df_view['task_id 1'], inmatdb_df_view['task_id 2']
     ))
+    dvols = inmatdb_df_view['delta_volume_per_atom']
+    dvol_bins = np.logspace(
+        math.log10(min(dvols)), math.log10(max(dvols)), num=10
+    )
+    colorscale = _get_shades_of_gray(10)
+
+    def get_dvol_index(dvol):
+        for i, (a, b) in enumerate(pairwise(dvol_bins)):
+            if dvol >= a and dvol < b:
+                return i
+        return len(dvol_bins)-1 # catch max
+
+    colors = [colorscale[i] for i in map(get_dvol_index, dvols)]
     inmatdb_trace = Scatter(
         x=inmatdb_df_view['delta_energy'].as_matrix(),
         y=inmatdb_df_view['delta_bandgap'].as_matrix(),
-        text=inmatdb_text, mode='markers', name='TODO',
-        showlegend=False
+        text=inmatdb_text, mode='markers',
+        marker=Marker(color=colors),
+        name='TODO', showlegend=False
     )
     out_fig['data'] = Data([thr1, thr2, inmatdb_trace])
     out_fig['layout'] = Layout(
