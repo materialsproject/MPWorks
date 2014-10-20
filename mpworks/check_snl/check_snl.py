@@ -348,15 +348,19 @@ def analyze(args):
                     'volume_per_atom': volume_per_atom
                 }
             print snlgroup_data[40890]
-            with open('mpworks/check_snl/results/bad_snlgroups_2.csv', 'wb') as f:
-                writer = csv.writer(f)
-                writer.writerow([
+            filestem = 'mpworks/check_snl/results/bad_snlgroups_2_'
+            with open(filestem+'in_matdb.csv', 'wb') as f, \
+                    open(filestem+'notin_matdb.csv', 'wb') as g:
+                writer1, writer2 = csv.writer(f), csv.writer(g)
+                header = [
                     'category', 'composition',
                     'snlgroup_id 1', 'sg_num 1', 'task_id 1',
                     'snlgroup_id 2', 'sg_num 2', 'task_id 2',
                     'delta_energy', 'delta_bandgap', 'delta_volume_per_atom',
                     'rms_dist', 'scenario'
-                ])
+                ]
+                writer1.writerow(header)
+                writer2.writerow(header)
                 for primary_id, secondary_id in pairs:
                     composition, primary_sg_num = snlgroup_keys[primary_id].split('--')
                     secondary_sg_num = snlgroup_keys[secondary_id].split('--')[1]
@@ -391,7 +395,7 @@ def analyze(args):
                         if rms_dist is not None:
                             rms_dist_str = "({0:.3g},{1:.3g})".format(*rms_dist)
                             print rms_dist_str
-                    writer.writerow([
+                    row = [
                         category, composition,
                         primary_id, primary_sg_num,
                         snlgroup_data[primary_id]['task_id'] \
@@ -401,7 +405,9 @@ def analyze(args):
                         if secondary_id in snlgroup_data else '',
                         delta_energy, delta_bandgap, delta_volume_per_atom,
                         rms_dist_str, scenario
-                    ])
+                    ]
+                    if delta_energy and delta_bandgap: writer1.writerow(row)
+                    else: writer2.writerow(row)
         elif args.fig_id == 10:
             out_fig = Figure()
             badsnls_trace = Scatter(x=[], y=[], text=[], mode='markers', name='SG Changes')
