@@ -16,9 +16,9 @@ def pairwise(iterable):
     next(b, None)
     return izip(a, b)
 
-def _get_shades_of_gray(num_colors):
+def _get_shades_of_gray(num_colors, every=3):
     colors=[]
-    for i in range(0, 8*num_colors, 8):
+    for i in range(0, 8*every*num_colors, 8*every):
         colors.append('rgb'+str((i, i, i)))
     return colors
 
@@ -89,6 +89,7 @@ def delta_bandgap_vs_delta_energy():
         inmatdb_df_view['task_id 1'], inmatdb_df_view['task_id 2']
     ))
     dvols = inmatdb_df_view['delta_volume_per_atom']
+    inmatdb_text = map('<br>'.join, zip(inmatdb_text, map('dvol = {}'.format, dvols)))
     dvol_bins = np.logspace(
         math.log10(min(dvols)), math.log10(max(dvols)), num=10
     )
@@ -106,7 +107,7 @@ def delta_bandgap_vs_delta_energy():
         y=inmatdb_df_view['delta_bandgap'].as_matrix(),
         text=inmatdb_text, mode='markers',
         marker=Marker(color=colors),
-        name='TODO', showlegend=False
+        name='dVdBdE', showlegend=False
     )
     out_fig['data'] = Data([thr1, thr2, inmatdb_trace])
     out_fig['layout'] = Layout(
@@ -115,11 +116,10 @@ def delta_bandgap_vs_delta_energy():
         xaxis=XAxis(showgrid=False, title='delta_energy', type='log', autorange=True),
         yaxis=YAxis(showgrid=False, title='delta_bandgap', type='log', autorange=True),
     )
-    #filename = 'canonicals_deltas_'
-    #filename += datetime.datetime.now().strftime('%Y-%m-%d') 
-    filename = 'test'
+    filename = 'canonicals_deltas_'
+    filename += datetime.datetime.now().strftime('%Y-%m-%d') 
     py.plot(out_fig, filename=filename, auto_open=False)
-    #py.image.save_as(out_fig, 'canonicals_deltas.png')
+    py.image.save_as(out_fig, 'canonicals_deltas.png')
 
 if __name__ == '__main__':
     #sg1_vs_sg2_plotly()
