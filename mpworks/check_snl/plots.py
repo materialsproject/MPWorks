@@ -63,5 +63,36 @@ def sg1_vs_sg2_plotly():
     py.plot(out_fig, filename=filename, auto_open=False)
     py.image.save_as(out_fig, 'canonicals_spacegroups.png')
 
+def delta_bandgap_vs_delta_energy():
+    """different vs. similar selection and volume changes for matching diff. SGs"""
+    out_fig = Figure()
+    thr1 = Scatter(x=[0.01,0.01], y=[.1e-3,5], mode='lines', name='thr1', showlegend=False)
+    thr2 = Scatter(x=[.4e-6,1.3], y=[0.1,0.1], mode='lines', name='thr2', showlegend=False)
+    inmatdb_df = read_csv('mpworks/check_snl/results/bad_snlgroups_2_in_matdb.csv')
+    inmatdb_df_view = inmatdb_df.loc[inmatdb_df['category']=='diff. SGs']
+    inmatdb_df_view = inmatdb_df_view.loc[inmatdb_df_view['delta_bandgap']>1e-6]
+    inmatdb_text = map(','.join, zip(
+        inmatdb_df_view['task_id 1'], inmatdb_df_view['task_id 2']
+    ))
+    inmatdb_trace = Scatter(
+        x=inmatdb_df_view['delta_energy'].as_matrix(),
+        y=inmatdb_df_view['delta_bandgap'].as_matrix(),
+        text=inmatdb_text, mode='markers', name='TODO',
+        showlegend=False
+    )
+    out_fig['data'] = Data([thr1, thr2, inmatdb_trace])
+    out_fig['layout'] = Layout(
+        hovermode='closest',
+        title='Separation of different/similar matching SNLs w/ different SGs',
+        xaxis=XAxis(showgrid=False, title='delta_energy', type='log', autorange=True),
+        yaxis=YAxis(showgrid=False, title='delta_bandgap', type='log', autorange=True),
+    )
+    #filename = 'canonicals_deltas_'
+    #filename += datetime.datetime.now().strftime('%Y-%m-%d') 
+    filename = 'test'
+    py.plot(out_fig, filename=filename, auto_open=False)
+    #py.image.save_as(out_fig, 'canonicals_deltas.png')
+
 if __name__ == '__main__':
-    sg1_vs_sg2_plotly()
+    #sg1_vs_sg2_plotly()
+    delta_bandgap_vs_delta_energy()
