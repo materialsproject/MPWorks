@@ -121,6 +121,35 @@ def delta_bandgap_vs_delta_energy():
     py.plot(out_fig, filename=filename, auto_open=False)
     py.image.save_as(out_fig, 'canonicals_deltas.png')
 
+def rmsdist_histos():
+    """#different/similar vs rms_dist"""
+    out_fig = Figure()
+    inmatdb_df = read_csv('mpworks/check_snl/results/bad_snlgroups_2_in_matdb.csv')
+    inmatdb_df_view = inmatdb_df.loc[inmatdb_df['category']=='diff. SGs']
+    different = inmatdb_df_view.loc[inmatdb_df_view['scenario']=='different']
+    similar = inmatdb_df_view.loc[inmatdb_df_view['scenario']=='similar']
+
+    def rmsdist(tupstr):
+        if isinstance(tupstr, float) and math.isnan(tupstr): return None
+        tup = map(float, tupstr[1:-1].split(','))
+        return math.sqrt(tup[0]*tup[0]+tup[1]*tup[1])
+
+    different_rmsdist = filter(None, map(rmsdist, different['rms_dist']))
+    similar_rmsdist = filter(None, map(rmsdist, similar['rms_dist']))
+    different_trace = Histogram(x=different_rmsdist, name='different', opacity=0.75)
+    similar_trace = Histogram(x=similar_rmsdist, name='similar', opacity=0.75)
+    out_fig['data'] = Data([different_trace,similar_trace])
+    out_fig['layout'] = Layout(
+        title='rms_dist of different/similar matching SNLs w/ different SGs',
+        xaxis=XAxis(showgrid=False, title='sqrt(rms_dist)'),
+        barmode='overlay'
+    )
+    filename = 'canonicals_rmsdist_'
+    filename += datetime.datetime.now().strftime('%Y-%m-%d') 
+    py.plot(out_fig, filename=filename, auto_open=False)
+    py.image.save_as(out_fig, 'canonicals_rmsdist.png')
+
 if __name__ == '__main__':
     #sg1_vs_sg2_plotly()
-    delta_bandgap_vs_delta_energy()
+    #delta_bandgap_vs_delta_energy()
+    rmsdist_histos()
