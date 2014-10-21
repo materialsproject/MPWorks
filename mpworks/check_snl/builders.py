@@ -127,6 +127,7 @@ class SNLSpaceGroupChecker(Builder):
         try:
             mpsnl_dict = self._snls.collection.find_one({ 'snl_id': item })
             mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+            mpsnl.structure.remove_oxidation_states()
             sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
             if sf.get_spacegroup_number() != mpsnl.sg_num:
                 category = categories[0][int(sf.get_spacegroup_number() == 0)]
