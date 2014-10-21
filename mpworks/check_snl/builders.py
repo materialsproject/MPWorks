@@ -18,7 +18,7 @@ if py is not None:
   creds = tls.get_credentials_file()
   stream_ids = creds['stream_ids'][:3] # NOTE index
 
-_log = get_builder_log("cross_checker")
+_log = get_builder_log("snl_group_checks")
 categories = [
     ['SG change', 'SG default', 'pybtex', 'others' ], # SNLSpaceGroupChecker
     [], # SNLGroupMemberChecker
@@ -137,6 +137,51 @@ class SNLSpaceGroupChecker(Builder):
             local_mismatch_dict[category].append(str(item))
             _log.info('(%d) %r', self._snl_counter_total.value, local_mismatch_dict)
         self._increase_counter(nrow, ncol, local_mismatch_dict)
+
+class SNLGroupMemberChecker(Builder):
+    """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
+
+    def get_items(self, snls=None, snlgroups=None):
+        """SNLGroups iterator
+
+        :param snls: 'snl' collection in 'snl_mp_prod' DB
+        :type snls: QueryEngine
+        :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
+        :type snlgroups: QueryEngine
+        """
+        self._matcher = StructureMatcher(
+            ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+            attempt_supercell=False, comparator=ElementComparator()
+        )
+        self._snls = snls
+        self._snlgroups = snlgroups
+        _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
+        return self._snlgroups.query(distinct_key='snlgroup_id')[:10]
+
+    def process_item(self, item, index):
+        """compare all members of SNLGroup with each other"""
+        mpsnls = {}
+        try:
+            snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": item })
+            snlgrp = SNLGroup.from_dict(snlgrp_dict)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            _log.info('%r %r', exc_type, exc_value)
+            #'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+            return 0
+        _log.info(snlgrp.all_snl_ids)
+        for idx,snl_id in enumerate(snlgrp.all_snl_ids):
+            if snl_id == snlgrp.canonical_snl.snl_id: continue
+            try:
+                mpsnl_dict = self._snls.collection.find_one({ "snl_id": snl_id })
+                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                _log.info('%r %r', exc_type, exc_value)
+                #return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+                continue
+            is_match = self._matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
+            _log.info('%d match %d: %r', snl_id, snlgrp.canonical_snl.snl_id, is_match)
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
