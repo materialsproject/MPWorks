@@ -408,7 +408,7 @@ def analyze(args):
                     ]
                     if delta_energy and delta_bandgap: writer1.writerow(row)
                     else: writer2.writerow(row)
-        elif args.fig_id == 10:
+        elif args.fig_id == 16:
             out_fig = Figure()
             badsnls_trace = Scatter(x=[], y=[], text=[], mode='markers', name='SG Changes')
             bisectrix = Scatter(x=[0,230], y=[0,230], mode='lines', name='bisectrix')
@@ -419,7 +419,10 @@ def analyze(args):
                     bad_snls[snl_id] = category
             with open('mpworks/check_snl/results/bad_snls.csv', 'wb') as f:
                 print 'pulling bad snls from database ...'
-                mpsnl_cursor = sma.snl.find({ 'snl_id': { '$in': bad_snls.keys() } })
+                mpsnl_cursor = sma.snl.find({
+                    'snl_id': { '$in': bad_snls.keys() },
+                    'about.projects': {'$ne': 'CederDahn Challenge'}
+                })
                 writer = csv.writer(f)
                 writer.writerow([
                     'snl_id', 'category', 'snlgroup_key', 'nsites', 'remarks', 'projects', 'authors'
@@ -430,11 +433,16 @@ def analyze(args):
                     row = [ mpsnl.snl_id, bad_snls[mpsnl.snl_id], mpsnl.snlgroup_key ]
                     row += _get_snl_extra_info(mpsnl)
                     writer.writerow(row)
-                    if bad_snls[mpsnl.snl_id] == 'SG change':
+                    sg_num = mpsnl.snlgroup_key.split('--')[1]
+                    if (bad_snls[mpsnl.snl_id] == 'SG default' and sg_num != '-1') or \
+                       bad_snls[mpsnl.snl_id] == 'SG change':
+                        mpsnl.structure.remove_oxidation_states()
                         sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
                         badsnls_trace['x'].append(mpsnl.sg_num)
                         badsnls_trace['y'].append(sf.get_spacegroup_number())
                         badsnls_trace['text'].append(mpsnl.snl_id)
+                        if bad_snls[mpsnl.snl_id] == 'SG default':
+                            print sg_num, sf.get_spacegroup_number()
                 print 'plotting out-fig ...'
                 out_fig['data'] = Data([bisectrix, badsnls_trace])
                 out_fig['layout'] = Layout(

@@ -748,6 +748,7 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 177272,SG default,Cd1 I2---1,51,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 177337,SG default,Cd1 I2---1,48,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 177696,SG default,Cd1 I2---1,51,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
+182076,SG change,O5 V3--14,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 184490,SG default,Au1 Cl1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 184688,SG default,Cd1 I2---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 185020,SG default,B1 F4 K1---1,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -775,6 +776,7 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 198771,SG default,Cd1 I2---1,66,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 198950,SG default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 198952,SG default,Cd1 I2---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+199478,SG change,O3 Pb2--67,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 199652,SG default,Cd1 I2---1,42,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 199653,SG default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 200163,SG default,S1 Zn1---1,32,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -784,6 +786,7 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 200169,SG default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 200172,SG default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 200176,SG default,S1 Zn1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+200233,SG change,Au1 Cl3 Cs1--225,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 203403,SG default,Cd1 I2---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 203405,SG default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 203406,SG default,S1 Zn1---1,36,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -922,7 +925,11 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 207915,SG default,F2 Mg1---1,6,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 212224,SG default,H42.4 Ho12 Mn46---1,156,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 216042,SG default,I2 Pb1---1,45,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+219400,SG change,Ba1.92 Bi2 K0.08 O6--139,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+219871,SG change,Ba4 Cu3 O9 Y1--200,34,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+221339,SG change,Ba1.86 Bi2 K0.14 O6--12,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 234076,SG default,Mn12 O24 Rb8.32---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+235285,SG change,Ca1.2 Mn4 Nd2.8 O12--11,20,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 236869,SG default,H1 O13 P3 Pb5---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 236870,SG default,H1 O13 P3 Pb5---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 241654,SG default,O2 Si1---1,18,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -995,10 +1002,12 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 261288,SG default,Mn3 O6 Sr1---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 261849,SG default,Cr4 Fe30 Y3.9992---1,86,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 262558,SG default,Ba2 O6 Sr1 W1---1,40,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+262730,SG change,Ba1 Bi1 O3--225,10,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 264667,SG default,Al5.064 La2.30969031 O24 Sr5.69030969 Ta2.848---1,64,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 265166,SG default,C1 Fe5 Si1---1,96,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 265296,SG default,Nd14.0004 Ni6---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 266225,SG default,Cu4 La7.944 O11.928---1,24,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+267384,SG change,C6 Cu1 H8 N6 O2--2,23,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 268189,SG default,H2 Li2 Mg1 N2---1,16,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 268993,SG default,Ga1 Nb4 S8---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 270053,SG default,C1 Si1---1,34,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -1011,6 +1020,8 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 273057,SG default,C7.9998 H24 O12 Si7.9998---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 276832,SG default,B10.176 Pd29.824 Th4---1,48,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 277345,SG default,Co0.999 Cu2.001 O3---1,6,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+278427,SG change,Li1 Mn2 O4--141,126,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+281545,SG change,Ca4 Fe9.76 H4 Mn2.24 O36 Si8--14,64,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 282224,SG default,O9 Si4---1,52,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 291772,SG default,P1---1,4,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 292247,SG default,Ca3 Co2 O6---1,22,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
@@ -1036,6 +1047,8 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 298463,SG default,Eu1.952 Mo14.2 O28 V2.264---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 298464,SG default,Eu1.972 Mo14.6 O28 V2.192---1,60,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 300329,SG default,C76.59 S48---1,356,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+304421,SG change,Cl8 Mo2 N1--13,44,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
+308076,SG change,B1 Fe2 O4--7,56,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 330997,SG default,H42.4 Ho12 Mn46---1,156,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 332449,SG default,C1---1,12,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 338022,SG default,Ga1 Nb4 S8---1,52,,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
@@ -1096,186 +1109,6 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 344762,SG default,Ge17 Sb14 Te40---1,71,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 345346,SG default,Hg3 In2 Te6---1,22,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 348345,SG default,Mn11 O34 Ta9---1,54,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
-348804,SG change,O5 V2--12,21,origin unknown,,ajain@lbl.gov
-348805,SG change,O5 V2--12,7,,,ajain@lbl.gov
-348806,SG change,O2 V1--88,12,origin unknown,,ajain@lbl.gov
-348807,SG change,O5 V2--63,14,origin unknown,,ajain@lbl.gov
-348808,SG change,O2 V1--136,6,ordering of disordered crystal,,ajain@lbl.gov
-348809,SG change,Fe1 O1--225,4,,,ajain@lbl.gov
-348810,SG change,O5 V3--15,16,,,ajain@lbl.gov
-348811,SG change,O2 V1--166,6,origin unknown,,ajain@lbl.gov
-348813,SG change,O3 V2--167,10,,,ajain@lbl.gov
-348814,SG change,Fe1 O2--227,12,origin unknown,,ajain@lbl.gov
-348816,SG change,Ni1 O1--139,4,,,ajain@lbl.gov
-348817,SG change,Mn1 O2--58,6,ordering of disordered crystal,,ajain@lbl.gov
-348818,SG change,Co1 O2--227,12,origin unknown,,ajain@lbl.gov
-348819,SG change,Co1 O2--166,6,ordering of disordered crystal,,ajain@lbl.gov
-348820,SG change,Mo1 O2--166,6,origin unknown,,ajain@lbl.gov
-348821,SG change,Cu1 O2--166,6,origin unknown,,ajain@lbl.gov
-348822,SG change,Ni1 O1--225,4,,,ajain@lbl.gov
-348823,SG change,Co1 O2--10,6,,,ajain@lbl.gov
-348824,SG change,Ni1 O1--191,8,,,ajain@lbl.gov
-348825,SG change,Cu1 O2--63,6,,,ajain@lbl.gov
-348828,SG change,Cu1 O1--225,4,,,ajain@lbl.gov
-348829,SG change,Mo1 O3--63,8,,,ajain@lbl.gov
-348831,SG change,Mn1 O2--227,12,ordering of disordered crystal,,ajain@lbl.gov
-348832,SG change,Co1 O2--42,6,,,ajain@lbl.gov
-348833,SG change,Co1 O1--139,4,,,ajain@lbl.gov
-348836,SG change,Co1 O4--11,10,,,ajain@lbl.gov
-348837,SG change,Co1 O2--42,6,,,ajain@lbl.gov
-348840,SG change,Co1 O1--186,4,,,ajain@lbl.gov
-348841,SG change,Cu1 O1--139,8,origin unknown,,ajain@lbl.gov
-348842,SG change,Cu1 O2--11,6,ordering of disordered crystal,,ajain@lbl.gov
-348843,SG change,Co1 O2--64,6,,,ajain@lbl.gov
-348846,SG change,Mo1 O2--70,12,origin unknown,,ajain@lbl.gov
-348847,SG change,Mo3 O8--166,22,origin unknown,,ajain@lbl.gov
-348848,SG change,Mo1 O4--2,10,,,ajain@lbl.gov
-348849,SG change,Mo1 O2--227,12,origin unknown,,ajain@lbl.gov
-348850,SG change,Mo1 O3--11,8,,,ajain@lbl.gov
-348851,SG change,O7 W2--227,18,,,ajain@lbl.gov
-348852,SG change,Cu1 O2--227,12,origin unknown,,ajain@lbl.gov
-348853,SG change,O3 W1--185,24,ordering of disordered crystal,,ajain@lbl.gov
-348854,SG change,O2 W1--166,6,origin unknown,,ajain@lbl.gov
-348855,SG change,O2 W1--227,12,origin unknown,,ajain@lbl.gov
-348856,SG change,Mo1 O2--136,6,,,ajain@lbl.gov
-348858,SG change,Cu1 O2--69,6,,,ajain@lbl.gov
-348859,SG change,Cu1 O1--131,4,,,ajain@lbl.gov
-348860,SG change,Mo1 O5--51,12,,,ajain@lbl.gov
-348861,SG change,O3 W1--221,8,,,ajain@lbl.gov
-348862,SG change,O7 W2--227,18,,,ajain@lbl.gov
-348863,SG change,Mn1 O2--136,6,,,ajain@lbl.gov
-348865,SG change,O3 W1--193,24,ordering of disordered crystal,,ajain@lbl.gov
-348867,SG change,Cu1 O2--63,6,,,ajain@lbl.gov
-348868,SG change,Ni1 O2--71,6,origin unknown,,ajain@lbl.gov
-348869,SG change,Mn1 O2--59,6,origin unknown,,ajain@lbl.gov
-348871,SG change,Fe2 O3--15,10,,,ajain@lbl.gov
-348872,SG change,Fe1 O2--141,6,origin unknown,,ajain@lbl.gov
-348873,SG change,Cu2 O1--224,6,,,ajain@lbl.gov
-348874,SG change,Ni1 O2--71,6,origin unknown,,ajain@lbl.gov
-348875,SG change,Co1 O1--225,4,,,ajain@lbl.gov
-348876,SG change,Ni1 O2--71,6,origin unknown,,ajain@lbl.gov
-348877,SG change,Ni1 O2--227,12,origin unknown,,ajain@lbl.gov
-348878,SG change,Fe1 O1--139,8,manual run,,ajain@lbl.gov
-348881,SG change,Mn1 O2--58,6,ordering of disordered crystal,,ajain@lbl.gov
-348883,SG change,O2 V1--130,48,,,ajain@lbl.gov
-348884,SG change,O3 W1--129,8,,,ajain@lbl.gov
-348885,SG change,Cr2 O3--15,10,,,ajain@lbl.gov
-348886,SG change,Mn1 O1--225,4,,,ajain@lbl.gov
-348887,SG change,Fe1 O2--63,6,,,ajain@lbl.gov
-348888,SG change,Ni1 O2--166,6,ordering of disordered crystal,,ajain@lbl.gov
-348891,SG change,Cu1 O2--47,6,,,ajain@lbl.gov
-348892,SG change,O1 V1--225,4,,,ajain@lbl.gov
-348893,SG change,Cu1 O1--9,4,,,ajain@lbl.gov
-348894,SG change,Mn1 O2--166,6,origin unknown,,ajain@lbl.gov
-348895,SG change,Cu1 O1--15,4,,,ajain@lbl.gov
-348896,SG change,O2 V1--227,12,origin unknown,,ajain@lbl.gov
-348897,SG change,Cu1 O2--69,6,,,ajain@lbl.gov
-348899,SG change,Fe1 O2--62,12,,,ajain@lbl.gov
-348900,SG change,O5 V2--59,14,ordering of disordered crystal,,ajain@lbl.gov
-348901,SG change,Ni3 O4--65,14,Pourbaix app compounds,,ajain@lbl.gov
-348903,SG change,O3 V2--15,10,,,ajain@lbl.gov
-348906,SG change,Fe1 O2--62,12,,,ajain@lbl.gov
-348907,SG change,O3 V2--15,10,,,ajain@lbl.gov
-348909,SG change,O2 V1--87,12,,,ajain@lbl.gov
-348910,SG change,Co1 O1--216,4,,,ajain@lbl.gov
-348911,SG change,Mn1 O2--141,12,origin unknown,,ajain@lbl.gov
-348912,SG change,O5 V2--31,14,,,ajain@lbl.gov
-348913,SG change,Co1 O2--64,6,ordering of disordered crystal,,ajain@lbl.gov
-348915,SG change,Mn1 O2--166,6,ordering of disordered crystal,,ajain@lbl.gov
-348916,SG change,Cr1 O1--225,4,,,ajain@lbl.gov
-348917,SG change,Cr3 O1--223,8,,,ajain@lbl.gov
-348918,SG change,O13 V6--69,38,,,ajain@lbl.gov
-348919,SG change,O5 V2--31,14,,,ajain@lbl.gov
-348920,SG change,O2 V1--62,12,,,ajain@lbl.gov
-348921,SG change,Fe3 O4--74,14,,,ajain@lbl.gov
-348922,SG change,Fe3 O4--227,14,,,ajain@lbl.gov
-348923,SG change,O3 V2--15,10,,,ajain@lbl.gov
-348924,SG change,Fe2 O3--167,10,,,ajain@lbl.gov
-348925,SG change,Cr3 O8--12,22,,,ajain@lbl.gov
-348929,SG change,Cr3 O8--12,22,,,ajain@lbl.gov
-348931,SG change,Cr1 O3--40,8,,,ajain@lbl.gov
-348932,SG change,O8 V3--12,22,,,ajain@lbl.gov
-348934,SG change,Cr2 O3--167,10,,,ajain@lbl.gov
-348935,SG change,Cr3 O8--12,22,,,ajain@lbl.gov
-348937,SG change,Cr3 O8--12,22,,,ajain@lbl.gov
-348939,SG change,O5 V2--62,28,origin unknown,,ajain@lbl.gov
-348940,SG change,O5 V3--13,32,,,ajain@lbl.gov
-348941,SG change,O5 V2--59,14,,,ajain@lbl.gov
-348942,SG change,O13 V6--12,19,,,ajain@lbl.gov
-348944,SG change,O3 V7--12,20,,,ajain@lbl.gov
-348945,SG change,O8 V3--12,22,,,ajain@lbl.gov
-348946,SG change,O2 V1--58,6,,,ajain@lbl.gov
-348947,SG change,Cr1 O2--136,6,,,ajain@lbl.gov
-348948,SG change,O10 V3--100,26,,,ajain@lbl.gov
-348950,SG change,O8 V3--12,22,,,ajain@lbl.gov
-348951,SG change,O5 V2--59,14,,,ajain@lbl.gov
-348952,SG change,O7 V3--15,60,,,ajain@lbl.gov
-348956,SG change,O2 V1--62,12,,,ajain@lbl.gov
-348958,SG change,Cr1 O2--62,12,,,ajain@lbl.gov
-348960,SG change,O5 V3--15,32,,,ajain@lbl.gov
-348961,SG change,O9 V10--2,19,ordering of disordered crystal,,ajain@lbl.gov
-348964,SG change,O13 V6--14,38,,,ajain@lbl.gov
-348965,SG change,O3 V1--11,24,,,ajain@lbl.gov
-348966,SG change,O2 V1--138,48,,,ajain@lbl.gov
-348969,SG change,O13 V7--2,40,,,ajain@lbl.gov
-348974,SG change,O13 V7--2,40,,,ajain@lbl.gov
-348975,SG change,O3 V2--167,10,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,ajain@lbl.gov
-348977,SG change,Cr1 O2--58,6,,,ajain@lbl.gov
-348978,SG change,Fe3 O4--63,14,,,ajain@lbl.gov
-348979,SG change,O8 V3--62,44,,,ajain@lbl.gov
-348980,SG change,Mn1 O3--74,8,,,ajain@lbl.gov
-348981,SG change,Mn1 O2--12,18,,,ajain@lbl.gov
-348983,SG change,O3 V7--2,20,ordering of disordered crystal,,ajain@lbl.gov
-348984,SG change,Mn3 O4--57,28,,,ajain@lbl.gov
-348985,SG change,O3 W1--113,16,,,ajain@lbl.gov
-348986,SG change,Fe3 O4--57,28,,,ajain@lbl.gov
-348990,SG change,O2 V1--136,6,,,ajain@lbl.gov
-348991,SG change,O3 V2--206,40,,,ajain@lbl.gov
-348994,SG change,Fe1 O1--139,16,,,ajain@lbl.gov
-348995,SG change,Cu1 O5--15,24,,,ajain@lbl.gov
-348996,SG change,O17 V9--2,52,,,ajain@lbl.gov
-348997,SG change,O10 W3--42,26,,,ajain@lbl.gov
-348999,SG change,O2 V1--139,48,,,ajain@lbl.gov
-349001,SG change,Mn1 O2--14,12,,,ajain@lbl.gov
-349003,SG change,Fe3 O4--216,14,,,ajain@lbl.gov
-349005,SG change,O17 V9--2,52,,,ajain@lbl.gov
-349007,SG change,O9 V5--2,28,,,ajain@lbl.gov
-349008,SG change,O5 W1--14,24,,,ajain@lbl.gov
-349010,SG change,Cr1 O3--40,8,,,ajain@lbl.gov
-349011,SG change,O3 W1--14,16,,,ajain@lbl.gov
-349012,SG change,Mn5 O8--12,26,,,ajain@lbl.gov
-349013,SG change,O8 W3--65,22,,,ajain@lbl.gov
-349017,SG change,O2 W1--14,12,,,ajain@lbl.gov
-349018,SG change,Mn3 O4--141,14,,,ajain@lbl.gov
-349019,SG change,O8 W3--21,22,,,ajain@lbl.gov
-349021,SG change,Mn1 O2--12,18,,,ajain@lbl.gov
-349022,SG change,O5 V2--59,14,,,ajain@lbl.gov
-349024,SG change,Mn3 O4--57,28,,,ajain@lbl.gov
-349026,SG change,Mo3 O10--41,26,,,ajain@lbl.gov
-349027,SG change,Mn3 O4--57,28,,,ajain@lbl.gov
-349028,SG change,O2 V1--14,12,,,ajain@lbl.gov
-349030,SG change,O1 W3--223,8,,,ajain@lbl.gov
-349031,SG change,Mo3 O10--176,26,,,ajain@lbl.gov
-349035,SG change,Mo1 O3--62,16,,,ajain@lbl.gov
-349036,SG change,Mn3 O4--57,28,,,ajain@lbl.gov
-349038,SG change,O3 W1--63,16,,,ajain@lbl.gov
-349043,SG change,Fe4 O13--71,17,,,ajain@lbl.gov
-349047,SG change,Mo1 O2--14,12,,,ajain@lbl.gov
-349048,SG change,Mn2 O5--55,14,,,ajain@lbl.gov
-349053,SG change,O3 W1--130,16,,,ajain@lbl.gov
-349070,SG change,Fe3 O4--57,28,,,ajain@lbl.gov
-349081,SG change,Mn1 O2--84,18,,,ajain@lbl.gov
-349094,SG change,Mn1 O2--87,12,,,ajain@lbl.gov
-349102,SG change,Mn3 O4--15,14,ordering of disordered crystal,,ajain@lbl.gov
-349111,SG change,Fe2 O3--60,20,,,ajain@lbl.gov
-349128,SG change,Mn1 O4--69,30,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,ajain@lbl.gov
-349140,SG change,Co3 O4--227,14,,,ajain@lbl.gov
-349141,SG change,Fe2 O3--206,40,,,ajain@lbl.gov
-349165,SG change,O3 W1--14,16,,,ajain@lbl.gov
-349170,SG change,Fe1 O2--87,12,,,ajain@lbl.gov
-349175,SG change,Fe7 O8--225,30,ordering of disordered crystal,,ajain@lbl.gov
-349180,SG change,O5 V2--15,14,,,ajain@lbl.gov
-349183,SG change,Mn1 O2--62,12,,,ajain@lbl.gov
 349197,SG default,Cd13 I28---1,41,,,wrichard@mit.edu / shyue@mit.edu / sdacek@mit.edu / ajain@lbl.gov
 352591,SG default,F3 H8 K1 N2 O3 W1---1,36,ordering of disordered crystal,,mpkocher@lbl.gov / ajain@lbl.gov / shyue@mit.edu / geoffroy.hautier@uclouvain.be
 358647,SG default,Co1 O2---1,24,supplementary compounds from MIT matgen database,MIT matgen,ajain@lbl.gov / boxu14@mit.edu
@@ -1283,135 +1116,3 @@ snl_id,category,snlgroup_key,nsites,remarks,projects,authors
 367182,SG default,Co2 Fe3 Li5 O10---1,40,supplementary compounds from MIT matgen database,MIT matgen,geoffroy.hautier@uclouvain.be / boxu14@mit.edu
 390704,SG default,Co2 Fe3 Li5 O10---1,40,supplementary compounds from MIT matgen database,MIT matgen,geoffroy.hautier@uclouvain.be / boxu14@mit.edu
 392113,SG default,Co1 Fe4 Li5 O10---1,40,supplementary compounds from MIT matgen database,MIT matgen,geoffroy.hautier@uclouvain.be / boxu14@mit.edu
-395024,SG change,Cr1 O7 P2--4,20,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395027,SG change,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395049,SG change,Cr2 O6 Te1--136,18,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395082,SG change,Cr3 O14 P4--14,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395262,SG change,Cr1 La1 O4--14,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395265,SG change,Cr1 O4 Y1--141,12,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395270,SG change,Cr1 O4 Sb1--65,12,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395273,SG change,Cr1 O12 P4--4,34,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395274,SG change,Cr1 O5 P1--62,28,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395276,SG change,Cr1 O7 P2--14,40,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395277,SG change,Bi1 Cr1 O3--62,20,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395283,SG change,Cr1 Hg5 O6--15,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395286,SG change,Cr1 O4 Pr1--141,12,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395289,SG change,Cr1 Mn2 O4--15,14,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395290,SG change,Cr1 O6 Ta2--14,18,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395293,SG change,Ba3 Cr1 O5--140,18,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395294,SG change,Cr1 Cu1 O2--194,8,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395303,SG change,Cr1 O4 Pb1--14,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395313,SG change,Cr3 Li1 O8--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395320,SG change,Cr1 Hg1 O4--63,12,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395321,SG change,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395324,SG change,Cr1 K3 O4--121,16,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395335,SG change,Cr1 O4 Pb1--62,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395344,SG change,Cr1 Hg1 O4--14,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395347,SG change,Br1 Cr1 O1--59,6,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395349,SG change,Cr2 O6 W1--136,18,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395363,SG change,Cr3 O8 Tl1--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-395406,SG change,Cr1 Mn2 O4--15,14,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403339,SG change,Cr1 K3 O4--121,16,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403340,SG change,Cr3 O8 Tl1--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403341,SG change,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403342,SG change,Cr3 Li1 O8--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403343,SG change,Cr1 O4 Sb1--65,12,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403349,SG change,Cr1 O4 Sb1--65,12,ordering of disordered crystal,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403350,SG change,Cr3 O8 Tl1--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403352,SG change,Cr3 Li1 O8--12,24,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403354,SG change,Cr3 O14 P4--2,42,Li ion battery electrode,MIT battery project / Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403356,SG change,Cr1 K3 O4--121,16,,Molecular Foundry Cr oxides investigation,ajain@lbl.gov
-403374,SG change,Ni1 S2--129,6,,,ajain@lbl.gov
-403376,SG change,Ni1 S2--194,6,,,ajain@lbl.gov
-403377,SG change,Ni1 S2--58,6,,,ajain@lbl.gov
-403378,SG change,Ni1 S2--225,6,,,ajain@lbl.gov
-403379,SG change,S4 V3--12,14,,,ajain@lbl.gov
-403380,SG change,S1 V1--194,4,,,ajain@lbl.gov
-403381,SG change,Ni2 S1--139,6,,,ajain@lbl.gov
-403382,SG change,S1 V1--62,8,,,ajain@lbl.gov
-403384,SG change,S2 V1--5,6,,,ajain@lbl.gov
-403386,SG change,S4 V5--87,18,,,ajain@lbl.gov
-403387,SG change,S2 V1--51,6,,,ajain@lbl.gov
-403388,SG change,S4 V3--12,14,,,ajain@lbl.gov
-403391,SG change,S4 V1--15,20,,,ajain@lbl.gov
-403392,SG change,S4 V3--12,14,,,ajain@lbl.gov
-403393,SG change,Fe1 S1--194,4,ordering of disordered crystal,,ajain@lbl.gov
-403394,SG change,S4 V3--176,14,,,ajain@lbl.gov
-403395,SG change,S1 V3--121,16,,,ajain@lbl.gov
-403396,SG change,S8 V5--12,26,,,ajain@lbl.gov
-403397,SG change,S2 V1--194,6,,,ajain@lbl.gov
-403398,SG change,S4 V3--12,14,,,ajain@lbl.gov
-403399,SG change,S1 V1--194,4,ordering of disordered crystal,,ajain@lbl.gov
-403400,SG change,Ni1 S2--194,6,,,ajain@lbl.gov
-403401,SG change,S1 V1--194,4,,,ajain@lbl.gov
-403402,SG change,Ni1 S1--194,4,ordering of disordered crystal,,ajain@lbl.gov
-403404,SG change,Cr2 S3--148,10,,,ajain@lbl.gov
-403405,SG change,Cr1 S1--194,4,,,ajain@lbl.gov
-403406,SG change,Cr1 S1--15,4,,,ajain@lbl.gov
-403407,SG change,Cr3 S4--12,14,,,ajain@lbl.gov
-403409,SG change,Cr5 S6--163,22,,,ajain@lbl.gov
-403410,SG change,Cr2 S3--163,20,,,ajain@lbl.gov
-403411,SG change,Cr5 S8--12,26,,,ajain@lbl.gov
-403412,SG change,Fe1 S2--205,12,,,ajain@lbl.gov
-403413,SG change,Fe1 S2--58,6,,,ajain@lbl.gov
-403414,SG change,Fe1 S1--194,4,,,ajain@lbl.gov
-403415,SG change,Fe1 S1--190,24,,,ajain@lbl.gov
-403416,SG change,Fe1 S1--62,8,,,ajain@lbl.gov
-403417,SG change,Fe1 S2--29,12,,,ajain@lbl.gov
-403418,SG change,Fe1 S1--186,16,,,ajain@lbl.gov
-403419,SG change,Fe3 S4--160,14,,,ajain@lbl.gov
-403420,SG change,Fe1 S1--14,24,,,ajain@lbl.gov
-403421,SG change,Fe1 S1--129,4,,,ajain@lbl.gov
-403422,SG change,Fe1 S1--186,4,,,ajain@lbl.gov
-403423,SG change,Fe3 S4--166,14,,,ajain@lbl.gov
-403424,SG change,Fe7 S8--15,30,,,ajain@lbl.gov
-403425,SG change,Fe3 S4--227,14,,,ajain@lbl.gov
-403430,SG change,Fe1 S1--190,24,ordering of disordered crystal,,ajain@lbl.gov
-403431,SG change,Fe7 S8--14,30,ordering of disordered crystal,,ajain@lbl.gov
-403432,SG change,Fe1 S2--54,12,,,ajain@lbl.gov
-403435,SG change,Fe7 S8--14,30,ordering of disordered crystal,,ajain@lbl.gov
-403436,SG change,Mn1 S1--225,4,,,ajain@lbl.gov
-403437,SG change,Fe4 S5--75,18,,,ajain@lbl.gov
-403438,SG change,Mn1 S2--205,12,,,ajain@lbl.gov
-403439,SG change,Mn1 S1--216,4,,,ajain@lbl.gov
-403440,SG change,Mn1 S1--186,4,,,ajain@lbl.gov
-403441,SG change,Ni1 S1--160,12,,,ajain@lbl.gov
-403442,SG change,Ni3 S2--155,10,,,ajain@lbl.gov
-403443,SG change,Ni1 S2--205,12,,,ajain@lbl.gov
-403444,SG change,Mn1 S1--221,4,,,ajain@lbl.gov
-403445,SG change,Ni1 S2--1,12,DEPRECATED / SEVERE BUG IN ICSD CONVERSION,,ajain@lbl.gov
-403446,SG change,Ni1 S1--194,4,,,ajain@lbl.gov
-403447,SG change,Ni1 S1--186,4,,,ajain@lbl.gov
-403449,SG change,Ni3 S2--5,10,,,ajain@lbl.gov
-403450,SG change,Ni3 S4--227,14,,,ajain@lbl.gov
-403451,SG change,Ni1 S2--198,12,,,ajain@lbl.gov
-403452,SG change,Ni1 S1--8,12,,,ajain@lbl.gov
-403453,SG change,Ni3 S2--38,10,,,ajain@lbl.gov
-403454,SG change,Ni1 S2--60,12,,,ajain@lbl.gov
-403455,SG change,Ni3 S2--63,10,,,ajain@lbl.gov
-403456,SG change,Ni1 S2--62,12,,,ajain@lbl.gov
-403474,SG change,Ni2 S1--139,6,,,ajain@lbl.gov
-403476,SG change,Ni1 S2--225,6,,,ajain@lbl.gov
-403477,SG change,Mo1 S2--194,6,,,ajain@lbl.gov
-403478,SG change,Co1 S1--194,4,,,ajain@lbl.gov
-403479,SG change,Cu2 S1--225,3,,,ajain@lbl.gov
-403480,SG change,Co1 S2--205,12,,,ajain@lbl.gov
-403481,SG change,Mo1 S2--166,6,,,ajain@lbl.gov
-403482,SG change,Cu1 S2--115,6,ordering of disordered crystal,,ajain@lbl.gov
-403483,SG change,Mo1 S2--160,6,,,ajain@lbl.gov
-403484,SG change,Mo3 S4--2,14,,,ajain@lbl.gov
-403485,SG change,Cu2 S1--96,12,,,ajain@lbl.gov
-403486,SG change,Mo3 S4--148,14,,,ajain@lbl.gov
-403489,SG change,Co3 S4--227,14,,,ajain@lbl.gov
-403490,SG change,Cu1 S1--63,12,,,ajain@lbl.gov
-403493,SG change,Cu1 S2--205,12,,,ajain@lbl.gov
-403494,SG change,Cu1 S1--194,12,,,ajain@lbl.gov
-403495,SG change,Cu2 S1--194,6,,,ajain@lbl.gov
-403497,SG change,S2 W1--160,6,,,ajain@lbl.gov
-403498,SG change,Cu1 S1--194,12,,,ajain@lbl.gov
-403499,SG change,S2 W1--194,6,,,ajain@lbl.gov
-403502,SG change,Cu1 S2--58,6,,,ajain@lbl.gov
-403504,SG change,Cu2 S1--194,6,,,ajain@lbl.gov
-403509,SG change,Cu1 S2--5,6,ordering of disordered crystal,,ajain@lbl.gov
-403510,SG change,Cu1 S1--216,4,supplementary compounds from MIT matgen database,MIT matgen,ajain@lbl.gov
-403514,SG change,Cu1 S2--115,6,ordering of disordered crystal,,ajain@lbl.gov
