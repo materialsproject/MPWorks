@@ -454,6 +454,31 @@ def analyze(args):
                 filename = 'spacegroup_changes_'
                 filename += datetime.datetime.now().strftime('%Y-%m-%d') 
                 py.plot(out_fig, filename=filename, auto_open=False)
+        elif args.fig_id == 18:
+            print 'pulling data from plotly ...'
+            trace = Scatter(x=[], y=[], text=[], mode='markers', name='mismatches')
+            bad_snls = OrderedDict() # snlgroup_id : [ mistmatching snl_ids ]
+            for category, text in zip(fig['data'][2]['y'], fig['data'][2]['text']):
+                if category != 'mismatch': continue
+                fields = text.split(':')
+                snlgroup_id = fields[0].split(',')[0]
+                bad_snls[snlgroup_id] = fields[1].split(',')
+                for i, snl_id in enumerate(bad_snls[snlgroup_id]):
+                    trace['x'].append(snlgroup_id)
+                    trace['y'].append(i+1)
+                    trace['text'].append(snl_id)
+            print 'plotting out-fig ...'
+            out_fig = Figure()
+            out_fig['data'] = Data([trace])
+            out_fig['layout'] = Layout(
+                showlegend=False,
+                title='Member Mismatches of SNLGroup Canonicals',
+                xaxis=XAxis(showgrid=False, title='snlgroup_id'),
+                yaxis=YAxis(showgrid=False, title='# mismatching SNLs'),
+            )
+            filename = 'groupmember_mismatches_'
+            filename += datetime.datetime.now().strftime('%Y-%m-%d') 
+            py.plot(out_fig, filename=filename, auto_open=False)
     else:
         errors = Counter()
         bad_snls = OrderedDict()
