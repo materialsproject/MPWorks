@@ -20,23 +20,23 @@ if py is not None:
 
 _log = get_builder_log("snl_group_checks")
 categories = [
-    ['SG change', 'SG default', 'pybtex', 'others' ], # SNLSpaceGroupChecker
-    [], # SNLGroupMemberChecker
+    ['SG change', 'SG default', 'pybtex', 'others'], # SNLSpaceGroupChecker
+    ['mismatch', 'others'], # SNLGroupMemberChecker
     ['diff. SGs', 'same SGs', 'pybtex', 'others'] # SNLGroupCrossChecker
 ]
 titles = [
     'Spacegroup Consistency Check', # SNLSpaceGroupChecker
-    '', # SNLGroupMemberChecker
+    'SNLGroup Members Consistency Check', # SNLGroupMemberChecker
     'Cross-Check of Canonical SNLs / SNLGroups', # SNLGroupCrossChecker
 ]
 xtitles = [
     '# affected SNLs', # SNLSpaceGroupChecker
-    '', # SNLGroupMemberChecker
+    '# affected SNLGroups', # SNLGroupMemberChecker
     '# affected SNLGroups', # SNLGroupCrossChecker
 ]
 colorbar_titles = [
     '#SNLs', # SNLSpaceGroupChecker
-    '', # SNLGroupMemberChecker
+    '#SNLGroups', # SNLGroupMemberChecker
     '#SNLGroups', # SNLGroupCrossChecker
 ]
 
@@ -142,35 +142,103 @@ class SNLSpaceGroupChecker(Builder):
 class SNLGroupMemberChecker(Builder):
     """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
 
-    def get_items(self, snls=None, snlgroups=None):
+    def get_items(self, snls=None, snlgroups=None, ncols=None):
         """SNLGroups iterator
 
         :param snls: 'snl' collection in 'snl_mp_prod' DB
         :type snls: QueryEngine
         :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
         :type snlgroups: QueryEngine
+        :param ncols: number of columns for 2D plotly
+        :type ncols: int
         """
         self._matcher = StructureMatcher(
             ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
             attempt_supercell=False, comparator=ElementComparator()
         )
+        self._lock = self._mgr.Lock() if not self._seq else None
+        self._ncols = ncols if not self._seq else 1
+        self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snlgroup_counter = self.shared_list()
+        self._snlgroup_counter.extend([[0]*self._ncols for i in range(self._nrows)])
+        self._snlgroup_counter_total = multiprocessing.Value('d', 0)
+        self._mismatch_dict = self.shared_dict()
+        self._mismatch_dict.update(dict((k,[]) for k in categories[1]))
+        self._mismatch_counter = self.shared_list()
+        self._mismatch_counter.extend([0]*len(self._mismatch_dict.keys()))
+	if py is not None:
+	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
+	  for s in self._streams: s.open()
         self._snls = snls
         self._snlgroups = snlgroups
         _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
-        return self._snlgroups.query(distinct_key='snlgroup_id')[:10]
+        return self._snlgroups.query(distinct_key='snlgroup_id')[:2700] # TODO: remove limit
+
+    def _push_to_plotly(self):
+        heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
+        bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
+        md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
+	try:
+	  self._streams[0].write(Heatmap(z=heatmap_z))
+	except:
+	  _log.info('_push_to_plotly ERROR: heatmap=%r', heatmap_z)
+	try:
+	  self._streams[1].write(Bar(x=bar_x))
+	except:
+	  _log.info('_push_to_plotly ERROR: bar=%r', bar_x)
+        for k,v in md.iteritems():
+            if len(v) < 1: continue
+            try:
+                self._streams[2].write(Scatter(
+                    x=self._mismatch_counter[categories[1].index(k)], y=k,
+                    text='<br>'.join(v)
+                ))
+                _log.info('_push_to_plotly: mismatch_dict[%r]=%r', k, v)
+                self._mismatch_dict.update({k:[]}) # clean
+                time.sleep(0.052)
+            except:
+                _log.info('_push_to_plotly ERROR: mismatch_dict=%r', md)
+                _log.info(
+                    'self._mismatch_dict=%r',
+                    self._mismatch_dict._getvalue() if not self._seq
+                    else self._mismatch_dict
+                )
+
+    def _increase_counter(self, nrow, ncol, mismatch_dict):
+        if self._lock is not None: self._lock.acquire()
+        mc = self._mismatch_counter
+        for k in categories[1]:
+            mc[categories[1].index(k)] += len(mismatch_dict[k])
+        self._mismatch_counter = mc
+        for k,v in mismatch_dict.iteritems():
+            self._mismatch_dict[k] += v
+        currow = self._snlgroup_counter[nrow]
+        currow[ncol] += 1
+        self._snlgroup_counter[nrow] = currow
+        self._snlgroup_counter_total.value += 1
+        if py is not None and not \
+           self._snlgroup_counter_total.value % (10*self._ncols*self._nrows):
+            self._push_to_plotly()
+        if (not self._snlgroup_counter_total.value%2500):
+            _log.info('processed %d SNLGroups', self._snlgroup_counter_total.value)
+        if self._lock is not None: self._lock.release()
 
     def process_item(self, item, index):
         """compare all members of SNLGroup with each other"""
-        mpsnls = {}
+        nrow, ncol = index/self._ncols, index%self._ncols
+        local_mismatch_dict = dict((k,[]) for k in categories[1])
+        snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": item })
         try:
-            snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": item })
             snlgrp = SNLGroup.from_dict(snlgrp_dict)
         except:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             _log.info('%r %r', exc_type, exc_value)
-            #'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+            local_mismatch_dict[categories[1][-1]].append('%d' % snlgrp_dict['snlgroup_id'])
+            _log.info(local_mismatch_dict)
+            self._increase_counter(nrow, ncol, local_mismatch_dict)
             return 0
-        _log.info(snlgrp.all_snl_ids)
+        mismatch_snls = []
+        entry = '%d,%d:' % (snlgrp.snlgroup_id, snlgrp.canonical_snl.snl_id)
         for idx,snl_id in enumerate(snlgrp.all_snl_ids):
             if snl_id == snlgrp.canonical_snl.snl_id: continue
             try:
@@ -179,10 +247,22 @@ class SNLGroupMemberChecker(Builder):
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 _log.info('%r %r', exc_type, exc_value)
-                #return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+                local_mismatch_dict[categories[1][-1]].append('%s%d' % (entry, snl_id))
                 continue
             is_match = self._matcher.fit(mpsnl.structure, snlgrp.canonical_structure)
-            _log.info('%d match %d: %r', snl_id, snlgrp.canonical_snl.snl_id, is_match)
+            if is_match: continue
+            mismatch_snls.append(str(snl_id))
+            _log.info('%s %d', entry, snl_id)
+        if len(mismatch_snls) > 0:
+            full_entry = '%s%s' % (entry, ','.join(mismatch_snls))
+            local_mismatch_dict[categories[1][0]].append(full_entry)
+            _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
+        self._increase_counter(nrow, ncol, local_mismatch_dict)
+
+    def finalize(self, errors):
+	if py is not None: self._push_to_plotly()
+        _log.info("%d SNLGroups processed.", self._snlgroup_counter_total.value)
+        return True
 
 class SNLGroupCrossChecker(Builder):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
