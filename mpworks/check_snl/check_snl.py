@@ -460,13 +460,29 @@ def analyze(args):
             bad_snls = OrderedDict() # snlgroup_id : [ mistmatching snl_ids ]
             for category, text in zip(fig['data'][2]['y'], fig['data'][2]['text']):
                 if category != 'mismatch': continue
-                fields = text.split(':')
-                snlgroup_id = fields[0].split(',')[0]
-                bad_snls[snlgroup_id] = fields[1].split(',')
-                for i, snl_id in enumerate(bad_snls[snlgroup_id]):
-                    trace['x'].append(snlgroup_id)
-                    trace['y'].append(i+1)
-                    trace['text'].append(snl_id)
+                for entry in text.split('<br>'):
+                    fields = entry.split(':')
+                    snlgroup_id = fields[0].split(',')[0]
+                    bad_snls[int(snlgroup_id)] = fields[1].split(',')
+                    for i, snl_id in enumerate(bad_snls[int(snlgroup_id)]):
+                        trace['x'].append(snlgroup_id)
+                        trace['y'].append(i+1)
+                        trace['text'].append(snl_id)
+            with open('mpworks/check_snl/results/bad_snlgroups.csv', 'wb') as f:
+                print 'pulling bad snlgroups from database ...'
+                snlgroup_cursor = sma.snlgroups.find({
+                    'snlgroup_id': { '$in': bad_snls.keys() },
+                })
+                writer = csv.writer(f)
+                writer.writerow(['snlgroup_id', 'snlgroup_key', 'mismatching snl_ids'])
+                print 'writing bad snlgroups to file ...'
+                for snlgroup_dict in snlgroup_cursor:
+                    snlgroup = SNLGroup.from_dict(snlgroup_dict)
+                    row = [
+                        snlgroup.snlgroup_id, snlgroup.canonical_snl.snlgroup_key,
+                        ' '.join(bad_snls[snlgroup.snlgroup_id])
+                    ]
+                    writer.writerow(row)
             print 'plotting out-fig ...'
             out_fig = Figure()
             out_fig['data'] = Data([trace])
