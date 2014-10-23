@@ -465,6 +465,10 @@ def analyze(args):
                     snlgroup_id = fields[0].split(',')[0]
                     bad_snls[int(snlgroup_id)] = fields[1].split(',')
                     for i, snl_id in enumerate(bad_snls[int(snlgroup_id)]):
+                        mpsnl_dict = sma.snl.find_one({ 'snl_id': int(snl_id) })
+                        if 'CederDahn Challenge' in mpsnl_dict['about']['projects']:
+                            print 'skip CederDahn: %s' % snl_id
+                            continue
                         trace['x'].append(snlgroup_id)
                         trace['y'].append(i+1)
                         trace['text'].append(snl_id)
