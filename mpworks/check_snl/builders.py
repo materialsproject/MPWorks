@@ -172,7 +172,7 @@ class SNLGroupMemberChecker(Builder):
         self._snls = snls
         self._snlgroups = snlgroups
         _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
-        return self._snlgroups.query(distinct_key='snlgroup_id')[:2700] # TODO: remove limit
+        return self._snlgroups.query(distinct_key='snlgroup_id')
 
     def _push_to_plotly(self):
         heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
