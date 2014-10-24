@@ -470,16 +470,19 @@ def analyze(args):
                 if category != 'mismatch': continue
                 for entry in text.split('<br>'):
                     fields = entry.split(':')
-                    snlgroup_id = fields[0].split(',')[0]
-                    bad_snls[int(snlgroup_id)] = fields[1].split(',')
-                    for i, snl_id in enumerate(bad_snls[int(snlgroup_id)]):
+                    snlgroup_id = int(fields[0].split(',')[0])
+                    bad_snls[snlgroup_id] = []
+                    for i, snl_id in enumerate(fields[1].split(',')):
                         mpsnl_dict = sma.snl.find_one({ 'snl_id': int(snl_id) })
                         if 'CederDahn Challenge' in mpsnl_dict['about']['projects']:
                             print 'skip CederDahn: %s' % snl_id
                             continue
+                        bad_snls[snlgroup_id].append(snl_id)
                         trace['x'].append(snlgroup_id)
                         trace['y'].append(i+1)
                         trace['text'].append(snl_id)
+                    if len(bad_snls[snlgroup_id]) < 1:
+                        bad_snls.pop(snlgroup_id, None)
             with open('mpworks/check_snl/results/bad_snlgroups.csv', 'wb') as f:
                 print 'pulling bad snlgroups from database ...'
                 snlgroup_cursor = sma.snlgroups.find({
@@ -501,7 +504,7 @@ def analyze(args):
             out_fig['layout'] = Layout(
                 showlegend=False, hovermode='closest',
                 title='Member Mismatches of SNLGroup Canonicals',
-                xaxis=XAxis(showgrid=False, title='snlgroup_id'),
+                xaxis=XAxis(showgrid=False, title='snlgroup_id', showexponent='none'),
                 yaxis=YAxis(showgrid=False, title='# mismatching SNLs'),
             )
             filename = 'groupmember_mismatches_'
