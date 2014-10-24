@@ -317,7 +317,10 @@ def analyze(args):
             pairs = map(make_tuple, label_entries)
             grps = set(chain.from_iterable(pairs))
             snlgrp_cursor = sma.snlgroups.aggregate([
-                { '$match': { 'snlgroup_id': { '$in': list(grps) } } },
+                { '$match': {
+                    'snlgroup_id': { '$in': list(grps) },
+                    'canonical_snl.about.projects': {'$ne': 'CederDahn Challenge'}
+                } },
                 { '$project': { 'snlgroup_id': 1, 'canonical_snl.snlgroup_key': 1, '_id': 0 } }
             ], cursor={})
             snlgroup_keys = {}
@@ -328,7 +331,10 @@ def analyze(args):
                 os.path.join(os.environ['DB_LOC'], 'materials_db.yaml')
             )
             materials_cursor = sma2.database.materials.aggregate([
-                { '$match': { 'snlgroup_id_final': { '$in': list(grps) } } },
+                { '$match': {
+                    'snlgroup_id_final': { '$in': list(grps) },
+                    'snl_final.about.projects': {'$ne': 'CederDahn Challenge'}
+                } },
                 { '$project': {
                     'snlgroup_id_final': 1, '_id': 0, 'task_id': 1,
                     'final_energy_per_atom': 1,
@@ -362,6 +368,8 @@ def analyze(args):
                 writer1.writerow(header)
                 writer2.writerow(header)
                 for primary_id, secondary_id in pairs:
+                    if primary_id not in snlgroup_keys or \
+                       secondary_id not in snlgroup_keys: continue
                     composition, primary_sg_num = snlgroup_keys[primary_id].split('--')
                     secondary_sg_num = snlgroup_keys[secondary_id].split('--')[1]
                     category = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
