@@ -462,21 +462,33 @@ def analyze(args):
                 filename = 'spacegroup_changes_'
                 filename += datetime.datetime.now().strftime('%Y-%m-%d') 
                 py.plot(out_fig, filename=filename, auto_open=False)
-        elif args.fig_id == 20:
+        elif args.fig_id == 20: # SNLGroupMemberChecker
+            matcher2 = StructureMatcher(
+                ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=False, scale=True,
+                attempt_supercell=True, comparator=ElementComparator()
+            )
             print 'pulling data from plotly ...'
             trace = Scatter(x=[], y=[], text=[], mode='markers', name='mismatches')
-            bad_snls = OrderedDict() # snlgroup_id : [ mistmatching snl_ids ]
+            bad_snls = OrderedDict() # snlgroup_id : [ mismatching snl_ids ]
             for category, text in zip(fig['data'][2]['y'], fig['data'][2]['text']):
                 if category != 'mismatch': continue
                 for entry in text.split('<br>'):
                     fields = entry.split(':')
                     snlgroup_id = int(fields[0].split(',')[0])
+                    print snlgroup_id
+                    snlgrp_dict = sma.snlgroups.find_one({ 'snlgroup_id': snlgroup_id })
+                    snlgrp = SNLGroup.from_dict(snlgrp_dict)
+                    s1 = snlgrp.canonical_structure.get_primitive_structure()
                     bad_snls[snlgroup_id] = []
                     for i, snl_id in enumerate(fields[1].split(',')):
                         mpsnl_dict = sma.snl.find_one({ 'snl_id': int(snl_id) })
                         if 'CederDahn Challenge' in mpsnl_dict['about']['projects']:
                             print 'skip CederDahn: %s' % snl_id
                             continue
+                        mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                        s2 = mpsnl.structure.get_primitive_structure()
+                        is_match = matcher2.fit(s1, s2)
+                        if is_match: continue
                         bad_snls[snlgroup_id].append(snl_id)
                         trace['x'].append(snlgroup_id)
                         trace['y'].append(i+1)
