@@ -96,7 +96,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         # run GGA Band structure
         spec = {'task_type': '{} band structure v2'.format(type_name), '_queueadapter': QA_VASP,
                 '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority, '_trackers': trackers}
-        fws.append(Firework([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line'}),
+        fws.append(Firework([VaspCopyTask({'use_CONTCAR': False}), SetupNonSCFTask({'mode': 'line', "kpoints_line_density": line_dens}),
                              get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']),
                             fw_id=-6))
         connections[-7] = [-6]

@@ -81,14 +81,14 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         self.update(parameters)
         self.line = parameters.get('mode', 'line').lower() == 'line'
         self.kpoints_density = parameters.get('kpoints_density', 1000)
-        self.line_density = parameters.get('line_density', 20)
+        self.kpoints_line_density = parameters.get('kpoints_line_density', 20)
 
     def run_task(self, fw_spec):
         user_incar_settings= {"NPAR": 2}
         if self.line:
             MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Line", copy_chgcar=False,
-                                                        user_incar_settings=user_incar_settings, line_density=self.line_density)
-            kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure, line_density=self.line_density)
+                                                        user_incar_settings=user_incar_settings, kpoints_line_density=self.kpoints_line_density)
+            kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure)
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
         else:
