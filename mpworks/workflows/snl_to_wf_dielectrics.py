@@ -27,7 +27,6 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
 
-    # f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
     f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
     
     # add the SNL to the SNL DB and figure out duplicate group
