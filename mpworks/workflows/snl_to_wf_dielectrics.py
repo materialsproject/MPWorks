@@ -31,9 +31,9 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+    spec = {'task_type': 'Add to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
-        spec['static_dielectrics_mpsnl'] = snl.to_dict
+        spec['static_dielectrics_mpsnl'] = snl.as_dict()
         spec['static_dielectrics_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
     fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
@@ -44,10 +44,10 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     incar = mpvis.get_incar(snl.structure)
     incar.update({"EDIFF":"1.0E-6"})
     incar.update({"ENCUT":"800"})
-    spec['vasp']['incar'] = incar.to_dict
+    spec['vasp']['incar'] = incar.as_dict()
     kpoints_density = 3000
     k=Kpoints.automatic_density(snl.structure, kpoints_density)
-    spec['vasp']['kpoints'] = k.to_dict
+    spec['vasp']['kpoints'] = k.as_dict()
     # spec = update_spec_static_dielectrics_convergence(spec)
     # del spec['dupefinder']
     # spec['run_tags'].append("origin")
