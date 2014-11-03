@@ -1,4 +1,3 @@
-from fireworks.core.firework import FireWork
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
 
 __author__ = 'Ioannis Petousis'
@@ -11,7 +10,7 @@ from mpworks.workflows.wf_settings import QA_DB, QA_VASP
 from pymatgen import Composition
 from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 
 from mpworks.workflows import snl_to_wf
 
@@ -36,7 +35,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         spec['static_dielectrics_mpsnl'] = snl.as_dict()
         spec['static_dielectrics_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     
     # run GGA structure optimization for static dielectric convergence
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
@@ -55,12 +54,12 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     spec['_queueadapter'] = QA_VASP
     spec['task_type'] = "Static Dielectrics Calculation" # Change name here: delete Vasp? 
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
     connections[0] = [1] # define fw_id=1 is dependent on completion of fw_id=0
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority, '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-    fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+    fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
 
     wf_meta = get_meta_from_structure(snl.structure)
