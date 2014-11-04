@@ -207,6 +207,15 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
 
+                    # also override band gap in task doc
+                    gap = bs.get_band_gap()
+                    vbm = bs.get_vbm()
+                    cbm = bs.get_cbm()
+                    is_direct = vbm['kpoint'] == cbm['kpoint']
+                    update_doc = {'bandgap': gap, 'vbm': vbm['energy'], 'cbm': cbm['energy'], 'is_gap_direct': is_direct}
+                d['analysis'].update(update_doc)
+                d['calculations'][0]['output'].update(update_doc)
+
                 coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
                 return d["task_id"], d
