@@ -211,8 +211,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     gap = bs.get_band_gap()
                     vbm = bs.get_vbm()
                     cbm = bs.get_cbm()
-                    is_direct = vbm['kpoint'] == cbm['kpoint']
-                    update_doc = {'bandgap': gap, 'vbm': vbm['energy'], 'cbm': cbm['energy'], 'is_gap_direct': is_direct}
+                    update_doc = {'bandgap': gap['energy'], 'vbm': vbm['energy'], 'cbm': cbm['energy'], 'is_gap_direct': gap['direct']}
                     d['analysis'].update(update_doc)
                     d['calculations'][0]['output'].update(update_doc)
 
