@@ -35,12 +35,13 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         parameters = parameters if parameters else {}
         self.update(parameters)
         self.kpoints_density = parameters.get('kpoints_density', 90)
+        self.user_incar_settings = parameters.get('user_incar_settings', {})
 
     def run_task(self, fw_spec):
-        user_incar_settings = {"NPAR": 2}
+        self.user_incar_settings.update({"NPAR": 2})
 
         MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
-                                                    user_incar_settings=user_incar_settings, kpoints_density=self.kpoints_density)
+                                                    user_incar_settings=self.user_incar_settings, kpoints_density=self.kpoints_density)
         structure = MPStaticVaspInputSet.get_structure(Vasprun(zpath("vasprun.xml")), Outcar(zpath("OUTCAR")),
                                                        initial_structure=False,
                                                        additional_info=True)

@@ -31,6 +31,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         parameters = parameters if parameters else {}
         self.update(parameters)  # store the parameters explicitly set by the user
         self.gap_cutoff = parameters.get('gap_cutoff', 0.5)  # see e-mail from Geoffroy, 5/1/2013
+        self.metal_cutoff = parameters.get('metal_cutoff', 0.05)
 
     def run_task(self, fw_spec):
         print 'sleeping 10s for Mongo'
@@ -46,6 +47,10 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
             uniform_dens = 1500
             line_dens = 30
 
+        if fw_spec['analysis']['bandgap'] <= self.metal_cutoff:
+            user_incar_settings = {"ISMEAR": 1, "SIGMA": 0.2}
+        else:
+            user_incar_settings = {}
 
         print 'Adding more runs...'
 
@@ -67,7 +72,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
                      '_dupefinder': DupeFinderVasp().to_dict(), '_priority': priority, '_trackers': trackers})
         fws.append(
             Firework(
-                [VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True}), SetupStaticRunTask({"kpoints_density": static_dens}),
+                [VaspCopyTask({'use_CONTCAR': True, 'skip_CHGCAR': True}), SetupStaticRunTask({"kpoints_density": static_dens, 'user_incar_settings': user_incar_settings}),
                  get_custodian_task(spec)], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-10))
 
         # insert into DB - GGA static
