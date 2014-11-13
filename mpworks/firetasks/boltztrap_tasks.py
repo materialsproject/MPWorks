@@ -6,13 +6,13 @@ from pymongo import MongoClient
 from fireworks.core.firework import FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from monty.os.path import zpath
+from monty.json import jsanitize
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_loc, get_block_part
 from pymatgen import Structure
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
 from pymatgen.io.vaspio.vasp_output import Vasprun
-from pymatgen.util.io_utils import clean_json
 
 __author__ = 'Geoffroy Hautier, Anubhav Jain'
 __copyright__ = 'Copyright 2014, The Materials Project'
@@ -76,7 +76,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             data['task_id'] = m_task['task_id']
             data['hall'] = {}  # remove because it is too large and not useful
             data['hall_doping'] = {}  # remove because it is too large and not useful
-            tdb.boltztrap.insert(clean_json(data))
+            tdb.boltztrap.insert(jsanitize(data))
 
         update_spec = {'prev_vasp_dir': fw_spec['prev_vasp_dir'],
                        'boltztrap_dir': os.getcwd(),

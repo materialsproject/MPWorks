@@ -11,19 +11,14 @@ __email__ = 'ajain@lbl.gov'
 __date__ = 'May 14, 2013'
 
 
-def submit_all_snl(min=None, max=None):
+def submit_all_snl(snldb, sma, snlgroup_constraint=None):
     constraints = {'is_ordered': True, 'is_valid': True, 'nsites': {'$lte': 200}, 'canonical_snl.about.projects': {'$ne': 'CederDahn Challenge'}}
     constraints['elements'] = {'$nin': NO_POTCARS}
     constraints['canonical_snl.about.history.name'] = {"$ne":"Materials Project structure optimization"}
     constraints['canonical_snl.about.remarks'] = {"$ne": "DEPRECATED"}
 
-    if min and max:
-        constraints['snlgroup_id'] = {'$gte': min, '$lte': max}
-    elif min or max:
-        raise ValueError('Must specify both min AND max if you specify one')
-
-    snldb = SNLMongoAdapter.auto_load()
-    sma = SubmissionMongoAdapter.auto_load()
+    if snlgroup_constraint:
+        constraints['snlgroup_id'] = snlgroup_constraint
 
     for result in snldb.snlgroups.find(constraints, {'canonical_snl': 1, 'snlgroup_id': 1}):
         snl = MPStructureNL.from_dict(result['canonical_snl'])
