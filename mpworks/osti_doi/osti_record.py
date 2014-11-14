@@ -37,8 +37,8 @@ class OstiRecord(object):
             ('related_resource', self._get_related_resource()),
             ('contributor_organizations', 'TODO'), # not listed in research_org
             ('subject_categories_code', '36 MATERIALS SCIENCE; 54 ENVIRONMENTAL SCIENCES'),
-            ('keywords', 'TODO'), # use dict keys?
-            ('description', 'TODO')
+            ('keywords', self._get_keywords()),
+            ('description', 'see https://materialsproject.org/docs/calculations')
         ])
         self.record_xml = parseString(dicttoxml(
             {'record': self.record_dict}, custom_root='records', attr_type=False
@@ -74,3 +74,5 @@ class OstiRecord(object):
             related_resource.append(entry.fields.get('url'))
         return ', '.join(filter(None, related_resource))
 
+    def _get_keywords(self):
+        return ', '.join(self.material['exp']['tags'])
