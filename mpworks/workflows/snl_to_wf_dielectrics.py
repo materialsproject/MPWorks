@@ -68,4 +68,4 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
 
-    return Workflow(fws, connections, name=Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
+    return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
