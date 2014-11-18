@@ -207,6 +207,19 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
 
+                
+                # Parse piezoelectric constants if required:
+                if 'Static Dielectrics Calculation' in d['task_type']:
+                    o_path = os.path.join(path,"OUTCAR")
+                    o_path = o_path if os.path.exists(o_path) else o_path+".gz"
+                    outcar = Outcar(o_path)
+                    outcar.read_lepsilon()
+                    outcar.read_lepsilon_ionic()
+                    d['calculations'][0]['output']['outcar']['piezoelectric_tensor'] = outcar.piezo_tensor 
+                    d['calculations'][0]['output']['outcar']['piezoelectric_ionic_tensor'] = outcar.piezo_ionic_tensor
+
+
+
                 coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
                 return d["task_id"], d
