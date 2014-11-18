@@ -219,7 +219,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['calculations'][0]['output']['outcar']['piezoelectric_ionic_tensor'] = outcar.piezo_ionic_tensor
 
 
-
                 coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
                 return d["task_id"], d
