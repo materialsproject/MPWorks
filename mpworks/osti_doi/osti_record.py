@@ -19,26 +19,26 @@ class OstiRecord(object):
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.record_dict = OrderedDict([
             ('osti_id', ''), # empty = new submission -> new DOI
-            ('dataset_type', 'GD'),
+            ('dataset_type', 'SM'),
             ('title', self._get_title()),
-            ('creators', self._get_creators()),
+            ('creators', 'Kristin Persson'),
             ('product_nos', self.mp_id),
-            ('contract_nos', 'TODO'),
+            ('contract_nos', 'AC02-05CH11231; EDCBEE'),
             ('originating_research_org', research_org),
             ('publication_date', self._get_publication_date()),
             ('language', 'English'),
             ('country', 'US'),
-            ('sponsor_org', 'TODO'),
+            ('sponsor_org', 'USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)'),
             ('site_url', self._get_site_url()),
             ('contact_name', 'Kristin Persson'),
             ('contact_org', 'LBNL'),
             ('contact_email', 'kapersson@lbl.gov'),
             ('contact_phone', '+1(510)486-7218'),
-            ('related_resource', self._get_related_resource()),
+            ('related_resource', 'https://materialsproject.org/citing'),
             ('contributor_organizations', 'TODO'), # not listed in research_org
-            ('subject_categories_code', '36 MATERIALS SCIENCE; 54 ENVIRONMENTAL SCIENCES'),
+            ('subject_categories_code', '36 MATERIALS SCIENCE'),
             ('keywords', self._get_keywords()),
-            ('description', 'see https://materialsproject.org/docs/calculations')
+            ('description', 'We use density functional theory as implemented in the Vienna Ab Initio Simulation Package (VASP) software to evaluate the total energy of compounds. Input structures are taken from the Inorganic Crystal Structure Database (ICSD), and all cell and atomic positions relaxed twice in our calculations using the AFLOW software package. For more, see https://materialsproject.org/docs/calculations')
         ])
         self.record_xml = parseString(dicttoxml(
             {'record': self.record_dict}, custom_root='records', attr_type=False
@@ -46,8 +46,9 @@ class OstiRecord(object):
 
     def _get_title(self):
         formula = self.material['pretty_formula']
-        return 'Information on %s (%s) by MaterialsProject' % (
-            formula, self.mp_id
+        sg_num = self.material['spacegroup']['number']
+        return 'Materials Data on %s (SG:%d) by Materials Project' % (
+            formula, sg_num
         )
 
     def _get_creators(self):
@@ -75,4 +76,13 @@ class OstiRecord(object):
         return ', '.join(filter(None, related_resource))
 
     def _get_keywords(self):
-        return ', '.join(self.material['exp']['tags'])
+        keywords = '; '.join([
+            'crystal structure',
+            self.material['snl_final']['reduced_cell_formula_abc'],
+            self.material['snl_final']['chemsystem'],
+            '; '.join([
+                '-'.join(['ICSD', str(iid)]) for iid in self.material['icsd_ids']
+            ]),
+        ])
+        keywords += '; electronic bandstructure' if self.material['has_bandstructure'] else ''
+        return keywords
