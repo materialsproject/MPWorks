@@ -38,7 +38,7 @@ class OstiRecord(object):
             ('contributor_organizations', 'TODO'), # not listed in research_org
             ('subject_categories_code', '36 MATERIALS SCIENCE'),
             ('keywords', self._get_keywords()),
-            ('description', 'We use density functional theory as implemented in the Vienna Ab Initio Simulation Package (VASP) software to evaluate the total energy of compounds. Input structures are taken from the Inorganic Crystal Structure Database (ICSD), and all cell and atomic positions relaxed twice in our calculations using the AFLOW software package. For more, see https://materialsproject.org/docs/calculations')
+            ('description', 'Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations')
         ])
         self.record_xml = parseString(dicttoxml(
             {'record': self.record_dict}, custom_root='records', attr_type=False
