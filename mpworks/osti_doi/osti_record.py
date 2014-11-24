@@ -8,41 +8,46 @@ from pybtex.database.input import bibtex
 from StringIO import StringIO
 
 class OstiRecord(object):
-    def __init__(self, mp_id, db_yaml='materials_db_dev.yaml'):
+    def __init__(self, mp_ids, db_yaml='materials_db_dev.yaml'):
         self.bibtex_parser = bibtex.Parser()
         config = loadfn(os.path.join(os.environ['DB_LOC'], db_yaml))
         client = MongoClient(config['host'], config['port'], j=False)
         client[config['db']].authenticate(config['username'], config['password'])
         materials = client[config['db']].materials
-        self.mp_id = mp_id
-        self.material = materials.find_one({'task_id': mp_id})
+        self.mp_ids = [ mp_ids ] if isinstance(mp_ids, str) else mp_ids
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
-        self.record_dict = OrderedDict([
-            ('osti_id', ''), # empty = new submission -> new DOI
-            ('dataset_type', 'SM'),
-            ('title', self._get_title()),
-            ('creators', 'Kristin Persson'),
-            ('product_nos', self.mp_id),
-            ('contract_nos', 'AC02-05CH11231; EDCBEE'),
-            ('originating_research_org', research_org),
-            ('publication_date', self._get_publication_date()),
-            ('language', 'English'),
-            ('country', 'US'),
-            ('sponsor_org', 'USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)'),
-            ('site_url', self._get_site_url()),
-            ('contact_name', 'Kristin Persson'),
-            ('contact_org', 'LBNL'),
-            ('contact_email', 'kapersson@lbl.gov'),
-            ('contact_phone', '+1(510)486-7218'),
-            ('related_resource', 'https://materialsproject.org/citing'),
-            ('contributor_organizations', 'TODO'), # not listed in research_org
-            ('subject_categories_code', '36 MATERIALS SCIENCE'),
-            ('keywords', self._get_keywords()),
-            ('description', 'Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations')
-        ])
-        self.record_xml = parseString(dicttoxml(
-            {'record': self.record_dict}, custom_root='records', attr_type=False
-        )).toprettyxml()
+        self.records = []
+        for mp_id in self.mp_ids:
+            self.material = materials.find_one({'task_id': mp_id})
+            self.records.append(OrderedDict([
+                ('osti_id', ''), # empty = new submission -> new DOI
+                ('dataset_type', 'SM'),
+                ('title', self._get_title()),
+                ('creators', 'Kristin Persson'),
+                ('product_nos', mp_id),
+                ('contract_nos', 'AC02-05CH11231; EDCBEE'),
+                ('originating_research_org', research_org),
+                ('publication_date', self._get_publication_date()),
+                ('language', 'English'),
+                ('country', 'US'),
+                ('sponsor_org', 'USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)'),
+                ('site_url', self._get_site_url(mp_id)),
+                ('contact_name', 'Kristin Persson'),
+                ('contact_org', 'LBNL'),
+                ('contact_email', 'kapersson@lbl.gov'),
+                ('contact_phone', '+1(510)486-7218'),
+                ('related_resource', 'https://materialsproject.org/citing'),
+                ('contributor_organizations', 'MIT; UC Berkeley; Duke; U Louvain'), # not listed in research_org
+                ('subject_categories_code', '36 MATERIALS SCIENCE'),
+                ('keywords', self._get_keywords()),
+                ('description', 'Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations')
+            ]))
+        self.records_xml = parseString(dicttoxml(
+            self.records, custom_root='records', attr_type=False
+        ))
+        items = self.records_xml.getElementsByTagName('item')
+        for item in items:
+            self.records_xml.renameNode(item, '', item.parentNode.nodeName[:-1])
 
     def _get_title(self):
         formula = self.material['pretty_formula']
@@ -63,8 +68,8 @@ class OstiRecord(object):
     def _get_publication_date(self):
         return self.material['created_at'].strftime('%m/%d/%Y')
 
-    def _get_site_url(self):
-        return 'https://materialsproject.org/materials/%s' % self.mp_id
+    def _get_site_url(self, mp_id):
+        return 'https://materialsproject.org/materials/%s' % mp_id
 
     def _get_related_resource(self):
         bib_data = self.bibtex_parser.parse_stream(StringIO(
