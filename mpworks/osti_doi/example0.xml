@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<records>
+	<record>
+		<osti_id/>
+		<dataset_type>SM</dataset_type>
+		<title>Materials Data on Nd (SG:229) by Materials Project</title>
+		<creators>Kristin Persson</creators>
+		<product_nos>mp-4</product_nos>
+		<contract_nos>AC02-05CH11231; EDCBEE</contract_nos>
+		<originating_research_org>Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)</originating_research_org>
+		<publication_date>11/02/2014</publication_date>
+		<language>English</language>
+		<country>US</country>
+		<sponsor_org>USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)</sponsor_org>
+		<site_url>https://materialsproject.org/materials/mp-4</site_url>
+		<contact_name>Kristin Persson</contact_name>
+		<contact_org>LBNL</contact_org>
+		<contact_email>kapersson@lbl.gov</contact_email>
+		<contact_phone>+1(510)486-7218</contact_phone>
+		<related_resource>https://materialsproject.org/citing</related_resource>
+		<contributor_organizations>MIT; UC Berkeley; Duke; U Louvain</contributor_organizations>
+		<subject_categories_code>36 MATERIALS SCIENCE</subject_categories_code>
+		<keywords>crystal structure; Nd1; Nd; ICSD-76593; ICSD-43571</keywords>
+		<description>Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations</description>
+	</record>
+	<record>
+		<osti_id/>
+		<dataset_type>SM</dataset_type>
+		<title>Materials Data on ZnO (SG:216) by Materials Project</title>
+		<creators>Kristin Persson</creators>
+		<product_nos>mp-1986</product_nos>
+		<contract_nos>AC02-05CH11231; EDCBEE</contract_nos>
+		<originating_research_org>Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)</originating_research_org>
+		<publication_date>11/02/2014</publication_date>
+		<language>English</language>
+		<country>US</country>
+		<sponsor_org>USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)</sponsor_org>
+		<site_url>https://materialsproject.org/materials/mp-1986</site_url>
+		<contact_name>Kristin Persson</contact_name>
+		<contact_org>LBNL</contact_org>
+		<contact_email>kapersson@lbl.gov</contact_email>
+		<contact_phone>+1(510)486-7218</contact_phone>
+		<related_resource>https://materialsproject.org/citing</related_resource>
+		<contributor_organizations>MIT; UC Berkeley; Duke; U Louvain</contributor_organizations>
+		<subject_categories_code>36 MATERIALS SCIENCE</subject_categories_code>
+		<keywords>crystal structure; O1 Zn1; O-Zn; ICSD-162753; ICSD-647683; ICSD-182357; ICSD-163383; electronic bandstructure</keywords>
+		<description>Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations</description>
+	</record>
+	<record>
+		<osti_id/>
+		<dataset_type>SM</dataset_type>
+		<title>Materials Data on CdI2 (SG:156) by Materials Project</title>
+		<creators>Kristin Persson</creators>
+		<product_nos>mp-571567</product_nos>
+		<contract_nos>AC02-05CH11231; EDCBEE</contract_nos>
+		<originating_research_org>Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)</originating_research_org>
+		<publication_date>11/02/2014</publication_date>
+		<language>English</language>
+		<country>US</country>
+		<sponsor_org>USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)</sponsor_org>
+		<site_url>https://materialsproject.org/materials/mp-571567</site_url>
+		<contact_name>Kristin Persson</contact_name>
+		<contact_org>LBNL</contact_org>
+		<contact_email>kapersson@lbl.gov</contact_email>
+		<contact_phone>+1(510)486-7218</contact_phone>
+		<related_resource>https://materialsproject.org/citing</related_resource>
+		<contributor_organizations>MIT; UC Berkeley; Duke; U Louvain</contributor_organizations>
+		<subject_categories_code>36 MATERIALS SCIENCE</subject_categories_code>
+		<keywords>crystal structure; Cd1 I2; Cd-I; ICSD-9194; ICSD-42260; electronic bandstructure</keywords>
+		<description>Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations</description>
+	</record>
+</records>
+
