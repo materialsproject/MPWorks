@@ -462,7 +462,7 @@ def analyze(args):
                 filename = 'spacegroup_changes_'
                 filename += datetime.datetime.now().strftime('%Y-%m-%d') 
                 py.plot(out_fig, filename=filename, auto_open=False)
-        elif args.fig_id == 20: # SNLGroupMemberChecker
+        elif args.fig_id == 43: # SNLGroupMemberChecker
             matcher2 = StructureMatcher(
                 ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=False, scale=True,
                 attempt_supercell=True, comparator=ElementComparator()
