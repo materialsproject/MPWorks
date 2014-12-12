@@ -312,7 +312,7 @@ def analyze(args):
     # NOTE: make copy online first with suffix _%Y-%m-%d and note figure id
     fig = py.get_figure(creds['username'], args.fig_id)
     if args.t:
-        if args.fig_id == 12:
+        if args.fig_id == 42:
             label_entries = filter(None, '<br>'.join(fig['data'][2]['text']).split('<br>'))
             pairs = map(make_tuple, label_entries)
             grps = set(chain.from_iterable(pairs))
