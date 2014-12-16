@@ -1,3 +1,4 @@
+composition,snlgroup_id 1,sg_num 1,task_id 1,snlgroup_id 2,sg_num 2,task_id 2,delta_energy,delta_bandgap,delta_volume_per_atom,rms_dist,scenario
 Ag1 Au1 S2,87128,49,mp-37920,53975,49,,,,,,
 Ag1 Ba1 O13 P3,154400,15,,88997,15,,,,,,
 Ag1 C1 H3 N3 O4,154679,14,mp-707364,102260,14,,,,,,
