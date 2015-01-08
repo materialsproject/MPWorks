@@ -1,5 +1,7 @@
 dependencies:
   override:
+    - pip install --upgrade pip
+    - pip install distribute --upgrade
     - pip install numpy
     - pip install -r requirements.txt --upgrade
     - python setup.py install
