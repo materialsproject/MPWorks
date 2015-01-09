@@ -71,6 +71,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
         max_temp = None
         max_dope = None
         max_mu = None
+        isotropic = None
 
         for type in types:
             for t in d[target][type]:  # temperatures
