@@ -85,9 +85,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         else:
             raise ValueError("No MPI command found!")
 
-        nproc = os.environ['PBS_NP']
+        # nproc = os.environ['PBS_NP'] # default pymatgen
+        # nproc = 8 # dielectrics with 4 cores per node
+        nproc = 2 # dielectrics when max memory is needed    
 
-        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
+        # v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp"))) # default pymatgen
+        # v_exe = shlex.split('{} -n {} -N {} -S {} {}'.format(mpi_cmd, nproc, 4, 1, fw_env.get("vasp_cmd", "vasp"))) # dielectrics with 4 cores per node
+        v_exe = shlex.split('{} -n {} -N {} {}'.format(mpi_cmd, nproc, 1, fw_env.get("vasp_cmd", "vasp"))) # dielectrics when max memory is needed
         gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
 
         print 'host:', os.environ['HOSTNAME']
