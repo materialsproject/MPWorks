@@ -12,7 +12,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from monty.json import jsanitize, MontyEncoder
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_block_part
-import mpcollab.thermoelectrics.boltztrap_TE as bzte
+from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE
 import numpy as np
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
@@ -175,7 +175,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             btid = fs.put(json.dumps(jsanitize(data)))
 
             # now for the "sanitized" data
-            te_analyzer = bzte.BoltztrapAnalyzerTE.from_BoltztrapAnalyzer(bta)
+            te_analyzer = BoltztrapAnalyzerTE.from_BoltztrapAnalyzer(bta)
 
             ted = te_analyzer.as_dict()
             del ted['seebeck']
