@@ -75,13 +75,14 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
         return eigs_d
 
 
-    def get_extreme(self, d, target, maximize=True, iso_cutoff=0.05):
+    def get_extreme(self, d, target, maximize=True, iso_cutoff=0.05, max_didx=None):
             """
 
             :param d: data dictionary
             :param target: root key of target property, e.g. 'seebeck_doping'
             :param maximize: (bool) max if True, min if False
             :param iso_cutoff: percent cutoff for isotropicity
+            :param max_didx: max doping idx
             :return:
             """
             max_val = None
@@ -94,12 +95,13 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             for te_type in ('p', 'n'):
                 for t in d[target][te_type]:  # temperatures
                     for didx, evs in enumerate(d[target][te_type][t]):  # doping idx
-                        for val in evs['eigs']:
-                            if (val > max_val and maximize) or (val < max_val and not maximize) or max_val is None:
-                                max_val = val
-                                max_temp = float(t)
-                                max_dope = d['doping'][te_type][didx]
-                                max_mu = d['mu_doping'][te_type][t][didx]
+                        if not max_didx or didx <= max_didx:
+                            for val in evs['eigs']:
+                                if (val > max_val and maximize) or (val < max_val and not maximize) or max_val is None:
+                                    max_val = val
+                                    max_temp = float(t)
+                                    max_dope = d['doping'][te_type][didx]
+                                    max_mu = d['mu_doping'][te_type][t][didx]
 
                                 isotropic = evs['isotropic']
                 data[te_type] = {'value': max_val, 'temperature': max_temp, 'doping': max_dope, 'mu': max_mu, 'isotropic': isotropic}
@@ -196,14 +198,19 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
             ted['pf_eigs'] = self.get_eigs(ted, 'pf_doping')
             ted['pf_best'] = self.get_extreme(ted, 'pf_eigs')
+            ted['pf_best_lowdope'] = self.get_extreme(ted, 'pf_eigs', max_didx=3)
             ted['zt_eigs'] = self.get_eigs(ted, 'zt_doping')
             ted['zt_best'] = self.get_extreme(ted, 'zt_eigs')
+            ted['zt_best_lowdope'] = self.get_extreme(ted, 'zt_eigs', max_didx=3)
             ted['seebeck_eigs'] = self.get_eigs(ted, 'seebeck_doping')
             ted['seebeck_best'] = self.get_extreme(ted, 'seebeck_eigs')
+            ted['seebeck_best_lowdope'] = self.get_extreme(ted, 'seebeck_eigs', max_didx=3)
             ted['cond_eigs'] = self.get_eigs(ted, 'cond_doping')
             ted['cond_best'] = self.get_extreme(ted, 'cond_eigs')
+            ted['cond_best_lowdope'] = self.get_extreme(ted, 'cond_eigs', max_didx=3)
             ted['kappa_eigs'] = self.get_eigs(ted, 'kappa_doping')
             ted['kappa_best'] = self.get_extreme(ted, 'kappa_eigs', maximize=False)
+            ted['kappa_best_lowdope'] = self.get_extreme(ted, 'kappa_eigs', maximize=False, max_didx=3)
 
             tdb.boltztrap.insert(jsanitize(ted))
 
