@@ -58,7 +58,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
         return pf_dict, zt_dict
 
-    def get_eigs(d, target, iso_cutoff=0.05):
+    def get_eigs(self, d, target, iso_cutoff=0.05):
         eigs_d = copy.deepcopy(d[target])
         for te_type in ('p', 'n'):
                 for t in eigs_d[te_type]:  # temperatures
@@ -75,7 +75,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
         return eigs_d
 
 
-    def get_extreme(d, target, maximize=True, iso_cutoff=0.05):
+    def get_extreme(self, d, target, maximize=True, iso_cutoff=0.05):
             """
 
             :param d: data dictionary
