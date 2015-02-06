@@ -204,8 +204,6 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             ted['cond_best'] = self.get_extreme(ted, 'cond_eigs')
             ted['kappa_eigs'] = self.get_eigs(ted, 'kappa_doping')
             ted['kappa_best'] = self.get_extreme(ted, 'kappa_eigs', maximize=False)
-            ted['hall_eigs'] = self.get_eigs(ted, 'hall_doping')
-            ted['hall_best'] = self.get_extreme(ted, 'hall_eigs')
 
             tdb.boltztrap.insert(jsanitize(ted))
 
