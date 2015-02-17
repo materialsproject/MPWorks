@@ -12,7 +12,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from monty.json import jsanitize, MontyEncoder
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_block_part
-from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE
+from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE, BoltzSPB
 import numpy as np
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
@@ -216,6 +216,29 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             ted['kappa_best'] = self.get_extreme(ted, 'kappa_eigs', maximize=False)
             ted['kappa_best_dope18'] = self.get_extreme(ted, 'kappa_eigs', maximize=False, max_didx=3)
             ted['kappa_best_dope19'] = self.get_extreme(ted, 'kappa_eigs', maximize=False, max_didx=4)
+
+            try:
+                bzspb = BoltzSPB(te_analyzer)
+                maxpf_p = bzspb.get_maximum_power_factor('p', temperature=0, tau=1E-14, ZT=False, kappal=0.5,\
+                    otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
+                                                    'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
+
+                maxpf_n = bzspb.get_maximum_power_factor('n', temperature=0, tau=1E-14, ZT=False, kappal=0.5,\
+                    otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
+                                                    'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
+
+                maxzt_p = bzspb.get_maximum_power_factor('p', temperature=0, tau=1E-14, ZT=True, kappal=0.5, otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
+                                                    'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
+
+                maxzt_n = bzspb.get_maximum_power_factor('n', temperature=0, tau=1E-14, ZT=True, kappal=0.5, otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
+                                                    'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
+
+                ted['zt_best_finemesh'] = {'p': maxzt_p, 'n': maxzt_n}
+                ted['pf_best_finemesh'] = {'p': maxpf_p, 'n': maxpf_n}
+            except:
+                import traceback
+                traceback.print_exc()
+                print 'COULD NOT GET FINE MESH DATA'
 
             tdb.boltztrap.insert(jsanitize(ted))
 
