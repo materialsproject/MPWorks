@@ -9,6 +9,7 @@ import os
 from pymongo import MongoClient
 from fireworks.core.firework import FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
+from fireworks.utilities.fw_utilities import get_slug
 from monty.json import jsanitize, MontyEncoder
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_block_part
@@ -127,6 +128,11 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
         vr = Vasprun(vasprun_loc)
         bs = vr.get_band_structure(kpoints_filename=kpoints_loc)
         """
+        filename = get_slug(
+            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            + fw_spec['task_type'])
+        with open(filename, 'w+') as f:
+            f.write('')
 
         # get the band structure and nelect from DB
         block_part = get_block_part(fw_spec['prev_vasp_dir'])
