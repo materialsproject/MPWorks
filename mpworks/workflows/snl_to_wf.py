@@ -26,7 +26,7 @@ __date__ = 'Mar 15, 2013'
 def _snl_to_spec(snl, enforce_gga=False, parameters=None):
 
     parameters = parameters if parameters else {}
-
+    parameters['boltztrap'] = parameters.get('boltztrap', True)  # by default run boltztrap
     spec = {'parameters': parameters}
 
     incar_enforce = {'NPAR': 2}
