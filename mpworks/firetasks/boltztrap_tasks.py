@@ -146,13 +146,16 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             tdb = connection[creds['database']]
             tdb.authenticate(creds['admin_user'], creds['admin_password'])
 
-            m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1})
+            m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1, "state": 1})
             if not m_task:
                 time.sleep(60)  # only thing to think of is wait for DB insertion(?)
                 m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1})
 
             if not m_task:
                 raise ValueError("Could not find task with dir_name: {}".format(block_part))
+
+            if m_task['state'] != 'successful':
+                raise ValueError("Cannot run Boltztrap; parent job unsuccessful")
 
             nelect = m_task['calculations'][0]['input']['parameters']['NELECT']
             bs_id = m_task['calculations'][0]['band_structure_fs_id']
