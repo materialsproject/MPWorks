@@ -66,7 +66,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
 
         spec= {'task_type': 'Setup DFPT Dielectrics Task', '_priority': priority, '_queueadapter': QA_CONTROL}
-        fws.append(FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=3))
+        fws.append(FireWork([SetupDFPTDielectricsTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=3))
         connections[2] = [3]
 
         wf_meta = get_meta_from_structure(snl.structure)
