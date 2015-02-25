@@ -77,44 +77,44 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
 
 
-    else:
-        # run DFPT for static dielectrics run:
-        if 'force_convergence' in snl.projects:
-            relaxed_structure = spec['output']['crystal']
 
-        spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
-        mpvis = MPStaticDielectricDFPTVaspInputSet()
-        incar = mpvis.get_incar(snl.structure)
+    # run DFPT for static dielectrics run:
+    if 'force_convergence' in snl.projects:
+        relaxed_structure = spec['output']['crystal']
 
-        if 'force_convergence' in snl.projects:
-            spec['vasp']['poscar'] = relaxed_structure
-            #poscar = mpvis.get_poscar(Structure.from_dict(spec['output']['crystal']))
+    spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
+    mpvis = MPStaticDielectricDFPTVaspInputSet()
+    incar = mpvis.get_incar(snl.structure)
 
-        incar.update({"EDIFF":parameters['EDIFF']})
-        incar.update({"ENCUT":parameters['ENCUT']})
-        spec['vasp']['incar'] = incar.as_dict()
-        kpoints_density = int(parameters['kpoint_density'])
-        k=Kpoints.automatic_density(snl.structure, kpoints_density)
-        spec['vasp']['kpoints'] = k.as_dict()
-        # spec = update_spec_static_dielectrics_convergence(spec)
-        del spec['_dupefinder']
-        # spec['run_tags'].append("origin")
-        spec['_priority'] = priority
-        spec['_queueadapter'] = QA_VASP
-        spec['task_type'] = "Static Dielectrics Calculation" # Change name here: delete Vasp? 
-        tasks = [VaspWriterTask(), get_custodian_task(spec)]
-        fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
-        connections[0] = [1] # define fw_id=1 is dependent on completion of fw_id=0
+    if 'force_convergence' in snl.projects:
+        spec['vasp']['poscar'] = relaxed_structure
+        #poscar = mpvis.get_poscar(Structure.from_dict(spec['output']['crystal']))
 
-        # insert into DB - Static Dielectrics run
-        spec = {'task_type': 'VASP db insertion', '_priority': priority, '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
-        fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
-        connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
+    incar.update({"EDIFF":parameters['EDIFF']})
+    incar.update({"ENCUT":parameters['ENCUT']})
+    spec['vasp']['incar'] = incar.as_dict()
+    kpoints_density = int(parameters['kpoint_density'])
+    k=Kpoints.automatic_density(snl.structure, kpoints_density)
+    spec['vasp']['kpoints'] = k.as_dict()
+    # spec = update_spec_static_dielectrics_convergence(spec)
+    del spec['_dupefinder']
+    # spec['run_tags'].append("origin")
+    spec['_priority'] = priority
+    spec['_queueadapter'] = QA_VASP
+    spec['task_type'] = "Static Dielectrics Calculation" # Change name here: delete Vasp? 
+    tasks = [VaspWriterTask(), get_custodian_task(spec)]
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
+    connections[0] = [1] # define fw_id=1 is dependent on completion of fw_id=0
 
-        wf_meta = get_meta_from_structure(snl.structure)
-        wf_meta['run_version'] = 'May 2013 (1)'
+    # insert into DB - Static Dielectrics run
+    spec = {'task_type': 'VASP db insertion', '_priority': priority, '_allow_fizzled_parents': True, '_queueadapter': QA_DB}
+    fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+    connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
 
-        if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
-            wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
+    wf_meta = get_meta_from_structure(snl.structure)
+    wf_meta['run_version'] = 'May 2013 (1)'
 
-        return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
+    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+        wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
+
+    return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
