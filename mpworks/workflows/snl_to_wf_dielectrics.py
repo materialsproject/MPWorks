@@ -1,4 +1,5 @@
 from mpworks.firetasks.vasp_io_tasks import VaspCopyTask, VaspWriterTask, VaspToDBTask
+from mpworks.firetasks.dielectrics_tasks import SetupDFPTDielectricsTask
 
 __author__ = 'Ioannis Petousis'
 
@@ -12,10 +13,7 @@ from pymatgen.core.structure import Structure
 from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet, MPVaspInputSet
 from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints
 from fireworks.core.firework import Firework, Workflow
-
 from mpworks.workflows import snl_to_wf
-
-# from mpworks.firetasks.dielectrics_tasks import update_spec_static_dielectrics_convergence
 
 
 
@@ -67,6 +65,9 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
         connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
 
+        spec= {'task_type': 'Setup DFPT Dielectrics Task', '_priority': priority, '_queueadapter': QA_CONTROL}
+        fws.append(FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=3))
+        connections[2] = [3]
 
         wf_meta = get_meta_from_structure(snl.structure)
         wf_meta['run_version'] = 'May 2013 (1)'
