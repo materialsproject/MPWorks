@@ -54,7 +54,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         del spec['_dupefinder']
         # spec['run_tags'].append("origin")
         spec['_priority'] = priority
-        spec['_queueadapter'] = QA_VASP
+        spec['_queueadapter'] = QA_CONTROL
         spec['task_type'] = "force convergence" # Change name here: delete Vasp? 
         tasks = [VaspWriterTask(), get_custodian_task(spec)]
         fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
@@ -66,7 +66,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         connections[1] = [2] # define fw_id=2 is dependent on completion of fw_id=1
 
         spec= {'task_type': 'Setup DFPT Dielectrics Task', '_priority': priority, '_queueadapter': QA_CONTROL}
-        fws.append(FireWork([SetupDFPTDielectricsTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=3))
+        fws.append(Firework([SetupDFPTDielectricsTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=3))
         connections[2] = [3]
 
         wf_meta = get_meta_from_structure(snl.structure)
