@@ -22,8 +22,8 @@ from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
 
 
 
-class SetupDeformedStructTask(FireTaskBase, FWSerializable):
-    _fw_name = "Setup Deformed Struct Task"
+class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
+    _fw_name = "Setup DFPT Dielectrics Task"
 
     def run_task(self, fw_spec):
         # Read structure from previous relaxation
