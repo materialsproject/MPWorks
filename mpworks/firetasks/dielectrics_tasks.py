@@ -29,26 +29,26 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
         # Read structure from previous relaxation
         relaxed_struct = Structure.from_dict(fw_spec['output']['crystal'])
         # Generate deformed structures
-        deformed_structs = DeformGeometry(relaxed_struct, ns=0.06)
+        #deformed_structs = DeformGeometry(relaxed_struct, ns=0.06)
         wf=[]
 
         for i, strain in enumerate(deformed_structs.keys()):
             fws=[]
             connections={}
-            d_struct = deformed_structs[strain]
-            f = Composition.from_formula(d_struct.formula).alphabetical_formula
-            snl = StructureNL(d_struct, 'Wei Chen <weichen@lbl.gov>',projects=["Elasticity"])
+            #d_struct = deformed_structs[strain]
+            f = Composition.from_formula(relaxed_struct.formula).alphabetical_formula
+            snl = StructureNL(relaxed_struct, 'Ioannis Petousis <petousis@stanford.edu>',projects=["Static Dielectrics", "force_convergence"])
 
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
-            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.to_dict,
+            spec = {'task_type': 'Add F-relaxed Struct to SNL database', 'snl': snl.to_dict,
                     '_queueadapter': QA_DB, '_priority': snl_priority}
             if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
-                spec['force_mpsnl'] = snl.to_dict
-                spec['force_snlgroup_id'] = fw_spec['snlgroup_id']
+                spec['static_dielectrics_mpsnl'] = snl.to_dict
+                spec['static_dielectrics_snlgroup_id'] = fw_spec['snlgroup_id']
                 del spec['snl']
-            fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000+i*10))
-            connections[-1000+i*10] = [-999+i*10]
+            fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000))
+            connections[-1000] = [-999]
 
             spec = snl_to_wf._snl_to_spec(snl, parameters={'exact_structure':True})
             incar=fw_spec['vasp']['incar']
