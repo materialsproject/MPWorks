@@ -49,8 +49,8 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
 
         spec = snl_to_wf._snl_to_spec(snl, parameters={'exact_structure':True})
 
-        ediff = incar=fw_spec['vasp']['incar']['EDIFF']
-        encut = incar=fw_spec['vasp']['incar']['ENCUT']
+        ediff = fw_spec['vasp']['incar']['EDIFF']
+        encut = fw_spec['vasp']['incar']['ENCUT']
         
         mpvis = MPStaticDielectricDFPTVaspInputSet()
         incar = mpvis.get_incar(snl.structure)
