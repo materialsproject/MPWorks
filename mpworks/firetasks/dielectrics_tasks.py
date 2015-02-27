@@ -16,7 +16,7 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL, QA_CONTROL
-from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
+from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints, Incar
 from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet
 
 
@@ -34,14 +34,14 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
         fws=[]
         connections={}
         #d_struct = deformed_structs[strain]
-        f = Composition.from_formula(relaxed_struct.formula).alphabetical_formula
+        f = Composition(relaxed_struct.formula).alphabetical_formula
         snl = StructureNL(relaxed_struct, 'Ioannis Petousis <petousis@stanford.edu>',projects=["Static Dielectrics", "force_convergence"])
 
         tasks = [AddSNLTask()]
         snl_priority = fw_spec.get('priority', 1)
-        spec = {'task_type': 'Add F-relaxed Struct to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+        spec = {'task_type': 'Add F-relaxed Struct to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
         if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
-            spec['static_dielectrics_mpsnl'] = snl.to_dict
+            spec['static_dielectrics_mpsnl'] = snl.as_dict()
             spec['static_dielectrics_snlgroup_id'] = fw_spec['snlgroup_id']
             del spec['snl']
         fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000))
@@ -49,31 +49,40 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
 
         spec = snl_to_wf._snl_to_spec(snl, parameters={'exact_structure':True})
 
-        ediff = fw_spec['vasp']['incar']['EDIFF']
-        encut = fw_spec['vasp']['incar']['ENCUT']
+        #incar = Incar.from_file(zpath("INCAR"))
+        #ediff = incar['EDIFF']
+        #encut = incar['ENCUT']
+        #ediff = fw_spec['vasp']['incar']['EDIFF']
+        #encut = fw_spec['vasp']['incar']['ENCUT']
         
         mpvis = MPStaticDielectricDFPTVaspInputSet()
         incar = mpvis.get_incar(snl.structure)
-        incar.update({"EDIFF":ediff})
-        incar.update({"ENCUT":encut})
+        incar.update({"EDIFF":"1.0E-6"})
+        incar.update({"ENCUT":"800"})
         spec['vasp']['incar'] = incar.as_dict()
 
-        kpoints=fw_spec['vasp']['kpoints']
+        #kpoints=fw_spec['vasp']['kpoints']
+        #kpoints = Kpoints.from_file(zpath("KPOINTS"))
         #if "actual_points" in kpoints:
         #    kpoints.pop('actual_points')
-        spec['vasp']['kpoints']= kpoints
+        #spec['vasp']['kpoints']= kpoints
+        kpoints_density = 3000
+        k=Kpoints.automatic_density(snl.structure, kpoints_density)
+        spec['vasp']['kpoints'] = k.as_dict()
+
         #spec['deformation_matrix'] = strain.deformation_matrix.tolist()
-        spec['original_task_id']=fw_spec["task_id"]
+        #spec['original_task_id']=fw_spec["task_id"]
         spec['_priority'] = fw_spec['_priority']*2
         #Turn off dupefinder for deformed structure
         del spec['_dupefinder']
 
         spec['task_type'] = "DFPT of F-relaxed structure"
-        fws.append(Firework([VaspWriterTask(), get_custodian_task(spec)], spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
+        spec['_queueadapter'] = QA_VASP
+        fws.append(Firework([VaspWriterTask(), get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-999))
 
         priority = fw_spec['_priority']*3
-        spec = {'task_type': 'VASP db insertion', '_priority': priority, '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'dielectrics':"force_relaxed_structure", 'original_task_id':fw_spec["task_id"]}
-        fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
+        spec = {'task_type': 'VASP2 db insertion', '_priority': priority, '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'dielectrics':"force_relaxed_structure"}
+        fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998))
         connections[-999] = [-998]
 
         wf.append(Workflow(fws, connections))
