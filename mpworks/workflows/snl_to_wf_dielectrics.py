@@ -48,7 +48,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         incar.update({"ENCUT":parameters['ENCUT']})
         spec['vasp']['incar'] = incar.as_dict()
         kpoints_density = int(parameters['kpoint_density'])
-        k=Kpoints.automatic_density(snl.structure, kpoints_density)
+        k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
         spec['vasp']['kpoints'] = k.as_dict()
         # spec = update_spec_static_dielectrics_convergence(spec)
         del spec['_dupefinder']
@@ -95,7 +95,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     incar.update({"ENCUT":parameters['ENCUT']})
     spec['vasp']['incar'] = incar.as_dict()
     kpoints_density = int(parameters['kpoint_density'])
-    k=Kpoints.automatic_density(snl.structure, kpoints_density)
+    k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
     spec['vasp']['kpoints'] = k.as_dict()
     # spec = update_spec_static_dielectrics_convergence(spec)
     del spec['_dupefinder']

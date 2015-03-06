@@ -67,7 +67,7 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
         #    kpoints.pop('actual_points')
         #spec['vasp']['kpoints']= kpoints
         kpoints_density = 3000
-        k=Kpoints.automatic_density(snl.structure, kpoints_density)
+        k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
         spec['vasp']['kpoints'] = k.as_dict()
 
         #spec['deformation_matrix'] = strain.deformation_matrix.tolist()
