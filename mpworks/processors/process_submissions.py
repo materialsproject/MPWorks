@@ -74,12 +74,6 @@ class SubmissionProcessor():
                     snl.data['_materialsproject'] = snl.data.get('_materialsproject', {})
                     snl.data['_materialsproject']['submission_id'] = submission_id
 
-                    # create a workflow
-                    if "Static Dielectrics" in snl.projects:
-                        from mpworks.workflows.snl_to_wf_dielectrics import snl_to_wf_static_dielectrics
-                        wf=snl_to_wf_static_dielectrics(snl, job['parameters'])
-                    else:
-                        wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
