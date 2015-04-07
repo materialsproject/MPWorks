@@ -7,18 +7,29 @@ from xml.dom.minidom import parseString
 from pybtex.database.input import bibtex
 from StringIO import StringIO
 
-class OstiRecord(object):
-    def __init__(self, mp_ids, db_yaml='materials_db_dev.yaml'):
-        self.bibtex_parser = bibtex.Parser()
+class MaterialsAdapter(object):
+    """adapter to connect to materials database and collection"""
+    def __init__(self, db_yaml='materials_db_dev.yaml'):
         config = loadfn(os.path.join(os.environ['DB_LOC'], db_yaml))
         client = MongoClient(config['host'], config['port'], j=False)
         client[config['db']].authenticate(config['username'], config['password'])
-        materials = client[config['db']].materials
+        self.materials = client[config['db']].materials
+
+    def get_mp_ids(self):
+        """get list of not yet submitted mp-ids of length n"""
+        raise NotImplementedError("implement me!")
+        # TODO use dedicated osti_id key in materials collection
+
+class OstiRecord(object):
+    """object defining a MP-specific record for OSTI"""
+    def __init__(self, mp_ids):
+        self.bibtex_parser = bibtex.Parser()
+        self.matad = MaterialsAdapter() # TODO: move to materials_db_prod
         self.mp_ids = [ mp_ids ] if isinstance(mp_ids, str) else mp_ids
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
         for mp_id in self.mp_ids:
-            self.material = materials.find_one({'task_id': mp_id})
+            self.material = self.matad.materials.find_one({'task_id': mp_id})
             self.records.append(OrderedDict([
                 ('osti_id', ''), # empty = new submission -> new DOI
                 ('dataset_type', 'SM'),
