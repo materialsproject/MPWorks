@@ -1,4 +1,5 @@
 import os
+import requests
 from pymongo import MongoClient
 from monty.serialization import loadfn
 from collections import OrderedDict
@@ -22,6 +23,7 @@ class MaterialsAdapter(object):
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
     def __init__(self, mp_ids=None, n=5):
+        self.endpoint = 'https://www.osti.gov/elinktest/2416api' # TODO move to prod
         self.bibtex_parser = bibtex.Parser()
         self.matad = MaterialsAdapter() # TODO: move to materials_db_prod
         if mp_ids is None:
@@ -34,7 +36,7 @@ class OstiRecord(object):
         for material in self.materials:
             self.material = material
             self.records.append(OrderedDict([
-                ('osti_id', ''), # empty = new submission -> new DOI
+                #('osti_id', ''), # empty = new submission -> new DOI; add if edit/update intended
                 ('dataset_type', 'SM'),
                 ('title', self._get_title()),
                 ('creators', 'Kristin Persson'),
@@ -62,6 +64,23 @@ class OstiRecord(object):
         items = self.records_xml.getElementsByTagName('item')
         for item in items:
             self.records_xml.renameNode(item, '', item.parentNode.nodeName[:-1])
+
+    def submit(self):
+        """submit generated records to OSTI"""
+        #headers = {'Content-Type': 'application/xml'}
+        r = requests.post(
+            self.endpoint, data=self.records_xml.toxml(), #headers=headers,
+            auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
+        )
+        print r.content
+        #print r.text
+        #osti_id = 123 # TODO extract osti_id and save to materials collection
+        #r = requests.get(
+        #    self.endpoint, params={'osti_id': osti_id},
+        #    auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
+        #)
+        #print r.url
+        #print r.text
 
     def _get_title(self):
         formula = self.material['pretty_formula']
