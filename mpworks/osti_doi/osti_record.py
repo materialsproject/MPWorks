@@ -13,36 +13,39 @@ class MaterialsAdapter(object):
         config = loadfn(os.path.join(os.environ['DB_LOC'], db_yaml))
         client = MongoClient(config['host'], config['port'], j=False)
         client[config['db']].authenticate(config['username'], config['password'])
-        self.materials = client[config['db']].materials
+        self.matcoll = client[config['db']].materials
 
-    def get_mp_ids(self):
-        """get list of not yet submitted mp-ids of length n"""
-        raise NotImplementedError("implement me!")
-        # TODO use dedicated osti_id key in materials collection
+    def get_materials_cursor(self, n):
+        """get cursor of not yet submitted mp-ids of length n"""
+        return self.matcoll.find({'osti_id': {'$exists': False}}, limit=n)
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
-    def __init__(self, mp_ids):
+    def __init__(self, mp_ids=None, n=5):
         self.bibtex_parser = bibtex.Parser()
         self.matad = MaterialsAdapter() # TODO: move to materials_db_prod
-        self.mp_ids = [ mp_ids ] if isinstance(mp_ids, str) else mp_ids
+        if mp_ids is None:
+            self.materials = self.matad.get_materials_cursor(n)
+        else:
+            self.mp_ids = [ mp_ids ] if isinstance(mp_ids, str) else mp_ids
+            self.materials = self.matad.matcoll.find({'task_id': {'$in': self.mp_ids}})
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
-        for mp_id in self.mp_ids:
-            self.material = self.matad.materials.find_one({'task_id': mp_id})
+        for material in self.materials:
+            self.material = material
             self.records.append(OrderedDict([
                 ('osti_id', ''), # empty = new submission -> new DOI
                 ('dataset_type', 'SM'),
                 ('title', self._get_title()),
                 ('creators', 'Kristin Persson'),
-                ('product_nos', mp_id),
+                ('product_nos', self.material['task_id']),
                 ('contract_nos', 'AC02-05CH11231; EDCBEE'),
                 ('originating_research_org', research_org),
                 ('publication_date', self._get_publication_date()),
                 ('language', 'English'),
                 ('country', 'US'),
                 ('sponsor_org', 'USDOE Office of Science (SC), Basic Energy Sciences (BES) (SC-22)'),
-                ('site_url', self._get_site_url(mp_id)),
+                ('site_url', self._get_site_url(self.material['task_id'])),
                 ('contact_name', 'Kristin Persson'),
                 ('contact_org', 'LBNL'),
                 ('contact_email', 'kapersson@lbl.gov'),
