@@ -1,6 +1,7 @@
-numpy==1.8.2
-pymatgen>=3.0
-pymatgen-db>=0.3.4
-fireworks>=0.9
-custodian>=0.7
-pymongo>=2.4.2
+dicttoxml==1.6.4
+monty==0.6.4
+pybtex==0.18
+pymongo==2.8
+PyYAML==3.11
+requests==2.6.0
+six==1.9.0
