@@ -29,6 +29,18 @@ class OstiMongoAdapter(object):
             multi=True
         ))
 
+    def get_all_dois(self):
+        dois = {}
+        for doc in self.matcoll.find(
+            {self.doi_key: {'$exists': True}},
+            {'_id': 0, 'task_id': 1, self.doi_key: 1}
+        ):
+            dois[doc['task_id']] = doc[self.doi_key]
+        return dois
+
+    def count(self):
+        return self.matcoll.count()
+        
     def get_materials_cursor(self, l, n):
         if l is None:
             return self.matcoll.find({self.doi_key: {'$exists': False}}, limit=n)

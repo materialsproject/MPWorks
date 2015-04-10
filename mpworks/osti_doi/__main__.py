@@ -13,6 +13,8 @@ group.add_argument('-l', nargs='+', type=int, help="""list of material id's to
                    571567`.""")
 group.add_argument("--reset", action="store_true", help="""clean all DOIs from
                    materials collection""")
+group.add_argument("--info", action="store_true", help="""retrieve materials
+                   already having a doi saved in materials collection""")
 args = parser.parse_args()
 
 loglevel = 'DEBUG' if args.log else 'WARNING'
@@ -20,9 +22,14 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger('osti')
 logger.setLevel(getattr(logging, loglevel))
 
-if args.reset:
+if args.reset or args.info:
     matad = OstiMongoAdapter()
-    matad._reset()
+    if args.reset:
+        matad._reset()
+    if args.info:
+        dois = matad.get_all_dois()
+        print dois
+        print '{}/{} materials have DOIs.'.format(len(dois), matad.count())
 else:
     # generate records for either n or all (n=0) not-yet-submitted materials 
     # OR generate records for specific materials (submitted or not)
