@@ -10,7 +10,9 @@ from pybtex.database.input import bibtex
 from StringIO import StringIO
 from xmltodict import parse
 
-class MaterialsAdapter(object):
+logger = logging.getLogger('osti')
+
+class OstiMongoAdapter(object):
     """adapter to connect to materials database and collection"""
     def __init__(self, db_yaml='materials_db_dev.yaml'):
         self.doi_key = 'doi'
@@ -21,33 +23,38 @@ class MaterialsAdapter(object):
 
     def _reset(self):
         """remove `doi` keys from all documents"""
-        logging.info(self.matcoll.update(
+        logger.info(self.matcoll.update(
             {self.doi_key: {'$exists': 1}},
-            {'$unset': {'contributed_data': 1}},
+            {'$unset': {self.doi_key: 1}},
             multi=True
         ))
 
-    def get_materials_cursor(l, n):
+    def get_materials_cursor(self, l, n):
         if l is None:
             return self.matcoll.find({self.doi_key: {'$exists': False}}, limit=n)
         else:
             mp_ids = [ 'mp-{}'.format(el) for el in l ]
             return self.matcoll.find({'task_id': {'$in': mp_ids}})
 
-    def get_osti_id(mat):
+    def get_osti_id(self, mat):
         osti_id = '' # empty osti_id = new submission -> new DOI
         # check for existing doi to distinguish from edit/update scenario
         if self.doi_key in mat and mat[self.doi_key] is not None:
             osti_id = mat[self.doi_key].split('/')[-1]
         return osti_id
 
+    def save_doi(self, mpid, doi):
+        logger.info(self.matcoll.update(
+            {'task_id': mpid}, {'$set': {self.doi_key: doi}}
+        ))
+
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
     def __init__(self, l=None, n=0):
         self.endpoint = 'https://www.osti.gov/elinktest/2416api' # TODO move to prod
         self.bibtex_parser = bibtex.Parser()
-        self.matad = MaterialsAdapter() # TODO: move to materials_db_prod
-        self.materials = get_materials_cursor(l, n)
+        self.matad = OstiMongoAdapter() # TODO: move to materials_db_prod
+        self.materials = self.matad.get_materials_cursor(l, n)
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
         for material in self.materials:
@@ -82,23 +89,21 @@ class OstiRecord(object):
         items = self.records_xml.getElementsByTagName('item')
         for item in items:
             self.records_xml.renameNode(item, '', item.parentNode.nodeName[:-1])
-        logging.info(self.records_xml.toprettyxml())
+        logger.info(self.records_xml.toprettyxml())
 
     def submit(self):
         """submit generated records to OSTI"""
-        #r = requests.post(
-        #    self.endpoint, data=self.records_xml.toxml(),
-        #    auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
-        #)
-        content = '<?xml version="1.0" encoding="UTF-8"?><records><record><osti_id>1282772</osti_id><product_nos>mp-12661</product_nos><title>Materials Data on Cd3In (SG:221) by Materials Project</title><contract_nos>AC02-05CH11231; EDCBEE</contract_nos><doi>10.15483/1282772</doi><status>SUCCESS</status><status_message></status_message></record></records>'
-        # TODO content -> r.content
-        for record in parse(content)['records'].itervalues():
+        r = requests.post(
+            self.endpoint, data=self.records_xml.toxml(),
+            auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
+        )
+        logger.info(r.content)
+        for record in parse(r.content)['records'].itervalues():
             if record['status'] == 'SUCCESS':
                 doi = 'http://doi.org/' + record['doi']
-                # TODO save to mat_db
-                logging.info(doi)
+                self.matad.save_doi(record['product_nos'], doi)
             else:
-                logging.warning('ERROR for %s: %s' % (
+                logger.warning('ERROR for %s: %s' % (
                     record['product_nos'], record['status_message']
                 ))
 
