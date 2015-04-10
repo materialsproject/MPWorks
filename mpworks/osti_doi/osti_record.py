@@ -81,8 +81,14 @@ class OstiRecord(object):
                 ('contributor_organizations', 'MIT; UC Berkeley; Duke; U Louvain'), # not listed in research_org
                 ('subject_categories_code', '36 MATERIALS SCIENCE'),
                 ('keywords', self._get_keywords()),
-                ('description', 'Computed materials data using density functional theory calculations. These calculations determine the electronic structure of bulk materials by solving approximations to the Schrodinger equation. For more information, see https://materialsproject.org/docs/calculations')
+                ('description', 'Computed materials data using density '
+                 'functional theory calculations. These calculations determine '
+                 'the electronic structure of bulk materials by solving '
+                 'approximations to the Schrodinger equation. For more '
+                 'information, see https://materialsproject.org/docs/calculations')
             ]))
+            if not self.records[-1]['osti_id']:
+                self.records[-1].pop('osti_id', None)
         self.records_xml = parseString(dicttoxml(
             self.records, custom_root='records', attr_type=False
         ))
