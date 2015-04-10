@@ -104,7 +104,9 @@ class OstiRecord(object):
             auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
         )
         logger.info(r.content)
-        for record in parse(r.content)['records'].itervalues():
+        records = parse(r.content)['records']['record']
+        records = [ records ] if not isinstance(records, list) else records
+        for record in records:
             if record['status'] == 'SUCCESS':
                 doi = 'http://doi.org/' + record['doi']
                 self.matad.save_doi(record['product_nos'], doi)
