@@ -63,9 +63,9 @@ class OstiMongoAdapter(object):
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
     def __init__(self, l=None, n=0):
-        self.endpoint = 'https://www.osti.gov/elinktest/2416api' # TODO move to prod
+        self.endpoint = 'https://www.osti.gov/elink/2416api'
         self.bibtex_parser = bibtex.Parser()
-        self.matad = OstiMongoAdapter() # TODO: move to materials_db_prod
+        self.matad = OstiMongoAdapter() # TODO: sync to materials_db_prod now and then
         self.materials = self.matad.get_materials_cursor(l, n)
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
