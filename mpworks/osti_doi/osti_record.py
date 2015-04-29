@@ -30,20 +30,14 @@ class OstiMongoAdapter(object):
 
     def _reset(self):
         """remove `doi` keys from matcoll, clear and reinit doicoll"""
-        logger.info(self.matcoll.update(
-            {self.doi_key: {'$exists': 1}},
-            {'$unset': {self.doi_key: 1}},
-            multi=True
-        ))
+        # NOTE: make sure all existing DOIs are listed here for reinit
         logger.info(self.doicoll.remove())
         logger.info(self.doicoll.insert([
-            {'mp_id': 'mp-12661', 'doi': '10.17188/1178752',
-             'url': 'http://doi.org/10.17188/1178752',
-             'osti_id': 1178752, 'valid': False,
+            {'_id': 'mp-12661', 'doi': '10.17188/1178752', 'valid': False,
              'created_at': datetime.datetime.utcnow().isoformat()},
-            {'mp_id': 'mp-20379', 'doi': '10.17188/1178753',
-             'url': 'http://doi.org/10.17188/1178753',
-             'osti_id': 1178753, 'valid': False,
+            {'_id': 'mp-20379', 'doi': '10.17188/1178753', 'valid': False,
+             'created_at': datetime.datetime.utcnow().isoformat()},
+            {'_id': 'mp-4', 'doi': '10.17188/1178763', 'valid': False,
              'created_at': datetime.datetime.utcnow().isoformat()},
         ]))
 
@@ -64,20 +58,26 @@ class OstiMongoAdapter(object):
             return self.matcoll.find({'task_id': {'$in': mp_ids}})
 
     def get_osti_id(self, mat):
-        osti_id = '' # empty osti_id = new submission -> new DOI
+        # empty osti_id = new submission -> new DOI
         # check for existing doi to distinguish from edit/update scenario
-        if self.doi_key in mat and mat[self.doi_key] is not None:
-            osti_id = mat[self.doi_key].split('/')[-1]
-        return osti_id
+        doi_entry = self.doicoll.find_one({'_id': mat['task_id']})
+        return '' if doi_entry is None else doi_entry['doi'].split('/')[-1]
 
-    def save_doi(self, mpid, doi):
-        """save doi info to dev matcoll, set not valid"""
-        logger.info(self.matcoll.update(
-            {'task_id': mpid}, {'$set': {
-                '{}.url'.format(self.doi_key): doi,
-                '{}.valid'.format(self.doi_key): False,
-            }}
-        ))
+    def insert_dois(self, dois):
+        """save doi info to doicoll, only record update time if exists"""
+        dois_insert = [
+            {'_id': mpid, 'doi': d['doi'], 'valid': False,
+             'created_at': datetime.datetime.utcnow().isoformat()}
+            for mpid,d in dois.iteritems() if not d['updated']
+        ]
+        if dois_insert: logger.info(self.doicoll.insert(dois_insert))
+        dois_update = [ mpid for mpid,d in dois.iteritems() if d['updated'] ]
+        if dois_update:
+            logger.info(self.doicoll.update(
+                {'_id': {'$in': dois_update}},
+                {'$set': {'updated_at': datetime.datetime.utcnow().isoformat()}},
+                multi=True
+            ))
 
     def validate_dois(self):
         """for invalid DOIs: validate via CrossRef and save bibtex"""
@@ -106,7 +106,7 @@ class OstiRecord(object):
     def __init__(self, l=None, n=0):
         self.endpoint = 'https://www.osti.gov/elink/2416api'
         self.bibtex_parser = bibtex.Parser()
-        self.matad = OstiMongoAdapter() # TODO: sync to materials_db_prod now and then
+        self.matad = OstiMongoAdapter.from_config()
         self.materials = self.matad.get_materials_cursor(l, n)
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
@@ -159,14 +159,23 @@ class OstiRecord(object):
         logger.info(r.content)
         records = parse(r.content)['records']['record']
         records = [ records ] if not isinstance(records, list) else records
-        for record in records:
+        dois = {}
+        for ridx,record in enumerate(records):
             if record['status'] == 'SUCCESS':
-                doi = 'http://doi.org/' + record['doi']
-                self.matad.save_doi(record['product_nos'], doi)
+                dois[record['product_nos']] = {
+                    'doi': record['doi'],
+                    'updated': bool('osti_id' in self.records[ridx])
+                }
             else:
                 logger.warning('ERROR for %s: %s' % (
                     record['product_nos'], record['status_message']
                 ))
+        #dois = {
+        #    u'mp-12661': {'updated': True, 'doi': u'10.17188/1178752'},
+        #    u'mp-20379': {'updated': True, 'doi': u'10.17188/1178753'},
+        #    u'mp-4': {'updated': False, 'doi': u'10.17188/1178763'},
+        #}
+        self.matad.insert_dois(dois)
 
     def _get_title(self):
         formula = self.material['pretty_formula']
