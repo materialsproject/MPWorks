@@ -1,6 +1,7 @@
 import os
 import requests
 import logging
+import datetime
 from pymongo import MongoClient
 from monty.serialization import loadfn
 from collections import OrderedDict
@@ -14,24 +15,37 @@ logger = logging.getLogger('osti')
 
 class OstiMongoAdapter(object):
     """adapter to connect to materials database and collection"""
-    def __init__(self, ):
+    def __init__(self, db):
         self.doi_key = 'doi'
-        self.matcoll = self._get_matcoll()
-        self.matcoll_prod = self._get_matcoll(db_yaml='materials_db_prod.yaml')
+        self.matcoll = db.materials
+        self.doicoll = db.dois
 
-    def _get_matcoll(self, db_yaml='materials_db_dev.yaml'):
+    @classmethod
+    def from_config(cls, db_yaml='materials_db_dev.yaml'):
         config = loadfn(os.path.join(os.environ['DB_LOC'], db_yaml))
         client = MongoClient(config['host'], config['port'], j=False)
-        client[config['db']].authenticate(config['username'], config['password'])
-        return client[config['db']].materials
+        db = client[config['db']]
+        db.authenticate(config['username'], config['password'])
+        return OstiMongoAdapter(db)
 
     def _reset(self):
-        """remove `doi` keys from all documents"""
+        """remove `doi` keys from matcoll, clear and reinit doicoll"""
         logger.info(self.matcoll.update(
             {self.doi_key: {'$exists': 1}},
             {'$unset': {self.doi_key: 1}},
             multi=True
         ))
+        logger.info(self.doicoll.remove())
+        logger.info(self.doicoll.insert([
+            {'mp_id': 'mp-12661', 'doi': '10.17188/1178752',
+             'url': 'http://doi.org/10.17188/1178752',
+             'osti_id': 1178752, 'valid': False,
+             'created_at': datetime.datetime.utcnow().isoformat()},
+            {'mp_id': 'mp-20379', 'doi': '10.17188/1178753',
+             'url': 'http://doi.org/10.17188/1178753',
+             'osti_id': 1178753, 'valid': False,
+             'created_at': datetime.datetime.utcnow().isoformat()},
+        ]))
 
     def get_all_dois(self):
         dois = {}
@@ -39,12 +53,9 @@ class OstiMongoAdapter(object):
             {self.doi_key: {'$exists': True}},
             {'_id': 0, 'task_id': 1, self.doi_key: 1}
         ):
-            dois[doc['task_id']] = doc[self.doi_key]
+            dois[doc['task_id']] = doc[self.doi_key]['doi']
         return dois
 
-    def count(self):
-        return self.matcoll.count()
-        
     def get_materials_cursor(self, l, n):
         if l is None:
             return self.matcoll.find({self.doi_key: {'$exists': False}}, limit=n)

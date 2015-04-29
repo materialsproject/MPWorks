@@ -26,15 +26,16 @@ logger = logging.getLogger('osti')
 logger.setLevel(getattr(logging, loglevel))
 
 if args.reset or args.info:
-    matad = OstiMongoAdapter()
+    matad = OstiMongoAdapter.from_config()
     if args.reset:
         matad._reset()
     if args.info:
+        print '{} DOIs in DOI collection.'.format(matad.doicoll.count())
         dois = matad.get_all_dois()
         print dois
-        print '{}/{} materials have DOIs.'.format(len(dois), matad.count())
+        print '{}/{} materials have DOIs.'.format(len(dois), matad.matcoll.count())
 elif args.validate:
-    matad = OstiMongoAdapter()
+    matad = OstiMongoAdapter.from_config()
     matad.validate_dois()
     matad.sync_dois()
 else:
