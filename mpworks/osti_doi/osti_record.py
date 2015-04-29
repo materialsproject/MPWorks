@@ -14,12 +14,16 @@ logger = logging.getLogger('osti')
 
 class OstiMongoAdapter(object):
     """adapter to connect to materials database and collection"""
-    def __init__(self, db_yaml='materials_db_dev.yaml'):
+    def __init__(self, ):
         self.doi_key = 'doi'
+        self.matcoll = self._get_matcoll()
+        self.matcoll_prod = self._get_matcoll(db_yaml='materials_db_prod.yaml')
+
+    def _get_matcoll(self, db_yaml='materials_db_dev.yaml'):
         config = loadfn(os.path.join(os.environ['DB_LOC'], db_yaml))
         client = MongoClient(config['host'], config['port'], j=False)
         client[config['db']].authenticate(config['username'], config['password'])
-        self.matcoll = client[config['db']].materials
+        return client[config['db']].materials
 
     def _reset(self):
         """remove `doi` keys from all documents"""
@@ -64,10 +68,27 @@ class OstiMongoAdapter(object):
             }}
         ))
 
-    def validate_sync_dois(self):
-        """take all !valid dois, check validity via CrossRef, save bibtex and
-        sync to prod matcoll"""
-        raise NotImplementedError("Implement Me!")
+    def validate_dois(self):
+        """for invalid DOIs: validate via CrossRef and save bibtex"""
+        headers = {'Accept': 'text/bibliography; style=bibtex'}
+        for doc in self.matcoll.find(
+            {'{}.valid'.format(self.doi_key): False},
+            {'_id': 0, self.doi_key: 1, 'task_id': 1}
+        ):
+            r = requests.get(doc[self.doi_key]['url'], headers=headers)
+            if r.status_code == 200:
+                logger.info(self.matcoll.update(
+                    {'task_id': doc['task_id']}, {'$set': {
+                        # valid DOIs are ready to be synced to matcoll_prod
+                        '{}.valid'.format(self.doi_key): True,
+                        '{}.synced'.format(self.doi_key): False,
+                        '{}.bibtex'.format(self.doi_key): r.content,
+                    }}
+                ))
+
+    def sync_dois(self):
+        """sync valid and unsynced DOIs to matcoll_prod"""
+        raise NotImplementedError("TODO")
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
