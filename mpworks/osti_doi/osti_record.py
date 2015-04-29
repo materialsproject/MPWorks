@@ -56,9 +56,18 @@ class OstiMongoAdapter(object):
         return osti_id
 
     def save_doi(self, mpid, doi):
+        """save doi info to dev matcoll, set not valid"""
         logger.info(self.matcoll.update(
-            {'task_id': mpid}, {'$set': {self.doi_key: doi}}
+            {'task_id': mpid}, {'$set': {
+                '{}.url'.format(self.doi_key): doi,
+                '{}.valid'.format(self.doi_key): False,
+            }}
         ))
+
+    def validate_sync_dois(self):
+        """take all !valid dois, check validity via CrossRef, save bibtex and
+        sync to prod matcoll"""
+        raise NotImplementedError("Implement Me!")
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
