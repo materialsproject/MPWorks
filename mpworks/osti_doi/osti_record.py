@@ -30,6 +30,9 @@ class OstiMongoAdapter(object):
     def _reset(self):
         """remove `doi` keys from matcoll, clear and reinit doicoll"""
         # NOTE: make sure all existing DOIs are listed here for reinit
+        logger.info(self.matcoll.update(
+          {'doi': {'$exists': 1}}, {'$unset': {'doi': 1, 'doi_bibtex': 1}}, multi=True
+        ))
         logger.info(self.doicoll.remove())
         logger.info(self.doicoll.insert([
             {'_id': 'mp-12661', 'doi': '10.17188/1178752', 'valid': False,
