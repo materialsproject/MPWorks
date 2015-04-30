@@ -79,18 +79,6 @@ class OstiMongoAdapter(object):
                 multi=True
             ))
 
-    def validate_dois(self):
-        """for invalid DOIs: validate via CrossRef and save bibtex"""
-        # NOTE: only validated DOIs are ready to be built into matcoll
-        headers = {'Accept': 'text/bibliography; style=bibtex'}
-        for doc in self.doicoll.find({'valid': False}):
-            r = requests.get('http://doi.org/{}'.format(doc['doi']), headers=headers)
-            if r.status_code == 200:
-                logger.info(self.doicoll.update(
-                    {'_id': doc['_id']},
-                    {'$set': {'valid': True, 'bibtex': r.content}}
-                ))
-
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
     def __init__(self, l=None, n=0):
