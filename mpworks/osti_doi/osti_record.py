@@ -11,13 +11,13 @@ from pybtex.database.input import bibtex
 from StringIO import StringIO
 from xmltodict import parse
 
-logger = logging.getLogger('osti')
+logger = logging.getLogger('mg.build.osti_doi')
 
 class OstiMongoAdapter(object):
     """adapter to connect to materials database and collection"""
-    def __init__(self, db):
-        self.matcoll = db.materials
-        self.doicoll = db.dois
+    def __init__(self, doicoll, matcoll):
+        self.matcoll = matcoll
+        self.doicoll = doicoll
 
     @classmethod
     def from_config(cls, db_yaml='materials_db_dev.yaml'):
@@ -25,7 +25,11 @@ class OstiMongoAdapter(object):
         client = MongoClient(config['host'], config['port'], j=False)
         db = client[config['db']]
         db.authenticate(config['username'], config['password'])
-        return OstiMongoAdapter(db)
+        return OstiMongoAdapter(db.dois, db.materials)
+
+    @classmethod
+    def from_collections(cls, doicoll, matcoll):
+        return OstiMongoAdapter(doicoll, matcoll)
 
     def _reset(self):
         """remove `doi` keys from matcoll, clear and reinit doicoll"""
@@ -40,6 +44,8 @@ class OstiMongoAdapter(object):
             {'_id': 'mp-20379', 'doi': '10.17188/1178753', 'valid': False,
              'created_at': datetime.datetime.utcnow().isoformat()},
             {'_id': 'mp-4', 'doi': '10.17188/1178763', 'valid': False,
+             'created_at': datetime.datetime.utcnow().isoformat()},
+            {'_id': 'mp-188', 'doi': '10.17188/1178782', 'valid': False,
              'created_at': datetime.datetime.utcnow().isoformat()},
         ]))
 
@@ -84,10 +90,12 @@ class OstiMongoAdapter(object):
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
-    def __init__(self, l=None, n=0):
+    def __init__(self, l=None, n=0, doicoll=None, matcoll=None):
         self.endpoint = 'https://www.osti.gov/elink/2416api'
         self.bibtex_parser = bibtex.Parser()
-        self.matad = OstiMongoAdapter.from_config()
+        self.matad = OstiMongoAdapter.from_config() \
+            if doicoll is None or matcoll is None else \
+            OstiMongoAdapter.from_collections(doicoll, matcoll)
         self.materials = self.matad.get_materials_cursor(l, n)
         research_org = 'Lawrence Berkeley National Laboratory (LBNL), Berkeley, CA (United States)'
         self.records = []
@@ -151,11 +159,6 @@ class OstiRecord(object):
                 logger.warning('ERROR for %s: %s' % (
                     record['product_nos'], record['status_message']
                 ))
-        #dois = {
-        #    u'mp-12661': {'updated': True, 'doi': u'10.17188/1178752'},
-        #    u'mp-20379': {'updated': True, 'doi': u'10.17188/1178753'},
-        #    u'mp-4': {'updated': False, 'doi': u'10.17188/1178763'},
-        #}
         self.matad.insert_dois(dois)
 
     def _get_title(self):

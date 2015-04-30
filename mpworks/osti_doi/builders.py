@@ -1,20 +1,27 @@
 import requests
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
+from osti_record import OstiRecord
 
 _log = get_builder_log('osti_doi')
 
-class DoiValidator(Builder):
-    """validate DOIs against CrossRef and built into materials collection"""
+class DoiBuilder(Builder):
+    """Builder to obtain DOIs for all/new materials"""
 
-    def get_items(self, dois=None, materials=None):
-        """DOIs iterator
+    def get_items(self, nmats=2, dois=None, materials=None):
+        """DOIs + Materials iterator
 
+        :param nmats: number of materials for which to request DOIs
+        :type nmats: int
         :param dois: 'dois' collection in 'mg_core_dev/prod'
         :type dois: QueryEngine
         :param materials: 'materials' collection in 'mg_core_dev/prod'
         :type materials: QueryEngine
         """
+        osti_record = OstiRecord(
+            n=nmats, doicoll=dois.collection, matcoll=materials.collection
+        )
+        osti_record.submit()
         self.doi_qe = dois
         self.mat_qe = materials
         self.headers = {'Accept': 'text/bibliography; style=bibtex'}
