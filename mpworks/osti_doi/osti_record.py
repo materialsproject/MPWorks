@@ -16,7 +16,6 @@ logger = logging.getLogger('osti')
 class OstiMongoAdapter(object):
     """adapter to connect to materials database and collection"""
     def __init__(self, db):
-        self.doi_key = 'doi'
         self.matcoll = db.materials
         self.doicoll = db.dois
 
@@ -42,17 +41,18 @@ class OstiMongoAdapter(object):
         ]))
 
     def get_all_dois(self):
+        # NOTE: doi info saved in matcoll as `doi` and `doi_bibtex`
         dois = {}
         for doc in self.matcoll.find(
-            {self.doi_key: {'$exists': True}},
-            {'_id': 0, 'task_id': 1, self.doi_key: 1}
+            {'doi': {'$exists': True}},
+            {'_id': 0, 'task_id': 1, 'doi': 1}
         ):
-            dois[doc['task_id']] = doc[self.doi_key]['doi']
+            dois[doc['task_id']] = doc['doi']
         return dois
 
     def get_materials_cursor(self, l, n):
         if l is None:
-            return self.matcoll.find({self.doi_key: {'$exists': False}}, limit=n)
+            return self.matcoll.find({'doi': {'$exists': False}}, limit=n)
         else:
             mp_ids = [ 'mp-{}'.format(el) for el in l ]
             return self.matcoll.find({'task_id': {'$in': mp_ids}})
