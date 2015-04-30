@@ -2,7 +2,7 @@ import requests
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 
-logger = get_builder_log('osti_doi_builder')
+_log = get_builder_log('osti_doi')
 
 class DoiValidator(Builder):
     """validate DOIs against CrossRef and built into materials collection"""
@@ -40,22 +40,25 @@ class DoiValidator(Builder):
         """validate DOI via CrossRef, save bibtex and build into matcoll"""
         if not item['valid']:
             doi_url = 'http://doi.org/{}'.format(item['doi'])
+            #doi_url = 'http://dx.doi.org/10.1038/nrd842'
             r = requests.get(doi_url, headers=self.headers)
+            _log.info('validate {} -> {} -> {}'.format(item['_id'], item['doi'], r.status_code))
             if r.status_code == 200:
-                logger.info(self.doi_qe.collection.update(
+                _log.info(self.doi_qe.collection.update(
                     {'_id': item['_id']}, {'$set': {
                         'valid': True, 'bibtex': r.content
                     }}
                 ))
                 # only validated DOIs are ready to be built into matcoll
-                logger.info(self.mat_qe.collection.update(
-                    {'_id': item['_id']}, {'$set': {
+                _log.info(self.mat_qe.collection.update(
+                    {'task_id': item['_id']}, {'$set': {
                         'doi': item['doi'], 'doi_bibtex': r.content
                     }}
                 ))
         else:
-            logger.info(self.mat_qe.collection.update(
-                {'_id': item['_id']}, {'$set': {
+            _log.info('re-build {} -> {}'.format(item['_id'], item['doi']))
+            _log.info(self.mat_qe.collection.update(
+                {'task_id': item['_id']}, {'$set': {
                     'doi': item['doi'], 'doi_bibtex': item['bibtex']
                 }}
             ))
