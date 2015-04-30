@@ -81,25 +81,15 @@ class OstiMongoAdapter(object):
 
     def validate_dois(self):
         """for invalid DOIs: validate via CrossRef and save bibtex"""
+        # NOTE: only validated DOIs are ready to be built into matcoll
         headers = {'Accept': 'text/bibliography; style=bibtex'}
-        for doc in self.matcoll.find(
-            {'{}.valid'.format(self.doi_key): False},
-            {'_id': 0, self.doi_key: 1, 'task_id': 1}
-        ):
-            r = requests.get(doc[self.doi_key]['url'], headers=headers)
+        for doc in self.doicoll.find({'valid': False}):
+            r = requests.get('http://doi.org/{}'.format(doc['doi']), headers=headers)
             if r.status_code == 200:
-                logger.info(self.matcoll.update(
-                    {'task_id': doc['task_id']}, {'$set': {
-                        # valid DOIs are ready to be synced to matcoll_prod
-                        '{}.valid'.format(self.doi_key): True,
-                        '{}.synced'.format(self.doi_key): False,
-                        '{}.bibtex'.format(self.doi_key): r.content,
-                    }}
+                logger.info(self.doicoll.update(
+                    {'_id': doc['_id']},
+                    {'$set': {'valid': True, 'bibtex': r.content}}
                 ))
-
-    def sync_dois(self):
-        """sync valid and unsynced DOIs to matcoll_prod"""
-        raise NotImplementedError("TODO")
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
