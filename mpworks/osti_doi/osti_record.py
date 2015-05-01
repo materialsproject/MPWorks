@@ -84,16 +84,17 @@ class OstiMongoAdapter(object):
         if dois_update:
             logger.info(self.doicoll.update(
                 {'_id': {'$in': dois_update}},
-                {'$set': {'updated_at': datetime.datetime.utcnow().isoformat()}},
+                {'$set': {'updated_at': datetime.datetime.now().isoformat()}},
                 multi=True
             ))
 
 class OstiRecord(object):
     """object defining a MP-specific record for OSTI"""
-    def __init__(self, l=None, n=0, doicoll=None, matcoll=None):
+    def __init__(self, l=None, n=0, doicoll=None, matcoll=None,
+                 db_yaml='materials_db_dev.yaml'):
         self.endpoint = 'https://www.osti.gov/elink/2416api'
         self.bibtex_parser = bibtex.Parser()
-        self.matad = OstiMongoAdapter.from_config() \
+        self.matad = OstiMongoAdapter.from_config(db_yaml=db_yaml) \
             if doicoll is None or matcoll is None else \
             OstiMongoAdapter.from_collections(doicoll, matcoll)
         self.materials = self.matad.get_materials_cursor(l, n)
@@ -146,6 +147,9 @@ class OstiRecord(object):
             auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
         )
         logger.info(r.content)
+        if r.status_code != 200:
+            logger.warning('Did not request DOIs due to {} error.'.format(r.status_code))
+            return None
         records = parse(r.content)['records']['record']
         records = [ records ] if not isinstance(records, list) else records
         dois = {}

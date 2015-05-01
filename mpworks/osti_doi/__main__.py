@@ -4,6 +4,7 @@ from osti_record import OstiRecord, OstiMongoAdapter
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--log", help="show log output", action="store_true")
+parser.add_argument("--prod", action="store_true", help="""use production DB.""")
 group = parser.add_mutually_exclusive_group()
 group.add_argument("-n", default=0, type=int, help="""number of materials to
                     submit to OSTI. The default (0) collects all materials not
@@ -19,11 +20,13 @@ args = parser.parse_args()
 
 loglevel = 'DEBUG' if args.log else 'WARNING'
 logging.basicConfig(level=logging.ERROR)
-logger = logging.getLogger('osti')
+logger = logging.getLogger('mg.build.osti_doi')
 logger.setLevel(getattr(logging, loglevel))
 
+db_yaml = 'materials_db_{}.yaml'.format('prod' if args.prod else 'dev')
+print db_yaml
 if args.reset or args.info:
-    matad = OstiMongoAdapter.from_config()
+    matad = OstiMongoAdapter.from_config(db_yaml=db_yaml)
     if args.reset:
         matad._reset()
     if args.info:
@@ -33,5 +36,5 @@ if args.reset or args.info:
 else:
     # generate records for either n or all (n=0) not-yet-submitted materials 
     # OR generate records for specific materials (submitted or not)
-    osti = OstiRecord(l=args.l, n=args.n)
+    osti = OstiRecord(l=args.l, n=args.n, db_yaml=db_yaml)
     osti.submit()
