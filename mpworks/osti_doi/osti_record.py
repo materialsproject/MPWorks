@@ -40,13 +40,13 @@ class OstiMongoAdapter(object):
         logger.info(self.doicoll.remove())
         logger.info(self.doicoll.insert([
             {'_id': 'mp-12661', 'doi': '10.17188/1178752', 'valid': False,
-             'created_at': datetime.datetime.utcnow().isoformat()},
+             'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
             {'_id': 'mp-20379', 'doi': '10.17188/1178753', 'valid': False,
-             'created_at': datetime.datetime.utcnow().isoformat()},
+             'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
             {'_id': 'mp-4', 'doi': '10.17188/1178763', 'valid': False,
-             'created_at': datetime.datetime.utcnow().isoformat()},
+             'created_at': datetime.datetime(2015, 4, 29, 16, 44).isoformat()},
             {'_id': 'mp-188', 'doi': '10.17188/1178782', 'valid': False,
-             'created_at': datetime.datetime.utcnow().isoformat()},
+             'created_at': datetime.datetime(2015, 4, 29, 20, 29).isoformat()},
         ]))
 
     def get_all_dois(self):
@@ -76,7 +76,7 @@ class OstiMongoAdapter(object):
         """save doi info to doicoll, only record update time if exists"""
         dois_insert = [
             {'_id': mpid, 'doi': d['doi'], 'valid': False,
-             'created_at': datetime.datetime.utcnow().isoformat()}
+             'created_at': datetime.datetime.now().isoformat()}
             for mpid,d in dois.iteritems() if not d['updated']
         ]
         if dois_insert: logger.info(self.doicoll.insert(dois_insert))
