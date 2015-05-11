@@ -2,6 +2,7 @@ import requests
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from osti_record import OstiRecord
+from bs4 import BeautifulSoup
 
 _log = get_builder_log('osti_doi')
 
@@ -44,24 +45,31 @@ class DoiBuilder(Builder):
         return mp_ids
 
     def process_item(self, item):
-        """validate DOI via CrossRef, save bibtex and build into matcoll"""
+        """validate DOI, save bibtex and build into matcoll"""
         if not item['valid']:
-            doi_url = 'http://doi.org/{}'.format(item['doi'])
+            #doi_url = 'http://doi.org/{}'.format(item['doi'])
             #doi_url = 'http://dx.doi.org/10.1038/nrd842'
-            r = requests.get(doi_url, headers=self.headers)
+            #r = requests.get(doi_url, headers=self.headers)
+            osti_id = item['doi'].split('/')[-1]
+            doi_url = 'http://www.osti.gov/dataexplorer/biblio/{}/cite/bibtex'.format(osti_id)
+            r = requests.get(doi_url)
             _log.info('validate {} -> {} -> {}'.format(item['_id'], item['doi'], r.status_code))
             if r.status_code == 200:
-                _log.info(self.doi_qe.collection.update(
-                    {'_id': item['_id']}, {'$set': {
-                        'valid': True, 'bibtex': r.content
-                    }}
-                ))
-                # only validated DOIs are ready to be built into matcoll
-                _log.info(self.mat_qe.collection.update(
-                    {'task_id': item['_id']}, {'$set': {
-                        'doi': item['doi'], 'doi_bibtex': r.content
-                    }}
-                ))
+                soup = BeautifulSoup(r.content, "html.parser")
+                rows = soup.find_all('div', attrs={"class" : "csl-entry"})
+                if len(rows) == 1:
+                    bibtex = rows[0].text
+                    _log.info(self.doi_qe.collection.update(
+                        {'_id': item['_id']}, {'$set': {
+                            'valid': True, 'bibtex': bibtex
+                        }}
+                    ))
+                    # only validated DOIs are ready to be built into matcoll
+                    _log.info(self.mat_qe.collection.update(
+                        {'task_id': item['_id']}, {'$set': {
+                            'doi': item['doi'], 'doi_bibtex': bibtex
+                        }}
+                    ))
         else:
             _log.info('re-build {} -> {}'.format(item['_id'], item['doi']))
             _log.info(self.mat_qe.collection.update(
