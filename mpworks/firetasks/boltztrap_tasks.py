@@ -10,10 +10,9 @@ from pymongo import MongoClient
 from fireworks.core.firework import FWAction
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.utilities.fw_utilities import get_slug
-from monty.json import jsanitize, MontyEncoder
+from monty.json import jsanitize
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_block_part
-from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE, BoltzSPB
 import numpy as np
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
@@ -118,7 +117,8 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             return data
 
     def run_task(self, fw_spec):
-
+        # import here to prevent import errors in bigger MPCollab
+        from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE, BoltzSPB
         # get the band structure and nelect from files
         """
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
