@@ -1,4 +1,4 @@
-import requests
+import requests, json, os, datetime, glob
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from osti_record import OstiRecord
@@ -58,7 +58,7 @@ class DoiBuilder(Builder):
                 soup = BeautifulSoup(r.content, "html.parser")
                 rows = soup.find_all('div', attrs={"class" : "csl-entry"})
                 if len(rows) == 1:
-                    bibtex = rows[0].text
+                    bibtex = rows[0].text.strip()
                     _log.info(self.doi_qe.collection.update(
                         {'_id': item['_id']}, {'$set': {
                             'valid': True, 'bibtex': bibtex
@@ -77,3 +77,18 @@ class DoiBuilder(Builder):
                     'doi': item['doi'], 'doi_bibtex': item['bibtex']
                 }}
             ))
+
+    def finalize(self, errors):
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
+        filename = 'dois_{}.json'.format(datetime.date.today())
+        filepath = os.path.join(dirname, filename)
+        with open(filepath, 'w') as outfile:
+            l = list(self.doi_qe.collection.find(
+                fields={'created_at': True, 'doi': True}
+            ))
+            json.dump(l, outfile, indent=2)
+            for path in filenames:
+                if path != filepath:
+                    os.remove(path)
+        return True

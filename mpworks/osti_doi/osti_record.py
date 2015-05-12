@@ -2,6 +2,8 @@ import os
 import requests
 import logging
 import datetime
+import glob
+import json
 from pymongo import MongoClient
 from monty.serialization import loadfn
 from collections import OrderedDict
@@ -33,21 +35,32 @@ class OstiMongoAdapter(object):
 
     def _reset(self):
         """remove `doi` keys from matcoll, clear and reinit doicoll"""
-        # NOTE: make sure all existing DOIs are listed here for reinit
         logger.info(self.matcoll.update(
           {'doi': {'$exists': 1}}, {'$unset': {'doi': 1, 'doi_bibtex': 1}}, multi=True
         ))
         logger.info(self.doicoll.remove())
-        logger.info(self.doicoll.insert([
-            {'_id': 'mp-12661', 'doi': '10.17188/1178752', 'valid': False,
-             'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
-            {'_id': 'mp-20379', 'doi': '10.17188/1178753', 'valid': False,
-             'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
-            {'_id': 'mp-4', 'doi': '10.17188/1178763', 'valid': False,
-             'created_at': datetime.datetime(2015, 4, 29, 16, 44).isoformat()},
-            {'_id': 'mp-188', 'doi': '10.17188/1178782', 'valid': False,
-             'created_at': datetime.datetime(2015, 4, 29, 20, 29).isoformat()},
-        ]))
+        dirname = os.path.dirname(os.path.realpath(__file__))
+        filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
+        if len(filenames) > 0:
+            # use LATEST json file and set valid = False
+            logger.info('using {} for reset'.format(filenames[-1]))
+            with open(filenames[-1], 'r') as infile:
+                data = json.load(infile)
+                for d in data: d['valid'] = False
+                logger.info(self.doicoll.insert(data))
+        else:
+            logger.warning("No json backup file found. Using manual "
+                           "initialization. Probably outdated!")
+            logger.info(self.doicoll.insert([
+                {'_id': 'mp-12661', 'doi': '10.17188/1178752', 'valid': False,
+                 'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
+                {'_id': 'mp-20379', 'doi': '10.17188/1178753', 'valid': False,
+                 'created_at': datetime.datetime(2015, 4, 29, 10, 35).isoformat()},
+                {'_id': 'mp-4', 'doi': '10.17188/1178763', 'valid': False,
+                 'created_at': datetime.datetime(2015, 4, 29, 16, 44).isoformat()},
+                {'_id': 'mp-188', 'doi': '10.17188/1178782', 'valid': False,
+                 'created_at': datetime.datetime(2015, 4, 29, 20, 29).isoformat()},
+            ]))
 
     def get_all_dois(self):
         # NOTE: doi info saved in matcoll as `doi` and `doi_bibtex`
