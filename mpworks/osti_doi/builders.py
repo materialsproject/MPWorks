@@ -3,8 +3,16 @@ from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from osti_record import OstiRecord
 from bs4 import BeautifulSoup
+import plotly.plotly as py
+from plotly.graph_objs import *
 
 _log = get_builder_log('osti_doi')
+stream_ids = ['645h22ynck', '96howh4ip8', 'nnqpv5ra02']
+py.sign_in(
+    os.environ.get('MP_PLOTLY_USER'),
+    os.environ.get('MP_PLOTLY_APIKEY'),
+    stream_ids=stream_ids
+)
 
 class DoiBuilder(Builder):
     """Builder to obtain DOIs for all/new materials"""
@@ -19,10 +27,10 @@ class DoiBuilder(Builder):
         :param materials: 'materials' collection in 'mg_core_dev/prod'
         :type materials: QueryEngine
         """
-        osti_record = OstiRecord(
+        self.osti_record = OstiRecord(
             n=nmats, doicoll=dois.collection, matcoll=materials.collection
         )
-        osti_record.submit()
+        self.osti_record.submit()
         self.doi_qe = dois
         self.mat_qe = materials
         self.headers = {'Accept': 'text/bibliography; style=bibtex'}
@@ -87,7 +95,8 @@ class DoiBuilder(Builder):
     def finalize(self, errors):
         dirname = os.path.dirname(os.path.realpath(__file__))
         filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
-        filename = 'dois_{}.json'.format(datetime.date.today())
+        today = datetime.date.today()
+        filename = 'dois_{}.json'.format(today)
         filepath = os.path.join(dirname, filename)
         with open(filepath, 'w') as outfile:
             l = list(self.doi_qe.collection.find(
@@ -97,4 +106,15 @@ class DoiBuilder(Builder):
             for path in filenames:
                 if path != filepath:
                     os.remove(path)
+        # push results to plotly streaming graph
+        counts = [
+            self.mat_qe.collection.count(),
+            self.doi_qe.collection.count(),
+            len(self.osti_record.matad.get_all_dois())
+        ]
+        for idx,stream_id in enumerate(stream_ids):
+            s = py.Stream(stream_id)
+            s.open()
+            s.write(dict(x=today, y=counts[idx]))
+            s.close()
         return True
