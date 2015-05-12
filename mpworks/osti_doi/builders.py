@@ -52,7 +52,13 @@ class DoiBuilder(Builder):
             #r = requests.get(doi_url, headers=self.headers)
             osti_id = item['doi'].split('/')[-1]
             doi_url = 'http://www.osti.gov/dataexplorer/biblio/{}/cite/bibtex'.format(osti_id)
-            r = requests.get(doi_url)
+            try:
+                r = requests.get(doi_url)
+            except Exception as ex:
+                _log.warning('validation exception: {} -> {} -> {}'.format(
+                    item['_id'], item['doi'], ex
+                ))
+                return 0
             _log.info('validate {} -> {} -> {}'.format(item['_id'], item['doi'], r.status_code))
             if r.status_code == 200:
                 soup = BeautifulSoup(r.content, "html.parser")
