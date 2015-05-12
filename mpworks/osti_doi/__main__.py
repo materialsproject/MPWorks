@@ -12,10 +12,10 @@ group.add_argument("-n", default=0, type=int, help="""number of materials to
 group.add_argument('-l', nargs='+', type=int, help="""list of material id's to
                     submit. mp-prefix internally added, i.e. use `-l 4 1986
                    571567`.""")
-group.add_argument("--reset", action="store_true", help="""clean all DOIs from
-                   materials collection""")
+group.add_argument("--reset", action="store_true", help="""reset collections""")
 group.add_argument("--info", action="store_true", help="""retrieve materials
                    already having a doi saved in materials collection""")
+group.add_argument("--plotly", action="store_true", help="""init plotly graph""")
 args = parser.parse_args()
 
 loglevel = 'DEBUG' if args.log else 'WARNING'
@@ -25,14 +25,21 @@ logger.setLevel(getattr(logging, loglevel))
 
 db_yaml = 'materials_db_{}.yaml'.format('prod' if args.prod else 'dev')
 print db_yaml
-if args.reset or args.info:
+if args.reset or args.info or args.plotly:
     matad = OstiMongoAdapter.from_config(db_yaml=db_yaml)
     if args.reset:
         matad._reset()
-    if args.info:
+    elif args.info:
         print '{} DOIs in DOI collection.'.format(matad.doicoll.count())
         dois = matad.get_all_dois()
         print '{}/{} materials have DOIs.'.format(len(dois), matad.matcoll.count())
+    elif args.plotly:
+        import os
+        import plotly.plotly as py
+        py.sign_in(
+            os.environ.get('MP_PLOTLY_USER'), os.environ.get('MP_PLOTLY_APIKEY'),
+            stream_ids = ['645h22ynck', '96howh4ip8', 'nnqpv5ra02']
+        )
 else:
     # generate records for either n or all (n=0) not-yet-submitted materials 
     # OR generate records for specific materials (submitted or not)
