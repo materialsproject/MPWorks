@@ -34,12 +34,29 @@ if args.reset or args.info or args.plotly:
         dois = matad.get_all_dois()
         print '{}/{} materials have DOIs.'.format(len(dois), matad.matcoll.count())
     elif args.plotly:
-        import os
+        import os, datetime
         import plotly.plotly as py
+        from plotly.graph_objs import *
+        stream_ids = ['645h22ynck', '96howh4ip8', 'nnqpv5ra02']
         py.sign_in(
-            os.environ.get('MP_PLOTLY_USER'), os.environ.get('MP_PLOTLY_APIKEY'),
-            stream_ids = ['645h22ynck', '96howh4ip8', 'nnqpv5ra02']
+            os.environ.get('MP_PLOTLY_USER'),
+            os.environ.get('MP_PLOTLY_APIKEY'),
+            stream_ids=stream_ids
         )
+        today = datetime.date.today()
+        counts = [
+            matad.matcoll.count(), matad.doicoll.count(),
+            len(matad.get_all_dois())
+        ]
+        names = ['materials', 'requested DOIs', 'validated DOIs']
+        data = Data([
+            Scatter(
+                x=[today], y=[counts[idx]], name=names[idx],
+                stream=dict(token=stream_ids[idx], maxpoints=10000)
+            ) for idx,count in enumerate(counts)
+        ])
+        filename = 'dois_{}'.format(today)
+        print py.plot(data, filename=filename, auto_open=False)
 else:
     # generate records for either n or all (n=0) not-yet-submitted materials 
     # OR generate records for specific materials (submitted or not)
