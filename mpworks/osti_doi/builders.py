@@ -1,12 +1,21 @@
-import requests, json, os, datetime, glob
+import requests, json, os, datetime, glob, logging
 from matgendb.builders.core import Builder
-from matgendb.builders.util import get_builder_log
 from osti_record import OstiRecord
 from bs4 import BeautifulSoup
 import plotly.plotly as py
 from plotly.graph_objs import *
 
-_log = get_builder_log('osti_doi')
+today = datetime.date.today()
+dirname = os.path.dirname(os.path.realpath(__file__))
+logfile = os.path.join(dirname, 'dois_{}.log'.format(today))
+_log = logging.getLogger('mg.build')
+_log.setLevel(logging.DEBUG)
+fh = logging.FileHandler(logfile)
+fh.setLevel(logging.DEBUG)
+formatter = logging.Formatter('####### %(asctime)s #######\n%(message)s')
+fh.setFormatter(formatter)
+_log.addHandler(fh)
+
 stream_ids = ['645h22ynck', '96howh4ip8', 'nnqpv5ra02']
 py.sign_in(
     os.environ.get('MP_PLOTLY_USER'),
@@ -93,9 +102,7 @@ class DoiBuilder(Builder):
             ))
 
     def finalize(self, errors):
-        dirname = os.path.dirname(os.path.realpath(__file__))
         filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
-        today = datetime.date.today()
         filename = 'dois_{}.json'.format(today)
         filepath = os.path.join(dirname, filename)
         with open(filepath, 'w') as outfile:
