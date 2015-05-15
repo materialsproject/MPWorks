@@ -2,7 +2,6 @@ import os
 import requests
 import logging
 import datetime
-import glob
 import json
 from pymongo import MongoClient
 from monty.serialization import loadfn
@@ -40,11 +39,11 @@ class OstiMongoAdapter(object):
         ))
         logger.info(self.doicoll.remove())
         dirname = os.path.dirname(os.path.realpath(__file__))
-        filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
-        if len(filenames) > 0:
-            # use LATEST json file and set valid = False
-            logger.info('using {} for reset'.format(filenames[-1]))
-            with open(filenames[-1], 'r') as infile:
+        filename = os.path.join(dirname, 'dois.json')
+        if os.path.exists(filename):
+            # use json file and set valid = False
+            logger.info('using {} for reset'.format(filename))
+            with open(filename, 'r') as infile:
                 data = json.load(infile)
                 for d in data: d['valid'] = False
                 logger.info(self.doicoll.insert(data))

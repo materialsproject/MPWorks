@@ -1,4 +1,4 @@
-import requests, json, os, datetime, glob, logging
+import requests, json, os, datetime, logging
 from matgendb.builders.core import Builder
 from osti_record import OstiRecord
 from bs4 import BeautifulSoup
@@ -7,11 +7,11 @@ from plotly.graph_objs import *
 
 today = datetime.date.today()
 dirname = os.path.dirname(os.path.realpath(__file__))
-logfile = os.path.join(dirname, 'dois_{}.log'.format(today))
+logfile = os.path.join(dirname, 'logs', 'dois_{}.log'.format(today))
 _log = logging.getLogger('mg.build')
-_log.setLevel(logging.DEBUG)
+_log.setLevel(logging.INFO)
 fh = logging.FileHandler(logfile)
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 formatter = logging.Formatter('####### %(asctime)s #######\n%(message)s')
 fh.setFormatter(formatter)
 _log.addHandler(fh)
@@ -102,17 +102,12 @@ class DoiBuilder(Builder):
             ))
 
     def finalize(self, errors):
-        filenames = glob.glob(os.path.join(dirname, 'dois_*.json'))
-        filename = 'dois_{}.json'.format(today)
-        filepath = os.path.join(dirname, filename)
+        filepath = os.path.join(dirname, 'dois.json')
         with open(filepath, 'w') as outfile:
             l = list(self.doi_qe.collection.find(
                 fields={'created_at': True, 'doi': True}
             ))
             json.dump(l, outfile, indent=2)
-            for path in filenames:
-                if path != filepath:
-                    os.remove(path)
         # push results to plotly streaming graph
         counts = [
             self.mat_qe.collection.count(),
