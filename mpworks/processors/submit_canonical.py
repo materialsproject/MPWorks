@@ -66,7 +66,7 @@ def submit_tests(names=None, params=None):
 
             snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
 
-            parameters = {'priority': 10} if name == 'Si' else None
+            parameters = {'priority': 10} if name == 'Si' else {}
             if params:
                 parameters.update(params)
             sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=parameters)

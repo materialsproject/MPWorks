@@ -1,5 +1,5 @@
 {
-    "updated_on": "2013-05-09T20:40:10.503840", 
+    "updated_on": "2014-01-06T00:52:40.926616", 
     "metadata": {
         "elements": [
             "Fe", 
@@ -8,14 +8,11 @@
         "is_ordered": true, 
         "anonymized_formula": "AB", 
         "chemsystem": "Fe-O", 
-        "composition_dict": {
-            "Fe": 1.0, 
-            "O": 1.0
-        }, 
         "reduced_cell_formula_abc": "Fe1 O1", 
         "nelements": 2, 
         "reduced_cell_formula": "FeO", 
         "nsites": 2, 
+        "run_version": "May 2013 (1)", 
         "is_valid": true, 
         "formula": "Fe1 O1"
     }, 
@@ -44,6 +41,11 @@
         {
             "fw_id": 0, 
             "spec": {
+                "_queueadapter": {
+                    "nnodes": 1, 
+                    "pre_rocket": "#PBS -v DB_LOC,FW_CONFIG_FILE,VENV_LOC\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC", 
+                    "walltime": "12:00:00"
+                }, 
                 "_tasks": [
                     {
                         "_fw_name": "Add SNL Task"
@@ -52,34 +54,36 @@
                 "snl": {
                     "lattice": {
                         "a": 3.0525137003499996, 
-                        "c": 3.0525137, 
-                        "b": 3.05251369966, 
+                        "c": 3.0525137026810456, 
+                        "b": 3.0525137003595546, 
                         "matrix": [
                             [
-                                2.6435544100096924, 
+                                -2.6435544100096924, 
                                 0.0, 
-                                1.5262568499904452
+                                -1.5262568499904452
                             ], 
                             [
-                                0.8811847999763114, 
+                                -2.6435544100096924, 
+                                0.0, 
+                                1.5262568500095548
+                            ], 
+                            [
+                                -1.762369610033381, 
                                 2.4923669999994655, 
-                                1.5262568500145548
-                            ], 
-                            [
-                                0.0, 
-                                0.0, 
-                                3.0525137
+                                2.41096032027599e-11
                             ]
                         ], 
-                        "@module": "pymatgen.core.lattice", 
                         "volume": 20.112120746076236, 
-                        "beta": 60.00000000399999, 
-                        "@class": "Lattice", 
-                        "alpha": 59.999999996000014, 
-                        "gamma": 60.000000058
+                        "beta": 59.99999995978383, 
+                        "alpha": 59.99999995936483, 
+                        "gamma": 59.999999992310634
                     }, 
                     "about": {
-                        "created_at": "2013-05-09T20:40:10.453790", 
+                        "created_at": {
+                            "string": "2014-01-06 00:52:40.859438", 
+                            "@class": "datetime", 
+                            "@module": "datetime"
+                        }, 
                         "references": "", 
                         "authors": [
                             {
@@ -108,8 +112,6 @@
                             "species": [
                                 {
                                     "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
                                     "element": "Fe"
                                 }
                             ]
@@ -117,21 +119,19 @@
                         {
                             "label": "O", 
                             "xyz": [
-                                1.7623678426233917, 
+                                -3.5247409773959926, 
                                 1.2461859923667329, 
-                                3.0525106474888
+                                -3.052492090292218e-06
                             ], 
                             "abc": [
-                                0.499999, 
-                                0.500001, 
-                                0.499999
+                                0.5000009999999999, 
+                                0.49999899999999997, 
+                                0.500001
                             ], 
                             "properties": {}, 
                             "species": [
                                 {
                                     "occu": 1.0, 
-                                    "@module": "pymatgen.core.periodic_table", 
-                                    "@class": "Element", 
                                     "element": "O"
                                 }
                             ]
@@ -140,14 +140,18 @@
                     "@class": "StructureNL", 
                     "@module": "pymatgen.matproj.snl"
                 }, 
-                "task_type": "Add to SNL database"
+                "task_type": "Add to SNL database", 
+                "_priority": 1
             }, 
-            "created_on": "2013-05-09T20:40:10.473352", 
+            "created_on": "2014-01-06T00:52:40.888095", 
             "name": "Fe1_O1--Add_to_SNL_database"
         }, 
         {
             "fw_id": 1, 
             "spec": {
+                "_queueadapter": {
+                    "nnodes": 2
+                }, 
                 "_tasks": [
                     {
                         "_fw_name": "Vasp Writer Task"
@@ -157,18 +161,266 @@
                             {
                                 "settings_override": null, 
                                 "suffix": ".relax1", 
-                                "vasp_command": "VASP_EXE", 
-                                "auto_gamma": false, 
+                                "auto_gamma": true, 
                                 "output_file": "vasp.out", 
                                 "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
+                                    "sort_structure": true, 
+                                    "hubbard_off": false, 
                                     "constrain_total_magmom": false, 
                                     "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
+                                    "config_dict": {
+                                        "INCAR": {
+                                            "NELM": 100, 
+                                            "IBRION": 2, 
+                                            "LDAUTYPE": 2, 
+                                            "LWAVE": false, 
+                                            "SIGMA": 0.05, 
+                                            "MAGMOM": {
+                                                "Mo": 5, 
+                                                "Ni": 2, 
+                                                "Mn4+": 3, 
+                                                "Co": 5, 
+                                                "Ni3+": 1, 
+                                                "Fe2+": 4, 
+                                                "Mn": 5, 
+                                                "Co3+": 0.6, 
+                                                "Fe3+": 5, 
+                                                "Mn2+": 5, 
+                                                "Fe": 5, 
+                                                "W": 5, 
+                                                "Mn3+": 4, 
+                                                "Ni4+": 0.6, 
+                                                "Cr": 5, 
+                                                "V": 5, 
+                                                "Fe4+": 4, 
+                                                "Co4+": 1, 
+                                                "Ta": 5
+                                            }, 
+                                            "NELMIN": 6, 
+                                            "LDAUL": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 2
+                                                }, 
+                                                "O": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "LDAUJ": {
+                                                "S": {
+                                                    "Mn": 0, 
+                                                    "Fe": 0
+                                                }, 
+                                                "O": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }, 
+                                                "F": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }
+                                            }, 
+                                            "ENCUT": 520, 
+                                            "ISIF": 3, 
+                                            "ICHARG": 1, 
+                                            "LDAUU": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 1.9
+                                                }, 
+                                                "O": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "EDIFF": 5e-05, 
+                                            "NSW": 99, 
+                                            "LREAL": "AUTO", 
+                                            "ISMEAR": -5, 
+                                            "NPAR": 1, 
+                                            "PREC": "Accurate", 
+                                            "LDAU": true, 
+                                            "ALGO": "FAST", 
+                                            "ISPIN": 2, 
+                                            "LORBIT": "11"
+                                        }, 
+                                        "KPOINTS": {
+                                            "grid_density": 1000
+                                        }, 
+                                        "POTCAR": {
+                                            "Ru": "Ru_pv", 
+                                            "Re": "Re", 
+                                            "Rb": "Rb_pv", 
+                                            "Rh": "Rh", 
+                                            "Be": "Be", 
+                                            "Ba": "Ba_sv", 
+                                            "Bi": "Bi", 
+                                            "Br": "Br", 
+                                            "H": "H", 
+                                            "P": "P", 
+                                            "Os": "Os", 
+                                            "Ge": "Ge", 
+                                            "Gd": "Gd", 
+                                            "Ga": "Ga", 
+                                            "Pr": "Pr", 
+                                            "Pt": "Pt", 
+                                            "Pu": "Pu", 
+                                            "C": "C", 
+                                            "Pb": "Pb", 
+                                            "Pa": "Pa", 
+                                            "Pd": "Pd", 
+                                            "Cd": "Cd", 
+                                            "Pm": "Pm", 
+                                            "Ho": "Ho_3", 
+                                            "Hf": "Hf", 
+                                            "Hg": "Hg", 
+                                            "He": "He", 
+                                            "Mg": "Mg", 
+                                            "K": "K_sv", 
+                                            "Mn": "Mn", 
+                                            "O": "O", 
+                                            "S": "S", 
+                                            "W": "W_pv", 
+                                            "Zn": "Zn", 
+                                            "Eu": "Eu", 
+                                            "Zr": "Zr", 
+                                            "Er": "Er_3", 
+                                            "Ni": "Ni", 
+                                            "Na": "Na", 
+                                            "Nb": "Nb_pv", 
+                                            "Nd": "Nd", 
+                                            "Ne": "Ne", 
+                                            "Np": "Np", 
+                                            "Fe": "Fe", 
+                                            "B": "B", 
+                                            "F": "F", 
+                                            "Sr": "Sr_sv", 
+                                            "N": "N", 
+                                            "Kr": "Kr", 
+                                            "Si": "Si", 
+                                            "Sn": "Sn_d", 
+                                            "Sm": "Sm_3", 
+                                            "V": "V_pv", 
+                                            "Sc": "Sc_sv", 
+                                            "Sb": "Sb", 
+                                            "Se": "Se", 
+                                            "Co": "Co", 
+                                            "Cl": "Cl", 
+                                            "Ca": "Ca_sv", 
+                                            "Ce": "Ce", 
+                                            "Xe": "Xe", 
+                                            "Tm": "Tm_3", 
+                                            "Cs": "Cs_sv", 
+                                            "Cr": "Cr", 
+                                            "Cu": "Cu", 
+                                            "La": "La", 
+                                            "Li": "Li", 
+                                            "Tl": "Tl", 
+                                            "Lu": "Lu_3", 
+                                            "Th": "Th", 
+                                            "Ti": "Ti", 
+                                            "Te": "Te", 
+                                            "Tb": "Tb_3", 
+                                            "Tc": "Tc", 
+                                            "Ta": "Ta", 
+                                            "Yb": "Yb", 
+                                            "Dy": "Dy_3", 
+                                            "I": "I", 
+                                            "U": "U", 
+                                            "Y": "Y_sv", 
+                                            "Ac": "Ac", 
+                                            "Ag": "Ag", 
+                                            "Ir": "Ir", 
+                                            "Al": "Al", 
+                                            "As": "As", 
+                                            "Ar": "Ar", 
+                                            "Au": "Au", 
+                                            "In": "In", 
+                                            "Mo": "Mo_pv"
+                                        }
+                                    }, 
+                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@class": "DictVaspInputSet"
                                 }, 
+                                "gamma_vasp_cmd": null, 
+                                "vasp_cmd": "VASP_EXE", 
                                 "gzipped": false, 
                                 "backup": true, 
                                 "final": false, 
@@ -194,25 +446,273 @@
                                     }
                                 ], 
                                 "suffix": ".relax2", 
-                                "vasp_command": "VASP_EXE", 
-                                "auto_gamma": false, 
+                                "auto_gamma": true, 
                                 "output_file": "vasp.out", 
                                 "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
+                                    "sort_structure": true, 
+                                    "hubbard_off": false, 
                                     "constrain_total_magmom": false, 
                                     "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
+                                    "config_dict": {
+                                        "INCAR": {
+                                            "NELM": 100, 
+                                            "IBRION": 2, 
+                                            "LDAUTYPE": 2, 
+                                            "LWAVE": false, 
+                                            "SIGMA": 0.05, 
+                                            "MAGMOM": {
+                                                "Mo": 5, 
+                                                "Ni": 2, 
+                                                "Mn4+": 3, 
+                                                "Co": 5, 
+                                                "Ni3+": 1, 
+                                                "Fe2+": 4, 
+                                                "Mn": 5, 
+                                                "Co3+": 0.6, 
+                                                "Fe3+": 5, 
+                                                "Mn2+": 5, 
+                                                "Fe": 5, 
+                                                "W": 5, 
+                                                "Mn3+": 4, 
+                                                "Ni4+": 0.6, 
+                                                "Cr": 5, 
+                                                "V": 5, 
+                                                "Fe4+": 4, 
+                                                "Co4+": 1, 
+                                                "Ta": 5
+                                            }, 
+                                            "NELMIN": 6, 
+                                            "LDAUL": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 2
+                                                }, 
+                                                "O": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "LDAUJ": {
+                                                "S": {
+                                                    "Mn": 0, 
+                                                    "Fe": 0
+                                                }, 
+                                                "O": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }, 
+                                                "F": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }
+                                            }, 
+                                            "ENCUT": 520, 
+                                            "ISIF": 3, 
+                                            "ICHARG": 1, 
+                                            "LDAUU": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 1.9
+                                                }, 
+                                                "O": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "EDIFF": 5e-05, 
+                                            "NSW": 99, 
+                                            "LREAL": "AUTO", 
+                                            "ISMEAR": -5, 
+                                            "NPAR": 1, 
+                                            "PREC": "Accurate", 
+                                            "LDAU": true, 
+                                            "ALGO": "FAST", 
+                                            "ISPIN": 2, 
+                                            "LORBIT": "11"
+                                        }, 
+                                        "KPOINTS": {
+                                            "grid_density": 1000
+                                        }, 
+                                        "POTCAR": {
+                                            "Ru": "Ru_pv", 
+                                            "Re": "Re", 
+                                            "Rb": "Rb_pv", 
+                                            "Rh": "Rh", 
+                                            "Be": "Be", 
+                                            "Ba": "Ba_sv", 
+                                            "Bi": "Bi", 
+                                            "Br": "Br", 
+                                            "H": "H", 
+                                            "P": "P", 
+                                            "Os": "Os", 
+                                            "Ge": "Ge", 
+                                            "Gd": "Gd", 
+                                            "Ga": "Ga", 
+                                            "Pr": "Pr", 
+                                            "Pt": "Pt", 
+                                            "Pu": "Pu", 
+                                            "C": "C", 
+                                            "Pb": "Pb", 
+                                            "Pa": "Pa", 
+                                            "Pd": "Pd", 
+                                            "Cd": "Cd", 
+                                            "Pm": "Pm", 
+                                            "Ho": "Ho_3", 
+                                            "Hf": "Hf", 
+                                            "Hg": "Hg", 
+                                            "He": "He", 
+                                            "Mg": "Mg", 
+                                            "K": "K_sv", 
+                                            "Mn": "Mn", 
+                                            "O": "O", 
+                                            "S": "S", 
+                                            "W": "W_pv", 
+                                            "Zn": "Zn", 
+                                            "Eu": "Eu", 
+                                            "Zr": "Zr", 
+                                            "Er": "Er_3", 
+                                            "Ni": "Ni", 
+                                            "Na": "Na", 
+                                            "Nb": "Nb_pv", 
+                                            "Nd": "Nd", 
+                                            "Ne": "Ne", 
+                                            "Np": "Np", 
+                                            "Fe": "Fe", 
+                                            "B": "B", 
+                                            "F": "F", 
+                                            "Sr": "Sr_sv", 
+                                            "N": "N", 
+                                            "Kr": "Kr", 
+                                            "Si": "Si", 
+                                            "Sn": "Sn_d", 
+                                            "Sm": "Sm_3", 
+                                            "V": "V_pv", 
+                                            "Sc": "Sc_sv", 
+                                            "Sb": "Sb", 
+                                            "Se": "Se", 
+                                            "Co": "Co", 
+                                            "Cl": "Cl", 
+                                            "Ca": "Ca_sv", 
+                                            "Ce": "Ce", 
+                                            "Xe": "Xe", 
+                                            "Tm": "Tm_3", 
+                                            "Cs": "Cs_sv", 
+                                            "Cr": "Cr", 
+                                            "Cu": "Cu", 
+                                            "La": "La", 
+                                            "Li": "Li", 
+                                            "Tl": "Tl", 
+                                            "Lu": "Lu_3", 
+                                            "Th": "Th", 
+                                            "Ti": "Ti", 
+                                            "Te": "Te", 
+                                            "Tb": "Tb_3", 
+                                            "Tc": "Tc", 
+                                            "Ta": "Ta", 
+                                            "Yb": "Yb", 
+                                            "Dy": "Dy_3", 
+                                            "I": "I", 
+                                            "U": "U", 
+                                            "Y": "Y_sv", 
+                                            "Ac": "Ac", 
+                                            "Ag": "Ag", 
+                                            "Ir": "Ir", 
+                                            "Al": "Al", 
+                                            "As": "As", 
+                                            "Ar": "Ar", 
+                                            "Au": "Au", 
+                                            "In": "In", 
+                                            "Mo": "Mo_pv"
+                                        }
+                                    }, 
+                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@class": "DictVaspInputSet"
                                 }, 
+                                "gamma_vasp_cmd": null, 
+                                "vasp_cmd": "VASP_EXE", 
                                 "gzipped": false, 
                                 "backup": false, 
                                 "final": true, 
                                 "@class": "VaspJob"
                             }
                         ], 
-                        "max_errors": 10, 
+                        "max_errors": 5, 
                         "_fw_name": "Vasp Custodian Task", 
                         "handlers": [
                             {
@@ -227,11 +727,14 @@
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "output_vasprun": "vasprun.xml", 
                                 "output_filename": "vasp.out", 
                                 "@class": "MeshSymmetryErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "change_algo": false, 
+                                "nionic_steps": 10, 
                                 "output_filename": "OSZICAR", 
                                 "@class": "NonConvergingErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
@@ -240,7 +743,37 @@
                     }
                 ], 
                 "task_type": "GGA optimize structure (2x)", 
-                "vaspinputset_name": "MPGGAVaspInputSet", 
+                "_trackers": [
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.error"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "vasp.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OSZICAR"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR.relax1"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR.relax2"
+                    }
+                ], 
+                "vaspinputset_name": "DictVaspInputSet", 
                 "_priority": 2, 
                 "run_tags": [
                     "PBE", 
@@ -258,14 +791,14 @@
                             5, 
                             0.6
                         ], 
-                        "ALGO": "Fast", 
                         "NELM": 100, 
-                        "PREC": "Accurate", 
+                        "ENCUT": 520, 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
+                        "PREC": "Accurate", 
                         "ISIF": 3, 
                         "ICHARG": 1, 
                         "IBRION": 2, 
-                        "ENCUT": 520, 
+                        "ALGO": "Fast", 
                         "LREAL": "Auto", 
                         "ISMEAR": -5, 
                         "ISPIN": 2, 
@@ -278,91 +811,23 @@
                         "NSW": 99
                     }, 
                     "kpoints": {
-                        "comment": "Fe1 O1", 
-                        "selective_dynamics": null, 
-                        "velocities": null, 
+                        "comment": "pymatgen generated KPOINTS with grid density = 1000 / atom", 
+                        "usershift": [
+                            0, 
+                            0, 
+                            0
+                        ], 
+                        "kpoints": [
+                            [
+                                8, 
+                                8, 
+                                8
+                            ]
+                        ], 
                         "@module": "pymatgen.io.vaspio.vasp_input", 
-                        "@class": "Poscar", 
-                        "predictor_corrector": null, 
-                        "structure": {
-                            "lattice": {
-                                "a": 3.0525137003499996, 
-                                "c": 3.0525137, 
-                                "b": 3.05251369966, 
-                                "matrix": [
-                                    [
-                                        2.6435544100096924, 
-                                        0.0, 
-                                        1.5262568499904452
-                                    ], 
-                                    [
-                                        0.8811847999763114, 
-                                        2.4923669999994655, 
-                                        1.5262568500145548
-                                    ], 
-                                    [
-                                        0.0, 
-                                        0.0, 
-                                        3.0525137
-                                    ]
-                                ], 
-                                "@module": "pymatgen.core.lattice", 
-                                "volume": 20.112120746076236, 
-                                "beta": 60.00000000399999, 
-                                "@class": "Lattice", 
-                                "alpha": 59.999999996000014, 
-                                "gamma": 60.000000058
-                            }, 
-                            "sites": [
-                                {
-                                    "label": "Fe", 
-                                    "xyz": [
-                                        0.0, 
-                                        0.0, 
-                                        0.0
-                                    ], 
-                                    "abc": [
-                                        0.0, 
-                                        0.0, 
-                                        0.0
-                                    ], 
-                                    "properties": {}, 
-                                    "species": [
-                                        {
-                                            "occu": 1.0, 
-                                            "@module": "pymatgen.core.periodic_table", 
-                                            "@class": "Element", 
-                                            "element": "Fe"
-                                        }
-                                    ]
-                                }, 
-                                {
-                                    "label": "O", 
-                                    "xyz": [
-                                        1.7623678426233917, 
-                                        1.2461859923667329, 
-                                        3.0525106474888
-                                    ], 
-                                    "abc": [
-                                        0.499999, 
-                                        0.500001, 
-                                        0.499999
-                                    ], 
-                                    "properties": {}, 
-                                    "species": [
-                                        {
-                                            "occu": 1.0, 
-                                            "@module": "pymatgen.core.periodic_table", 
-                                            "@class": "Element", 
-                                            "element": "O"
-                                        }
-                                    ]
-                                }
-                            ], 
-                            "@class": "Structure", 
-                            "@module": "pymatgen.core.structure"
-                        }, 
-                        "true_names": true
+                        "nkpoints": 0, 
+                        "generation_style": "Monkhorst", 
+                        "@class": "Kpoints"
                     }, 
                     "poscar": {
                         "comment": "Fe1 O1", 
@@ -374,31 +839,29 @@
                         "structure": {
                             "lattice": {
                                 "a": 3.0525137003499996, 
-                                "c": 3.0525137, 
-                                "b": 3.05251369966, 
+                                "c": 3.0525137026810456, 
+                                "b": 3.0525137003595546, 
                                 "matrix": [
                                     [
-                                        2.6435544100096924, 
+                                        -2.6435544100096924, 
                                         0.0, 
-                                        1.5262568499904452
+                                        -1.5262568499904452
                                     ], 
                                     [
-                                        0.8811847999763114, 
+                                        -2.6435544100096924, 
+                                        0.0, 
+                                        1.5262568500095548
+                                    ], 
+                                    [
+                                        -1.762369610033381, 
                                         2.4923669999994655, 
-                                        1.5262568500145548
-                                    ], 
-                                    [
-                                        0.0, 
-                                        0.0, 
-                                        3.0525137
+                                        2.41096032027599e-11
                                     ]
                                 ], 
-                                "@module": "pymatgen.core.lattice", 
                                 "volume": 20.112120746076236, 
-                                "beta": 60.00000000399999, 
-                                "@class": "Lattice", 
-                                "alpha": 59.999999996000014, 
-                                "gamma": 60.000000058
+                                "beta": 59.99999995978383, 
+                                "alpha": 59.99999995936483, 
+                                "gamma": 59.999999992310634
                             }, 
                             "sites": [
                                 {
@@ -417,8 +880,6 @@
                                     "species": [
                                         {
                                             "occu": 1.0, 
-                                            "@module": "pymatgen.core.periodic_table", 
-                                            "@class": "Element", 
                                             "element": "Fe"
                                         }
                                     ]
@@ -426,21 +887,19 @@
                                 {
                                     "label": "O", 
                                     "xyz": [
-                                        1.7623678426233917, 
+                                        -3.5247409773959926, 
                                         1.2461859923667329, 
-                                        3.0525106474888
+                                        -3.052492090292218e-06
                                     ], 
                                     "abc": [
-                                        0.499999, 
-                                        0.500001, 
-                                        0.499999
+                                        0.5000009999999999, 
+                                        0.49999899999999997, 
+                                        0.500001
                                     ], 
                                     "properties": {}, 
                                     "species": [
                                         {
                                             "occu": 1.0, 
-                                            "@module": "pymatgen.core.periodic_table", 
-                                            "@class": "Element", 
                                             "element": "O"
                                         }
                                     ]
@@ -462,41 +921,66 @@
                     }
                 }
             }, 
-            "created_on": "2013-05-09T20:40:10.494553", 
+            "created_on": "2014-01-06T00:52:40.915528", 
             "name": "Fe1_O1--GGA_optimize_structure_(2x)"
         }, 
         {
             "fw_id": 2, 
             "spec": {
-                "_allow_fizzled_parents": true, 
-                "_priority": 2, 
-                "task_type": "VASP db insertion", 
+                "_queueadapter": {
+                    "nnodes": 1, 
+                    "pre_rocket": "#PBS -v DB_LOC,FW_CONFIG_FILE,VENV_LOC\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC", 
+                    "walltime": "12:00:00"
+                }, 
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
                     }
-                ]
+                ], 
+                "task_type": "VASP db insertion", 
+                "_trackers": [
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.error"
+                    }
+                ], 
+                "_priority": 4, 
+                "_allow_fizzled_parents": true, 
+                "_dupefinder": {
+                    "_fw_name": "Dupe Finder DB"
+                }
             }, 
-            "created_on": "2013-05-09T20:40:10.494606", 
+            "created_on": "2014-01-06T00:52:40.915581", 
             "name": "Fe1_O1--VASP_db_insertion"
         }, 
         {
             "fw_id": 3, 
             "spec": {
+                "_queueadapter": {
+                    "nnodes": 1, 
+                    "walltime": "00:30:00"
+                }, 
                 "_tasks": [
                     {
-                        "_fw_name": "Add Electronic Structure Task"
+                        "_fw_name": "Add Electronic Structure Task v2"
                     }
                 ], 
                 "_priority": 2, 
-                "task_type": "Controller: add Electronic Structure"
+                "task_type": "Controller: add Electronic Structure v2"
             }, 
-            "created_on": "2013-05-09T20:40:10.494648", 
-            "name": "Fe1_O1--Controller_add_Electronic_Structure"
+            "created_on": "2014-01-06T00:52:40.915629", 
+            "name": "Fe1_O1--Controller_add_Electronic_Structure_v2"
         }, 
         {
             "fw_id": 10, 
             "spec": {
+                "_queueadapter": {
+                    "nnodes": 2
+                }, 
                 "_tasks": [
                     {
                         "_fw_name": "Vasp Copy Task"
@@ -509,18 +993,266 @@
                             {
                                 "settings_override": null, 
                                 "suffix": ".relax1", 
-                                "vasp_command": "VASP_EXE", 
-                                "auto_gamma": false, 
+                                "auto_gamma": true, 
                                 "output_file": "vasp.out", 
                                 "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
+                                    "sort_structure": true, 
+                                    "hubbard_off": false, 
                                     "constrain_total_magmom": false, 
                                     "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
+                                    "config_dict": {
+                                        "INCAR": {
+                                            "NELM": 100, 
+                                            "IBRION": 2, 
+                                            "LDAUTYPE": 2, 
+                                            "LWAVE": false, 
+                                            "SIGMA": 0.05, 
+                                            "MAGMOM": {
+                                                "Mo": 5, 
+                                                "Ni": 2, 
+                                                "Mn4+": 3, 
+                                                "Co": 5, 
+                                                "Ni3+": 1, 
+                                                "Fe2+": 4, 
+                                                "Mn": 5, 
+                                                "Co3+": 0.6, 
+                                                "Fe3+": 5, 
+                                                "Mn2+": 5, 
+                                                "Fe": 5, 
+                                                "W": 5, 
+                                                "Mn3+": 4, 
+                                                "Ni4+": 0.6, 
+                                                "Cr": 5, 
+                                                "V": 5, 
+                                                "Fe4+": 4, 
+                                                "Co4+": 1, 
+                                                "Ta": 5
+                                            }, 
+                                            "NELMIN": 6, 
+                                            "LDAUL": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 2
+                                                }, 
+                                                "O": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "LDAUJ": {
+                                                "S": {
+                                                    "Mn": 0, 
+                                                    "Fe": 0
+                                                }, 
+                                                "O": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }, 
+                                                "F": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }
+                                            }, 
+                                            "ENCUT": 520, 
+                                            "ISIF": 3, 
+                                            "ICHARG": 1, 
+                                            "LDAUU": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 1.9
+                                                }, 
+                                                "O": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "EDIFF": 5e-05, 
+                                            "NSW": 99, 
+                                            "LREAL": "AUTO", 
+                                            "ISMEAR": -5, 
+                                            "NPAR": 1, 
+                                            "PREC": "Accurate", 
+                                            "LDAU": true, 
+                                            "ALGO": "FAST", 
+                                            "ISPIN": 2, 
+                                            "LORBIT": "11"
+                                        }, 
+                                        "KPOINTS": {
+                                            "grid_density": 1000
+                                        }, 
+                                        "POTCAR": {
+                                            "Ru": "Ru_pv", 
+                                            "Re": "Re", 
+                                            "Rb": "Rb_pv", 
+                                            "Rh": "Rh", 
+                                            "Be": "Be", 
+                                            "Ba": "Ba_sv", 
+                                            "Bi": "Bi", 
+                                            "Br": "Br", 
+                                            "H": "H", 
+                                            "P": "P", 
+                                            "Os": "Os", 
+                                            "Ge": "Ge", 
+                                            "Gd": "Gd", 
+                                            "Ga": "Ga", 
+                                            "Pr": "Pr", 
+                                            "Pt": "Pt", 
+                                            "Pu": "Pu", 
+                                            "C": "C", 
+                                            "Pb": "Pb", 
+                                            "Pa": "Pa", 
+                                            "Pd": "Pd", 
+                                            "Cd": "Cd", 
+                                            "Pm": "Pm", 
+                                            "Ho": "Ho_3", 
+                                            "Hf": "Hf", 
+                                            "Hg": "Hg", 
+                                            "He": "He", 
+                                            "Mg": "Mg", 
+                                            "K": "K_sv", 
+                                            "Mn": "Mn", 
+                                            "O": "O", 
+                                            "S": "S", 
+                                            "W": "W_pv", 
+                                            "Zn": "Zn", 
+                                            "Eu": "Eu", 
+                                            "Zr": "Zr", 
+                                            "Er": "Er_3", 
+                                            "Ni": "Ni", 
+                                            "Na": "Na", 
+                                            "Nb": "Nb_pv", 
+                                            "Nd": "Nd", 
+                                            "Ne": "Ne", 
+                                            "Np": "Np", 
+                                            "Fe": "Fe", 
+                                            "B": "B", 
+                                            "F": "F", 
+                                            "Sr": "Sr_sv", 
+                                            "N": "N", 
+                                            "Kr": "Kr", 
+                                            "Si": "Si", 
+                                            "Sn": "Sn_d", 
+                                            "Sm": "Sm_3", 
+                                            "V": "V_pv", 
+                                            "Sc": "Sc_sv", 
+                                            "Sb": "Sb", 
+                                            "Se": "Se", 
+                                            "Co": "Co", 
+                                            "Cl": "Cl", 
+                                            "Ca": "Ca_sv", 
+                                            "Ce": "Ce", 
+                                            "Xe": "Xe", 
+                                            "Tm": "Tm_3", 
+                                            "Cs": "Cs_sv", 
+                                            "Cr": "Cr", 
+                                            "Cu": "Cu", 
+                                            "La": "La", 
+                                            "Li": "Li", 
+                                            "Tl": "Tl", 
+                                            "Lu": "Lu_3", 
+                                            "Th": "Th", 
+                                            "Ti": "Ti", 
+                                            "Te": "Te", 
+                                            "Tb": "Tb_3", 
+                                            "Tc": "Tc", 
+                                            "Ta": "Ta", 
+                                            "Yb": "Yb", 
+                                            "Dy": "Dy_3", 
+                                            "I": "I", 
+                                            "U": "U", 
+                                            "Y": "Y_sv", 
+                                            "Ac": "Ac", 
+                                            "Ag": "Ag", 
+                                            "Ir": "Ir", 
+                                            "Al": "Al", 
+                                            "As": "As", 
+                                            "Ar": "Ar", 
+                                            "Au": "Au", 
+                                            "In": "In", 
+                                            "Mo": "Mo_pv"
+                                        }
+                                    }, 
+                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@class": "DictVaspInputSet"
                                 }, 
+                                "gamma_vasp_cmd": null, 
+                                "vasp_cmd": "VASP_EXE", 
                                 "gzipped": false, 
                                 "backup": true, 
                                 "final": false, 
@@ -546,25 +1278,273 @@
                                     }
                                 ], 
                                 "suffix": ".relax2", 
-                                "vasp_command": "VASP_EXE", 
-                                "auto_gamma": false, 
+                                "auto_gamma": true, 
                                 "output_file": "vasp.out", 
                                 "auto_npar": false, 
                                 "@module": "custodian.vasp.jobs", 
                                 "default_vasp_input_set": {
-                                    "user_incar_settings": null, 
+                                    "sort_structure": true, 
+                                    "hubbard_off": false, 
                                     "constrain_total_magmom": false, 
                                     "name": "MIT", 
-                                    "@class": "MITVaspInputSet", 
-                                    "@module": "pymatgen.io.vaspio_set"
+                                    "config_dict": {
+                                        "INCAR": {
+                                            "NELM": 100, 
+                                            "IBRION": 2, 
+                                            "LDAUTYPE": 2, 
+                                            "LWAVE": false, 
+                                            "SIGMA": 0.05, 
+                                            "MAGMOM": {
+                                                "Mo": 5, 
+                                                "Ni": 2, 
+                                                "Mn4+": 3, 
+                                                "Co": 5, 
+                                                "Ni3+": 1, 
+                                                "Fe2+": 4, 
+                                                "Mn": 5, 
+                                                "Co3+": 0.6, 
+                                                "Fe3+": 5, 
+                                                "Mn2+": 5, 
+                                                "Fe": 5, 
+                                                "W": 5, 
+                                                "Mn3+": 4, 
+                                                "Ni4+": 0.6, 
+                                                "Cr": 5, 
+                                                "V": 5, 
+                                                "Fe4+": 4, 
+                                                "Co4+": 1, 
+                                                "Ta": 5
+                                            }, 
+                                            "NELMIN": 6, 
+                                            "LDAUL": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 2
+                                                }, 
+                                                "O": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 2, 
+                                                    "Co": 2, 
+                                                    "Ag": 2, 
+                                                    "Mo": 2, 
+                                                    "Mn": 2, 
+                                                    "Re": 2, 
+                                                    "Fe": 2, 
+                                                    "W": 2, 
+                                                    "V": 2, 
+                                                    "Cr": 2, 
+                                                    "Nb": 2, 
+                                                    "Cu": 2, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "LDAUJ": {
+                                                "S": {
+                                                    "Mn": 0, 
+                                                    "Fe": 0
+                                                }, 
+                                                "O": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }, 
+                                                "F": {
+                                                    "Ni": 0, 
+                                                    "Co": 0, 
+                                                    "Ag": 0, 
+                                                    "Mo": 0, 
+                                                    "Mn": 0, 
+                                                    "Re": 0, 
+                                                    "Fe": 0, 
+                                                    "W": 0, 
+                                                    "V": 0, 
+                                                    "Cr": 0, 
+                                                    "Nb": 0, 
+                                                    "Cu": 0, 
+                                                    "Ta": 0
+                                                }
+                                            }, 
+                                            "ENCUT": 520, 
+                                            "ISIF": 3, 
+                                            "ICHARG": 1, 
+                                            "LDAUU": {
+                                                "S": {
+                                                    "Mn": 2.5, 
+                                                    "Fe": 1.9
+                                                }, 
+                                                "O": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }, 
+                                                "F": {
+                                                    "Ni": 6, 
+                                                    "Co": 3.4, 
+                                                    "Ag": 1.5, 
+                                                    "Mo": 4.38, 
+                                                    "Mn": 3.9, 
+                                                    "Re": 2, 
+                                                    "Fe": 4.0, 
+                                                    "W": 4.0, 
+                                                    "V": 3.1, 
+                                                    "Cr": 3.5, 
+                                                    "Nb": 1.5, 
+                                                    "Cu": 4, 
+                                                    "Ta": 2
+                                                }
+                                            }, 
+                                            "EDIFF": 5e-05, 
+                                            "NSW": 99, 
+                                            "LREAL": "AUTO", 
+                                            "ISMEAR": -5, 
+                                            "NPAR": 1, 
+                                            "PREC": "Accurate", 
+                                            "LDAU": true, 
+                                            "ALGO": "FAST", 
+                                            "ISPIN": 2, 
+                                            "LORBIT": "11"
+                                        }, 
+                                        "KPOINTS": {
+                                            "grid_density": 1000
+                                        }, 
+                                        "POTCAR": {
+                                            "Ru": "Ru_pv", 
+                                            "Re": "Re", 
+                                            "Rb": "Rb_pv", 
+                                            "Rh": "Rh", 
+                                            "Be": "Be", 
+                                            "Ba": "Ba_sv", 
+                                            "Bi": "Bi", 
+                                            "Br": "Br", 
+                                            "H": "H", 
+                                            "P": "P", 
+                                            "Os": "Os", 
+                                            "Ge": "Ge", 
+                                            "Gd": "Gd", 
+                                            "Ga": "Ga", 
+                                            "Pr": "Pr", 
+                                            "Pt": "Pt", 
+                                            "Pu": "Pu", 
+                                            "C": "C", 
+                                            "Pb": "Pb", 
+                                            "Pa": "Pa", 
+                                            "Pd": "Pd", 
+                                            "Cd": "Cd", 
+                                            "Pm": "Pm", 
+                                            "Ho": "Ho_3", 
+                                            "Hf": "Hf", 
+                                            "Hg": "Hg", 
+                                            "He": "He", 
+                                            "Mg": "Mg", 
+                                            "K": "K_sv", 
+                                            "Mn": "Mn", 
+                                            "O": "O", 
+                                            "S": "S", 
+                                            "W": "W_pv", 
+                                            "Zn": "Zn", 
+                                            "Eu": "Eu", 
+                                            "Zr": "Zr", 
+                                            "Er": "Er_3", 
+                                            "Ni": "Ni", 
+                                            "Na": "Na", 
+                                            "Nb": "Nb_pv", 
+                                            "Nd": "Nd", 
+                                            "Ne": "Ne", 
+                                            "Np": "Np", 
+                                            "Fe": "Fe", 
+                                            "B": "B", 
+                                            "F": "F", 
+                                            "Sr": "Sr_sv", 
+                                            "N": "N", 
+                                            "Kr": "Kr", 
+                                            "Si": "Si", 
+                                            "Sn": "Sn_d", 
+                                            "Sm": "Sm_3", 
+                                            "V": "V_pv", 
+                                            "Sc": "Sc_sv", 
+                                            "Sb": "Sb", 
+                                            "Se": "Se", 
+                                            "Co": "Co", 
+                                            "Cl": "Cl", 
+                                            "Ca": "Ca_sv", 
+                                            "Ce": "Ce", 
+                                            "Xe": "Xe", 
+                                            "Tm": "Tm_3", 
+                                            "Cs": "Cs_sv", 
+                                            "Cr": "Cr", 
+                                            "Cu": "Cu", 
+                                            "La": "La", 
+                                            "Li": "Li", 
+                                            "Tl": "Tl", 
+                                            "Lu": "Lu_3", 
+                                            "Th": "Th", 
+                                            "Ti": "Ti", 
+                                            "Te": "Te", 
+                                            "Tb": "Tb_3", 
+                                            "Tc": "Tc", 
+                                            "Ta": "Ta", 
+                                            "Yb": "Yb", 
+                                            "Dy": "Dy_3", 
+                                            "I": "I", 
+                                            "U": "U", 
+                                            "Y": "Y_sv", 
+                                            "Ac": "Ac", 
+                                            "Ag": "Ag", 
+                                            "Ir": "Ir", 
+                                            "Al": "Al", 
+                                            "As": "As", 
+                                            "Ar": "Ar", 
+                                            "Au": "Au", 
+                                            "In": "In", 
+                                            "Mo": "Mo_pv"
+                                        }
+                                    }, 
+                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@class": "DictVaspInputSet"
                                 }, 
+                                "gamma_vasp_cmd": null, 
+                                "vasp_cmd": "VASP_EXE", 
                                 "gzipped": false, 
                                 "backup": false, 
                                 "final": true, 
                                 "@class": "VaspJob"
                             }
                         ], 
-                        "max_errors": 10, 
+                        "max_errors": 5, 
                         "_fw_name": "Vasp Custodian Task", 
                         "handlers": [
                             {
@@ -579,11 +1559,14 @@
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "output_vasprun": "vasprun.xml", 
                                 "output_filename": "vasp.out", 
                                 "@class": "MeshSymmetryErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
                             }, 
                             {
+                                "change_algo": false, 
+                                "nionic_steps": 10, 
                                 "output_filename": "OSZICAR", 
                                 "@class": "NonConvergingErrorHandler", 
                                 "@module": "custodian.vasp.handlers"
@@ -592,7 +1575,37 @@
                     }
                 ], 
                 "task_type": "GGA+U optimize structure (2x)", 
-                "vaspinputset_name": "MPVaspInputSet", 
+                "_trackers": [
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.error"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "vasp.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OSZICAR"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR.relax1"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "OUTCAR.relax2"
+                    }
+                ], 
+                "vaspinputset_name": "DictVaspInputSet", 
                 "_priority": 2, 
                 "run_tags": [
                     "PBE", 
@@ -605,37 +1618,59 @@
                     "_fw_name": "Dupe Finder Vasp"
                 }
             }, 
-            "created_on": "2013-05-09T20:40:10.502695", 
+            "created_on": "2014-01-06T00:52:40.925514", 
             "name": "Fe1_O1--GGAU_optimize_structure_(2x)"
         }, 
         {
             "fw_id": 11, 
             "spec": {
-                "_allow_fizzled_parents": true, 
-                "_priority": 2, 
-                "task_type": "VASP db insertion", 
+                "_queueadapter": {
+                    "nnodes": 1, 
+                    "pre_rocket": "#PBS -v DB_LOC,FW_CONFIG_FILE,VENV_LOC\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC", 
+                    "walltime": "12:00:00"
+                }, 
                 "_tasks": [
                     {
                         "_fw_name": "Vasp to Database Task"
                     }
-                ]
+                ], 
+                "task_type": "VASP db insertion", 
+                "_trackers": [
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.out"
+                    }, 
+                    {
+                        "nlines": 25, 
+                        "filename": "FW_job.error"
+                    }
+                ], 
+                "_priority": 2, 
+                "_allow_fizzled_parents": true, 
+                "_dupefinder": {
+                    "_fw_name": "Dupe Finder DB"
+                }
             }, 
-            "created_on": "2013-05-09T20:40:10.502740", 
+            "created_on": "2014-01-06T00:52:40.925586", 
             "name": "Fe1_O1--VASP_db_insertion"
         }, 
         {
             "fw_id": 12, 
             "spec": {
+                "_queueadapter": {
+                    "nnodes": 1, 
+                    "walltime": "00:30:00"
+                }, 
                 "_tasks": [
                     {
-                        "_fw_name": "Add Electronic Structure Task"
+                        "_fw_name": "Add Electronic Structure Task v2"
                     }
                 ], 
                 "_priority": 2, 
-                "task_type": "Controller: add Electronic Structure"
+                "task_type": "Controller: add Electronic Structure v2"
             }, 
-            "created_on": "2013-05-09T20:40:10.502781", 
-            "name": "Fe1_O1--Controller_add_Electronic_Structure"
+            "created_on": "2014-01-06T00:52:40.925639", 
+            "name": "Fe1_O1--Controller_add_Electronic_Structure_v2"
         }
     ]
 }

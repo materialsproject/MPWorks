@@ -26,7 +26,7 @@ __date__ = 'Mar 15, 2013'
 def _snl_to_spec(snl, enforce_gga=False, parameters=None):
 
     parameters = parameters if parameters else {}
-
+    parameters['boltztrap'] = parameters.get('boltztrap', True)  # by default run boltztrap
     spec = {'parameters': parameters}
 
     incar_enforce = {'NPAR': 2}
@@ -117,7 +117,11 @@ def snl_to_wf(snl, parameters=None):
         Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
-    if not parameters.get('skip_bandstructure', False):
+    # determine if GGA+U FW is needed
+    incar = MPVaspInputSet().get_incar(snl.structure).as_dict()
+    ggau_compound = ('LDAU' in incar and incar['LDAU'])
+
+    if not parameters.get('skip_bandstructure', False) and (not ggau_compound or parameters.get('force_gga_bandstructure', False)):
         spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
         fws.append(
@@ -125,10 +129,7 @@ def snl_to_wf(snl, parameters=None):
                      fw_id=3))
         connections[2] = [3]
 
-    # determine if GGA+U FW is needed
-    incar = MPVaspInputSet().get_incar(snl.structure).as_dict()
-
-    if 'LDAU' in incar and incar['LDAU']:
+    if ggau_compound:
         spec = _snl_to_spec(snl, enforce_gga=False, parameters=parameters)
         del spec['vasp']  # we are stealing all VASP params and such from previous run
         spec['_priority'] = priority
