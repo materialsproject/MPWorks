@@ -36,10 +36,7 @@ class DoiBuilder(Builder):
         :param materials: 'materials' collection in 'mg_core_dev/prod'
         :type materials: QueryEngine
         """
-        self.osti_record = OstiRecord(
-            n=nmats, doicoll=dois.collection, matcoll=materials.collection
-        )
-        self.osti_record.submit()
+        self.nmats = nmats
         self.doi_qe = dois
         self.mat_qe = materials
         self.headers = {'Accept': 'text/bibliography; style=bibtex'}
@@ -102,6 +99,12 @@ class DoiBuilder(Builder):
             ))
 
     def finalize(self, errors):
+        osti_record = OstiRecord(
+            n=self.nmats,
+            doicoll=self.doi_qe.collection,
+            matcoll=self.mat_qe.collection
+        )
+        osti_record.submit()
         filepath = os.path.join(dirname, 'dois.json')
         with open(filepath, 'w') as outfile:
             l = list(self.doi_qe.collection.find(
@@ -112,7 +115,7 @@ class DoiBuilder(Builder):
         counts = [
             self.mat_qe.collection.count(),
             self.doi_qe.collection.count(),
-            len(self.osti_record.matad.get_all_dois())
+            len(osti_record.matad.get_all_dois())
         ]
         for idx,stream_id in enumerate(stream_ids):
             s = py.Stream(stream_id)
