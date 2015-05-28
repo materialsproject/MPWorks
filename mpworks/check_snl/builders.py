@@ -409,6 +409,101 @@ class SNLGroupCrossChecker(Builder):
         _log.info("%d SNLGroups processed.", self._snlgroup_counter_total.value)
         return True
 
+class SNLGroupIcsdChecker(Builder):
+    """check one-to-one mapping of SNLGroup to ICSD ID"""
+
+    def get_items(self, snlgroups=None, ncols=None):
+        """iterator over same-composition groups of SNLGroups rev-sorted by size
+
+        :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
+        :type snlgroups: QueryEngine
+        :param ncols: number of columns for 2D plotly
+        :type ncols: int
+        """
+        self._lock = self._mgr.Lock() if not self._seq else None
+        self._ncols = ncols if not self._seq else 1
+        self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snlgroups = snlgroups
+        _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
+        # start pipeline to prepare aggregation of items
+        pipeline = [{'$match': { '$or': [
+            'canonical_snl.about._icsd.icsd_id': { '$type': 16 },
+            'canonical_snl.about._icsd.icsd_id': { '$type': 18 },
+        ]}}]
+        pipeline.append({'$project': {
+            'reduced_cell_formula_abc': 1, 'snlgroup_id': 1, '_id': 0,
+        }})
+        pipeline.append({'$group': {
+            '_id': '$reduced_cell_formula_abc',
+            'num_snlgroups': { '$sum': 1 },
+            'snlgroup_ids': { '$addToSet': "$snlgroup_id" }
+        }})
+        pipeline.append({ '$match': { 'num_snlgroups': { '$gt': 1 } } })
+        pipeline.append({ '$sort': { 'num_snlgroups': -1 } })
+        pipeline.append({ '$project': { 'snlgroup_ids': 1 } })
+        return self._snlgroups.collection.aggregate(pipeline, cursor={})
+
+    def process_item(self, item, index):
+        """iterate all SNLGroups for current composition (item)"""
+        nrow, ncol = index/self._ncols, index%self._ncols
+        snlgroups = {} # keep {snlgroup_id: SNLGroup} to avoid dupe queries
+        snls = {} # keep {snl_id: SNL} to avoid dupe queries
+
+        def _get_snl_group(gid):
+            if gid not in snlgroups:
+                try:
+                    snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": gid })
+                    snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    _log.info('%r %r', exc_type, exc_value)
+                    return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+            return snlgroups[gid]
+
+        def _get_snl(sid):
+            try:
+                mpsnl_dict = self._snls.collection.find_one({ 'snl_id': item })
+                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                mpsnl.structure.remove_oxidation_states()
+
+                sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
+                if sf.get_spacegroup_number() != mpsnl.sg_num:
+                    category = categories[0][int(sf.get_spacegroup_number() == 0)]
+            except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
+
+        # group SNLGroups by ICSD IDs
+        # -> results in list of SNLGroup IDs with identical ICSD IDs
+        # which should not happen at all due to 1-to-1 mapping of MP to ICSD material
+        # icsd_ids dict: (icsd_id, [snlgroup_id, ...])
+        # the only difference between snlgroup_id's in a list are their symmetry groups
+        icsd_ids = {}
+        for snlgroup_id in item['snlgroup_ids']:
+            snlgroup = _get_snl_group(snlgroup_id)
+            if not isinstance(snlgroup, str):
+                icsd_id = snlgroup.canonical_snl.about._icsd.icsd_id
+                if icsd_id in icsd_ids: icsd_ids[icsd_id].append(snlgroup_id)
+                else: icsd_ids[icsd_id] = [ snlgroup_id ]
+            else:
+                _log.info('%d: %s' % (snlgroup_id, snlgroup))
+                continue
+
+        # For each combination of SNLGroups associated with the same ICSD,
+        # cross-check the symmetry of all pair-wise SNL combinations.
+        # For the SNL of the pair mismatching the current result of the symmetry
+        # code: deprecate the ICSD tag (update SNLGroup?)
+        for icsd_id,snlgroup_ids in icsd_ids.iteritems():
+            if len(snlgroup_ids) < 2: continue
+            for idx,primary_id in enumerate(snlgroup_ids[:-1]):
+                primary_group = _get_snl_group(primary_id)
+                for secondary_id in snlgroup_ids[idx+1:]:
+                    secondary_group = _get_snl_group(secondary_id)
+                    for primary_snl_id in primary_group.all_snl_ids:
+                        primary_snl = _get_snl(primary_snl_id)
+                        for secondary_snl_id in secondary_group.all_snl_ids:
+                            secondary_snl = _get_snl(secondary_snl_id)
+
 if __name__ == '__main__':
     from argparse import ArgumentParser
     parser = ArgumentParser()
