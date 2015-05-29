@@ -412,9 +412,11 @@ class SNLGroupCrossChecker(Builder):
 class SNLGroupIcsdChecker(Builder):
     """check one-to-one mapping of SNLGroup to ICSD ID"""
 
-    def get_items(self, snlgroups=None, ncols=None):
+    def get_items(self, snls=None, snlgroups=None, ncols=None):
         """iterator over same-composition groups of SNLGroups rev-sorted by size
 
+        :param snls: 'snl' collection in 'snl_mp_prod' DB
+        :type snls: QueryEngine
         :param snlgroups: 'snlgroups' collection in 'snl_mp_prod' DB
         :type snlgroups: QueryEngine
         :param ncols: number of columns for 2D plotly
@@ -423,16 +425,13 @@ class SNLGroupIcsdChecker(Builder):
         self._lock = self._mgr.Lock() if not self._seq else None
         self._ncols = ncols if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
+        self._snls = snls
         self._snlgroups = snlgroups
         _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
         # start pipeline to prepare aggregation of items
-        pipeline = [{'$match': { '$or': [
-            'canonical_snl.about._icsd.icsd_id': { '$type': 16 },
-            'canonical_snl.about._icsd.icsd_id': { '$type': 18 },
-        ]}}]
-        pipeline.append({'$project': {
+        pipeline = [{'$project': {
             'reduced_cell_formula_abc': 1, 'snlgroup_id': 1, '_id': 0,
-        }})
+        }}]
         pipeline.append({'$group': {
             '_id': '$reduced_cell_formula_abc',
             'num_snlgroups': { '$sum': 1 },
@@ -460,49 +459,50 @@ class SNLGroupIcsdChecker(Builder):
                     return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
             return snlgroups[gid]
 
-        def _get_snl(sid):
-            try:
-                mpsnl_dict = self._snls.collection.find_one({ 'snl_id': item })
-                mpsnl = MPStructureNL.from_dict(mpsnl_dict)
-                mpsnl.structure.remove_oxidation_states()
-
-                sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
-                if sf.get_spacegroup_number() != mpsnl.sg_num:
-                    category = categories[0][int(sf.get_spacegroup_number() == 0)]
-            except:
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
-
-        # group SNLGroups by ICSD IDs
-        # -> results in list of SNLGroup IDs with identical ICSD IDs
-        # which should not happen at all due to 1-to-1 mapping of MP to ICSD material
-        # icsd_ids dict: (icsd_id, [snlgroup_id, ...])
-        # the only difference between snlgroup_id's in a list are their symmetry groups
-        icsd_ids = {}
-        for snlgroup_id in item['snlgroup_ids']:
-            snlgroup = _get_snl_group(snlgroup_id)
-            if not isinstance(snlgroup, str):
-                icsd_id = snlgroup.canonical_snl.about._icsd.icsd_id
-                if icsd_id in icsd_ids: icsd_ids[icsd_id].append(snlgroup_id)
-                else: icsd_ids[icsd_id] = [ snlgroup_id ]
+        # check if two different SNLGroups have any entries that share an ICSD id.
+        # Should not happen at all due to 1-to-1 mapping of MP to ICSD material
+        for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
+            primary_group = _get_snl_group(primary_id)
+            if not isinstance(primary_group, str):
+                primary_mpsnl_dicts = self._snls.collection.find({
+                    'snl_id': {'$in': primary_group.all_snl_ids},
+                    '$or': [
+                        {'about._icsd.icsd_id': { '$type': 16 }},
+                        {'about._icsd.icsd_id': { '$type': 18 }},
+                    ]
+                }, { '_id': 0, 'snl_id': 1, 'about._icsd.icsd_id': 1 })
             else:
-                _log.info('%d: %s' % (snlgroup_id, snlgroup))
+                _log.info('%d: %s' % (primary_id, primary_group))
                 continue
 
-        # For each combination of SNLGroups associated with the same ICSD,
-        # cross-check the symmetry of all pair-wise SNL combinations.
-        # For the SNL of the pair mismatching the current result of the symmetry
-        # code: deprecate the ICSD tag (update SNLGroup?)
-        for icsd_id,snlgroup_ids in icsd_ids.iteritems():
-            if len(snlgroup_ids) < 2: continue
-            for idx,primary_id in enumerate(snlgroup_ids[:-1]):
-                primary_group = _get_snl_group(primary_id)
-                for secondary_id in snlgroup_ids[idx+1:]:
-                    secondary_group = _get_snl_group(secondary_id)
-                    for primary_snl_id in primary_group.all_snl_ids:
-                        primary_snl = _get_snl(primary_snl_id)
-                        for secondary_snl_id in secondary_group.all_snl_ids:
-                            secondary_snl = _get_snl(secondary_snl_id)
+            for secondary_id in item['snlgroup_ids'][idx+1:]:
+                secondary_group = _get_snl_group(secondary_id)
+                if not isinstance(secondary_group, str):
+                    secondary_mpsnl_dicts = self._snls.collection.find({
+                        'snl_id': {'$in': secondary_group.all_snl_ids},
+                        '$or': [
+                            {'about._icsd.icsd_id': { '$type': 16 }},
+                            {'about._icsd.icsd_id': { '$type': 18 }},
+                        ]
+                    }, { '_id': 0, 'snl_id': 1, 'about._icsd.icsd_id': 1 }) # remove if sym needed
+                else:
+                    _log.info('%d: %s' % (secondary_id, secondary_group))
+                    continue
+
+                for primary_mpsnl_dict in primary_mpsnl_dicts:
+                    primary_icsd_id = primary_mpsnl_dict['about']['_icsd']['icsd_id']
+                    # primary_mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                    # primary_mpsnl.structure.remove_oxidation_states()
+                    # primary_sf = SpacegroupAnalyzer(primary_snl.structure, symprec=0.1)
+                    # primary_sg_num = primary_sf.get_spacegroup_number()
+                    for secondary_mpsnl_dict in secondary_mpsnl_dicts:
+                        secondary_icsd_id = secondary_mpsnl_dict['about']['_icsd']['icsd_id']
+                        if primary_icsd_id == secondary_icsd_id:
+                            _log.info('SNL IDs (%d, %d) share ICSD ID %d' % (
+                                primary_mpsnl_dict['snl_id'],
+                                secondary_mpsnl_dict['snl_id'],
+                                primary_icsd_id
+                            ))
 
 if __name__ == '__main__':
     from argparse import ArgumentParser
