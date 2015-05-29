@@ -6,6 +6,7 @@ from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from mpworks.check_snl.utils import div_plus_mod, sleep
 from fnmatch import fnmatch
+from pybtex.exceptions import PybtexError
 
 try:
   import plotly.plotly as py
@@ -453,10 +454,12 @@ class SNLGroupIcsdChecker(Builder):
                 try:
                     snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": gid })
                     snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
+                except PybtexError:
+                    return 'pybtex'
                 except:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     _log.info('%r %r', exc_type, exc_value)
-                    return 'pybtex' if fnmatch(str(exc_type), '*pybtex*') else 'others'
+                    return 'others'
             return snlgroups[gid]
 
         # check if two different SNLGroups have any entries that share an ICSD id.
@@ -498,7 +501,8 @@ class SNLGroupIcsdChecker(Builder):
                     for secondary_mpsnl_dict in secondary_mpsnl_dicts:
                         secondary_icsd_id = secondary_mpsnl_dict['about']['_icsd']['icsd_id']
                         if primary_icsd_id == secondary_icsd_id:
-                            _log.info('SNL IDs (%d, %d) share ICSD ID %d' % (
+                            _log.info('SNLGroups (%d, %d): SNL IDs (%d, %d) share ICSD ID %d' % (
+                                primary_id, secondary_id,
                                 primary_mpsnl_dict['snl_id'],
                                 secondary_mpsnl_dict['snl_id'],
                                 primary_icsd_id
