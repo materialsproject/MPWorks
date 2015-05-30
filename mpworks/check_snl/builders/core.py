@@ -1,4 +1,43 @@
+from matgendb.builders.util import get_builder_log
 from base import SNLGroupBaseChecker
+
+_log = get_builder_log("snl_group_checks")
+
+class SNLGroupCrossChecker(SNLGroupCrossChecker):
+    """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
+
+    def process_item(self, item, index):
+        nrow, ncol, snlgroups = super(SNLGroupCrossChecker, self).process_item(item, index)
+
+        for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
+            cat_key = ''
+            local_mismatch_dict = dict((k,[]) for k in categories[self.checker_name])
+            primary_group = snlgroups[primary_id]
+            if not isinstance(primary_group, str):
+                composition, primary_sg_num = primary_group.canonical_snl.snlgroup_key.split('--')
+            else:
+                local_mismatch_dict[primary_group].append('%d' % primary_id)
+                _log.info(local_mismatch_dict)
+                self._increase_counter(nrow, ncol, local_mismatch_dict)
+                continue
+            for secondary_id in item['snlgroup_ids'][idx+1:]:
+                secondary_group = snlgroups[secondary_id]
+                if not isinstance(secondary_group, str):
+                    secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
+                else:
+                    local_mismatch_dict[secondary_group].append('%d' % secondary_id)
+                    continue
+                is_match = self._matcher.fit(
+                    primary_group.canonical_structure,
+                    secondary_group.canonical_structure
+                )
+                if not is_match: continue
+                cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
+                local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
+            if cat_key:
+              _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
+            self._increase_counter(nrow, ncol, local_mismatch_dict)
+
 
 class SNLGroupIcsdChecker(SNLGroupBaseChecker):
     """check one-to-one mapping of SNLGroup to ICSD ID
@@ -8,7 +47,7 @@ class SNLGroupIcsdChecker(SNLGroupBaseChecker):
     """
 
     def process_item(self, item, index):
-        snlgroups = super(SNLGroupIcsdChecker, self).process_item(item, index)
+        nrow, ncol, snlgroups = super(SNLGroupIcsdChecker, self).process_item(item, index)
 
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
             primary_group = snlgroups[primary_id]
