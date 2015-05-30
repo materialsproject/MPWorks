@@ -3,7 +3,7 @@ from mpworks.snl_utils.mpsnl import SNLGroup
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from mpworks.check_snl.utils import div_plus_mod
-from pybtex.exceptions import PybtexError
+from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 
 try:
   import plotly.plotly as py
@@ -14,10 +14,10 @@ except ImportError:
 
 _log = get_builder_log("snl_group_checks")
 categories = {
-    'SNLSpaceGroupChecker': ['SG change', 'SG default', 'pybtex', 'others'],
-    'SNLGroupMemberChecker': ['mismatch', 'pybtex', 'others'],
-    'SNLGroupCrossChecker': ['diff. SGs', 'same SGs', 'pybtex', 'others'],
-    'SNLGroupIcsdChecker': ['mismatch', 'pybtex', 'others'],
+    'SNLSpaceGroupChecker': ['SG change', 'SG default', 'others'],
+    'SNLGroupMemberChecker': ['mismatch', 'others'],
+    'SNLGroupCrossChecker': ['diff. SGs', 'same SGs', 'others'],
+    'SNLGroupIcsdChecker': ['same ICSDs', 'others'],
 }
 
 class SNLGroupBaseChecker(Builder):
@@ -36,6 +36,10 @@ class SNLGroupBaseChecker(Builder):
         :param ncols: number of columns for 2D plotly
         :type ncols: int
         """
+        self._matcher = StructureMatcher(
+            ltol=0.2, stol=0.3, angle_tol=5, primitive_cell=True, scale=True,
+            attempt_supercell=False, comparator=ElementComparator()
+        )
         self._lock = self._mgr.Lock() if not self._seq else None
         self._ncols = ncols if not self._seq else 1
         self._nrows = div_plus_mod(self._ncores, self._ncols) if not self._seq else 1
@@ -75,12 +79,10 @@ class SNLGroupBaseChecker(Builder):
             try:
                 snlgrp_dict = self._snlgroups.collection.find_one({ "snlgroup_id": gid })
                 snlgroups[gid] = SNLGroup.from_dict(snlgrp_dict)
-            except PybtexError:
-                snlgroups[gid] = 'pybtex'
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 _log.info('%r %r', exc_type, exc_value)
-                snlgroups[gid] = 'others'
+                self._increase_counter(nrow, ncol, {categories[self.checker_name]: [str(gid)]})
         return nrow, ncol, snlgroups
 
     def _push_to_plotly(self):
