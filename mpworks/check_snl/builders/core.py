@@ -1,11 +1,11 @@
 from matgendb.builders.util import get_builder_log
 from base import SNLGroupBaseChecker, categories
+from mpworks.snl_utils.mpsnl import MPStructureNL
 
 _log = get_builder_log("snl_group_checks")
 
 class SNLGroupCrossChecker(SNLGroupBaseChecker):
     """cross-check all SNL Groups via StructureMatcher.fit of their canonical SNLs"""
-
     def process_item(self, item, index):
         nrow, ncol, snlgroups = super(SNLGroupCrossChecker, self).process_item(item, index)
         for idx,primary_id in enumerate(item['snlgroup_ids'][:-1]):
@@ -16,17 +16,15 @@ class SNLGroupCrossChecker(SNLGroupBaseChecker):
             for secondary_id in item['snlgroup_ids'][idx+1:]:
                 secondary_group = snlgroups[secondary_id]
                 secondary_sg_num = secondary_group.canonical_snl.snlgroup_key.split('--')[1]
-                is_match = self._matcher.fit(
+                if not self._matcher.fit(
                     primary_group.canonical_structure,
                     secondary_group.canonical_structure
-                )
-                if not is_match: continue
+                ): continue
                 cat_key = 'same SGs' if primary_sg_num == secondary_sg_num else 'diff. SGs'
                 local_mismatch_dict[cat_key].append('(%d,%d)' % (primary_id, secondary_id))
             if cat_key:
               _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
             self._increase_counter(nrow, ncol, local_mismatch_dict)
-
 
 class SNLGroupIcsdChecker(SNLGroupBaseChecker):
     """check one-to-one mapping of SNLGroup to ICSD ID
@@ -67,4 +65,32 @@ class SNLGroupIcsdChecker(SNLGroupBaseChecker):
                         ))
             if cat_key:
               _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
+            self._increase_counter(nrow, ncol, local_mismatch_dict)
+
+class SNLGroupMemberChecker(SNLGroupBaseChecker):
+    """check whether SNLs in each SNLGroup still match resp. canonical SNL"""
+    def process_item(self, item, index):
+        nrow, ncol, snlgroups = super(SNLGroupMemberChecker, self).process_item(item, index)
+        for snlgroup_id in item['snlgroup_ids']:
+            local_mismatch_dict = dict((k,[]) for k in categories[self.checker_name])
+            snlgrp = snlgroups[snlgroup_id]
+            mismatch_snls = []
+            entry = '%d,%d:' % (snlgrp.snlgroup_id, snlgrp.canonical_snl.snl_id)
+            for idx,snl_id in enumerate(snlgrp.all_snl_ids):
+                if snl_id == snlgrp.canonical_snl.snl_id: continue
+                try:
+                    mpsnl_dict = self._snls.collection.find_one({'snl_id': snl_id})
+                    mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+                except:
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    _log.info('%r %r', exc_type, exc_value)
+                    local_mismatch_dict[categories[self.checker_name][-1]].append('%s%d' % (entry, snl_id))
+                    continue
+                if self._matcher.fit(mpsnl.structure, snlgrp.canonical_structure): continue
+                mismatch_snls.append(str(snl_id))
+                _log.info('%s %d', entry, snl_id)
+            if len(mismatch_snls) > 0:
+                full_entry = '%s%s' % (entry, ','.join(mismatch_snls))
+                local_mismatch_dict[categories[self.checker_name][0]].append(full_entry)
+                _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
             self._increase_counter(nrow, ncol, local_mismatch_dict)
