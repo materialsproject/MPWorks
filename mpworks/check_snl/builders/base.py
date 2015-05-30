@@ -12,6 +12,10 @@ try:
 except ImportError:
   py, tls = None, None
 
+if py is not None:
+  creds = tls.get_credentials_file()
+  stream_ids = creds['stream_ids'][:3] # NOTE index
+
 _log = get_builder_log("snl_group_checks")
 categories = {
     'SNLSpaceGroupChecker': ['SG change', 'SG default', 'others'],
@@ -54,6 +58,7 @@ class SNLGroupBaseChecker(Builder):
 	  self._streams = [ py.Stream(stream_id) for stream_id in stream_ids ]
 	  for s in self._streams: s.open()
         self._snls = snls
+        _log.info('#SNLs = %d', snls.collection.count())
         self._snlgroups = snlgroups
         _log.info('#SNLGroups = %d', self._snlgroups.collection.count())
         # start pipeline to prepare aggregation of items
@@ -87,6 +92,7 @@ class SNLGroupBaseChecker(Builder):
 
     def _push_to_plotly(self):
         heatmap_z = self._snlgroup_counter._getvalue() if not self._seq else self._snlgroup_counter
+        # TODO: heatmap_z = self._snl_counter._getvalue() if not self._seq else self._snl_counter
         bar_x = self._mismatch_counter._getvalue() if not self._seq else self._mismatch_counter
         md = self._mismatch_dict._getvalue() if not self._seq else self._mismatch_dict
 	try:
@@ -125,19 +131,26 @@ class SNLGroupBaseChecker(Builder):
         for k,v in mismatch_dict.iteritems():
             self._mismatch_dict[k] += v
         currow = self._snlgroup_counter[nrow]
+        # TODO: currow = self._snl_counter[nrow]
         currow[ncol] += 1
         self._snlgroup_counter[nrow] = currow
         self._snlgroup_counter_total.value += 1
+        # TODO: self._snl_counter[nrow] = currow
+        # TODO: self._snl_counter_total.value += 1
         if py is not None and not \
+           # TODO: self._snl_counter_total.value % (100*self._ncols*self._nrows):
            self._snlgroup_counter_total.value % (10*self._ncols*self._nrows):
             self._push_to_plotly()
         if (not self._snlgroup_counter_total.value%2500):
             _log.info('processed %d SNLGroups', self._snlgroup_counter_total.value)
+        # TODO: if (not self._snl_counter_total.value%2500):
+        # TODO:     _log.info('processed %d SNLs', self._snl_counter_total.value)
         if self._lock is not None: self._lock.release()
 
     def finalize(self, errors):
 	if py is not None: self._push_to_plotly()
         _log.info("%d SNLGroups processed.", self._snlgroup_counter_total.value)
+        # TODO: _log.info("%d SNLs processed.", self._snl_counter_total.value)
         return True
 
 Builder.register(SNLGroupBaseChecker)

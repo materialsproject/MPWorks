@@ -94,3 +94,30 @@ class SNLGroupMemberChecker(SNLGroupBaseChecker):
                 local_mismatch_dict[categories[self.checker_name][0]].append(full_entry)
                 _log.info('(%d) %r', self._snlgroup_counter_total.value, local_mismatch_dict)
             self._increase_counter(nrow, ncol, local_mismatch_dict)
+
+# TODO
+class SNLSpaceGroupChecker(SNLGroupBaseChecker):
+    """check spacegroups of all available SNLs"""
+
+    def get_items(self, snls=None, ncols=None):
+        return self._snls.query(distinct_key='snl_id')
+
+    def process_item(self, item, index):
+        """compare SG in db with SG from SpacegroupAnalyzer"""
+        nrow, ncol = index/self._ncols, index%self._ncols
+        local_mismatch_dict = dict((k,[]) for k in categories[0])
+        category = ''
+        try:
+            mpsnl_dict = self._snls.collection.find_one({ 'snl_id': item })
+            mpsnl = MPStructureNL.from_dict(mpsnl_dict)
+            mpsnl.structure.remove_oxidation_states()
+            sf = SpacegroupAnalyzer(mpsnl.structure, symprec=0.1)
+            if sf.get_spacegroup_number() != mpsnl.sg_num:
+                category = categories[0][int(sf.get_spacegroup_number() == 0)]
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            category = categories[0][2 if fnmatch(str(exc_type), '*pybtex*') else 3]
+        if category:
+            local_mismatch_dict[category].append(str(item))
+            _log.info('(%d) %r', self._snl_counter_total.value, local_mismatch_dict)
+        self._increase_counter(nrow, ncol, local_mismatch_dict)
