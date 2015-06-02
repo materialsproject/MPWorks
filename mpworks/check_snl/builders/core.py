@@ -1,5 +1,6 @@
 from matgendb.builders.util import get_builder_log
-from base import SNLGroupBaseChecker, categories
+from base import SNLGroupBaseChecker
+from init_plotly import categories
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 

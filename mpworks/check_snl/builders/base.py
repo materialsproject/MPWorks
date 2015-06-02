@@ -4,25 +4,9 @@ from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from mpworks.check_snl.utils import div_plus_mod
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
-
-try:
-  import plotly.plotly as py
-  import plotly.tools as tls
-  from plotly.graph_objs import *
-except ImportError:
-  py, tls = None, None
-
-if py is not None:
-  creds = tls.get_credentials_file()
-  stream_ids = creds['stream_ids'][:3] # NOTE index
+from init_plotly import py, stream_ids, categories
 
 _log = get_builder_log("snl_group_checks")
-categories = {
-    'SNLSpaceGroupChecker': ['SG change', 'SG default', 'others'],
-    'SNLGroupMemberChecker': ['mismatch', 'others'],
-    'SNLGroupCrossChecker': ['diff. SGs', 'same SGs', 'others'],
-    'SNLGroupIcsdChecker': ['same ICSDs', 'others'],
-}
 
 class SNLGroupBaseChecker(Builder):
     def __init__(self, *args, **kwargs):
