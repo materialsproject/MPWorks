@@ -1,13 +1,3 @@
-import sys, multiprocessing, os, time
-from mpworks.snl_utils.mpsnl import MPStructureNL, SNLGroup
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
-from matgendb.builders.core import Builder
-from matgendb.builders.util import get_builder_log
-from mpworks.check_snl.utils import div_plus_mod, sleep
-from fnmatch import fnmatch
-from pybtex.exceptions import PybtexError
-
 try:
   import plotly.plotly as py
   import plotly.tools as tls
