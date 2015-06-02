@@ -57,7 +57,7 @@ if __name__ == '__main__':
       data.append(Heatmap(
         z=[[0]*args.ncols for i in range(args.nrows)],
         stream=Stream(token=stream_ids[0], maxpoints=maxpoints),
-        xaxis='x2', yaxis='y2', colorscale='Bluered',
+        xaxis='x2', yaxis='y2', colorscale='Bluered', zauto=True,
         colorbar=ColorBar(title=colorbar_titles[args.name])
       ))
       data.append(Scatter(
@@ -70,10 +70,11 @@ if __name__ == '__main__':
           title = titles[args.name],
           xaxis1=XAxis(
               domain=[0,0.49], showgrid=False, anchor='y1',
-              title=xtitles[args.name]
+              title=xtitles[args.name], autorange=True
           ),
           yaxis1=YAxis(
-              showgrid=False, title='error category', anchor='x1'
+              showgrid=False, title='error category', anchor='x1',
+              autorange=True
           ),
           xaxis2=XAxis(
               domain=[0.51,1.], showgrid=False, anchor='y2',

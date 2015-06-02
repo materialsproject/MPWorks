@@ -1,10 +1,12 @@
-import sys, multiprocessing
+import sys, multiprocessing, time
 from mpworks.snl_utils.mpsnl import SNLGroup
 from matgendb.builders.core import Builder
 from matgendb.builders.util import get_builder_log
 from mpworks.check_snl.utils import div_plus_mod
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator
 from init_plotly import py, stream_ids, categories
+if py is not None:
+    from plotly.graph_objs import *
 
 _log = get_builder_log("snl_group_checks")
 
@@ -84,10 +86,14 @@ class SNLGroupBaseChecker(Builder):
 	try:
 	  self._streams[0].write(Heatmap(z=heatmap_z))
 	except:
+          exc_type, exc_value, exc_traceback = sys.exc_info()
+          _log.info('%r %r', exc_type, exc_value)
 	  _log.info('_push_to_plotly ERROR: heatmap=%r', heatmap_z)
 	try:
 	  self._streams[1].write(Bar(x=bar_x))
 	except:
+          exc_type, exc_value, exc_traceback = sys.exc_info()
+          _log.info('%r %r', exc_type, exc_value)
 	  _log.info('_push_to_plotly ERROR: bar=%r', bar_x)
         for k,v in md.iteritems():
             if len(v) < 1: continue
@@ -100,6 +106,8 @@ class SNLGroupBaseChecker(Builder):
                 self._mismatch_dict.update({k:[]}) # clean
                 time.sleep(0.052)
             except:
+                exc_type, exc_value, exc_traceback = sys.exc_info()
+                _log.info('%r %r', exc_type, exc_value)
                 _log.info('_push_to_plotly ERROR: mismatch_dict=%r', md)
                 _log.info(
                     'self._mismatch_dict=%r',
