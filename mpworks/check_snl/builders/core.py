@@ -36,10 +36,7 @@ class SNLGroupIcsdChecker(SNLGroupBaseChecker):
     """
     def get_snl_query(self, snl_ids):
         or_conds = [{'about._icsd.icsd_id': {'$type': i}} for i in [16, 18]]
-        return [
-            {'snl_id': {'$in': snl_ids}, '$or': or_conds},
-            {'_id': 0, 'snl_id': 1, 'about._icsd.icsd_id': 1} # remove if sym needed
-        ]
+        return [{'snl_id': {'$in': snl_ids}, '$or': or_conds}]
 
     def process_item(self, item, index):
         nrow, ncol, snlgroups = super(SNLGroupIcsdChecker, self).process_item(item, index)
@@ -59,12 +56,28 @@ class SNLGroupIcsdChecker(SNLGroupBaseChecker):
                         secondary_icsd_id = secondary_mpsnl_dict['about']['_icsd']['icsd_id']
                         if primary_icsd_id != secondary_icsd_id: continue
                         cat_key = 'same ICSDs'
-                        local_mismatch_dict[cat_key].append('(%d, %d): (%d, %d) -> %d' % (
-                            primary_id, secondary_id,
-                            primary_mpsnl_dict['snl_id'],
-                            secondary_mpsnl_dict['snl_id'],
-                            primary_icsd_id
-                        ))
+                        primary_structure = MPStructureNL.from_dict(primary_mpsnl_dict).structure
+                        secondary_structure = MPStructureNL.from_dict(secondary_mpsnl_dict).structure
+                        match = self._matcher.fit(primary_structure, secondary_structure)
+                        if match:
+                            primary_match = self._matcher.fit(
+                                primary_structure, primary_group.canonical_structure)
+                            secondary_match = self._matcher.fit(
+                                secondary_structure, secondary_group.canonical_structure)
+                            canonical_match = self._matcher.fit(
+                                primary_group.canonical_structure,
+                                secondary_group.canonical_structure)
+                        local_mismatch_dict[cat_key].append(
+                            '({}, {}): ({}, {}) -> {} ({}{})'.format(
+                                primary_id, secondary_id,
+                                primary_mpsnl_dict['snl_id'],
+                                secondary_mpsnl_dict['snl_id'],
+                                primary_icsd_id, match,
+                                '/{}/{}/{}'.format(
+                                    primary_match, secondary_match, canonical_match
+                                ) if match else ''
+                            )
+                        )
             if cat_key:
               _log.info('(%d) %r', self._counter_total.value, local_mismatch_dict)
             self._increase_counter(nrow, ncol, local_mismatch_dict)
