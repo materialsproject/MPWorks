@@ -14,8 +14,11 @@ from monty.json import jsanitize
 from mpworks.snl_utils.mpsnl import get_meta_from_structure
 from mpworks.workflows.wf_utils import get_block_part
 import numpy as np
+from pymatgen import Composition
 from pymatgen.electronic_structure.bandstructure import BandStructure
 from pymatgen.electronic_structure.boltztrap import BoltztrapRunner, BoltztrapAnalyzer
+from pymatgen.entries.compatibility import MaterialsProjectCompatibility
+from pymatgen.entries.computed_entries import ComputedEntry
 
 __author__ = 'Geoffroy Hautier, Anubhav Jain'
 __copyright__ = 'Copyright 2014, The Materials Project'
@@ -146,10 +149,11 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             tdb = connection[creds['database']]
             tdb.authenticate(creds['admin_user'], creds['admin_password'])
 
-            m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1, "state": 1})
+            props = {"calculations": 1, "task_id": 1, "state": 1, "pseudo_potential": 1, "run_type": 1, "is_hubbard": 1, "hubbards": 1, "unit_cell_formula": 1}
+            m_task = tdb.tasks.find_one({"dir_name": block_part}, props)
             if not m_task:
                 time.sleep(60)  # only thing to think of is wait for DB insertion(?)
-                m_task = tdb.tasks.find_one({"dir_name": block_part}, {"calculations": 1, "task_id": 1})
+                m_task = tdb.tasks.find_one({"dir_name": block_part}, props)
 
             if not m_task:
                 raise ValueError("Could not find task with dir_name: {}".format(block_part))
@@ -248,6 +252,26 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
                 import traceback
                 traceback.print_exc()
                 print 'COULD NOT GET FINE MESH DATA'
+
+            # add is_compatible
+            mpc = MaterialsProjectCompatibility("Advanced")
+            try:
+                func = m_task["pseudo_potential"]["functional"]
+                labels = m_task["pseudo_potential"]["labels"]
+                symbols = ["{} {}".format(func, label) for label in labels]
+                parameters = {"run_type": m_task["run_type"],
+                          "is_hubbard": m_task["is_hubbard"],
+                          "hubbards": m_task["hubbards"],
+                          "potcar_symbols": symbols}
+                entry = ComputedEntry(Composition(m_task["unit_cell_formula"]),
+                                      0.0, 0.0, parameters=parameters,
+                                      entry_id=m_task["task_id"])
+
+                ted["is_compatible"] = bool(mpc.process_entry(entry))
+            except:
+                traceback.print_exc()
+                print 'ERROR in getting compatibility, task_id: {}'.format(m_task["task_id"])
+                ted["is_compatible"] = None
 
             tdb.boltztrap.insert(jsanitize(ted))
 
