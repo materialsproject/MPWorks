@@ -85,7 +85,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         else:
             raise ValueError("No MPI command found!")
 
-        nproc = os.environ['PBS_NP']
+        q_type = fw_spec['_queueadapter']['q_type']
+        if q_type == 'PBS':
+            nproc = os.environ['PBS_NP']
+        elif q_type == 'SLURM':
+            nproc = os.environ['SLURM_NTASKS']
+        else:
+            raise ValueError('nproc for q_type=%s not supported yet' % fw_spec['_fw_q_type'])
 
         v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
         gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
