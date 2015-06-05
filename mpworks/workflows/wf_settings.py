@@ -5,12 +5,8 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 10, 2013'
 
-# keep queue type consistent with supported_q_types in
-# fireworks.user_objects.queue_adapters.common_adapter
-q_type = 'SLURM'
-
 # don't change nnodes unless other parts of code are also changed
-QA_VASP = {'nnodes': 2, 'q_type': q_type}
+QA_VASP = {'nnodes': 2}
 QA_VASP_SMALL = {'nnodes': 2, 'walltime': '72:00:00'}  # small walltime jobs
 QA_DB = {'nnodes': 1, 'walltime': '2:00:00',
          'pre_rocket': '#PBS -V\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC'}
