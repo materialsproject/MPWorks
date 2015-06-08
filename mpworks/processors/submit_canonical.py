@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from pymongo import MongoClient
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
@@ -16,6 +17,9 @@ __date__ = 'May 06, 2013'
 
 def clear_env():
     sma = SubmissionMongoAdapter.auto_load()
+    if 'prod' in sma.db:
+        warnings.warn("Not clearing production db for safety reasons.")
+        return
 
     lp = LaunchPad.auto_load()
 
