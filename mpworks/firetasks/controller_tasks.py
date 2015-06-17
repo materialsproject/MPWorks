@@ -111,7 +111,6 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
         fws.append(Firework([VaspToDBTask({})], spec, name=get_slug(f+'--'+spec['task_type']), fw_id=-5))
         connections[-6] = -5
 
-
         if fw_spec.get('parameters') and fw_spec['parameters'].get('boltztrap'):
             # run Boltztrap
             from mpworks.firetasks.boltztrap_tasks import BoltztrapRunTask

@@ -231,4 +231,3 @@ class SubmissionMongoAdapter(object):
         with open(filename, 'r') as f:
             return cls.from_format(f.read(), f_format=f_format)
 
-

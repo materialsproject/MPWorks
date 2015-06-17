@@ -21,9 +21,8 @@ from pymatgen.core.structure import Structure
 from pymatgen.entries.compatibility import MaterialsProjectCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.matproj.snl import StructureNL
-from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar, Oszicar
 from pymatgen.analysis.structure_analyzer import oxide_type
-
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -60,6 +59,22 @@ class MPVaspDrone(VaspToDbTaskDrone):
         d = self.get_task_doc(path)
         if self.additional_fields:
             d.update(self.additional_fields)  # always add additional fields, even for failed jobs
+
+        #Parse oszicar
+        try:
+            for i in [1,2]:
+                o_path = os.path.join(path, "OSZICAR.relax"+str(i))
+                o_path2 = os.path.join(path, "relax"+str(i), "OSZICAR")
+                if os.path.exists(o_path):
+                    oszicar = Oszicar(o_path)
+                elif os.path.exists(o_path2):
+                    oszicar = Oszicar(o_path2)
+                else:
+                    oszicar = None
+                if oszicar:
+                    d["calculations"][i-1]["output"]["oszicar"] = oszicar.as_dict()
+        except:
+                logger.error("Bad OUTCAR for {}.".format(path))
 
         try:
             d["dir_name_full"] = d["dir_name"].split(":")[1]

@@ -3,8 +3,6 @@ import traceback
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from mpworks.submission.submission_mongo import SubmissionMongoAdapter
-from mpworks.workflows.snl_to_wf import snl_to_wf
-from mpworks.workflows.snl_to_wf_phonon import snl_to_wf_phonon
 from mpworks.workflows.wf_utils import NO_POTCARS
 from pymatgen.matproj.snl import StructureNL
 
@@ -79,7 +77,14 @@ class SubmissionProcessor():
                     if "Elasticity" in snl.projects:
                         from mpworks.workflows.snl_to_wf_phonon import snl_to_wf_phonon
                         wf=snl_to_wf_phonon(snl, job['parameters'])
+                    elif "Surface" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_surface import snl_to_wf_surface
+                        wf = snl_to_wf_surface(snl, job['parameters'])
+                    elif "Customized" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_customize import snl_to_wf_customize
+                        wf = snl_to_wf_customize(snl, job['parameters'])
                     else:
+                        from mpworks.workflows.snl_to_wf import snl_to_wf
                         wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)

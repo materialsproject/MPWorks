@@ -186,6 +186,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             data['dir_name'] = get_block_part(dir)
             data['task_id'] = m_task['task_id']
             del data['hall']  # remove because it is too large and not useful
+            # del data['hall_doping'] # remove because it is too large and not useful
             fs = gridfs.GridFS(tdb, "boltztrap_full_fs")
             btid = fs.put(json.dumps(jsanitize(data)))
 
