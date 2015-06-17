@@ -73,7 +73,10 @@ class OstiMongoAdapter(object):
 
     def get_materials_cursor(self, l, n):
         if l is None:
-            return self.matcoll.find({'doi': {'$exists': False}}, limit=n)
+            return self.matcoll.find({
+                'doi': {'$exists': False},
+                'task_id': {'$nin': self.doicoll.find().distinct('_id')}
+            }, limit=n)
         else:
             mp_ids = [ 'mp-{}'.format(el) for el in l ]
             return self.matcoll.find({'task_id': {'$in': mp_ids}})
