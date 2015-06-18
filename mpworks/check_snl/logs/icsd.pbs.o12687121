@@ -1,0 +1,14 @@
+Loading torque prologue
+Done
+
+----------------------------------------------------------------
+Jobs exit status code is 0
+Job icsd.pbs/12687121.cvrsvc09-ib completed Wed Jun  3 14:52:02 PDT 2015
+Submitted by huck/huck using matcomp
+Job Limits: neednodes=1:ppn=8,nodes=1:ppn=8,walltime=80:00:00
+Job Resources used: cput=00:50:38,energy_used=0,mem=1512356kb,vmem=4058860kb,walltime=00:07:19
+Nodes used: mc0637 
+
+Killing any leftover processes...
+
+Job completed.

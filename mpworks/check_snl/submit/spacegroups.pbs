@@ -1,0 +1,17 @@
+#!/bin/bash -login
+#PBS -A matcomp
+#PBS -q matgen_prior
+#PBS -l nodes=1:ppn=8
+#PBS -l walltime=01:30:00
+
+module load python/2.7.3
+module swap numpy numpy/1.8.1
+module load virtualenv/1.8.2
+module load virtualenvwrapper
+source $HOME/ph_playground/virtenv_ph_playground/bin/activate
+export VENV_LOC=/global/u1/h/huck/ph_playground/virtenv_ph_playground/bin/activate
+export SCRIPT_LOC=/global/u1/h/huck/ph_playground/config/scripts
+
+python -m mpworks.check_snl.builders 0 4 2
+sleep 5
+mpirun -np 1 mgbuild run -v mpworks.check_snl.builders.SNLSpaceGroupChecker snls=$HOME/snls_mpirun.json ncols=4 -n 8

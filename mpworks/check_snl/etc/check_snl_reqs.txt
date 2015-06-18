@@ -1,0 +1,23 @@
+Django==1.7
+FireWorks==0.92
+Jinja2==2.7.3
+MarkupSafe==0.23
+PyYAML==3.11
+docutils==0.12
+enum34==1.0
+mongomock==2.0.0
+monty==0.5.6
+numpy==1.9.0
+plotly==1.2.9
+prettytable==0.7.2
+pybtex==0.18
+pyhull==1.5.3
+pymatgen==3.0.5
+-e git+github:materialsproject/pymatgen-db.git@ba22fa86f89bb902695cb9220d4186335b07bf40#egg=pymatgen_db-master
+pymongo==2.7.2
+python-dateutil==2.2
+requests==2.4.1
+sentinels==0.0.6
+six==1.8.0
+smoqe==0.1.3
+wsgiref==0.1.2
