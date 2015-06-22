@@ -121,7 +121,7 @@ class WriteSurfVaspInput(FireTaskBase):
         mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s' %(element, k_product, str(miller_index)))
 
         mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                    potcar_funtional=potcar_functional, bulk = False)
+                                    potcar_functional=potcar_functional, bulk = False)
         mplb_s.write_input(slab_cell, '%s_scell_k%s_%s' %(element, k_product, st(miller_index)))
 
 
