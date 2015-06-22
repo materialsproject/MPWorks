@@ -17,14 +17,21 @@ from fireworks.core.launchpad import LaunchPad
 def create_surface_workflows(miller_index, api_key, element, k_product=50):
 
     fws = []
+    job = VaspJob(["aprun", "-n", "48", "vasp"])
     fw = FireWork([WriteSurfVaspInput(element=element,
                                       miller_index=miller_index,
-                                      api_key=api_key)])
+                                      api_key=api_key), RunCustodianTask(jobs=[job])])
     fws.append(fw)
     wf = Workflow(fws, name="3D Metal Surface Energy Workflow")
+
+
     
     return wf
 
+
+
+
+##########################TEST WORKFLOW WITH Mo 001 SLAB##########################
 
 launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                               "surf_wf_tests", "my_launchpad.yaml"))
