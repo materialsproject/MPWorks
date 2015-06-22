@@ -16,6 +16,7 @@ from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities import fw_utilities
 from fireworks import explicit_serialize
 from pymatgen.core.structure import Structure
+from pymatgen.core.metal_slab import get_input_mp
 from pymatgen.io.vaspio.vasp_output import Vasprun
 from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
 from custodian.custodian import Custodian
