@@ -118,7 +118,7 @@ class WriteSurfVaspInput(FireTaskBase):
         slab_cell = input_structures[1]
         mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                     potcar_functional=potcar_functional, bulk = True)
-        mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s' %element %k_product %miller_index)
+        mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s' %element %k_product %str(miller_index))
 
         mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                     potcar_funtional=potcar_functional, bulk = False)
