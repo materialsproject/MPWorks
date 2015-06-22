@@ -31,6 +31,7 @@ from pymatgen.matproj.rest import MPRester
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 
+
 """
 Firework tasks
 """
