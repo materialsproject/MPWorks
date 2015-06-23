@@ -17,12 +17,28 @@ from fireworks.core.launchpad import LaunchPad
 
 def create_surface_workflows(miller_index, api_key, element, k_product=50):
 
+    cpbulk = ScriptTask.from_str("cp %s_ucell_k%s_%s/* ./" %(element, k_product, str(miller_index)))
+    cpslab = ScriptTask.from_str("cp %s_scell_k%s_%s/* ./" %(element, k_product, str(miller_index)))
+    mvbulk = ScriptTask.from_str("mv CHG CHGCAR DOSCAR EIGENVAL "
+                                 "IBZKPT OSZICAR OUTCAR PCDAT PROCAR "
+                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_ucell_k%s_%s/"
+                                 %(element, k_product, str(miller_index)))
+    mvslab = ScriptTask.from_str("mv CHG CHGCAR DOSCAR EIGENVAL "
+                                 "IBZKPT OSZICAR OUTCAR PCDAT PROCAR "
+                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_scell_k%s_%s/"
+                                 %(element, k_product, str(miller_index)))
+
     fws = []
     # job = VaspJob(["aprun", "-n", "48", "vasp"])
+
     fw = FireWork([WriteSurfVaspInput(element=element,
                                       miller_index=miller_index,
-                                      api_key=api_key), SimplerCustodianTask()])
+                                      api_key=api_key)])
     fws.append(fw)
+
+    fw = FireWork([cpbulk, SimplerCustodianTask()])
+    fws.append(fw)
+
     wf = Workflow(fws, name="3D Metal Surface Energy Workflow")
 
 
