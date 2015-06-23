@@ -149,7 +149,7 @@ class RunCustodianTask(FireTaskBase):
                     UnconvergedErrorHandler(), NonConvergingErrorHandler(),
                     PotimErrorHandler()]
 
-        c = Custodian(handlers, jobs, max_errors=10, **cust_params)
+        c = Custodian(handlers=handlers, jobs=jobs, max_errors=10, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
