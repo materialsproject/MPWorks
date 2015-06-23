@@ -5,10 +5,10 @@ from bs4 import BeautifulSoup
 import plotly.plotly as py
 from plotly.graph_objs import *
 
-today = datetime.date.today()
+now = datetime.datetime.now()
 dirname = os.path.dirname(os.path.realpath(__file__))
 backupfile = os.path.join(dirname, 'dois.json')
-logfile = os.path.join(dirname, 'logs', 'dois_{}.log'.format(today))
+logfile = os.path.join(dirname, 'logs', 'dois_{}.log'.format(now))
 _log = logging.getLogger('mg.build')
 _log.setLevel(logging.INFO)
 fh = logging.FileHandler(logfile)
@@ -136,6 +136,6 @@ class DoiBuilder(Builder):
         for idx,stream_id in enumerate(stream_ids):
             s = py.Stream(stream_id)
             s.open()
-            s.write(dict(x=datetime.datetime.now(), y=counts[idx]))
+            s.write(dict(x=now, y=counts[idx]))
             s.close()
         return True
