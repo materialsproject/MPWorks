@@ -3,6 +3,7 @@ import requests
 import logging
 import datetime
 import json
+import sys
 from pymongo import MongoClient
 from monty.serialization import loadfn
 from collections import OrderedDict
@@ -157,11 +158,16 @@ class OstiRecord(object):
 
     def submit(self):
         """submit generated records to OSTI"""
-        r = requests.post(
-            self.endpoint, data=self.records_xml.toxml(),
-            auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
-        )
-        logger.info(r.content)
+        try:
+            r = requests.post(
+              self.endpoint, data=self.records_xml.toxml(),
+              auth=(os.environ['OSTI_USER'], os.environ['OSTI_PASSWORD'])
+            )
+            logger.info(r.content)
+        except:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            logger.warning('%r %r', exc_type, exc_value)
+            return None
         if r.status_code != 200:
             logger.warning('Did not request DOIs due to {} error.'.format(r.status_code))
             return None
@@ -169,7 +175,8 @@ class OstiRecord(object):
         records = [ records ] if not isinstance(records, list) else records
         dois = {}
         for ridx,record in enumerate(records):
-            if record['status'] == 'SUCCESS':
+            if record['status'] == 'SUCCESS' or \
+               record['status_message'] == 'Duplicate URL Found.;':
                 dois[record['product_nos']] = {
                     'doi': record['doi'],
                     'updated': bool('osti_id' in self.records[ridx])

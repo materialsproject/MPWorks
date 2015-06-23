@@ -7,6 +7,7 @@ from plotly.graph_objs import *
 
 today = datetime.date.today()
 dirname = os.path.dirname(os.path.realpath(__file__))
+backupfile = os.path.join(dirname, 'dois.json')
 logfile = os.path.join(dirname, 'logs', 'dois_{}.log'.format(today))
 _log = logging.getLogger('mg.build')
 _log.setLevel(logging.INFO)
@@ -64,6 +65,22 @@ class DoiBuilder(Builder):
             #doi_url = 'http://doi.org/{}'.format(item['doi'])
             #doi_url = 'http://dx.doi.org/10.1038/nrd842'
             #r = requests.get(doi_url, headers=self.headers)
+            if item['doi'] is None:
+                # try loading doi from backup file, a.k.a reset item['doi'] (fixed manually)
+                if os.path.exists(backupfile):
+                    with open(backupfile, 'r') as infile:
+                        data = json.load(infile)
+                        for d in data:
+                            if d['_id'] == item['_id'] and d['doi'] is not None:
+                                item['doi'] = d['doi']
+                                _log.info(self.doi_qe.collection.update(
+                                    {'_id': item['_id']}, {'$set': {'doi': item['doi']}}
+                                ))
+                                break
+                # if mp-id not found in backup (not fixed manually)
+                if item['doi'] is None:
+                    _log.warning('missing DOI for {}. Fix manually in dois.json and rerun!'.format(item['_id']))
+                    return 0
             osti_id = item['doi'].split('/')[-1]
             doi_url = 'http://www.osti.gov/dataexplorer/biblio/{}/cite/bibtex'.format(osti_id)
             try:
@@ -105,8 +122,7 @@ class DoiBuilder(Builder):
             matcoll=self.mat_qe.collection
         )
         osti_record.submit()
-        filepath = os.path.join(dirname, 'dois.json')
-        with open(filepath, 'w') as outfile:
+        with open(backupfile, 'w') as outfile:
             l = list(self.doi_qe.collection.find(
                 fields={'created_at': True, 'doi': True}
             ))
