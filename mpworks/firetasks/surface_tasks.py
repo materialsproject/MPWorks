@@ -153,3 +153,16 @@ class RunCustodianTask(FireTaskBase):
         output = c.run()
 
         return FWAction(stored_data=output)
+
+
+@explicit_serialize
+class SimplerCustodianTask(FireTaskBase):
+    """Runs Custodian."""
+
+    required_params = []
+
+    def run_task(self, fw_spec):
+        job = VaspJob(["aprun", "-n", "48", "vasp"])
+        c = Custodian(handlers=[], jobs=[job])
+        output = c.run()
+        return FWAction(stored_data=output)
