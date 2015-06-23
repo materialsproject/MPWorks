@@ -4,7 +4,8 @@ from fireworks.core.firework import FireWork, Workflow
 from fireworks import ScriptTask
 from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
-from mpworks.firetasks.surface_tasks import RunCustodianTask, VaspDBInsertTask, WriteSurfVaspInput
+from mpworks.firetasks.surface_tasks import RunCustodianTask, \
+    VaspDBInsertTask, WriteSurfVaspInput, SimplerCustodianTask
 from custodian.vasp.jobs import VaspJob
 
 
