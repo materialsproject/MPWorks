@@ -46,10 +46,8 @@ def create_surface_workflows(miller_index, api_key, element, k_product=50):
 
     fw = FireWork([WriteSurfVaspInput(element=element,
                                       miller_index=miller_index,
-                                      api_key=api_key)])
-    fws.append(fw)
-
-    fw = FireWork([cpbulk, SimplerCustodianTask()])
+                                      api_key=api_key)], cpbulk,
+                  SimplerCustodianTask())
     fws.append(fw)
 
     wf = Workflow(fws, name="3D Metal Surface Energy Workflow")
