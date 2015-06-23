@@ -17,16 +17,29 @@ from fireworks.core.launchpad import LaunchPad
 
 def create_surface_workflows(miller_index, api_key, element, k_product=50):
 
-    cpbulk = ScriptTask.from_str("cp %s_ucell_k%s_%s/* ./" %(element, k_product, str(miller_index)))
-    cpslab = ScriptTask.from_str("cp %s_scell_k%s_%s/* ./" %(element, k_product, str(miller_index)))
+    cpbulk = ScriptTask.from_str("cp %s_ucell_k%s_%s%s%s/* ./" %(element, k_product,
+                                                                 str(miller_index[0]),
+                                                                 str(miller_index[1]),
+                                                                 str(miller_index[2])))
+    cpslab = ScriptTask.from_str("cp %s_scell_k%s_%s%s%s/* ./" %(element, k_product,
+                                                                 str(miller_index[0]),
+                                                                 str(miller_index[1]),
+                                                                 str(miller_index[2])))
+
     mvbulk = ScriptTask.from_str("mv CHG CHGCAR DOSCAR EIGENVAL "
                                  "IBZKPT OSZICAR OUTCAR PCDAT PROCAR "
-                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_ucell_k%s_%s/"
-                                 %(element, k_product, str(miller_index)))
+                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_ucell_k%s_%s%s%s/"
+                                 %(element, k_product,
+                                   str(miller_index[0]),
+                                   str(miller_index[1]),
+                                   str(miller_index[2])))
     mvslab = ScriptTask.from_str("mv CHG CHGCAR DOSCAR EIGENVAL "
                                  "IBZKPT OSZICAR OUTCAR PCDAT PROCAR "
-                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_scell_k%s_%s/"
-                                 %(element, k_product, str(miller_index)))
+                                 "vasprun.xml WAVECAR XDATCAR CONTCAR %s_scell_k%s_%s%s%s/"
+                                 %(element, k_product,
+                                   str(miller_index[0]),
+                                   str(miller_index[1]),
+                                   str(miller_index[2])))
 
     fws = []
     # job = VaspJob(["aprun", "-n", "48", "vasp"])
