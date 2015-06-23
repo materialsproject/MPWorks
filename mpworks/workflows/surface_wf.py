@@ -54,5 +54,5 @@ launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                               "surf_wf_tests", "my_launchpad.yaml"))
 launchpad.reset('', require_password=False)
 
-wf = create_surface_workflows((0,0,1), " mlcC4gtXFVqN9WLv", "Mo")
+wf = create_surface_workflows([0,0,1], " mlcC4gtXFVqN9WLv", "Mo")
 launchpad.add_wf(wf)
