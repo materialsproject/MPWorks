@@ -136,6 +136,6 @@ class DoiBuilder(Builder):
         for idx,stream_id in enumerate(stream_ids):
             s = py.Stream(stream_id)
             s.open()
-            s.write(dict(x=today, y=counts[idx]))
+            s.write(dict(x=datetime.datetime.now(), y=counts[idx]))
             s.close()
         return True
