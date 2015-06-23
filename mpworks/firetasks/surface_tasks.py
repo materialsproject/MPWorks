@@ -156,9 +156,9 @@ class RunCustodianTask(FireTaskBase):
                     PotimErrorHandler()]
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=10, **cust_params)
-        c.run()
+        output = c.run()
 
-        #return FWAction(stored_data=output)
+        return FWAction(stored_data=output)
 
 
 @explicit_serialize
