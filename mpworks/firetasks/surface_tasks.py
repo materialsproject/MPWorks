@@ -16,7 +16,7 @@ from fireworks.core.firework import FireTaskBase, FWAction
 from fireworks.utilities import fw_utilities
 from fireworks import explicit_serialize
 from pymatgen.core.structure import Structure
-from pymatgen.core.metal_slab import get_input_mp
+from pymatgen.core.metal_slab import get_input_mp, get_inputs_mp
 from pymatgen.io.vaspio.vasp_output import Vasprun
 from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
 from custodian.custodian import Custodian
@@ -131,6 +131,57 @@ class WriteSurfVaspInput(FireTaskBase):
                                                               str(miller_index[2])))
 
 
+@explicit_serialize
+class WriteSurfVaspInputs(FireTaskBase):
+    """writes VASP inputs given elements, hkl,  """
+
+    required_params = ["element", "max_index", "api_key"]
+    optional_params = ["min_slab_size", "min_vacuum_size",
+                       "symprec", "angle_tolerance", "user_incar_settings",
+                       "k_product","potcar_functional"]
+
+    def run_task(self, fw_spec):
+        dec = MontyDecoder()
+        element = dec.process_decoded(self.get("element"))
+        miller_index = dec.process_decoded(self.get("max_index"))
+        api_key = dec.process_decoded(self.get("api_key"))
+        min_slab_size= dec.process_decoded(self.get("min_slab_size", 10))
+        min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
+        symprec = dec.process_decoded(self.get("symprec", 0.001))
+        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
+        user_incar_settings = dec.process_decoded(self.get("user_incar_settings",
+                                                           {'ISIF': 2, 'EDIFFG':  -0.05,'EDIFF': 0.0001,
+                                                            'ISMEAR': 1,'AMIX': 0.1,'BMIX': 0.0001,
+                                                            'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
+                                                            'NPAR':4, 'SIGMA': 0.05}))
+        k_product = dec.process_decoded(self.get("k_product", 50))
+        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+
+
+        input_structures = get_inputs_mp(element, max_index, api_key, min_slab_size,
+                                        min_vacuum_size, symprec, angle_tolerance)
+
+        orient_u_cells = input_structures[0]
+        slab_cells = input_structures[1]
+
+        for i, slab in enumerate(slab_cells):
+
+            miller_index = slab.miller_index
+
+            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                        potcar_functional=potcar_functional, bulk=True)
+            mplb_u.write_input(orient_u_cells[i], '%s_ucell_k%s_%s%s%s' %(element, k_product,
+                                                                          str(miller_index[0]),
+                                                                          str(miller_index[1]),
+                                                                          str(miller_index[2])))
+
+            mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                        potcar_functional=potcar_functional, bulk=False)
+            mplb_s.write_input(slab, '%s_scell_k%s_%s%s%s' %(element, k_product,
+                                                             str(miller_index[0]),
+                                                             str(miller_index[1]),
+                                                             str(miller_index[2])))
+
 
 @explicit_serialize
 class RunCustodianTask(FireTaskBase):
@@ -169,6 +220,7 @@ class SimplerCustodianTask(FireTaskBase):
 
     def run_task(self, fw_spec):
         job = VaspJob(["aprun", "-n", "48", "vasp"])
-        c = Custodian(handlers=[], jobs=[job])
-        output = c.run()
-        return FWAction(stored_data=output)
+        # c = Custodian(handlers=[], jobs=[job])
+        # output = c.run()
+        # return FWAction(stored_data=output)
+        job.run()
