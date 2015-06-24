@@ -135,14 +135,14 @@ class WriteSurfVaspInput(FireTaskBase):
 class WriteSurfVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["element", "max_index", "api_key"]
+    required_params = ["elements", "max_index", "api_key"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "symprec", "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional"]
 
     def run_task(self, fw_spec):
         dec = MontyDecoder()
-        element = dec.process_decoded(self.get("element"))
+        elements = dec.process_decoded(self.get("elements"))
         miller_index = dec.process_decoded(self.get("max_index"))
         api_key = dec.process_decoded(self.get("api_key"))
         min_slab_size= dec.process_decoded(self.get("min_slab_size", 10))
@@ -158,29 +158,31 @@ class WriteSurfVaspInputs(FireTaskBase):
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
 
-        input_structures = get_inputs_mp(element, max_index, api_key, min_slab_size,
-                                        min_vacuum_size, symprec, angle_tolerance)
+        for el in elements:
 
-        orient_u_cells = input_structures[0]
-        slab_cells = input_structures[1]
+            input_structures = get_inputs_mp(element, max_index, api_key, min_slab_size,
+                                            min_vacuum_size, symprec, angle_tolerance)
 
-        for i, slab in enumerate(slab_cells):
+            orient_u_cells = input_structures[0]
+            slab_cells = input_structures[1]
 
-            miller_index = slab.miller_index
+            for i, slab in enumerate(slab_cells):
 
-            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                        potcar_functional=potcar_functional, bulk=True)
-            mplb_u.write_input(orient_u_cells[i], '%s_ucell_k%s_%s%s%s' %(element, k_product,
-                                                                          str(miller_index[0]),
-                                                                          str(miller_index[1]),
-                                                                          str(miller_index[2])))
+                miller_index = slab.miller_index
 
-            mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                        potcar_functional=potcar_functional, bulk=False)
-            mplb_s.write_input(slab, '%s_scell_k%s_%s%s%s' %(element, k_product,
-                                                             str(miller_index[0]),
-                                                             str(miller_index[1]),
-                                                             str(miller_index[2])))
+                mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                            potcar_functional=potcar_functional, bulk=True)
+                mplb_u.write_input(orient_u_cells[i], '%s_ucell_k%s_%s%s%s' %(element, k_product,
+                                                                              str(miller_index[0]),
+                                                                              str(miller_index[1]),
+                                                                              str(miller_index[2])))
+
+                mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                            potcar_functional=potcar_functional, bulk=False)
+                mplb_s.write_input(slab, '%s_scell_k%s_%s%s%s' %(element, k_product,
+                                                                 str(miller_index[0]),
+                                                                 str(miller_index[1]),
+                                                                 str(miller_index[2])))
 
 
 @explicit_serialize
