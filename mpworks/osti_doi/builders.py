@@ -42,11 +42,14 @@ class DoiBuilder(Builder):
         self.mat_qe = materials
         self.headers = {'Accept': 'text/bibliography; style=bibtex'}
         # loop the mp-id's
-        # w/o valid DOI in doicoll *OR*
+        # w/o valid DOI in doicoll and at least 23h old *OR*
         # w/ valid DOI in doicoll but w/o doi key in matcoll
+        day_ago = now - datetime.timedelta(hours=23)
         mp_ids = [
             {'_id': doc['_id'], 'doi': doc['doi'], 'valid': False}
-            for doc in self.doi_qe.collection.find({'valid': False})
+            for doc in self.doi_qe.collection.find({
+                'valid': False, 'created_at': { '$lt': day_ago }
+            })
         ]
         valid_mp_ids = self.doi_qe.collection.find({'valid': True}).distinct('_id')
         missing_mp_ids = self.mat_qe.collection.find(
