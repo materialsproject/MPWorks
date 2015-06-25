@@ -262,14 +262,14 @@ class RunCustodianTask(FireTaskBase):
 class SimplerCustodianTask(FireTaskBase):
     """Runs Custodian."""
 
-    required_params = ["scratch_dir"]
+    # required_params = ["scratch_dir"]
 
     def run_task(self, fw_spec):
 
-        scratch_dir = dec.process_decoded(self['scratch_dir'])
+        # scratch_dir = dec.process_decoded(self['scratch_dir'])
 
         job = VaspJob(["aprun", "-n", "48", "vasp"])
-        c = Custodian(handlers=[], jobs=[job], scratch_dir=scratch_dir)
+        # c = Custodian(handlers=[], jobs=[job])
         # output = c.run()
         # return FWAction(stored_data=output)
         job.run()
