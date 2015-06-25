@@ -275,5 +275,6 @@ class SimplerCustodianTask(FireTaskBase):
         # c = Custodian(handlers=[], jobs=[job])
         # output = c.run()
         # return FWAction(stored_data=output)
-        print "\n >>>> about to run vasp job"
+        print "\n >>>> about to run vasp job on current working directory: " \
+              "%s" %(os.getcwd())
         job.run()
