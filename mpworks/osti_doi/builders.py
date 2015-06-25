@@ -24,6 +24,12 @@ py.sign_in(
     stream_ids=stream_ids
 )
 
+def json_serial(obj):
+    """JSON serializer for objects not serializable by default json code"""
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    raise TypeError ("Type not serializable")
+
 class DoiBuilder(Builder):
     """Builder to obtain DOIs for all/new materials"""
 
@@ -45,6 +51,7 @@ class DoiBuilder(Builder):
         # w/o valid DOI in doicoll and at least 23h old *OR*
         # w/ valid DOI in doicoll but w/o doi key in matcoll
         day_ago = now - datetime.timedelta(hours=23)
+        _log.info(day_ago)
         mp_ids = [
             {'_id': doc['_id'], 'doi': doc['doi'], 'valid': False}
             for doc in self.doi_qe.collection.find({
@@ -129,7 +136,7 @@ class DoiBuilder(Builder):
             l = list(self.doi_qe.collection.find(
                 fields={'created_at': True, 'doi': True}
             ))
-            json.dump(l, outfile, indent=2)
+            json.dump(l, outfile, indent=2, default=json_serial)
         # push results to plotly streaming graph
         counts = [
             self.mat_qe.collection.count(),
