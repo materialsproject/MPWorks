@@ -116,18 +116,21 @@ class WriteSurfVaspInput(FireTaskBase):
         k_product = dec.process_decoded(self.get("k_product", 50))
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'LDA'))
 
+        print "\n>>>> Now creating slab structure object\n"
         input_structures = get_input_mp(element, miller_index, api_key, min_slab_size,
                                         min_vacuum_size,symprec, angle_tolerance)
+
 
         orient_u_cell = input_structures[0]
         slab_cell = input_structures[1]
         mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                     potcar_functional=potcar_functional, bulk = True)
+        print "\n>>>> Now creating vasp inputs for a unit cell\n"
         mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s%s%s' %(element, k_product,
                                                                   str(miller_index[0]),
                                                                   str(miller_index[1]),
                                                                   str(miller_index[2])))
-
+        print "\n>>>> Now creating vasp inputs for a slab\n"
         mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                     potcar_functional=potcar_functional, bulk = False)
         mplb_s.write_input(slab_cell, '%s_scell_k%s_%s%s%s' %(element, k_product,
@@ -267,9 +270,10 @@ class SimplerCustodianTask(FireTaskBase):
     def run_task(self, fw_spec):
 
         # scratch_dir = dec.process_decoded(self['scratch_dir'])
-
+        print "\n >>>> Creating VaspJob object\n"
         job = VaspJob(["aprun", "-n", "48", "vasp"])
         # c = Custodian(handlers=[], jobs=[job])
         # output = c.run()
         # return FWAction(stored_data=output)
+        print "\n >>>> about to run vasp job"
         job.run()
