@@ -1,3 +1,11 @@
+
+## for Surface Energy Calculation
+from __future__ import division, unicode_literals
+__author__ = "Richard Tran"
+__version__ = "0.1"
+__email__ = "rit634989@gmail.com"
+__date__ = "6/24/15"
+
 import os
 from pymongo import MongoClient
 from fireworks.core.firework import FireWork, Workflow
@@ -5,7 +13,8 @@ from fireworks import ScriptTask
 from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteSurfVaspInput, SimplerCustodianTask
+    VaspDBInsertTask, WriteSurfVaspInput, SimplerCustodianTask, \
+    WriteSlabVaspInputs, WriteUnitCellVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs
 
@@ -16,7 +25,7 @@ from fireworks.core.firework import FireWork, Workflow
 from fireworks.core.launchpad import LaunchPad
 
 
-def create_surface_workflows(miller_index, api_key, element, k_product=50):
+def surface_workflows(miller_index, api_key, element, k_product=50):
 
     cpbulk = ScriptTask.from_str("cp %s_ucell_k%s_%s%s%s/* ./" %(element, k_product,
                                                                  str(miller_index[0]),
@@ -53,16 +62,21 @@ def create_surface_workflows(miller_index, api_key, element, k_product=50):
 
     wf = Workflow(fws, name="3D Metal Surface Energy Workflow")
 
-
-    
     return wf
 
 
 
-def surface_workflows(max_index, api_key, list_of_elements, k_product=50):
+
+
+
+
+
+def create_surface_workflows(max_index, api_key, list_of_elements, k_product=50,
+                      host=None, port=None, user=None, password=None, database=None):
 
     fws = []
-    fw = FireWork([WriteSurfVaspInputs(list_of_elements=list_of_elements,
+
+    fw = FireWork([WriteUnitCellVaspInputs(list_of_elements=list_of_elements,
                                       max_index=max_index,
                                       api_key=api_key)])
     fws.append(fw)
@@ -71,16 +85,31 @@ def surface_workflows(max_index, api_key, list_of_elements, k_product=50):
 
         # need to move inputs to individual scratch directories instead in order to run all calculations in parrallel, or run them one by one?
 
-        cp_inputs = ScriptTask.from_str("cp %s/* ./" %(dir))
+        outputs = "mv INCAR POSCAR POTCAR KPOINTS " \
+                  "CHG CHGCAR DOSCAR EIGENVAL IBZKPT " \
+                  "OSZICAR OUTCAR PCDAT PROCAR " \
+                  "vasprun.xml WAVECAR XDATCAR CONTCAR %s/"
 
-        mv_outputs = ScriptTask.from_str("mv CHG CHGCAR DOSCAR EIGENVAL "
-                                     "IBZKPT OSZICAR OUTCAR PCDAT PROCAR "
-                                     "vasprun.xml WAVECAR XDATCAR CONTCAR %s/"
-                                     %(dir))
-        fw = FireWork([cp_inputs, SimplerCustodianTask(), mv_outputs])
+        fw = FireWork([ScriptTask.from_str("cp %s/* ./" %(dir)),
+                       SimplerCustodianTask(),
+                       ScriptTask.from_str(outputs %(dir)),
+                       VaspDBInsertTask(host=host, port=port, user=user,
+                                        password=password, database=database,
+                                        collection="Surface Calculations",
+                                        struct_type="oriented unit cell",
+                                        miller_index=dir[-3:], bulk=True),
+                       WriteSlabVaspInputs(dir=dir),
+                       ScriptTask.from_str("cp %s/* ./" %(dir.replace("ucell", "scell"))),
+                       SimplerCustodianTask(),
+                       ScriptTask.from_str(outputs %(dir.replace("ucell", "scell"))),
+                       VaspDBInsertTask(host=host, port=port, user=user,
+                                        password=password, database=database,
+                                        collection="Surface Calculations",
+                                        struct_type="oriented unit cell",
+                                        miller_index=dir[-3:], bulk=True)])
         fws.append(fw)
 
-    wf = Workflow(fws, name="3D Metal Surface Energy Workflow")
+    wf = Workflow(fws, name="3d Metal Surface Energy Workflow")
 
 
 
@@ -88,21 +117,3 @@ def surface_workflows(max_index, api_key, list_of_elements, k_product=50):
 
 
 
-##########################TEST WORKFLOW WITH Mo 001 SLAB##########################
-
-launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-                                              "surf_wf_tests", "my_launchpad.yaml"))
-launchpad.reset('', require_password=False)
-
-wf = create_surface_workflows([0,0,1], " mlcC4gtXFVqN9WLv", "Mo")
-launchpad.add_wf(wf)
-
-##########################TEST WORKFLOW WITH ALL 3D TMs##########################
-
-# launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-#                                               "surf_wf_tests", "my_launchpad.yaml"))
-# launchpad.reset('', require_password=False)
-#
-# tms_3d = ['Sc', 'Ti', 'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu']
-# wf = create_surface_workflows(2, " mlcC4gtXFVqN9WLv", tms_3d)
-# launchpad.add_wf(wf)
