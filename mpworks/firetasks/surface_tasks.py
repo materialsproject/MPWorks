@@ -114,7 +114,7 @@ class WriteSurfVaspInput(FireTaskBase):
                                                             'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
                                                             'NPAR':4, 'SIGMA': 0.05}))
         k_product = dec.process_decoded(self.get("k_product", 50))
-        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'LDA'))
+        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
         print "\n>>>> Now creating slab structure object\n"
         input_structures = get_input_mp(element, miller_index, api_key, min_slab_size,
@@ -123,8 +123,7 @@ class WriteSurfVaspInput(FireTaskBase):
 
         orient_u_cell = input_structures[0]
         slab_cell = input_structures[1]
-        mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                    potcar_functional=potcar_functional, bulk = True)
+        mplb_u = MPSlabVaspInputSet(potcar_functional=potcar_functional, bulk = True)
         print "\n>>>> Now creating vasp inputs for a unit cell\n"
         mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s%s%s' %(element, k_product,
                                                                   str(miller_index[0]),
