@@ -44,14 +44,14 @@ Firework tasks
 class VaspDBInsertTask(FireTaskBase):
 
     required_params = ["host", "port", "user", "password", "database",
-                       "collection", "struct_type", "miller_index", "bulk"]
+                       "collection", "struct_type", "miller_index", "loc"]
 
     def run_task(self, fw_spec):
 
         dec = MontyDecoder()
         miller_index = dec.process_decoded(self.get("miller_index"))
         struct_type = dec.process_decoded(self.get("struct_type"))
-        bulk = dec.process_decoded(self.get("bulk"))
+        loc = dec.process_decoded(self.get("loc"))
 
 
         if not self["host"]:
@@ -66,17 +66,6 @@ class VaspDBInsertTask(FireTaskBase):
         if not self["collection"]:
             self["collection"] = "tasks"
 
-            if bulk:
-                loc="./%s_ucell_k%s_%s%s%s "%(element, k_product,
-                                               str(miller_index[0]),
-                                               str(miller_index[1]),
-                                               str(miller_index[2]))
-
-            else:
-                loc="./%s_scell_k%s_%s%s%s "%(element, k_product,
-                                               str(miller_index[0]),
-                                               str(miller_index[1]),
-                                               str(miller_index[2]))
 
             drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                       user=self["user"], password=self["password"],
@@ -139,19 +128,18 @@ class WriteSurfVaspInput(FireTaskBase):
 
 
 @explicit_serialize
-class WriteUnitCellVaspInputs(FireTaskBase):
+class WriteVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["elements", "max_index", "api_key"]
+    required_params = ["structure", "folder"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "symprec", "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional"]
+                       "k_product","potcar_functional", "bulk"]
 
     def run_task(self, fw_spec):
         dec = MontyDecoder()
-        elements = dec.process_decoded(self.get("elements"))
-        miller_index = dec.process_decoded(self.get("max_index"))
-        api_key = dec.process_decoded(self.get("api_key"))
+        structure = dec.process_decoded(self.get("structure"))
+        folder = dec.process_decoded(self.get("folder"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
         user_incar_settings = dec.process_decoded(self.get("user_incar_settings",
@@ -161,38 +149,22 @@ class WriteUnitCellVaspInputs(FireTaskBase):
                                                             'NPAR':4, 'SIGMA': 0.05}))
         k_product = dec.process_decoded(self.get("k_product", 50))
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+        bulk = dec.process_decoded(self.get("bulk", True))
 
+        if bulk:
+            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                        potcar_functional=potcar_functional, bulk=bulk)
+            mplb_u.write_input(slab.orient_u_cell, folder)
+        else:
+            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+                                        potcar_functional=potcar_functional, bulk=bulk)
+            contcar = Poscar.from_file("%s/CONTCAR" %(folder.replace('slab', 'bulk')))
+            relax_orient_uc = contcar.structure
+            slab = SlabGenerator(relax_orient_uc, (0,0,1), min_slab_size=min_slab_size,
+                                 min_vacuum_size=min_vacuum_size)
+            slab = slab.get_slab()
+            mplb_s.write_input(slab, folder)
 
-        for el in elements:
-
-            """
-            element: str, element name of Metal
-            miller_index: hkl, e.g. [1, 1, 0]
-            api_key: to get access to MP DB
-            """
-            # This initializes the REST adaptor. Put your own API key in.
-            # e.g. MPRester("QMt7nBdIioOVySW2")
-            mprest = MPRester(api_key)
-            #first is the lowest energy one
-            prim_unit_cell = mprest.get_structures(el)[0]
-            spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
-                                     angle_tolerance=angle_tolerance)
-            conv_unit_cell = spa.get_conventional_standard_structure()
-
-            list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
-                                               min_slab_size, min_vacuum_size,
-                                               primitive=False, max_normal_search=max_index)
-
-            for slab in list_of_slabs:
-
-                miller_index = slab.miller_index
-
-                mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                            potcar_functional=potcar_functional, bulk=True)
-                mplb_u.write_input(slab.orient_u_cell, '%s_ucell_k%s_%s%s%s' %(element, k_product,
-                                                                              str(miller_index[0]),
-                                                                              str(miller_index[1]),
-                                                                              str(miller_index[2])))
 
 @explicit_serialize
 class WriteSlabVaspInputs(FireTaskBase):
@@ -264,11 +236,12 @@ class RunCustodianTask(FireTaskBase):
 class SimplerCustodianTask(FireTaskBase):
     """Runs Custodian."""
 
-    # required_params = ["scratch_dir"]
+    required_params = ["dir"]
 
     def run_task(self, fw_spec):
 
-        # scratch_dir = dec.process_decoded(self['scratch_dir'])
+        dir = dec.process_decoded(self['dir'])
+        os.chdir(dir)
         print "\n >>>> Creating VaspJob object\n"
         job = VaspJob(["aprun", "-n", "48", "vasp"])
         # c = Custodian(handlers=[], jobs=[job])
@@ -276,4 +249,17 @@ class SimplerCustodianTask(FireTaskBase):
         # return FWAction(stored_data=output)
         print "\n >>>> about to run vasp job on current working directory: " \
               "%s" %(os.getcwd())
+        job.run()
+
+@explicit_serialize
+class CustodianTask(FireTaskBase):
+    """Runs Custodian."""
+
+    required_params = ["cwd"]
+
+    def run_task(self, fw_spec):
+
+        cwd = dec.process_decoded(self['cwd'])
+        os.chdir(cwd)
+        job = VaspJob(["aprun", "-n", "48", "vasp"])
         job.run()
