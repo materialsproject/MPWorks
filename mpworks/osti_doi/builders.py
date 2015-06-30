@@ -56,7 +56,7 @@ class DoiBuilder(Builder):
             {'_id': doc['_id'], 'doi': doc['doi'], 'valid': False}
             for doc in self.doi_qe.collection.find({
                 'valid': False, 'created_at': { '$lt': day_ago }
-            }, limit=self.nmats)
+            }, limit=2*self.nmats)
         ]
         valid_mp_ids = self.doi_qe.collection.find({'valid': True}).distinct('_id')
         missing_mp_ids = self.mat_qe.collection.find(
