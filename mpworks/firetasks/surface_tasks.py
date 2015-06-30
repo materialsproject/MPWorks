@@ -134,14 +134,14 @@ class WriteSurfVaspInput(FireTaskBase):
 class WriteVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["structure", "folder"]
+    required_params = ["slab", "folder"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "symprec", "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "bulk"]
 
     def run_task(self, fw_spec):
         dec = MontyDecoder()
-        structure = dec.process_decoded(self.get("structure"))
+        slab = dec.process_decoded(self.get("slab"))
         folder = dec.process_decoded(self.get("folder"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
