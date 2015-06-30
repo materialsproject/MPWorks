@@ -68,9 +68,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                         {"scratch_dir":
                                              os.path.join("/global/scratch2/sd/",
                                                     os.environ["USER"])}),
-                   VaspDBInsertTask(host=ds043497, port=43497, user=rit001,
-                                    password=sp0ckhanort, database=vasp,
-                                    collection="Surface Calculations",
+                   VaspDBInsertTask(collection="Surface Calculations",
                                     struct_type="slab cell",
                                     miller_index=mill,
                                     loc=ocwd+folderbulk)])
