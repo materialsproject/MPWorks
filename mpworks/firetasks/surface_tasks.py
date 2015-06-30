@@ -32,6 +32,7 @@ from pymatgen.matproj.rest import MPRester
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from pymatgen.io.vaspio.vasp_output import Poscar
+import socket
 
 
 
@@ -78,7 +79,10 @@ class VaspDBInsertTask(FireTaskBase):
 
 
 
-
+# debug
+# debug
+# debug
+# debug
 @explicit_serialize
 class WriteSurfVaspInput(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
@@ -105,7 +109,6 @@ class WriteSurfVaspInput(FireTaskBase):
         k_product = dec.process_decoded(self.get("k_product", 50))
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
-        print "\n>>>> Now creating slab structure object\n"
         input_structures = get_input_mp(element, miller_index, api_key, min_slab_size,
                                         min_vacuum_size,symprec, angle_tolerance)
 
@@ -231,35 +234,40 @@ class RunCustodianTask(FireTaskBase):
 
         return FWAction(stored_data=output)
 
-
+# debug
+# debug
+# debug
+# debug
 @explicit_serialize
 class SimplerCustodianTask(FireTaskBase):
     """Runs Custodian."""
 
-    required_params = ["dir"]
+    required_params = ["dir", "jobs"]
+    optional_params = ["custodian_params"]
+
 
     def run_task(self, fw_spec):
 
         dir = dec.process_decoded(self['dir'])
         os.chdir(dir)
-        print "\n >>>> Creating VaspJob object\n"
-        job = VaspJob(["aprun", "-n", "48", "vasp"])
-        # c = Custodian(handlers=[], jobs=[job])
-        # output = c.run()
-        # return FWAction(stored_data=output)
-        print "\n >>>> about to run vasp job on current working directory: " \
-              "%s" %(os.getcwd())
-        job.run()
 
-@explicit_serialize
-class CustodianTask(FireTaskBase):
-    """Runs Custodian."""
+        """Runs Custodian."""
 
-    required_params = ["cwd"]
+        fw_env = fw_spec.get("_fw_env", {})
+        cust_params = self.get("custodian_params", {})
+        if fw_env.get('scratch_root'):
+            cust_params['scratch_dir'] = os.path.expandvars(
+                fw_env['scratch_root'])
 
-    def run_task(self, fw_spec):
+        dec = MontyDecoder()
+        #handlers = dec.process_decoded(self['handlers'])
+        jobs = dec.process_decoded(self['jobs'])
+        #validators = [VasprunXMLValidator()]
+        handlers = [VaspErrorHandler(), MeshSymmetryErrorHandler(),
+                    UnconvergedErrorHandler(), NonConvergingErrorHandler(),
+                    PotimErrorHandler()]
 
-        cwd = dec.process_decoded(self['cwd'])
-        os.chdir(cwd)
-        job = VaspJob(["aprun", "-n", "48", "vasp"])
-        job.run()
+        c = Custodian(handlers=[], jobs=jobs)
+        output = c.run()
+
+        return FWAction(stored_data=output)
