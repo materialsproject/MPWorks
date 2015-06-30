@@ -50,10 +50,10 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
 
     ocwd = os.getcwd()
 
-    folderbulk = '%s_%s_k%s_%s%s%s' %(element, 'bulk', k_product,
-                                      str(miller_index[0]),
-                                      str(miller_index[1]),
-                                      str(miller_index[2]))
+    folderbulk = '/%s_%s_k%s_%s%s%s' %(element, 'bulk', k_product,
+                                       str(miller_index[0]),
+                                       str(miller_index[1]),
+                                       str(miller_index[2]))
 
     fws = []
     job = VaspJob(["mpirun", "-n", "16", "vasp"])
@@ -146,7 +146,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
 
             fws=[]
 
-            folderbulk = '%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
+            folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
                                               str(miller_index[0]),
                                               str(miller_index[1]),
                                               str(miller_index[2]))
