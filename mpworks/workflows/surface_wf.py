@@ -67,11 +67,13 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                         custodian_params =
                                         {"scratch_dir":
                                              os.path.join("/global/scratch2/sd/",
-                                                    os.environ["USER"])}),
-                   VaspDBInsertTask(collection="Surface Calculations",
-                                    struct_type="slab cell",
-                                    miller_index=mill,
-                                    loc=ocwd+folderbulk)])
+                                                    os.environ["USER"])})])
+                   # VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
+                   #                  password=sp0ckhanort, database=rit001_db,
+                   #                  collection="Surface Calculations",
+                   #                  struct_type="slab cell",
+                   #                  miller_index=mill,
+                   #                  loc=ocwd+folderbulk)])
     fws.append(fw)
 
     wf = Workflow(fws, name=folderbulk)
