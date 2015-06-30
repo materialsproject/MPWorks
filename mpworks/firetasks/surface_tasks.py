@@ -248,6 +248,7 @@ class SimplerCustodianTask(FireTaskBase):
 
     def run_task(self, fw_spec):
 
+        dec = MontyDecoder()
         dir = dec.process_decoded(self['dir'])
         os.chdir(dir)
 
