@@ -13,7 +13,7 @@ from fireworks import ScriptTask
 from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs,SimplerCustodianTask
+    VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator
 from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
@@ -62,12 +62,18 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
 
     fw = FireWork([WriteVaspInputs(slab=slab,
                                    folder=ocwd+folderbulk),
-                   SimplerCustodianTask(dir=ocwd+folderbulk,
+                   RunCustodianTask(dir=ocwd+folderbulk,
                                         jobs=job,
                                         custodian_params =
                                         {"scratch_dir":
                                              os.path.join("/global/scratch2/sd/",
-                                                    os.environ["USER"])})])
+                                                    os.environ["USER"])}),
+                   VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
+                                    password=sp0ckhanort, database=rit001_db,
+                                    collection="Surface Calculations",
+                                    struct_type="slab cell",
+                                    miller_index=mill,
+                                    loc=ocwd+folderbulk)])
     fws.append(fw)
 
     wf = Workflow(fws, name=folderbulk)
@@ -151,30 +157,34 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
         for slab in list_of_slabs:
 
             fws=[]
-
+            mill=slab.miller_index
             folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
                                               str(miller_index[0]),
                                               str(miller_index[1]),
                                               str(miller_index[2]))
             folderslab = folderbulk.replace('bulk', 'slab')
+            custodian_params = {"scratch_dir": os.path.join("/global/scratch2/sd/",
+                                                            os.environ["USER"])}
 
             fw = FireWork([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
-                           CustodianTask(cwd=ocwd+folderbulk),
-                           VaspDBInsertTask(host=host, port=port, user=user,
-                                            password=password, database=database,
+                           RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
+                                            custodian_params = custodian_params),
+                           VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
+                                            password=sp0ckhanort, database=rit001_db,
                                             collection="Surface Calculations",
                                             struct_type="oriented unit cell",
-                                            miller_index=dir[-3:],
+                                            miller_index=mill,
                                             loc=ocwd+folderbulk),
                            WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderslab),
-                           CustodianTask(cwd=ocwd+folderslab),
-                           VaspDBInsertTask(host=host, port=port, user=user,
-                                            password=password, database=database,
+                           RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
+                                            custodian_params = custodian_params),
+                           VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
+                                            password=sp0ckhanort, database=rit001_db,
                                             collection="Surface Calculations",
                                             struct_type="slab cell",
-                                            miller_index=dir[-3:],
+                                            miller_index=mill,
                                             loc=ocwd+folderslab)])
             fws.append(fw)
             wf = Workflow(fws, name="%s %s surface calculation" %(el, slab.miller_index))

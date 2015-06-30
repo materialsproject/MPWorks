@@ -50,7 +50,7 @@ class VaspDBInsertTask(FireTaskBase):
     def run_task(self, fw_spec):
 
         dec = MontyDecoder()
-        miller_index = dec.process_decoded(self.get("miller_index"))
+        miller_index = str(dec.process_decoded(self.get("miller_index")))
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
 
@@ -211,41 +211,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 class RunCustodianTask(FireTaskBase):
     """Runs Custodian."""
 
-    required_params = ["jobs"]
-    optional_params = ["custodian_params"]
-
-    def run_task(self, fw_spec):
-
-        fw_env = fw_spec.get("_fw_env", {})
-        cust_params = self.get("custodian_params", {})
-        if fw_env.get('scratch_root'):
-            cust_params['scratch_dir'] = os.path.expandvars(
-                fw_env['scratch_root'])
-
-        dec = MontyDecoder()
-        #handlers = dec.process_decoded(self['handlers'])
-        jobs = dec.process_decoded(self['jobs'])
-        #validators = [VasprunXMLValidator()]
-        handlers = [VaspErrorHandler(), MeshSymmetryErrorHandler(),
-                    UnconvergedErrorHandler(), NonConvergingErrorHandler(),
-                    PotimErrorHandler()]
-
-        c = Custodian(handlers=handlers, jobs=jobs, max_errors=10, **cust_params)
-        output = c.run()
-
-        return FWAction(stored_data=output)
-
-# debug
-# debug
-# debug
-# debug
-@explicit_serialize
-class SimplerCustodianTask(FireTaskBase):
-    """Runs Custodian."""
-
     required_params = ["dir", "jobs"]
     optional_params = ["custodian_params"]
-
 
     def run_task(self, fw_spec):
 
@@ -253,16 +220,12 @@ class SimplerCustodianTask(FireTaskBase):
         dir = dec.process_decoded(self['dir'])
         os.chdir(dir)
 
-        """Runs Custodian."""
-
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
         if fw_env.get('scratch_root'):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-
-        dec = MontyDecoder()
         #handlers = dec.process_decoded(self['handlers'])
         jobs = dec.process_decoded(self['jobs'])
         #validators = [VasprunXMLValidator()]
@@ -271,8 +234,6 @@ class SimplerCustodianTask(FireTaskBase):
                     PotimErrorHandler()]
 
         c = Custodian(handlers=[], jobs=[jobs], **cust_params)
-        # output = c.run()
-        print "scratch directory is in %s" %(cust_params['scratch_dir'])
-        print ">>>>>>> about to run vasp in %s" %(dir)
         output = c.run()
+
         return FWAction(stored_data=output)
