@@ -72,25 +72,35 @@ class DoiBuilder(Builder):
     def process_item(self, item):
         """validate DOI, save bibtex and build into matcoll"""
         if not item['valid']:
-            #doi_url = 'http://doi.org/{}'.format(item['doi'])
-            #doi_url = 'http://dx.doi.org/10.1038/nrd842'
-            #r = requests.get(doi_url, headers=self.headers)
+            # try resetting item['doi'] from backup file (fixed manually)
+            if item['doi'] is None and os.path.exists(backupfile):
+                with open(backupfile, 'r') as infile:
+                    data = json.load(infile)
+                    for d in data:
+                        if d['_id'] == item['_id'] and d['doi'] is not None:
+                            item['doi'] = d['doi']
+                            _log.info(self.doi_qe.collection.update(
+                                {'_id': item['_id']}, {'$set': {'doi': item['doi']}}
+                            ))
+                            break
+            # try resetting item['doi'] from OSTI's dataexplorer (fixed automatically)
             if item['doi'] is None:
-                # try loading doi from backup file, a.k.a reset item['doi'] (fixed manually)
-                if os.path.exists(backupfile):
-                    with open(backupfile, 'r') as infile:
-                        data = json.load(infile)
-                        for d in data:
-                            if d['_id'] == item['_id'] and d['doi'] is not None:
-                                item['doi'] = d['doi']
-                                _log.info(self.doi_qe.collection.update(
-                                    {'_id': item['_id']}, {'$set': {'doi': item['doi']}}
-                                ))
-                                break
-                # if mp-id not found in backup (not fixed manually)
-                if item['doi'] is None:
-                    _log.warning('missing DOI for {}. Fix manually in dois.json and rerun!'.format(item['_id']))
-                    return 0
+                r = requests.post(
+                  'http://www.osti.gov/dataexplorer/search.select',
+                  data={'searchTerm':item['_id']}
+                )
+                if r.status_code == 200:
+                    try:
+                        item['doi'] = json.loads(r.content)['response']['docs'][0]['doi']
+                        _log.info(self.doi_qe.collection.update(
+                            {'_id': item['_id']}, {'$set': {'doi': item['doi']}}
+                        ))
+                    except:
+                        _log.warning('{} not found in DataExplorer'.format(item['_id']))
+            # if mp-id not found in backup or DataExplorer
+            if item['doi'] is None:
+                _log.warning('missing DOI for {}. Fix manually in dois.json and rerun!'.format(item['_id']))
+                return 0
             osti_id = item['doi'].split('/')[-1]
             doi_url = 'http://www.osti.gov/dataexplorer/biblio/{}/cite/bibtex'.format(osti_id)
             try:
