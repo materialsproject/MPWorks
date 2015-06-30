@@ -159,55 +159,18 @@ class WriteVaspInputs(FireTaskBase):
 
         if bulk:
             print ">>>>>> Creating bulk parameters in %s" %(folder)
-            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
-            mplb_u.write_input(slab.oriented_unit_cell, folder)
+            mplb.write_input(slab.oriented_unit_cell, folder)
         else:
-            mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
+            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
             contcar = Poscar.from_file("%s/CONTCAR" %(folder.replace('slab', 'bulk')))
             relax_orient_uc = contcar.structure
             slab = SlabGenerator(relax_orient_uc, (0,0,1), min_slab_size=min_slab_size,
                                  min_vacuum_size=min_vacuum_size)
             slab = slab.get_slab()
-            mplb_s.write_input(slab, folder)
-
-
-@explicit_serialize
-class WriteSlabVaspInputs(FireTaskBase):
-    """writes VASP inputs given elements, hkl,  """
-
-    required_params = ["dir"]
-    optional_params = ["min_slab_size", "min_vacuum_size",
-                       "symprec", "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional"]
-
-    def run_task(self, fw_spec):
-        dec = MontyDecoder()
-        dir = dec.process_decoded(self.get("dir"))
-        min_slab_size= dec.process_decoded(self.get("min_slab_size", 10))
-        min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
-        symprec = dec.process_decoded(self.get("symprec", 0.001))
-        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
-        user_incar_settings = dec.process_decoded(self.get("user_incar_settings",
-                                                           {'ISIF': 2, 'EDIFFG':  -0.05,'EDIFF': 0.0001,
-                                                            'ISMEAR': 1,'AMIX': 0.1,'BMIX': 0.0001,
-                                                            'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
-                                                            'NPAR':4, 'SIGMA': 0.05}))
-        k_product = dec.process_decoded(self.get("k_product", 50))
-        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
-
-        contcar = Poscar.from_file("./%s/CONTCAR" %(dir))
-        relax_orient_uc = contcar.structure
-        slab = SlabGenerator(relax_orient_uc, (0,0,1), min_slab_size=min_slab_size,
-                             min_vacuum_size=min_vacuum_size, max_normal_search=1)
-        slab = slab.get_slab()
-
-        mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                    potcar_functional=potcar_functional, bulk=False)
-
-        newdir = dir.replace("ucell", "scell")
-        mplb_s.write_input(slab, newdir)
+            mplb.write_input(slab, folder)
 
 
 @explicit_serialize
