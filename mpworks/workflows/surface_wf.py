@@ -54,6 +54,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                        str(miller_index[0]),
                                        str(miller_index[1]),
                                        str(miller_index[2]))
+    folderslab = folderbulk.replace('bulk', 'slab')
 
     fws = []
     job = VaspJob(["mpirun", "-n", "16", "vasp"])
@@ -75,9 +76,9 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                     miller_index=miller_index,
                                     loc=ocwd+folderbulk),
                    WriteVaspInputs(slab=slab,
-                                   folder=ocwd+folderbulk.replace('bulk', 'slab'),
+                                   folder=ocwd+folderslab,
                                    bulk=False),
-                   RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
+                   RunCustodianTask(dir=ocwd+folderslab, jobs=job,
                                     custodian_params =
                                     {"scratch_dir":
                                          os.path.join("/global/scratch2/sd/",
@@ -87,7 +88,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                     collection="Surface Calculations",
                                     struct_type="slab cell",
                                     miller_index=miller_index,
-                                    loc=ocwd+folderbulk)])
+                                    loc=ocwd+folderslab)])
     fws.append(fw)
 
     wf = Workflow(fws, name='%s_k%s_%s%s%s' %(element,
@@ -195,7 +196,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                             miller_index=mill,
                                             loc=ocwd+folderbulk),
                            WriteVaspInputs(slab=slab,
-                                           folder=ocwd+folderslab),
+                                           folder=ocwd+folderslab, bulk=False),
                            RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
                                             custodian_params = custodian_params),
                            VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
