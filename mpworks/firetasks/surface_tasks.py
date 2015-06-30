@@ -269,7 +269,7 @@ class SimplerCustodianTask(FireTaskBase):
                     UnconvergedErrorHandler(), NonConvergingErrorHandler(),
                     PotimErrorHandler()]
 
-        c = Custodian(handlers=[], jobs=[jobs.as_dict])
+        c = Custodian(handlers=[], jobs=[jobs])
         output = c.run()
 
         return FWAction(stored_data=output)
