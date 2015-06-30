@@ -56,12 +56,12 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                       str(miller_index[2]))
 
     fws = []
-    job = "mpirun", "-n", "48", "vasp"
+    job = VaspJob(["mpirun", "-n", "32", "vasp"])
 
     fw = FireWork([WriteVaspInputs(slab=slab,
                                    folder=ocwd+folderbulk),
                    SimplerCustodianTask(dir=ocwd+folderbulk,
-                                        jobs=job)])
+                                        jobs=[job.as_dict])])
     fws.append(fw)
 
     wf = Workflow(fws, name=folderbulk)
