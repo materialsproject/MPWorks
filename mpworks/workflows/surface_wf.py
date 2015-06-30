@@ -72,7 +72,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                     password='fYr4ni!8', database='rit001_db',
                                     collection="Surface Calculations",
                                     struct_type="slab cell",
-                                    miller_index=mill,
+                                    miller_index=miller_index,
                                     loc=ocwd+folderbulk)])
     fws.append(fw)
 
