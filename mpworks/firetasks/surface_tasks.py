@@ -154,6 +154,8 @@ class WriteVaspInputs(FireTaskBase):
         k_product = dec.process_decoded(self.get("k_product", 50))
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         bulk = dec.process_decoded(self.get("bulk", True))
+        min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
+        min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
 
         if bulk:
             print ">>>>>> Creating bulk parameters in %s" %(folder)
