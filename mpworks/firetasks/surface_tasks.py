@@ -270,7 +270,7 @@ class SimplerCustodianTask(FireTaskBase):
                     UnconvergedErrorHandler(), NonConvergingErrorHandler(),
                     PotimErrorHandler()]
 
-        c = Custodian(handlers=[], jobs=[jobs])
+        c = Custodian(handlers=[], jobs=[jobs], scratch_dir=cust_params['scratch_dir'])
         # output = c.run()
         print "scratch directory is in %s" %(cust_params['scratch_dir'])
         print ">>>>>>> about to run vasp in %s" %(dir)
