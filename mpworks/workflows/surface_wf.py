@@ -58,7 +58,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
     fws = []
     job = "mpirun", "-n", "48", "vasp"
 
-    fw = FireWork([WriteVaspInputs(structure=slab,
+    fw = FireWork([WriteVaspInputs(slab=slab,
                                    folder=ocwd+folderbulk),
                    SimplerCustodianTask(dir=ocwd+folderbulk,
                                         jobs=job)])
@@ -152,7 +152,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                               str(miller_index[2]))
             folderslab = folderbulk.replace('bulk', 'slab')
 
-            fw = FireWork([WriteVaspInputs(structure=slab,
+            fw = FireWork([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
                            CustodianTask(cwd=ocwd+folderbulk),
                            VaspDBInsertTask(host=host, port=port, user=user,
@@ -161,7 +161,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                             struct_type="oriented unit cell",
                                             miller_index=dir[-3:],
                                             loc=ocwd+folderbulk),
-                           WriteVaspInputs(structure=slab,
+                           WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderslab),
                            CustodianTask(cwd=ocwd+folderslab),
                            VaspDBInsertTask(host=host, port=port, user=user,
