@@ -157,7 +157,7 @@ class WriteVaspInputs(FireTaskBase):
         if bulk:
             mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
-            mplb_u.write_input(slab.oriented_u_cell, folder)
+            mplb_u.write_input(slab.oriented_unit_cell, folder)
         else:
             mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
