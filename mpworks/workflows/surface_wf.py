@@ -13,7 +13,7 @@ from fireworks import ScriptTask
 from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs
+    VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs,SimplerCustodianTask
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator
 from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
@@ -128,10 +128,11 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
         spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
                                  angle_tolerance=angle_tolerance)
         conv_unit_cell = spa.get_conventional_standard_structure()
+        max_normal_search=2 if max_index==1 else max_normal_search=max_index
 
         list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
                                            10, 10, primitive=False,
-                                           max_normal_search=max_index)
+                                           max_normal_search=max_normal_search)
 
 
         ocwd = os.getcwd()
