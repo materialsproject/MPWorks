@@ -113,7 +113,11 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                                  "surf_wf_tests",
                                                  "my_launchpad.yaml"))
     launchpad.reset('', require_password=False)
-    normal_search=2 if max_index==1 else normal_search=max_index
+
+    if max_index==1:
+        normal_search=2
+    else:
+        normal_search=max_index
 
     for el in list_of_elements:
 
@@ -134,7 +138,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
 
         list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
                                            10, 10, primitive=False,
-                                           max_normal_search=max_normal_search)
+                                           max_normal_search=normal_search)
 
 
         ocwd = os.getcwd()
