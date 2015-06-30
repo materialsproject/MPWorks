@@ -31,7 +31,7 @@ from fireworks.core.launchpad import LaunchPad
 # debug
 # debug
 # debug
-def surface_workflows(miller_index, api_key, element, k_product=50):
+def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.001, angle_tolerance=5):
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  "surf_wf_tests",
@@ -107,7 +107,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50):
 
 def create_surface_workflows(max_index, api_key, list_of_elements,
                              k_product=50, host=None, port=None,
-                             user=None, password=None, database=None):
+                             user=None, password=None, database=None, symprec=0.001, angle_tolerance=5):
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  "surf_wf_tests",
