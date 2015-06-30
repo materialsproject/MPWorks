@@ -44,7 +44,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
     spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
                              angle_tolerance=angle_tolerance)
     conv_unit_cell = spa.get_conventional_standard_structure()
-    slab = SlabGenerator(conv_unit_cell, (1,1,0), 10, 10,
+    slab = SlabGenerator(conv_unit_cell, [1,1,0], 10, 10,
                          primitive=False, max_normal_search=1)
     slab = slab.get_slab()
 
