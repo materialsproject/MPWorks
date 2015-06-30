@@ -155,6 +155,7 @@ class WriteVaspInputs(FireTaskBase):
         bulk = dec.process_decoded(self.get("bulk", True))
 
         if bulk:
+            print ">>>>>> Creating bulk parameters"
             mplb_u = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
             mplb_u.write_input(slab.oriented_unit_cell, folder)
@@ -268,7 +269,7 @@ class SimplerCustodianTask(FireTaskBase):
                     UnconvergedErrorHandler(), NonConvergingErrorHandler(),
                     PotimErrorHandler()]
 
-        c = Custodian(handlers=[], jobs=jobs)
+        c = Custodian(handlers=[], jobs=[jobs.as_dict])
         output = c.run()
 
         return FWAction(stored_data=output)
