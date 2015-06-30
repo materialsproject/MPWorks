@@ -260,7 +260,7 @@ class SimplerCustodianTask(FireTaskBase):
         if fw_env.get('scratch_root'):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
-        # print "scratch directory is in %s" %(cust_params['scratch_dir'])
+        print "scratch directory is in %s" %(cust_params['scratch_dir'])
 
         dec = MontyDecoder()
         #handlers = dec.process_decoded(self['handlers'])
