@@ -37,7 +37,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50):
 
     mprest = MPRester(api_key)
     #first is the lowest energy one
-    prim_unit_cell = mprest.get_structures(el)[0]
+    prim_unit_cell = mprest.get_structures(element)[0]
     spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
                              angle_tolerance=angle_tolerance)
     conv_unit_cell = spa.get_conventional_standard_structure()
