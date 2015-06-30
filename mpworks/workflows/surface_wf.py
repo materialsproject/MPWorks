@@ -16,6 +16,9 @@ from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator
+from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
+from pymatgen.core.surface import Slab, SlabGenerator, generate_all_slabs
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 
 import os
