@@ -75,6 +75,7 @@ class VaspDBInsertTask(FireTaskBase):
                                                          "type": struct_type,
                                                          "miller index": miller_index},
                                       use_full_uri=False)
+            print ">>>>>>>>> assimilating data from %s into db" %(loc)
             drone.assimilate(loc)
 
 
@@ -149,7 +150,7 @@ class WriteVaspInputs(FireTaskBase):
                                                            {'ISIF': 2, 'EDIFFG':  -0.05,'EDIFF': 0.0001,
                                                             'ISMEAR': 1,'AMIX': 0.1,'BMIX': 0.0001,
                                                             'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
-                                                            'NPAR':4, 'SIGMA': 0.05}))
+                                                            'NPAR':4, 'SIGMA': 0.05, 'MAGMOM': {'Fe': 7}}))
         k_product = dec.process_decoded(self.get("k_product", 50))
         potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         bulk = dec.process_decoded(self.get("bulk", True))

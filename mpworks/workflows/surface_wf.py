@@ -67,7 +67,21 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                         custodian_params =
                                         {"scratch_dir":
                                              os.path.join("/global/scratch2/sd/",
-                                                    os.environ["USER"])}),
+                                                          os.environ["USER"])}),
+                   VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
+                                    password='fYr4ni!8', database='rit001_db',
+                                    collection="Surface Calculations",
+                                    struct_type="oriented unit cell",
+                                    miller_index=miller_index,
+                                    loc=ocwd+folderbulk),
+                   WriteVaspInputs(slab=slab,
+                                   folder=ocwd+folderbulk.replace('bulk', 'slab'),
+                                   bulk=False),
+                   RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
+                                    custodian_params =
+                                    {"scratch_dir":
+                                         os.path.join("/global/scratch2/sd/",
+                                                      os.environ["USER"])}),
                    VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
                                     password='fYr4ni!8', database='rit001_db',
                                     collection="Surface Calculations",
@@ -76,7 +90,11 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                     loc=ocwd+folderbulk)])
     fws.append(fw)
 
-    wf = Workflow(fws, name=folderbulk)
+    wf = Workflow(fws, name='%s_k%s_%s%s%s' %(element,
+                                              k_product,
+                                              str(miller_index[0]),
+                                              str(miller_index[1]),
+                                              str(miller_index[2])))
 
     return wf
 
@@ -170,8 +188,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                            folder=ocwd+folderbulk),
                            RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
                                             custodian_params = custodian_params),
-                           VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
-                                            password=sp0ckhanort, database=rit001_db,
+                           VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
+                                            password="fYr4ni!8", database="rit001_db",
                                             collection="Surface Calculations",
                                             struct_type="oriented unit cell",
                                             miller_index=mill,
@@ -180,8 +198,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                            folder=ocwd+folderslab),
                            RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
                                             custodian_params = custodian_params),
-                           VaspDBInsertTask(host=ds043497.mongolab.com, port=43497, user=rit001,
-                                            password=sp0ckhanort, database=rit001_db,
+                           VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
+                                            password="fYr4ni!8", database="rit001_db",
                                             collection="Surface Calculations",
                                             struct_type="slab cell",
                                             miller_index=mill,
