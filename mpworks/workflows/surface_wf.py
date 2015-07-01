@@ -62,6 +62,20 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                                     os.environ["USER"])}
 
     fw = FireWork([WriteVaspInputs(slab=slab,
+                                   folder=ocwd+folderbulk),
+                   RunCustodianTask(dir=ocwd+folderbulk,
+                                        jobs=job,
+                                        custodian_params =
+                                        {"scratch_dir":
+                                             os.path.join("/global/scratch2/sd/",
+                                                          os.environ["USER"])}),
+                   VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
+                                    password='fYr4ni!8', database='rit001_db',
+                                    collection="Surface Calculations",
+                                    struct_type="oriented unit cell",
+                                    miller_index=miller_index,
+                                    loc=ocwd+folderbulk),
+                   WriteVaspInputs(slab=slab,
                                    folder=ocwd+folderslab, bulk=False),
                    RunCustodianTask(dir=ocwd+folderslab, jobs=job,
                                     custodian_params = custodian_params),
@@ -71,35 +85,6 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
                                     struct_type="slab cell",
                                     miller_index=miller_index,
                                     loc=ocwd+folderslab)])
-
-    # fw = FireWork([WriteVaspInputs(slab=slab,
-    #                                folder=ocwd+folderbulk),
-    #                RunCustodianTask(dir=ocwd+folderbulk,
-    #                                     jobs=job,
-    #                                     custodian_params =
-    #                                     {"scratch_dir":
-    #                                          os.path.join("/global/scratch2/sd/",
-    #                                                       os.environ["USER"])}),
-    #                VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
-    #                                 password='fYr4ni!8', database='rit001_db',
-    #                                 collection="Surface Calculations",
-    #                                 struct_type="oriented unit cell",
-    #                                 miller_index=miller_index,
-    #                                 loc=ocwd+folderbulk),
-    #                WriteVaspInputs(slab=slab,
-    #                                folder=ocwd+folderslab,
-    #                                bulk=False),
-    #                RunCustodianTask(dir=ocwd+folderslab, jobs=job,
-    #                                 custodian_params =
-    #                                 {"scratch_dir":
-    #                                      os.path.join("/global/scratch2/sd/",
-    #                                                   os.environ["USER"])}),
-    #                VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
-    #                                 password='fYr4ni!8', database='rit001_db',
-    #                                 collection="Surface Calculations",
-    #                                 struct_type="slab cell",
-    #                                 miller_index=miller_index,
-    #                                 loc=ocwd+folderslab)])
     fws.append(fw)
 
     wf = Workflow(fws, name='%s_k%s_%s%s%s' %(element,
