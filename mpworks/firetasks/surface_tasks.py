@@ -146,6 +146,7 @@ class RunCustodianTask(FireTaskBase):
                     PotimErrorHandler()]
 
         c = Custodian(handlers=[], jobs=[jobs], **cust_params)
+        print ">>>>>>>>>>>>>>>>>> scratch directory is %s" %(c.scratch_dir)
         output = c.run()
 
         return FWAction(stored_data=output)
