@@ -31,7 +31,6 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
-from pymatgen.io.vaspio.vasp_output import Poscar
 import socket
 
 

@@ -8,9 +8,6 @@ __date__ = "6/24/15"
 
 import os
 from pymongo import MongoClient
-from fireworks.core.firework import FireWork, Workflow
-from fireworks import ScriptTask
-from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspDBInsertTask, WriteVaspInputs
@@ -42,9 +39,9 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
                                                  "my_launchpad.yaml"))
     launchpad.reset('', require_password=False)
 
-    custodian_params = {"scratch_dir": os.path.join("/global/scratch2/sd/",
-                                                os.environ["USER"]),
-                        "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
+    cust_params = {"custodian_params": {"scratch_dir": os.path.join("/global/scratch2/sd/",
+                                                os.environ["USER"])},
+                   "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
 
     for el in list_of_elements:
 
@@ -91,13 +88,13 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
 
             fw = FireWork([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
-                           RunCustodianTask(dir=ocwd+folderbulk, **custodian_params),
+                           RunCustodianTask(dir=ocwd+folderbulk, **cust_params),
                            VaspDBInsertTask(struct_type="oriented unit cell",
                                             loc=ocwd+folderbulk,
                                             **vaspdbinsert_params),
                            WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderslab, bulk=False),
-                           RunCustodianTask(dir=ocwd+folderslab, **custodian_params),
+                           RunCustodianTask(dir=ocwd+folderslab, **cust_params),
                            VaspDBInsertTask(struct_type="slab cell",
                                             loc=ocwd+folderslab,
                                             **vaspdbinsert_params)])
