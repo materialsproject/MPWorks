@@ -70,14 +70,14 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
         for slab in list_of_slabs:
 
             fws=[]
-            mill=slab.miller_index
+            miller_index=slab.miller_index
 
             vaspdbinsert_params = {'host': host,
                                    'port': port, 'user': user,
                                    'password': password,
                                    'database': database,
                                    'collection': "Surface Calculations",
-                                   'miller_index': mill}
+                                   'miller_index': miller_index}
 
             folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
                                               str(miller_index[0]),
@@ -99,5 +99,5 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                             **vaspdbinsert_params)])
 
             fws.append(fw)
-            wf = Workflow(fws, name="%s %s surface calculation" %(el, slab.miller_index))
+            wf = Workflow(fws, name="%s %s surface calculation" %(el, miller_index))
             launchpad.add_wf(wf)
