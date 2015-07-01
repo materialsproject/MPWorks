@@ -47,7 +47,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
     conv_unit_cell = spa.get_conventional_standard_structure()
     write_structure(conv_unit_cell, './uc.cif')
     slab = SlabGenerator(conv_unit_cell, [1,1,0], 10, 10,
-                         max_normal_search=3)
+                         max_normal_search=5)
     slab = slab.get_slab()
     write_structure(slab.oriented_unit_cell, './oriented.cif')
 
