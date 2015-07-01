@@ -88,15 +88,15 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
             fw = FireWork([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
                            RunCustodianTask(dir=ocwd+folderbulk, **custodian_params),
-                           VaspDBInsertTask(**vaspdbinsert_params,
-                                            struct_type="oriented unit cell",
-                                            loc=ocwd+folderbulk),
+                           VaspDBInsertTask(struct_type="oriented unit cell",
+                                            loc=ocwd+folderbulk,
+                                            **vaspdbinsert_params),
                            WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderslab, bulk=False),
                            RunCustodianTask(dir=ocwd+folderslab, **custodian_params),
-                           VaspDBInsertTask(**vaspdbinsert_params,
-                                            struct_type="slab cell",
-                                            loc=ocwd+folderslab)])
+                           VaspDBInsertTask(struct_type="slab cell",
+                                            loc=ocwd+folderslab,
+                                            **vaspdbinsert_params)])
 
             fws.append(fw)
             wf = Workflow(fws, name="%s %s surface calculation" %(el, slab.miller_index))
