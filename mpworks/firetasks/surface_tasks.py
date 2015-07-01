@@ -138,6 +138,8 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
+        print ">>>>>>>>>>>>>>>>> identified scratch as %s" %(cust_params['scratch_dir'])
+
         #handlers = dec.process_decoded(self['handlers'])
         jobs = dec.process_decoded(self['jobs'])
         #validators = [VasprunXMLValidator()]
