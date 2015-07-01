@@ -43,6 +43,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
                                                 os.environ["USER"])},
                    "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
 
+    fws=[]
     for el in list_of_elements:
 
         """
@@ -70,7 +71,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
         ocwd = os.getcwd()
         for slab in list_of_slabs:
 
-            fws=[]
+
             miller_index=slab.miller_index
 
             vaspdbinsert_params = {'host': host,
@@ -100,5 +101,5 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
                                             **vaspdbinsert_params)])
 
             fws.append(fw)
-            wf = Workflow(fws, name="%s %s surface calculation" %(el, miller_index))
-            launchpad.add_wf(wf)
+    wf = Workflow(fws, name="surface calculation")
+    launchpad.add_wf(wf)
