@@ -57,7 +57,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
     folderslab = folderbulk.replace('bulk', 'slab')
 
     fws = []
-    job = VaspJob(["mpirun", "-n", "16", "vasp"])
+    job = VaspJob(["mpirun", "-n", "32", "vasp"])
     custodian_params = {"scratch_dir": os.path.join("/global/scratch2/sd/",
                                                     os.environ["USER"])}
 

@@ -79,58 +79,6 @@ class VaspDBInsertTask(FireTaskBase):
             drone.assimilate(loc)
 
 
-
-# debug
-# debug
-# debug
-# debug
-@explicit_serialize
-class WriteSurfVaspInput(FireTaskBase):
-    """writes VASP inputs given elements, hkl,  """
-
-    required_params = ["element", "miller_index", "api_key"]
-    optional_params = ["min_slab_size", "min_vacuum_size",
-                       "symprec", "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional"]
-
-    def run_task(self, fw_spec):
-        dec = MontyDecoder()
-        element = dec.process_decoded(self.get("element"))
-        miller_index = dec.process_decoded(self.get("miller_index"))
-        api_key = dec.process_decoded(self.get("api_key"))
-        min_slab_size= dec.process_decoded(self.get("min_slab_size", 10))
-        min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
-        symprec = dec.process_decoded(self.get("symprec", 0.001))
-        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
-        user_incar_settings = dec.process_decoded(self.get("user_incar_settings",
-                                                           {'ISIF': 2, 'EDIFFG':  -0.05,'EDIFF': 0.0001,
-                                                            'ISMEAR': 1,'AMIX': 0.1,'BMIX': 0.0001,
-                                                            'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
-                                                            'NPAR':4, 'SIGMA': 0.05}))
-        k_product = dec.process_decoded(self.get("k_product", 50))
-        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
-
-        input_structures = get_input_mp(element, miller_index, api_key, min_slab_size,
-                                        min_vacuum_size,symprec, angle_tolerance)
-
-
-        orient_u_cell = input_structures[0]
-        slab_cell = input_structures[1]
-        mplb_u = MPSlabVaspInputSet(potcar_functional=potcar_functional, bulk = True)
-        print "\n>>>> Now creating vasp inputs for a unit cell\n"
-        mplb_u.write_input(orient_u_cell, '%s_ucell_k%s_%s%s%s' %(element, k_product,
-                                                                  str(miller_index[0]),
-                                                                  str(miller_index[1]),
-                                                                  str(miller_index[2])))
-        print "\n>>>> Now creating vasp inputs for a slab\n"
-        mplb_s = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                    potcar_functional=potcar_functional, bulk = False)
-        mplb_s.write_input(slab_cell, '%s_scell_k%s_%s%s%s' %(element, k_product,
-                                                              str(miller_index[0]),
-                                                              str(miller_index[1]),
-                                                              str(miller_index[2])))
-
-
 @explicit_serialize
 class WriteVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
