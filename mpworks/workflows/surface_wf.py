@@ -20,7 +20,7 @@ from pymatgen.matproj.rest import MPRester
 
 import os
 from pymongo import MongoClient
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 
 from pymatgen import write_structure
@@ -86,7 +86,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
                                               str(miller_index[2]))
             folderslab = folderbulk.replace('bulk', 'slab')
 
-            fw = FireWork([WriteVaspInputs(slab=slab,
+            fw = Firework([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
                            RunCustodianTask(dir=ocwd+folderbulk, **cust_params),
                            VaspDBInsertTask(struct_type="oriented unit cell",
