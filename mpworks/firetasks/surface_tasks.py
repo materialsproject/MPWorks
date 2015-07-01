@@ -106,7 +106,6 @@ class WriteVaspInputs(FireTaskBase):
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
 
         if bulk:
-            print ">>>>>> Creating bulk parameters in %s" %(folder)
             mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
                                         potcar_functional=potcar_functional, bulk=bulk)
             mplb.write_input(slab.oriented_unit_cell, folder)
