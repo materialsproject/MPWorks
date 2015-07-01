@@ -13,7 +13,7 @@ from fireworks import ScriptTask
 from fireworks.core.launchpad import LaunchPad
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteSurfVaspInput, WriteVaspInputs
+    VaspDBInsertTask, WriteVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator
 from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
