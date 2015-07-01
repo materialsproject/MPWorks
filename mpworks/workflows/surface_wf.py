@@ -64,7 +64,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
 
 
         list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
-                                           10, 10, max_normal_search=normal_search)
+                                           10, 10, max_normal_search=max_index)
 
         ocwd = os.getcwd()
         for slab in list_of_slabs:
