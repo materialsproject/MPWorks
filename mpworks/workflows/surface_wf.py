@@ -26,7 +26,8 @@ from pymongo import MongoClient
 from fireworks.core.firework import FireWork, Workflow
 from fireworks.core.launchpad import LaunchPad
 
-
+from pymatgen import write_structure
+from pymatgen.io.smartio import CifParser
 # debug
 # debug
 # debug
@@ -44,6 +45,7 @@ def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.00
     spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
                              angle_tolerance=angle_tolerance)
     conv_unit_cell = spa.get_conventional_standard_structure()
+    write_structure(conv_unit_cell, '.')
     slab = SlabGenerator(conv_unit_cell, [1,1,0], 10, 10,
                          max_normal_search=2)
     slab = slab.get_slab()
