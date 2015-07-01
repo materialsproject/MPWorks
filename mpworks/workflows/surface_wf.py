@@ -28,182 +28,76 @@ from fireworks.core.launchpad import LaunchPad
 
 from pymatgen import write_structure
 from pymatgen.io.smartio import CifParser
-# debug
-# debug
-# debug
-# debug
-def surface_workflows(miller_index, api_key, element, k_product=50, symprec=0.001, angle_tolerance=5):
+
+
+
+
+def create_surface_workflows(max_index, api_key, list_of_elements,
+                             k_product=50, host=None, port=None,
+                             user=None, password=None, database=None,
+                             symprec=0.001, angle_tolerance=5):
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  "surf_wf_tests",
                                                  "my_launchpad.yaml"))
     launchpad.reset('', require_password=False)
 
-    mprest = MPRester(api_key)
-    #first is the lowest energy one
-    prim_unit_cell = mprest.get_structures(element)[2]
-    spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
-                             angle_tolerance=angle_tolerance)
-    conv_unit_cell = spa.get_conventional_standard_structure()
-    write_structure(conv_unit_cell, './uc.cif')
-    slab = SlabGenerator(conv_unit_cell, [1,1,0], 10, 10,
-                         max_normal_search=1)
-    slab = slab.get_slab()
-    write_structure(slab.oriented_unit_cell, './oriented.cif')
-
-    ocwd = os.getcwd()
-
-    folderbulk = '/%s_%s_k%s_%s%s%s' %(element, 'bulk', k_product,
-                                       str(miller_index[0]),
-                                       str(miller_index[1]),
-                                       str(miller_index[2]))
-    folderslab = folderbulk.replace('bulk', 'slab')
-
-    fws = []
-    job = VaspJob(["mpirun", "-n", "16", "vasp"])
     custodian_params = {"scratch_dir": os.path.join("/global/scratch2/sd/",
-                                                    os.environ["USER"])}
+                                                os.environ["USER"]),
+                        "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
 
-    fw = FireWork([WriteVaspInputs(slab=slab,
-                                   folder=ocwd+folderbulk),
-                   RunCustodianTask(dir=ocwd+folderbulk,
-                                        jobs=job,
-                                        custodian_params =
-                                        {"scratch_dir":
-                                             os.path.join("/global/scratch2/sd/",
-                                                          os.environ["USER"])}),
-                   VaspDBInsertTask(host='ds043497.mongolab.com', port=43497, user='rit001',
-                                    password='fYr4ni!8', database='rit001_db',
-                                    collection="Surface Calculations",
-                                    struct_type="oriented unit cell",
-                                    miller_index=miller_index,
-                                    loc=ocwd+folderbulk),
-                   WriteVaspInputs(slab=slab,
-                                   folder=ocwd+folderslab, bulk=False),
-                   RunCustodianTask(dir=ocwd+folderslab, jobs=job,
-                                    custodian_params = custodian_params),
-                   VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
-                                    password="fYr4ni!8", database="rit001_db",
-                                    collection="Surface Calculations",
-                                    struct_type="slab cell",
-                                    miller_index=miller_index,
-                                    loc=ocwd+folderslab)])
-    fws.append(fw)
+    for el in list_of_elements:
 
-    wf = Workflow(fws, name='%s_k%s_%s%s%s' %(element,
-                                              k_product,
+        """
+        element: str, element name of Metal
+        miller_index: hkl, e.g. [1, 1, 0]
+        api_key: to get access to MP DB
+        """
+        # This initializes the REST adaptor. Put your own API key in.
+        # e.g. MPRester("QMt7nBdIioOVySW2")
+        mprest = MPRester(api_key)
+        #first is the lowest energy one
+        prim_unit_cell = mprest.get_structures(el)[0]
+        spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
+                                 angle_tolerance=angle_tolerance)
+        conv_unit_cell = spa.get_conventional_standard_structure()
+
+
+        list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
+                                           10, 10, max_normal_search=normal_search)
+
+        ocwd = os.getcwd()
+        for slab in list_of_slabs:
+
+            fws=[]
+            mill=slab.miller_index
+
+            vaspdbinsert_params = {'host': host,
+                                   'port': port, 'user': user,
+                                   'password': password,
+                                   'database': database,
+                                   'collection': "Surface Calculations",
+                                   'miller_index': mill}
+
+            folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
                                               str(miller_index[0]),
                                               str(miller_index[1]),
-                                              str(miller_index[2])))
+                                              str(miller_index[2]))
+            folderslab = folderbulk.replace('bulk', 'slab')
 
-    return wf
+            fw = FireWork([WriteVaspInputs(slab=slab,
+                                           folder=ocwd+folderbulk),
+                           RunCustodianTask(dir=ocwd+folderbulk, **custodian_params),
+                           VaspDBInsertTask(**vaspdbinsert_params,
+                                            struct_type="oriented unit cell",
+                                            loc=ocwd+folderbulk),
+                           WriteVaspInputs(slab=slab,
+                                           folder=ocwd+folderslab, bulk=False),
+                           RunCustodianTask(dir=ocwd+folderslab, **custodian_params),
+                           VaspDBInsertTask(**vaspdbinsert_params,
+                                            struct_type="slab cell",
+                                            loc=ocwd+folderslab)])
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# def create_surface_workflows(max_index, api_key, list_of_elements,
-#                              k_product=50, host=None, port=None,
-#                              user=None, password=None, database=None,
-#                              symprec=0.001, angle_tolerance=5):
-#
-#     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-#                                                  "surf_wf_tests",
-#                                                  "my_launchpad.yaml"))
-#     launchpad.reset('', require_password=False)
-#
-#     if max_index==1:
-#         normal_search=2
-#     else:
-#         normal_search=max_index
-#
-#     for el in list_of_elements:
-#
-#         """
-#         element: str, element name of Metal
-#         miller_index: hkl, e.g. [1, 1, 0]
-#         api_key: to get access to MP DB
-#         """
-#         # This initializes the REST adaptor. Put your own API key in.
-#         # e.g. MPRester("QMt7nBdIioOVySW2")
-#         mprest = MPRester(api_key)
-#         #first is the lowest energy one
-#         prim_unit_cell = mprest.get_structures(el)[0]
-#         spa = SpacegroupAnalyzer(prim_unit_cell,  symprec=symprec,
-#                                  angle_tolerance=angle_tolerance)
-#         conv_unit_cell = spa.get_conventional_standard_structure()
-#
-#
-#         list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
-#                                            10, 10, primitive=False,
-#                                            max_normal_search=normal_search)
-#
-#
-#         ocwd = os.getcwd()
-#         for slab in list_of_slabs:
-#
-#             fws=[]
-#             mill=slab.miller_index
-#             folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
-#                                               str(miller_index[0]),
-#                                               str(miller_index[1]),
-#                                               str(miller_index[2]))
-#             folderslab = folderbulk.replace('bulk', 'slab')
-#             custodian_params = {"scratch_dir": os.path.join("/global/scratch2/sd/",
-#                                                             os.environ["USER"])}
-#
-#             fw = FireWork([WriteVaspInputs(slab=slab,
-#                                            folder=ocwd+folderbulk),
-#                            RunCustodianTask(dir=ocwd+folderbulk, jobs=job,
-#                                             custodian_params = custodian_params),
-#                            VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
-#                                             password="fYr4ni!8", database="rit001_db",
-#                                             collection="Surface Calculations",
-#                                             struct_type="oriented unit cell",
-#                                             miller_index=mill,
-#                                             loc=ocwd+folderbulk),
-#                            WriteVaspInputs(slab=slab,
-#                                            folder=ocwd+folderslab, bulk=False),
-#                            RunCustodianTask(dir=ocwd+folderslab, jobs=job,
-#                                             custodian_params = custodian_params),
-#                            VaspDBInsertTask(host="ds043497.mongolab.com", port=43497, user="rit001",
-#                                             password="fYr4ni!8", database="rit001_db",
-#                                             collection="Surface Calculations",
-#                                             struct_type="slab cell",
-#                                             miller_index=mill,
-#                                             loc=ocwd+folderslab)])
-#             fws.append(fw)
-#             wf = Workflow(fws, name="%s %s surface calculation" %(el, slab.miller_index))
-#             launchpad.add_wf(wf)
+            fws.append(fw)
+            wf = Workflow(fws, name="%s %s surface calculation" %(el, slab.miller_index))
+            launchpad.add_wf(wf)
