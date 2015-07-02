@@ -61,10 +61,10 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                  angle_tolerance=angle_tolerance)
         conv_unit_cell = spa.get_conventional_standard_structure()
 
-        if list_of_miller:
+        if list_of_indices:
             list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
                                            max_normal_search=max(mill)).get_slab()
-                             for mill in list_of_miller]
+                             for mill in list_of_indices]
         else:
             list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
                                                10, 10, max_normal_search=max_index)
