@@ -76,6 +76,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
 
 
             miller_index=slab.miller_index
+            print miller_index
+            print el
             surface_area = slab.surface_area
 
             vaspdbinsert_params = {'host': host,
