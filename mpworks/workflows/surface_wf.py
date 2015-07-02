@@ -31,7 +31,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                              list_of_indices=None,
                              k_product=50, host=None, port=None,
                              user=None, password=None, database=None,
-                             symprec=0.001, angle_tolerance=5):
+                             symprec=0.001, angle_tolerance=5,
+                             job=VaspJob(["mpirun", "-n", "16", "vasp"])):
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  "surf_wf_tests",
@@ -42,7 +43,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                        {"scratch_dir":
                             os.path.join("/global/scratch2/sd/",
                                          os.environ["USER"])},
-                   "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
+                   "jobs": job}
 
     fws=[]
     for el in list_of_elements:
