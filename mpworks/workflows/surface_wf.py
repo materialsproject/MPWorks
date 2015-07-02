@@ -63,6 +63,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                                  angle_tolerance=angle_tolerance)
         conv_unit_cell = spa.get_conventional_standard_structure()
 
+        print el
+
         if list_of_indices:
             list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
                                            max_normal_search=max(mill)).get_slab()
@@ -77,7 +79,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
 
             miller_index=slab.miller_index
             print miller_index
-            print el
+
             surface_area = slab.surface_area
 
             vaspdbinsert_params = {'host': host,
