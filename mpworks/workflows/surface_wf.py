@@ -42,7 +42,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                        {"scratch_dir":
                             os.path.join("/global/scratch2/sd/",
                                          os.environ["USER"])},
-                   "jobs": VaspJob(["mpirun", "-n", "8", "vasp"])}
+                   "jobs": VaspJob(["mpirun", "-n", "16", "vasp"])}
 
     fws=[]
     for el in list_of_elements:
