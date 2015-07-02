@@ -32,10 +32,11 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                              k_product=50, host=None, port=None,
                              user=None, password=None, database=None,
                              symprec=0.001, angle_tolerance=5,
-                             job=VaspJob(["mpirun", "-n", "16", "vasp"])):
+                             job=VaspJob(["mpirun", "-n", "16", "vasp"]),
+                             launchpad_dir=""):
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-                                                 "surf_wf_tests",
+                                                 launchpad_dir,
                                                  "my_launchpad.yaml"))
     launchpad.reset('', require_password=False)
 
@@ -68,7 +69,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                              for mill in list_of_indices]
         else:
             list_of_slabs = generate_all_slabs(conv_unit_cell, max_index,
-                                               10, 10)
+                                               10, 10, max_normal_search=max(max_index))
 
         ocwd = os.getcwd()
         for slab in list_of_slabs:
