@@ -73,12 +73,13 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
 
 
             miller_index=slab.miller_index
+            surface_area = slab.surface_area
 
             vaspdbinsert_params = {'host': host,
                                    'port': port, 'user': user,
                                    'password': password,
                                    'database': database,
-                                   'collection': "Surface Calculations",
+                                   'collection': "Surface_Calculations",
                                    'miller_index': miller_index}
 
             folderbulk = '/%s_%s_k%s_%s%s%s' %(slab[0].specie, 'bulk', k_product,
@@ -90,16 +91,17 @@ def create_surface_workflows(max_index, api_key, list_of_elements, list_of_mille
             fw = Firework([WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderbulk),
                            RunCustodianTask(dir=ocwd+folderbulk, **cust_params),
-                           VaspDBInsertTask(struct_type="oriented unit cell",
+                           VaspDBInsertTask(struct_type="oriented_unit_cell",
                                             loc=ocwd+folderbulk,
                                             **vaspdbinsert_params),
                            WriteVaspInputs(slab=slab,
                                            folder=ocwd+folderslab, bulk=False),
                            RunCustodianTask(dir=ocwd+folderslab, **cust_params),
-                           VaspDBInsertTask(struct_type="slab cell",
+                           VaspDBInsertTask(struct_type="slab_cell",
                                             loc=ocwd+folderslab,
+                                            surface_area=surface_area,
                                             **vaspdbinsert_params)])
 
             fws.append(fw)
-    wf = Workflow(fws, name="surface calculation")
+    wf = Workflow(fws, name="surface_calculation")
     launchpad.add_wf(wf)

@@ -43,8 +43,10 @@ Firework tasks
 @explicit_serialize
 class VaspDBInsertTask(FireTaskBase):
 
-    required_params = ["host", "port", "user", "password", "database",
-                       "collection", "struct_type", "miller_index", "loc"]
+    required_params = ["host", "port", "user", "password",
+                       "database", "collection", "struct_type",
+                       "miller_index", "loc"]
+    optional_params = ["surface_area"]
 
     def run_task(self, fw_spec):
 
@@ -52,6 +54,7 @@ class VaspDBInsertTask(FireTaskBase):
         miller_index = str(dec.process_decoded(self.get("miller_index")))
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
+        surface_area = dec.process_decoded(self.get("surface_area", None))
 
 
         if not self["host"]:
@@ -67,14 +70,15 @@ class VaspDBInsertTask(FireTaskBase):
             self["collection"] = "tasks"
 
 
-            drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
-                                      user=self["user"], password=self["password"],
-                                      database=self["database"], collection=self["collection"],
-                                      additional_fields={"author": os.environ.get("USER"),
-                                                         "type": struct_type,
-                                                         "miller index": miller_index},
-                                      use_full_uri=False)
-            drone.assimilate(loc)
+        drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
+                                  user=self["user"], password=self["password"],
+                                  database=self["database"], collection=self["collection"],
+                                  additional_fields={"author": os.environ.get("USER"),
+                                                     "structure type": struct_type,
+                                                     "miller index": miller_index,
+                                                     "surface area": surface_area},
+                                  use_full_uri=False)
+        drone.assimilate(loc)
 
 
 @explicit_serialize
@@ -137,8 +141,6 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        print ">>>>>>>>>>>>>>>>> identified scratch as %s" %(cust_params['scratch_dir'])
-
         #handlers = dec.process_decoded(self['handlers'])
         jobs = dec.process_decoded(self['jobs'])
         #validators = [VasprunXMLValidator()]
@@ -147,7 +149,6 @@ class RunCustodianTask(FireTaskBase):
                     PotimErrorHandler()]
 
         c = Custodian(handlers=[], jobs=[jobs], **cust_params)
-        print ">>>>>>>>>>>>>>>>>> scratch directory is %s" %(c.scratch_dir)
         output = c.run()
 
         return FWAction(stored_data=output)
