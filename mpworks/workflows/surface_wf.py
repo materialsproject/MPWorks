@@ -25,6 +25,7 @@ from fireworks.core.launchpad import LaunchPad
 
 from pymatgen import write_structure
 from pymatgen.io.smartio import CifParser
+from matgendb import QueryEngine
 
 
 def create_surface_workflows(max_index, api_key, list_of_elements,
@@ -47,6 +48,8 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                    "jobs": job}
 
     fws=[]
+    miller_index_dict = {}
+    unit_cells = {}
     for el in list_of_elements:
 
         """
@@ -62,6 +65,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
         spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                  angle_tolerance=angle_tolerance)
         conv_unit_cell = spa.get_conventional_standard_structure()
+        unit_cells[el] = conv_unit_cell
 
         print el
         if max_normal_search:
@@ -83,8 +87,12 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
                 if slab.miller_index not in list_miller:
                     list_miller.append(slab.miller_index)
                     unique_slabs.append(slab)
+        else:
+            list_miller=[slab.miller_index for slab in list_of_slabs]
 
+        miller_index_dict[el] = list_miller
         list_of_slabs = unique_slabs[:]
+        # return miller_index_dict later to be used for energy analysis  and wulff construction
 
         ocwd = os.getcwd()
         for slab in list_of_slabs:
@@ -125,3 +133,54 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
             fws.append(fw)
     wf = Workflow(fws, name="surface_calculation")
     launchpad.add_wf(wf)
+
+
+# # Will become a class method of CreateSurfaceWorkflows later
+# def EnergyAndWulff(list_of_elements, miller_indices, host=None, port=None, user=None, password=None, database=None):
+#
+# # The miller_indices are obtained from the
+# # CreateSurfaceWorkflows as a returned list
+# # of miller indices corresponding to a system
+#
+#     db_params = {'host': host, 'port': port,
+#                  'database': database,
+#                  'user': user, 'password': password}
+#     qe = QueryEngine(collection='Surface_Calculations', **db_params)
+#
+#     optional_data = ["chemsys", "surface_area", "nsites"
+#                      "structure_type", "miller_index"]
+#
+#     to_Jperm2 = 16.0217656
+#     wulffshapes = {}
+#     surface_energies = {}
+#
+#     for el in list_of_elements:
+#
+#         miller_list = self.miller_index_dict[el]
+#         e_surf_list = []
+#
+#         for miller_index in miller_list:
+#
+#             slab_criteria = {'chemsys':el,
+#                              'structure_type': 'slab_cell',
+#                              'miller_index': miller_index}
+#             unit_criteria = {'chemsys':el,
+#                              'structure_type': 'oriented_unit_cell',
+#                              'miller_index': miller_index}
+#
+#             slab_entry = qe.get_entries(slab_criteria, optional_data=optional_data)
+#             oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
+#
+#             slabE = slab_entry.uncorrected_energy
+#             bulkE = oriented_ucell_entry.energy_per_atom*slab_entry.data['nsites']
+#             area = slab_entry.data['surface_area']
+#
+#             e_surf_list.append(((slabE-bulkE)/(2*area))*to_Jperm2)
+#
+#         wulffshapes[el] = wulff_3d(unitcell, miller_list, e_surf_list)
+#         se_dict = {}
+#         for i, hkl in enumerate(miller_list):
+#             se_dict[str(hkl)] = e_surf_list[i]
+#         surface_energies[el] = se_dict
+#
+#         return wulffshapes, surface_energies

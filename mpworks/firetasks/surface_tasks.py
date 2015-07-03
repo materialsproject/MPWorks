@@ -74,9 +74,9 @@ class VaspDBInsertTask(FireTaskBase):
                                   user=self["user"], password=self["password"],
                                   database=self["database"], collection=self["collection"],
                                   additional_fields={"author": os.environ.get("USER"),
-                                                     "structure type": struct_type,
-                                                     "miller index": miller_index,
-                                                     "surface area": surface_area},
+                                                     "structure_type": struct_type,
+                                                     "miller_index": miller_index,
+                                                     "surface_area": surface_area},
                                   use_full_uri=False)
         drone.assimilate(loc)
 
@@ -152,47 +152,3 @@ class RunCustodianTask(FireTaskBase):
         output = c.run()
 
         return FWAction(stored_data=output)
-
-
-# class EnergyAndWulffTask(FireTaskBase):
-#
-#     required_params = ["api_key", "miller_list", "element"]
-#     optional_params = ["symprec", "angle_tolerance", "k_product"]
-#
-#     def run_task(self, fw_spec):
-#
-#         dec = MontyDecoder()
-#         element = dec.process_decoded(self.get("element"))
-#         miller_list = dec.process_decoded(self.get("miller_list"))
-#         k_product = dec.process_decoded(self.get("k_product", 50))
-#         api_key = dec.process_decoded(self.get("api_key"))
-#         symprec = dec.process_decoded(self.get("symprec", 0.001))
-#         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
-#
-#         unitcell = get_input_mp(element, (0, 0, 1), api_key,
-#                                 min_slab_size=10, min_vacuum_size=10,
-#                                 symprec=symprec, angle_tolerance=angle_tolerance)
-#
-#         to_Jperm2 = 16.0217656
-#         e_surf_list = []
-#         for miller_index in miller_list:
-#
-#             structs = get_input_mp(element, miller_index, api_key,
-#                                    min_slab_size=10, min_vacuum_size=10,
-#                                    symprec=symprec, angle_tolerance=angle_tolerance)
-#             oriented_unit_cell = structs[0]
-#             slab = structs[1]
-#
-#             dirbulk = "~/.fireworks/%s_ucell_k%s_%s/vasprun.xml" %element %k_product %miller_index
-#             xmlBulk = Vasprun(dirbulk)
-#             bulkE = (xmlBulk.final_energy)/len(oriented_unit_cell)
-#
-#             dirslab = "~/.fireworks/%s_scell_k%s_%s/vasprun.xml" %element %k_product %miller_index
-#             slabE = Vasprun(dirslab).final_energy
-#             area = slab.surface_area
-#             e_surf_list.append(((slabE - len(slab)*bulkE)/(2*area))*to_Jperm2)
-#
-#         wulffshape = wulff_3d(unitcell, miller_list, e_surf_list)
-#         se_dict = {}
-#         for i, hkl in enumerate(miller_list):
-#             se_dict[str(hkl)] = e_surf_list[i]
