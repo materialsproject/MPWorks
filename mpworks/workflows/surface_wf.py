@@ -64,7 +64,7 @@ def create_surface_workflows(max_index, api_key, list_of_elements,
         conv_unit_cell = spa.get_conventional_standard_structure()
 
         print el
-        max_norm=max_index if max_normal_search else max_norm=None
+        max_norm=max_index if max_normal_search else max_norm=5
 
         if list_of_indices:
             list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
