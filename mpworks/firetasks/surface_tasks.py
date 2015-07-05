@@ -69,15 +69,16 @@ class VaspDBInsertTask(FireTaskBase):
         if not self["collection"]:
             self["collection"] = "tasks"
 
+        additional_fields={"author": os.environ.get("USER"),
+                           "structure_type": struct_type,
+                           "miller_index": miller_index,
+                           "surface_area": surface_area}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"], password=self["password"],
-                                  database=self["database"], collection=self["collection"],
-                                  additional_fields={"author": os.environ.get("USER"),
-                                                     "structure_type": struct_type,
-                                                     "miller_index": miller_index,
-                                                     "surface_area": surface_area},
-                                  use_full_uri=False)
+                                  database=self["database"], use_full_uri=False,
+                                  additional_fields=additional_fields,
+                                  collection=self["collection"])
         drone.assimilate(loc)
 
 
@@ -86,9 +87,9 @@ class WriteVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
     required_params = ["slab", "folder"]
-    optional_params = ["min_slab_size", "min_vacuum_size",
-                       "symprec", "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional", "bulk"]
+    optional_params = ["min_slab_size", "min_vacuum_size", "bulk",
+                       "angle_tolerance", "user_incar_settings",
+                       "k_product","potcar_functional", "symprec"]
 
     def run_task(self, fw_spec):
         dec = MontyDecoder()
@@ -96,27 +97,33 @@ class WriteVaspInputs(FireTaskBase):
         folder = dec.process_decoded(self.get("folder"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
-        user_incar_settings = dec.process_decoded(self.get("user_incar_settings",
-                                                           {'ISIF': 2, 'EDIFFG':  -0.05,'EDIFF': 0.0001,
-                                                            'ISMEAR': 1,'AMIX': 0.1,'BMIX': 0.0001,
-                                                            'AMIX_MAG': 0.4, 'BMIX_MAG': 0.0001,
-                                                            'NPAR':4, 'SIGMA': 0.05, 'MAGMOM': {'Fe': 7}}))
-        k_product = dec.process_decoded(self.get("k_product", 50))
-        potcar_functional = dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+
+
+        user_incar_settings = \
+            dec.process_decoded(self.get("user_incar_settings",
+                                         MPSlabVaspInputSet().incar_settings))
+        k_product = \
+            dec.process_decoded(self.get("k_product", 50))
+        potcar_functional = \
+            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         bulk = dec.process_decoded(self.get("bulk", True))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
 
         if bulk:
-            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                        potcar_functional=potcar_functional, bulk=bulk)
+            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                      k_product=k_product, bulk=bulk,
+                                      potcar_functional=potcar_functional)
             mplb.write_input(slab.oriented_unit_cell, folder)
         else:
-            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings, k_product=k_product,
-                                        potcar_functional=potcar_functional, bulk=bulk)
-            contcar = Poscar.from_file("%s/CONTCAR" %(folder.replace('slab', 'bulk')))
+            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                      k_product=k_product, bulk=bulk,
+                                        potcar_functional=potcar_functional)
+            contcar = Poscar.from_file("%s/CONTCAR"
+                                       %(folder.replace('slab', 'bulk')))
             relax_orient_uc = contcar.structure
-            slab = SlabGenerator(relax_orient_uc, (0,0,1), min_slab_size=min_slab_size,
+            slab = SlabGenerator(relax_orient_uc, (0,0,1),
+                                 min_slab_size=min_slab_size,
                                  min_vacuum_size=min_vacuum_size)
             slab = slab.get_slab()
             mplb.write_input(slab, folder)
@@ -127,13 +134,15 @@ class RunCustodianTask(FireTaskBase):
     """Runs Custodian."""
 
     required_params = ["dir", "jobs"]
-    optional_params = ["custodian_params"]
+    optional_params = ["custodian_params", "handlers"]
 
     def run_task(self, fw_spec):
 
         dec = MontyDecoder()
         dir = dec.process_decoded(self['dir'])
         os.chdir(dir)
+        handlers = dec.process_decoded(self.get('handlers', []))
+        jobs = dec.process_decoded(self['jobs'])
 
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
@@ -141,14 +150,7 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        #handlers = dec.process_decoded(self['handlers'])
-        jobs = dec.process_decoded(self['jobs'])
-        #validators = [VasprunXMLValidator()]
-        handlers = [VaspErrorHandler(), MeshSymmetryErrorHandler(),
-                    UnconvergedErrorHandler(), NonConvergingErrorHandler(),
-                    PotimErrorHandler()]
-
-        c = Custodian(handlers=[], jobs=[jobs], **cust_params)
+        c = Custodian(handlers=handlers, jobs=[jobs], **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)

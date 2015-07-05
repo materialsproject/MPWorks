@@ -32,7 +32,7 @@ class SurfaceWorkflowManager(object):
     # use mpid list instead of list of elements later?
 
     def __init__(self, max_index, api_key, list_of_elements,
-                 indices_dict=None, max_normal_search=False,
+                 indices_dict=None, list_of_indices=None, max_normal_search=False,
                  host=None, port=None, user=None,
                  password=None, database=None, symprec=0.001,
                  angle_tolerance=5, consider_term=False):
@@ -73,8 +73,15 @@ class SurfaceWorkflowManager(object):
 
             if indices_dict:
                 list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
-                                               max_normal_search=max(mill)).get_slab()
-                                 for mill in list_of_indices[el]]
+                                               max_normal_search=max(mill)).get_slabs()
+                                 for mill in indices_dict[el]]
+
+            elif list_of_indices:
+                list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
+                                               max_normal_search=max(mill)).get_slabs()
+                                 for mill in list_of_indices]
+
+
             else:
                 list_of_slabs = generate_all_slabs(conv_unit_cell, max_index, 10,
                                                    10, max_normal_search=max_norm)
@@ -93,8 +100,6 @@ class SurfaceWorkflowManager(object):
                 list_miller=[slab.miller_index for slab in list_of_slabs]
 
             list_of_slabs = unique_slabs[:]
-            # return miller_index_dict later to be used for energy analysis  and wulff construction
-
             slabs_dict[el] = list_of_slabs
 
         self.api_key = api_key
@@ -139,13 +144,15 @@ class SurfaceWorkflowManager(object):
                 folderslab = folderbulk.replace('bulk', 'slab')
 
                 fw = Firework([WriteVaspInputs(slab=slab,
-                                               folder=cwd+folderbulk),
+                                               folder=cwd+folderbulk,
+                                               user_incar_settings={'MAGMOM': {'Fe': 7}}),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
                                                 **vaspdbinsert_parameters),
                                WriteVaspInputs(slab=slab,
-                                               folder=cwd+folderslab, bulk=False),
+                                               folder=cwd+folderslab, bulk=False,
+                                               user_incar_settings={'MAGMOM': {'Fe': 7}}),
                                RunCustodianTask(dir=cwd+folderslab, **cust_params),
                                VaspDBInsertTask(struct_type="slab_cell",
                                                 loc=cwd+folderslab,
@@ -157,7 +164,7 @@ class SurfaceWorkflowManager(object):
         launchpad.add_wf(wf)
 
 
-    def GetEnergyAndWulff(self):
+    def get_energy_and_wulff(self):
 
         qe = QueryEngine(collection='Surface_Calculations',
                          **self.vaspdbinsert_params)
