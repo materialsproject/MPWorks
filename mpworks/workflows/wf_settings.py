@@ -10,11 +10,12 @@ QA_VASP_SMALL = {'nnodes': 2, 'walltime': '72:00:00'}  # small walltime jobs
 QA_DB = {'nnodes': 1, 'walltime': '2:00:00',
          'pre_rocket': '#PBS -V\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC'}
 QA_CONTROL = {'nnodes': 1, 'walltime': '00:30:00'}
-MOVE_TO_GARDEN_DEV = False
+MOVE_TO_GARDEN_DEV = True
 MOVE_TO_GARDEN_PROD = False
 
-RUN_LOCS = ['/project/projectdirs/matgen/garden/',
-            '/project/projectdirs/matgen/garden/dev',
+GARDEN = '/oasis/scratch/comet/mgcloud/temp_project/garden' # '/project/projectdirs/matgen/garden'
+
+RUN_LOCS = [GARDEN, GARDEN+'/dev',
             '/project/projectdirs/matgen/garden/control_blocks',
             '/global/scratch/sd/matcomp/',
             '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/',
