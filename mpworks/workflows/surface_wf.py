@@ -6,40 +6,71 @@ __version__ = "0.1"
 __email__ = "rit634989@gmail.com"
 __date__ = "6/24/15"
 
+
 import os
-from pymongo import MongoClient
-from pymatgen.core.metal_slab import MPSlabVaspInputSet
+
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspDBInsertTask, WriteVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator
-from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
-from pymatgen.core.surface import Slab, SlabGenerator, generate_all_slabs
+from pymatgen.core.surface import SlabGenerator, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 
-import os
-from pymongo import MongoClient
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
-
-from pymatgen import write_structure
-from pymatgen.io.smartio import CifParser
 from matgendb import QueryEngine
+
+
+def termination(consider_term, list_of_slabs, el):
+    if not consider_term:
+        # Don't care about terminations, get rid of slabs
+        # with duplicate miller indices, for studying
+        # simple structures such as transition metals
+        list_miller=[]
+        unique_slabs=[]
+        for i, slab in enumerate(list_of_slabs):
+            if slab.miller_index not in list_miller:
+                list_miller.append(slab.miller_index)
+                unique_slabs.append(slab)
+    else:
+        list_miller=[slab.miller_index for slab in list_of_slabs]
+
+    list_of_slabs = unique_slabs[:]
+
+    return list_of_slabs
 
 class SurfaceWorkflowManager(object):
 
-    # use mpid list instead of list of elements later?
+    def __init__(self, api_key, list_of_elements=[], indices_dict=None,
+                 host=None, port=None, user=None, password=None, consider_term=False,
+                 symprec=0.001, angle_tolerance=5, database=None):
 
-    def __init__(self, max_index, api_key, list_of_elements,
-                 indices_dict=None, list_of_indices=None, max_normal_search=False,
-                 host=None, port=None, user=None,
-                 password=None, database=None, symprec=0.001,
-                 angle_tolerance=5, consider_term=False):
+        """
+        Initializes the workflow manager by taking in a combination of compounds and miller
+        indices. Allows for three ways to designate a combination of compounds and miller
+        indices to generate slabs based on its class methods.
+
+        Args:
+            api_key (str): A String API key for accessing the MaterialsProject
+            list_of_elements ([str, ...]): A list of compounds or elements to create slabs
+                from. Must be a string that can be searched for with MPRester. Either
+                list_of_elements or indices_dict has to be entered in.
+            indices_dict ({element(str): [[h,k,l], ...]}): A dictionary of miller indices
+                corresponding to the compound (key) to transform into a list of slabs.
+                Either list_of_elements or indices_dict has to be entered in.
+            host (str): For database insertion
+            port (int): For database insertion
+            user (str): For database insertion
+            password (str): For database insertion
+            consider_term (bool): Whether or not different terminations of a surface will be
+                considered when creating slabs.
+            symprec (float): See SpaceGroupAnalyzer in analyzer.py
+            angle_tolerance (int): See SpaceGroupAnalyzer in analyzer.py
+            database (str): For database insertion
+        """
 
         unit_cells_dict = {}
-        all_slabs_dict = {}
-
         vaspdbinsert_params = {'host': host,
                                'port': port, 'user': user,
                                'password': password,
@@ -47,7 +78,7 @@ class SurfaceWorkflowManager(object):
                                'collection': "Surface_Calculations"}
 
         elements = [key for key in indices_dict.keys()] \
-            if indices_dict else elements = list_of_elements
+            if indices_dict else list_of_elements
 
         for el in elements:
 
@@ -65,51 +96,86 @@ class SurfaceWorkflowManager(object):
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
-            unit_cells[el] = conv_unit_cell
+            print conv_unit_cell
+            unit_cells_dict[el] = conv_unit_cell
+            print el
 
-            if max_normal_search:
-                max_norm=max_index
-            else: max_norm=None
-
-            if indices_dict:
-                list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
-                                               max_normal_search=max(mill)).get_slabs()
-                                 for mill in indices_dict[el]]
-
-            elif list_of_indices:
-                list_of_slabs = [SlabGenerator(conv_unit_cell, mill, 10, 10,
-                                               max_normal_search=max(mill)).get_slabs()
-                                 for mill in list_of_indices]
-
-
-            else:
-                list_of_slabs = generate_all_slabs(conv_unit_cell, max_index, 10,
-                                                   10, max_normal_search=max_norm)
-
-            if not consider_term:
-                # Don't care about terminations, get rid of slabs
-                # with duplicate miller indices, for studying
-                # simple structures such as transition metals
-                list_miller=[]
-                unique_slabs=[]
-                for i, slab in enumerate(list_of_slabs):
-                    if slab.miller_index not in list_miller:
-                        list_miller.append(slab.miller_index)
-                        unique_slabs.append(slab)
-            else:
-                list_miller=[slab.miller_index for slab in list_of_slabs]
-
-            list_of_slabs = unique_slabs[:]
-            slabs_dict[el] = list_of_slabs
 
         self.api_key = api_key
         self.vaspdbinsert_params = vaspdbinsert_params
         self.symprec = symprec
         self.angle_tolerance = angle_tolerance
-        self.unit_cells_dict
-        self.slabs_dict
+        self.unit_cells_dict = unit_cells_dict
+        self.indices_dict = indices_dict
+        self.elements = elements
 
-    def create_workflow(self, launchpad_dir="",
+
+    def from_max_index(self, max_index, max_normal_search=False, consider_term=False):
+
+        max_norm=max_index if max_normal_search else None
+        slabs_dict = {}
+        for el in self.elements:
+            # generate_all_slabs() is very slow, especially for Mn
+            list_of_slabs = generate_all_slabs(self.unit_cells_dict[el], max_index, 10,
+                                               10, max_normal_search=max_norm)
+
+            print 'surface ', el
+
+            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
+
+            print '# ', el
+
+        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params)
+
+
+    def from_list_of_indices(self, list_of_indices, max_normal_search=False,
+                             consider_term=False):
+
+        slabs_dict = {}
+        for el in self.elements:
+
+            list_of_slabs=[]
+            for mill in list_of_indices:
+                max_norm=max(mill) if max_normal_search else None
+                for slab in SlabGenerator(self.unit_cells_dict[el], mill, 10, 10,
+                                          max_normal_search=max_norm).get_slabs():
+                    list_of_slabs.append(slab)
+
+            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
+
+        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params)
+
+
+    def from_indices_dict(self, max_normal_search=False, consider_term=False):
+
+        slabs_dict = {}
+        for el in self.elements:
+
+            list_of_slabs=[]
+            for mill in self.indices_dict[el]:
+                max_norm=max(mill) if max_normal_search else None
+
+                for slabs in SlabGenerator(self.unit_cells_dict[el], mill, 10, 10,
+                                           max_normal_search=max_norm).get_slabs():
+                    list_of_slabs.append(slabs)
+
+            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
+
+        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params)
+
+
+class CreateSurfaceWorkflow(object):
+
+    def __init__(self, slabs_dict, unit_cells_dict, vaspdbinsert_params):
+
+        self.slabs_dict = slabs_dict
+        self.unit_cells_dict = unit_cells_dict
+        self.vaspdbinsert_params = vaspdbinsert_params
+
+    def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "16", "vasp"])):
 
@@ -130,17 +196,18 @@ class SurfaceWorkflowManager(object):
             for slab in self.slabs_dict[key]:
 
                 miller_index=slab.miller_index
-                print miller_index
+                print str(miller_index)
 
                 surface_area = slab.surface_area
 
                 vaspdbinsert_parameters = self.vaspdbinsert_params.copy()
                 vaspdbinsert_parameters['miller_index'] = miller_index
 
-                folderbulk = '/%s_%s_k%s_%s%s%s' %(slab.formula, 'bulk', k_product,
-                                                  str(miller_index[0]),
-                                                  str(miller_index[1]),
-                                                  str(miller_index[2]))
+                folderbulk = '/%s_%s_k%s_%s%s%s' %(slab.composition.reduced_formula,
+                                                   'bulk', k_product,
+                                                   str(miller_index[0]),
+                                                   str(miller_index[1]),
+                                                   str(miller_index[2]))
                 folderslab = folderbulk.replace('bulk', 'slab')
 
                 fw = Firework([WriteVaspInputs(slab=slab,
@@ -192,8 +259,10 @@ class SurfaceWorkflowManager(object):
                                  'structure_type': 'oriented_unit_cell',
                                  'miller_index': miller_index}
 
-                slab_entry = qe.get_entries(slab_criteria, optional_data=optional_data)
-                oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
+                slab_entry = qe.get_entries(slab_criteria,
+                                            optional_data=optional_data)
+                oriented_ucell_entry = qe.get_entries(unit_criteria,
+                                                      optional_data=optional_data)
 
                 slabE = slab_entry.uncorrected_energy
                 bulkE = oriented_ucell_entry.energy_per_atom*slab_entry.data['nsites']
@@ -204,7 +273,7 @@ class SurfaceWorkflowManager(object):
                 se_dict[str(miller_index)] = surface_energy
                 miller_list.append(miller_index)
 
-            wulffshapes[el] = wulff_3d(self.unitcell[el], miller_list, e_surf_list)
+            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el], miller_list, e_surf_list)
             surface_energies[el] = se_dict
 
         return wulffshapes, surface_energies

@@ -6,33 +6,18 @@ __version__ = "0.1"
 __email__ = "vivid0036@gmail.com"
 __date__ = "6/2/15"
 
-import itertools
-import json
 import os
-import os.path as pth
 
-from pymongo import MongoClient
 from fireworks.core.firework import FireTaskBase, FWAction
-from fireworks.utilities import fw_utilities
 from fireworks import explicit_serialize
-from pymatgen.core.structure import Structure
-from pymatgen.core.metal_slab import get_input_mp, MPSlabVaspInputSet
 from pymatgen.io.vaspio.vasp_output import Vasprun, Poscar
-from pymatgen.io.vaspio_set import MPVaspInputSet, DictVaspInputSet
 from custodian.custodian import Custodian
-from custodian.vasp.handlers import VaspErrorHandler, \
-    MeshSymmetryErrorHandler,UnconvergedErrorHandler, \
-    NonConvergingErrorHandler, PotimErrorHandler
 from custodian.vasp.jobs import VaspJob
 from matgendb.creator import VaspToDbTaskDrone
 
-from pymatgen.core.surface import Slab, SlabGenerator
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
-from pymatgen.matproj.rest import MPRester
+from pymatgen.core.surface import SlabGenerator
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
-import socket
-
 
 
 """
