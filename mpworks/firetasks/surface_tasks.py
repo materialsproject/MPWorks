@@ -8,7 +8,7 @@ __date__ = "6/2/15"
 
 import os
 
-from fireworks.core.firework import FireTaskBase, FWAction
+from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
 from pymatgen.io.vaspio.vasp_output import Vasprun, Poscar
 from custodian.custodian import Custodian
@@ -31,7 +31,7 @@ class VaspDBInsertTask(FireTaskBase):
     required_params = ["host", "port", "user", "password",
                        "database", "collection", "struct_type",
                        "miller_index", "loc"]
-    optional_params = ["surface_area"]
+    optional_params = ["surface_area", "shift", "vsize", "ssize"]
 
     def run_task(self, fw_spec):
 
@@ -40,6 +40,9 @@ class VaspDBInsertTask(FireTaskBase):
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
+        shift = dec.process_decoded(self.get("shift", None))
+        vsize = dec.process_decoded(self.get("vsize", None))
+        ssize = dec.process_decoded(self.get("ssize", None))
 
 
         if not self["host"]:
@@ -57,7 +60,8 @@ class VaspDBInsertTask(FireTaskBase):
         additional_fields={"author": os.environ.get("USER"),
                            "structure_type": struct_type,
                            "miller_index": miller_index,
-                           "surface_area": surface_area}
+                           "surface_area": surface_area, "shift": shift,
+                           "vsize": vsize, "ssize": ssize}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"], password=self["password"],
@@ -68,21 +72,19 @@ class VaspDBInsertTask(FireTaskBase):
 
 
 @explicit_serialize
-class WriteVaspInputs(FireTaskBase):
+class WriteUCVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["slab", "folder"]
-    optional_params = ["min_slab_size", "min_vacuum_size", "bulk",
-                       "angle_tolerance", "user_incar_settings",
+    required_params = ["oriented_ucell", "folder"]
+    optional_params = ["angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec"]
 
     def run_task(self, fw_spec):
         dec = MontyDecoder()
-        slab = dec.process_decoded(self.get("slab"))
+        oriented_ucell = dec.process_decoded(self.get("oriented_ucell"))
         folder = dec.process_decoded(self.get("folder"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
-
 
         user_incar_settings = \
             dec.process_decoded(self.get("user_incar_settings",
@@ -91,27 +93,63 @@ class WriteVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
-        bulk = dec.process_decoded(self.get("bulk", True))
+
+        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                  k_product=k_product, bulk=True,
+                                  potcar_functional=potcar_functional)
+        mplb.write_input(oriented_ucell, folder)
+
+
+@explicit_serialize
+class WriteSlabVaspInputs(FireTaskBase):
+    """writes VASP inputs given elements, hkl,  """
+
+    required_params = ["folder"]
+    optional_params = ["min_slab_size", "min_vacuum_size",
+                       "angle_tolerance", "user_incar_settings",
+                       "k_product","potcar_functional", "symprec"
+                       "terminations"]
+
+    def run_task(self, fw_spec):
+        dec = MontyDecoder()
+        folder = dec.process_decoded(self.get("folder"))
+        symprec = dec.process_decoded(self.get("symprec", 0.001))
+        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
+        terminations = dec.process_decoded(self.get("terminations", False))
+
+        user_incar_settings = \
+            dec.process_decoded(self.get("user_incar_settings",
+                                         MPSlabVaspInputSet().incar_settings))
+        k_product = \
+            dec.process_decoded(self.get("k_product", 50))
+        potcar_functional = \
+            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
 
-        if bulk:
-            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=bulk,
-                                      potcar_functional=potcar_functional)
-            mplb.write_input(slab.oriented_unit_cell, folder)
-        else:
-            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=bulk,
-                                        potcar_functional=potcar_functional)
-            contcar = Poscar.from_file("%s/CONTCAR"
-                                       %(folder.replace('slab', 'bulk')))
-            relax_orient_uc = contcar.structure
-            slab = SlabGenerator(relax_orient_uc, (0,0,1),
-                                 min_slab_size=min_slab_size,
-                                 min_vacuum_size=min_vacuum_size)
-            slab = slab.get_slab()
-            mplb.write_input(slab, folder)
+        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                  k_product=k_product,
+                                    potcar_functional=potcar_functional)
+
+        contcar = Poscar.from_file("%s/CONTCAR" %(folder))
+        relax_orient_uc = contcar.structure
+        slab = SlabGenerator(relax_orient_uc, (0,0,1),
+                             min_slab_size=min_slab_size,
+                             min_vacuum_size=min_vacuum_size)
+        slab_list = slab.get_slabs() if terminations else [slab.get_slab()]
+
+        FWs = []
+        for slab in slab_list:
+            new_folder = folder.replace('bulk', 'slab')+'_shift%s' %(slab.shift)
+            mplb.write_input(slab, new_folder)
+            fw = Firework([RunCustodianTask(dir=cwd+new_folder, **cust_params),
+                           VaspDBInsertTask(struct_type="slab_cell",
+                           loc=cwd+new_folder, surface_area=slab.surface_area,
+                           shift=slab.shift, vsize=slab.min_vac_size,
+                           ssize=slab.min_slab_size, **vaspdbinsert_parameters)])
+            FWs.append(fw)
+
+        return FWAction(additions=FWs)
 
 
 @explicit_serialize

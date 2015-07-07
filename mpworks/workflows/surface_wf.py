@@ -10,9 +10,10 @@ __date__ = "6/24/15"
 import os
 
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteVaspInputs
+    VaspDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
 from custodian.vasp.jobs import VaspJob
-from pymatgen.core.surface import generate_all_slabs, SlabGenerator
+from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
+    get_symmetrically_distinct_miller_indices
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
@@ -22,19 +23,15 @@ from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
 
-def termination(consider_term, list_of_slabs, el):
-    if not consider_term:
-        # Don't care about terminations, get rid of slabs
-        # with duplicate miller indices, for studying
-        # simple structures such as transition metals
-        list_miller=[]
-        unique_slabs=[]
-        for i, slab in enumerate(list_of_slabs):
-            if slab.miller_index not in list_miller:
-                list_miller.append(slab.miller_index)
-                unique_slabs.append(slab)
-    else:
-        list_miller=[slab.miller_index for slab in list_of_slabs]
+def termination(list_of_slabs, el):
+
+    list_miller=[]
+    unique_slabs=[]
+    for i, slab in enumerate(list_of_slabs):
+        if slab.miller_index not in list_miller:
+            list_miller.append(slab.miller_index)
+            unique_slabs.append(slab)
+
 
     list_of_slabs = unique_slabs[:]
 
@@ -43,7 +40,7 @@ def termination(consider_term, list_of_slabs, el):
 class SurfaceWorkflowManager(object):
 
     def __init__(self, api_key, list_of_elements=[], indices_dict=None,
-                 host=None, port=None, user=None, password=None, consider_term=False,
+                 host=None, port=None, user=None, password=None,
                  symprec=0.001, angle_tolerance=5, database=None):
 
         """
@@ -110,70 +107,58 @@ class SurfaceWorkflowManager(object):
         self.elements = elements
 
 
-    def from_max_index(self, max_index, max_normal_search=False, consider_term=False):
+    def from_max_index(self, max_index, max_normal_search=False, terminations=False):
 
         max_norm=max_index if max_normal_search else None
-        slabs_dict = {}
+        miller_dict = {}
         for el in self.elements:
             # generate_all_slabs() is very slow, especially for Mn
-            list_of_slabs = generate_all_slabs(self.unit_cells_dict[el], max_index, 10,
-                                               10, max_normal_search=max_norm)
+            list_of_indices = \
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el],
+                                                          max_index)
 
             print 'surface ', el
 
-            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
-
             print '# ', el
 
-        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params)
+            miller_dict[el] = list_of_indices
+
+        return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params,
+                                     max_normal_search=False, terminations=terminations)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=False,
-                             consider_term=False):
+                             terminations=False):
 
-        slabs_dict = {}
+        miller_dict = {}
         for el in self.elements:
+            miller_dict[el] = list_of_indices
 
-            list_of_slabs=[]
-            for mill in list_of_indices:
-                max_norm=max(mill) if max_normal_search else None
-                for slab in SlabGenerator(self.unit_cells_dict[el], mill, 10, 10,
-                                          max_normal_search=max_norm).get_slabs():
-                    list_of_slabs.append(slab)
-
-            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
-
-        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params)
+        return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params,
+                                     max_normal_search=False, terminations=terminations)
 
 
-    def from_indices_dict(self, max_normal_search=False, consider_term=False):
+    def from_indices_dict(self, max_normal_search=False, terminations=False):
 
-        slabs_dict = {}
-        for el in self.elements:
 
-            list_of_slabs=[]
-            for mill in self.indices_dict[el]:
-                max_norm=max(mill) if max_normal_search else None
 
-                for slabs in SlabGenerator(self.unit_cells_dict[el], mill, 10, 10,
-                                           max_normal_search=max_norm).get_slabs():
-                    list_of_slabs.append(slabs)
-
-            slabs_dict[el] = termination(consider_term, list_of_slabs, el)
-
-        return CreateSurfaceWorkflow(slabs_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params)
+        return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
+                                     self.vaspdbinsert_params,
+                                     max_normal_search=False, terminations=terminations)
 
 
 class CreateSurfaceWorkflow(object):
 
-    def __init__(self, slabs_dict, unit_cells_dict, vaspdbinsert_params):
+    def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
+                 terminations=False, max_normal_search=False):
 
-        self.slabs_dict = slabs_dict
+        self.miller_dict = miller_dict
         self.unit_cells_dict = unit_cells_dict
         self.vaspdbinsert_params = vaspdbinsert_params
+        self.max_normal_search = max_normal_search
+        self.terminations = terminations
 
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
@@ -191,40 +176,36 @@ class CreateSurfaceWorkflow(object):
                        "jobs": job}
 
         fws=[]
-        for key in self.slabs_dict.keys():
+        for key in self.miller_dict.keys():
             print key
-            for slab in self.slabs_dict[key]:
+            for miller_index in self.miller_dict[key]:
 
-                miller_index=slab.miller_index
                 print str(miller_index)
-
-                surface_area = slab.surface_area
 
                 vaspdbinsert_parameters = self.vaspdbinsert_params.copy()
                 vaspdbinsert_parameters['miller_index'] = miller_index
+                max_norm = max(miller_index) if self.max_normal_search else None
 
-                folderbulk = '/%s_%s_k%s_%s%s%s' %(slab.composition.reduced_formula,
+                slab = SlabGenerator(self.unit_cells_dict[key], miller_index,
+                                     10, 10, max_normal_search=max_norm)
+                oriented_uc = slab.oriented_unit_cell
+
+                folderbulk = '/%s_%s_k%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
                                                    'bulk', k_product,
                                                    str(miller_index[0]),
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
-                folderslab = folderbulk.replace('bulk', 'slab')
 
-                fw = Firework([WriteVaspInputs(slab=slab,
+                fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=cwd+folderbulk,
                                                user_incar_settings={'MAGMOM': {'Fe': 7}}),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
                                                 **vaspdbinsert_parameters),
-                               WriteVaspInputs(slab=slab,
-                                               folder=cwd+folderslab, bulk=False,
-                                               user_incar_settings={'MAGMOM': {'Fe': 7}}),
-                               RunCustodianTask(dir=cwd+folderslab, **cust_params),
-                               VaspDBInsertTask(struct_type="slab_cell",
-                                                loc=cwd+folderslab,
-                                                surface_area=surface_area,
-                                                **vaspdbinsert_parameters)])
+                               WriteSlabVaspInputs(folder=cwd+folderbulk,
+                                                   user_incar_settings={'MAGMOM': {'Fe': 7}},
+                                                   terminations=self.terminations)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="surface_calculations")
@@ -233,8 +214,7 @@ class CreateSurfaceWorkflow(object):
 
     def get_energy_and_wulff(self):
 
-        qe = QueryEngine(collection='Surface_Calculations',
-                         **self.vaspdbinsert_params)
+        qe = QueryEngine(**self.vaspdbinsert_params)
 
         optional_data = ["chemsys", "surface_area", "nsites"
                          "structure_type", "miller_index"]
@@ -243,26 +223,29 @@ class CreateSurfaceWorkflow(object):
         wulffshapes = {}
         surface_energies = {}
 
-        for key in self.slabs_dict.keys():
+        for key in self.miller_dict.keys():
             e_surf_list = []
             se_dict = {}
             miller_list = []
 
-            for slab in self.slabs_dict[key]:
+            for miller_index in self.miller_dict[key]:
 
-                miller_index = slab.miller_index
+                print "key", key
+                print 'miller', miller_index
 
-                slab_criteria = {'chemsys':key,
-                                 'structure_type': 'slab_cell',
-                                 'miller_index': miller_index}
-                unit_criteria = {'chemsys':key,
-                                 'structure_type': 'oriented_unit_cell',
-                                 'miller_index': miller_index}
+                criteria = {'chemsys':key, 'miller_index': miller_index}
+                slab_criteria = criteria.copy()
+                slab_criteria['structure_type'] = 'slab_cell'
+                unit_criteria = criteria.copy()
+                unit_criteria['structure_type'] = 'oriented_unit_cell'
+                print slab_criteria
 
                 slab_entry = qe.get_entries(slab_criteria,
                                             optional_data=optional_data)
+                print slab_entry
                 oriented_ucell_entry = qe.get_entries(unit_criteria,
                                                       optional_data=optional_data)
+                print len(oriented_ucell_entry)
 
                 slabE = slab_entry.uncorrected_energy
                 bulkE = oriented_ucell_entry.energy_per_atom*slab_entry.data['nsites']
