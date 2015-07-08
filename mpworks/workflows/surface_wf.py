@@ -162,7 +162,8 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
-                        job=VaspJob(["mpirun", "-n", "16", "vasp"])):
+                        job=VaspJob(["mpirun", "-n", "16", "vasp"]),
+                        user_incar_settings=None):
 
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                      launchpad_dir,
@@ -198,13 +199,13 @@ class CreateSurfaceWorkflow(object):
 
                 fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=cwd+folderbulk,
-                                               user_incar_settings={'MAGMOM': {'Fe': 7}}),
+                                               user_incar_settings=user_incar_settings),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
                                                 **vaspdbinsert_parameters),
                                WriteSlabVaspInputs(folder=cwd+folderbulk,
-                                                   user_incar_settings={'MAGMOM': {'Fe': 7}},
+                                                   user_incar_settings=user_incar_settings,
                                                    terminations=self.terminations)])
 
                 fws.append(fw)
