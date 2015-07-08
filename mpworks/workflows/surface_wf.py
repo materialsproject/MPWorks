@@ -23,20 +23,6 @@ from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
 
-def termination(list_of_slabs, el):
-
-    list_miller=[]
-    unique_slabs=[]
-    for i, slab in enumerate(list_of_slabs):
-        if slab.miller_index not in list_miller:
-            list_miller.append(slab.miller_index)
-            unique_slabs.append(slab)
-
-
-    list_of_slabs = unique_slabs[:]
-
-    return list_of_slabs
-
 class SurfaceWorkflowManager(object):
 
     def __init__(self, api_key, list_of_elements=[], indices_dict=None,

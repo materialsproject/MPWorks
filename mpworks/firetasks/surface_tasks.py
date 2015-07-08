@@ -135,10 +135,10 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         contcar = Poscar.from_file("%s/CONTCAR" %(folder))
         relax_orient_uc = contcar.structure
-        slab = SlabGenerator(relax_orient_uc, (0,0,1),
+        slabs = SlabGenerator(relax_orient_uc, (0,0,1),
                              min_slab_size=min_slab_size,
                              min_vacuum_size=min_vacuum_size)
-        slab_list = slab.get_slabs() if terminations else [slab.get_slab()]
+        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
 
         FWs = []
         for slab in slab_list:
@@ -147,8 +147,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             fw = Firework([RunCustodianTask(dir=new_folder, **custodian_params),
                            VaspDBInsertTask(struct_type="slab_cell",
                            loc=new_folder, surface_area=slab.surface_area,
-                           shift=slab.shift, vsize=slab.min_vac_size,
-                           ssize=slab.min_slab_size, **vaspdbinsert_parameters)])
+                           shift=slab.shift, vsize=slabs.min_vac_size,
+                           ssize=slabs.min_slab_size, **vaspdbinsert_parameters)])
             FWs.append(fw)
 
         return FWAction(additions=FWs)
