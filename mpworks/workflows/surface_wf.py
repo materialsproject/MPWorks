@@ -206,7 +206,9 @@ class CreateSurfaceWorkflow(object):
                                                 **vaspdbinsert_parameters),
                                WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                    user_incar_settings=user_incar_settings,
-                                                   terminations=self.terminations)])
+                                                   terminations=self.terminations,
+                                                   custodian_params=cust_params,
+                                                   vaspdbinsert_parameters=vaspdbinsert_parameters)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="surface_calculations")

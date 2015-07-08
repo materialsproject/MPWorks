@@ -104,7 +104,7 @@ class WriteUCVaspInputs(FireTaskBase):
 class WriteSlabVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["folder"]
+    required_params = ["folder", "custodian_params", "vaspdbinsert_parameters"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec"
@@ -116,6 +116,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
         terminations = dec.process_decoded(self.get("terminations", False))
+        custodian_params = dec.process_decoded(self.get("custodian_params"))
+        vaspdbinsert_parameters = dec.process_decoded(self.get("vaspdbinsert_parameters"))
 
         user_incar_settings = \
             dec.process_decoded(self.get("user_incar_settings",
