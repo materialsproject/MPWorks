@@ -104,7 +104,7 @@ class WriteUCVaspInputs(FireTaskBase):
 class WriteSlabVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["folder", "cwd"]
+    required_params = ["folder"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec"
