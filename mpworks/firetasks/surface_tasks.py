@@ -104,7 +104,7 @@ class WriteUCVaspInputs(FireTaskBase):
 class WriteSlabVaspInputs(FireTaskBase):
     """writes VASP inputs given elements, hkl,  """
 
-    required_params = ["folder"]
+    required_params = ["folder", "cwd"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec"
@@ -142,9 +142,9 @@ class WriteSlabVaspInputs(FireTaskBase):
         for slab in slab_list:
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' %(slab.shift)
             mplb.write_input(slab, new_folder)
-            fw = Firework([RunCustodianTask(dir=cwd+new_folder, **cust_params),
+            fw = Firework([RunCustodianTask(dir=new_folder, **cust_params),
                            VaspDBInsertTask(struct_type="slab_cell",
-                           loc=cwd+new_folder, surface_area=slab.surface_area,
+                           loc=new_folder, surface_area=slab.surface_area,
                            shift=slab.shift, vsize=slab.min_vac_size,
                            ssize=slab.min_slab_size, **vaspdbinsert_parameters)])
             FWs.append(fw)
