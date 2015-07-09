@@ -19,7 +19,6 @@ from pymatgen.core.surface import SlabGenerator
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
 
-
 """
 Firework tasks
 """
