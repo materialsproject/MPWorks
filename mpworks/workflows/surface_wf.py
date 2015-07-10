@@ -209,7 +209,7 @@ class CreateSurfaceWorkflow(object):
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "16", "vasp"]),
-                        user_incar_settings=None):
+                        user_incar_settings=None, potcar_functional='PBE'):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -231,6 +231,7 @@ class CreateSurfaceWorkflow(object):
                     (use aprun for Hopper or Edison).
                 user_incar_settings(dict): A dict specifying additional incar
                     settings, default to None (ediff_per_atom=False)
+                potcar_functional (str): default to PBE
         """
 
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
@@ -279,7 +280,8 @@ class CreateSurfaceWorkflow(object):
 
                 fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=cwd+folderbulk,
-                                               user_incar_settings=user_incar_settings),
+                                               user_incar_settings=user_incar_settings,
+                                               potcar_functional=potcar_functional),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
@@ -288,7 +290,9 @@ class CreateSurfaceWorkflow(object):
                                                    user_incar_settings=user_incar_settings,
                                                    terminations=self.terminations,
                                                    custodian_params=cust_params,
-                                                   vaspdbinsert_parameters=vaspdbinsert_parameters)])
+                                                   vaspdbinsert_parameters=
+                                                   vaspdbinsert_parameters,
+                                                   potcar_functional=potcar_functional)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="surface_calculations")
@@ -359,9 +363,10 @@ class CreateSurfaceWorkflow(object):
                 miller_list.append(miller_index)
 
             # Create the wulff shape
-            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el], miller_list, e_surf_list)
+            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el],
+                                       miller_list, e_surf_list)
             surface_energies[el] = se_dict
 
         # Returns dictionary of wulff
         # shape objects and surface energy
-        return wulffshapes, surface_energies 
+        return wulffshapes, surface_energies
