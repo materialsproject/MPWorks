@@ -25,7 +25,7 @@ Firework tasks
 
 
 @explicit_serialize
-class VaspDBInsertTask(FireTaskBase):
+class VaspSlabDBInsertTask(FireTaskBase):
 
     """
         Inserts a single vasp calculation in a folder into a
@@ -149,7 +149,8 @@ class WriteUCVaspInputs(FireTaskBase):
 
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product, bulk=True,
-                                  potcar_functional=potcar_functional)
+                                  potcar_functional=potcar_functional,
+                                  ediff_per_atom=False)
         mplb.write_input(oriented_ucell, folder)
 
 
@@ -159,7 +160,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         Adds dynamicism to the workflow by creating addition Fireworks for each
         termination of a slab or just one slab with shift=0. First the vasp
         inputs of a slab is created, then the Firework for that specific slab
-        is made with a RunCustodianTask and a VaspDBInsertTask
+        is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "custodian_params",
                        "vaspdbinsert_parameters"]
@@ -219,7 +220,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
-                                    potcar_functional=potcar_functional)
+                                    potcar_functional=potcar_functional,
+                                    ediff_per_atom=False)
 
         # Create slabs from the relaxed oriented unit cell. Since the unit
         # cell is already oriented with the miller index, entering (0,0,1)
@@ -242,7 +244,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             mplb.write_input(slab, new_folder)
             fw = Firework([RunCustodianTask(dir=new_folder,
                                             **custodian_params),
-                           VaspDBInsertTask(struct_type="slab_cell",
+                           VaspSlabDBInsertTask(struct_type="slab_cell",
                            loc=new_folder, surface_area=slab.surface_area,
                            shift=slab.shift, vsize=slabs.min_vac_size,
                            ssize=slabs.min_slab_size,

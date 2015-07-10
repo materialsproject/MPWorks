@@ -10,7 +10,7 @@ __date__ = "6/24/15"
 import os
 
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
+    VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
 from custodian.vasp.jobs import VaspJob
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
     get_symmetrically_distinct_miller_indices
@@ -192,7 +192,7 @@ class CreateSurfaceWorkflow(object):
                     formula of the unit cell being the key reffering to a Structure
                     object taken from MP, eg.
                     unit_cells_dict={'Cr': <structure object>, 'LiCoO2': <structure object>}
-                vaspdbinsert_params (dictionary): A kwargs used for the VaspDBInsertTask
+                vaspdbinsert_params (dictionary): A kwargs used for the VaspSlabDBInsertTask
                     containing information pertaining to the database that the vasp
                     outputs will be inserted into,
                     ie vaspdbinsert_params = {'host': host,'port': port, 'user': user,
@@ -283,7 +283,7 @@ class CreateSurfaceWorkflow(object):
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
-                               VaspDBInsertTask(struct_type="oriented_unit_cell",
+                               VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
                                                 **vaspdbinsert_parameters),
                                WriteSlabVaspInputs(folder=cwd+folderbulk,
@@ -349,10 +349,11 @@ class CreateSurfaceWorkflow(object):
                 slab_entry = qe.get_entries(slab_criteria,
                                             optional_data=optional_data)
                 print slab_entry
+                print '# of unit entries', len(oriented_ucell_entry)
                 oriented_ucell_entry = \
                     qe.get_entries(unit_criteria,
                                    optional_data=optional_data)[0]
-                print len(oriented_ucell_entry)
+
 
                 # Calculate SE of each termination
                 se_term = {}
