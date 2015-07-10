@@ -103,6 +103,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   additional_fields=additional_fields,
                                   collection=self["collection"])
         drone.assimilate(loc)
+        print loc
+        print self["collection"]
 
 
 @explicit_serialize
