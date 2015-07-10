@@ -312,7 +312,8 @@ class CreateSurfaceWorkflow(object):
 
         # Data needed from DB to perform calculations
         optional_data = ["chemsys", "surface_area", "nsites"
-                         "structure_type", "miller_index"]
+                         "structure_type", "miller_index",
+                         "shift", "vsize", "ssize"]
 
         to_Jperm2 = 16.0217656
         wulffshapes = {}
@@ -348,25 +349,37 @@ class CreateSurfaceWorkflow(object):
                 slab_entry = qe.get_entries(slab_criteria,
                                             optional_data=optional_data)
                 print slab_entry
-                oriented_ucell_entry = qe.get_entries(unit_criteria,
-                                                      optional_data=optional_data)
+                oriented_ucell_entry = \
+                    qe.get_entries(unit_criteria,
+                                   optional_data=optional_data)[0]
                 print len(oriented_ucell_entry)
 
-                # Calculate SE
-                slabE = slab_entry.uncorrected_energy
-                bulkE = oriented_ucell_entry.energy_per_atom*slab_entry.data['nsites']
-                area = slab_entry.data['surface_area']
-                surface_energy = ((slabE-bulkE)/(2*area))*to_Jperm2
+                # Calculate SE of each termination
+                se_term = {}
+                min_e = []
+                for slab in slab_entry:
+                    slabE = slab.uncorrected_energy
+                    bulkE = oriented_ucell_entry.energy_per_atom*\
+                            slab_entry.data['nsites']
+                    area = slab.data['surface_area']
+                    se_term[str(slab.data['shift'])] = \
+                        ((slabE-bulkE)/(2*area))*to_Jperm2
 
-                e_surf_list.append(surface_energy)
-                se_dict[str(miller_index)] = surface_energy
+                # Get the lowest SE of the various
+                # terminations to build the wulff shape from
+                min_e = [se_term[key] for key in se_term.keys()]
+                e_surf_list.append(min(min_e))
+                se_dict[str(miller_index)] = se_term
                 miller_list.append(miller_index)
 
-            # Create the wulff shape
+            # Create the wulff shape with the lowest surface
+            # energies in slabs with multiple terminations
             wulffshapes[el] = wulff_3d(self.unit_cells_dict[el],
                                        miller_list, e_surf_list)
             surface_energies[el] = se_dict
 
         # Returns dictionary of wulff
         # shape objects and surface energy
+        # eg. wulffshapes={'ZnO': <wulffshape object>, ...etc}
+        # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
         return wulffshapes, surface_energies
