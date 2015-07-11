@@ -93,7 +93,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
                            "structure_type": struct_type,
                            "miller index": miller_index,
                            "surface_area": surface_area, "shift": shift,
-                           "vsize": vsize, "ssize": ssize}
+                           "vac size": vsize, "slab size": ssize}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
