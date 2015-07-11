@@ -67,7 +67,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         """
 
         dec = MontyDecoder()
-        miller_index = str(dec.process_decoded(self.get("miller_index")))
+        miller_index = dec.process_decoded(self.get("miller_index"))
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
