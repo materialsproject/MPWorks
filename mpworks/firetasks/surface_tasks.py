@@ -89,18 +89,22 @@ class VaspSlabDBInsertTask(FireTaskBase):
             self["collection"] = "tasks"
 
         # Addtional info relating to slabs
-        additional_fields={"author": os.environ.get("USER"),
-                           "structure_type": struct_type,
-                           "miller_index": miller_index,
-                           "surface_area": surface_area, "shift": shift,
-                           "vsize": vsize, "ssize": ssize}
+        # additional_fields={"author": os.environ.get("USER"),
+        #                    "structure_type": struct_type,
+        #                    "miller_index": miller_index,
+        #                    "surface_area": surface_area, "shift": shift,
+        #                    "vsize": vsize, "ssize": ssize}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
                                   password=self["password"],
                                   database=self["database"],
                                   use_full_uri=False,
-                                  additional_fields=additional_fields,
+                                  additional_fields={"author": os.environ.get("USER"),
+                                                     "structure_type": struct_type,
+                                                     "miller_index": miller_index,
+                                                     "surface_area": surface_area, "shift": shift,
+                                                     "vsize": vsize, "ssize": ssize},
                                   collection=self["collection"])
         drone.assimilate(loc)
         print loc
