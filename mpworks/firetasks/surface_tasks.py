@@ -117,7 +117,7 @@ class WriteUCVaspInputs(FireTaskBase):
 
     required_params = ["oriented_ucell", "folder"]
     optional_params = ["angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional", "symprec"]
+                       "k_product", "potcar_functional", "symprec"]
 
     def run_task(self, fw_spec):
 
@@ -170,7 +170,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional", "symprec"
+                       "k_product","potcar_functional", "symprec",
                        "terminations"]
 
     def run_task(self, fw_spec):
@@ -224,8 +224,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
-                                    potcar_functional=potcar_functional,
-                                    ediff_per_atom=False)
+                                  potcar_functional=potcar_functional,
+                                  ediff_per_atom=False)
 
         # Create slabs from the relaxed oriented unit cell. Since the unit
         # cell is already oriented with the miller index, entering (0,0,1)

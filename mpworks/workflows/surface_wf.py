@@ -22,6 +22,7 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
+from pymacy.surface_adsorption.wulff_dual import wulff_3d
 
 class SurfaceWorkflowManager(object):
 
@@ -295,7 +296,7 @@ class CreateSurfaceWorkflow(object):
                                                    potcar_functional=potcar_functional)])
 
                 fws.append(fw)
-        wf = Workflow(fws, name="surface_calculations")
+        wf = Workflow(fws, name="Surface_Calculations")
         launchpad.add_wf(wf)
 
 
@@ -311,15 +312,15 @@ class CreateSurfaceWorkflow(object):
         qe = QueryEngine(**self.vaspdbinsert_params)
 
         # Data needed from DB to perform calculations
-        optional_data = ["chemsys", "surface_area", "nsites"
+        optional_data = ["chemsys", "surface_area", "nsites",
                          "structure_type", "miller index",
                          " shift", "vac size", "slab size"]
 
         to_Jperm2 = 16.0217656
         wulffshapes = {}
         surface_energies = {}
-
-        for key in self.miller_dict.keys():
+        print 'miller dictionary is ', self.miller_dict
+        for el in self.miller_dict.keys():
             # Each loop generates and wulff shape object and puts
             # it in a wulffshapes dictionary where the key is the
             # compositional formula of the material used to obtain
@@ -329,46 +330,51 @@ class CreateSurfaceWorkflow(object):
             se_dict = {}
             miller_list = []
 
-            for miller_index in self.miller_dict[key]:
+            print 'current key is ', el
+
+            for miller_index in self.miller_dict[el]:
                 # Each loop generates a surface energy value
                 # corresponding to a material and a miller index.
                 # Append to se_dict where the key is the miller index
 
-                print "key", key
-                print 'miller', miller_index
+                print "key", el
+                print self.miller_dict[el]
+                # print 'miller', miller_index
 
                 # Get entry of oriented unit cell calculation
                 # and its corresponding slab calculation
-                criteria = {'chemsys':key, 'miller index': miller_index}
+                criteria = {'chemsys':el, 'miller index': miller_index}
                 slab_criteria = criteria.copy()
                 slab_criteria['structure_type'] = 'slab_cell'
                 unit_criteria = criteria.copy()
                 unit_criteria['structure_type'] = 'oriented_unit_cell'
-                print slab_criteria
+                # print slab_criteria
 
                 slab_entry = qe.get_entries(slab_criteria,
                                             optional_data=optional_data)
-                print slab_entry
-                print '# of unit entries', len(oriented_ucell_entry)
+                print len(slab_entry)
+                # print '# of unit entries', len(oriented_ucell_entry)
                 oriented_ucell_entry = \
                     qe.get_entries(unit_criteria,
-                                   optional_data=optional_data)[0]
-
+                                   optional_data=optional_data)
+                # print oriented_ucell_entry
+                print
 
                 # Calculate SE of each termination
                 se_term = {}
                 min_e = []
                 for slab in slab_entry:
                     slabE = slab.uncorrected_energy
-                    bulkE = oriented_ucell_entry.energy_per_atom*\
-                            slab_entry.data['nsites']
+                    bulkE = oriented_ucell_entry[0].energy_per_atom*\
+                            slab.data['nsites']
                     area = slab.data['surface_area']
                     se_term[str(slab.data[' shift'])] = \
                         ((slabE-bulkE)/(2*area))*to_Jperm2
 
                 # Get the lowest SE of the various
                 # terminations to build the wulff shape from
-                min_e = [se_term[key] for key in se_term.keys()]
+                min_e = [se_term[shift] for shift in se_term.keys()]
+                print min_e
                 e_surf_list.append(min(min_e))
                 se_dict[str(miller_index)] = se_term
                 miller_list.append(miller_index)
