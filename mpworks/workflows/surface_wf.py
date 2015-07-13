@@ -357,6 +357,11 @@ class CreateSurfaceWorkflow(object):
                 oriented_ucell_entry = \
                     qe.get_entries(unit_criteria,
                                    optional_data=optional_data)
+                if oriented_ucell_entry.data['state'] != "successful" or \
+                                slab_entry.data['state'] != "successful":
+                    "%s Firework was unsuccessful" \
+                    %(slab_entry.data['chemsys'])
+                    continue
                 # print oriented_ucell_entry
                 print
 
