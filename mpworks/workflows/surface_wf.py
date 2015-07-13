@@ -314,7 +314,7 @@ class CreateSurfaceWorkflow(object):
         # Data needed from DB to perform calculations
         optional_data = ["chemsys", "surface_area", "nsites",
                          "structure_type", "miller index",
-                         " shift", "vac size", "slab size"]
+                         " shift", "vac size", "slab size", "state"]
 
         to_Jperm2 = 16.0217656
         wulffshapes = {}

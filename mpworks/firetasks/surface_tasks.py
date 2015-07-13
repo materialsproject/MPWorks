@@ -18,6 +18,7 @@ from matgendb.creator import VaspToDbTaskDrone
 from pymatgen.core.surface import SlabGenerator
 from monty.json import MontyDecoder
 from pymatgen.core.metal_slab import MPSlabVaspInputSet
+from matgendb import QueryEngine
 
 """
 Firework tasks
@@ -241,21 +242,34 @@ class WriteSlabVaspInputs(FireTaskBase):
         # based on different slab terminations
         slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
 
-        FWs = []
-        for slab in slab_list:
-            new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
-                                                        %(slab.shift)
-            mplb.write_input(slab, new_folder)
-            fw = Firework([RunCustodianTask(dir=new_folder,
-                                            **custodian_params),
-                           VaspSlabDBInsertTask(struct_type="slab_cell",
-                           loc=new_folder, surface_area=slab.surface_area,
-                           shift=slab.shift, vsize=slabs.min_vac_size,
-                           ssize=slabs.min_slab_size,
-                           **vaspdbinsert_parameters)])
-            FWs.append(fw)
+        qe = QueryEngine(**vaspdbinsert_parameters)
+        optional_data = ["state"]
+        bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.compostion.formula,
+                                     'structure_type': 'oriented_unit_cell'},
+                                    optional_data=optional_data)
 
-        return FWAction(additions=FWs)
+        if bulk_entry.data['state'] != 'successful':
+            print "%s bulk calculations were incomplete, cancelling FW" \
+                  %(relax_orient_uc.compostion.formula)
+            return FWAction()
+        else:
+
+            FWs = []
+            for slab in slab_list:
+
+                new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
+                                                            %(slab.shift)
+                mplb.write_input(slab, new_folder)
+                fw = Firework([RunCustodianTask(dir=new_folder,
+                                                **custodian_params),
+                               VaspSlabDBInsertTask(struct_type="slab_cell",
+                               loc=new_folder, surface_area=slab.surface_area,
+                               shift=slab.shift, vsize=slabs.min_vac_size,
+                               ssize=slabs.min_slab_size,
+                               **vaspdbinsert_parameters)])
+                FWs.append(fw)
+
+            return FWAction(additions=FWs)
 
 
 @explicit_serialize
