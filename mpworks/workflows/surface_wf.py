@@ -83,8 +83,12 @@ class SurfaceWorkflowManager(object):
             # e.g. MPRester("QMt7nBdIioOVySW2")
             mprest = MPRester(api_key)
             #Returns a list of MPIDs with the compositional formular, the
-            # first MPID has the lowest energy per atom
-            prim_unit_cell = mprest.get_structures(el)[0]
+            # first MPID IS NOT the lowest energy per atom
+            entries = mprest.get_entries(el)
+
+            e_per_atom = [entry.energy_per_atom for entry in entries]
+            prim_unit_cell = mprest.get_structures(el)[e_per_atom.index(min(e_per_atom))]
+
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
