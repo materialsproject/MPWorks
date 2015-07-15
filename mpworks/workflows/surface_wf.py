@@ -301,7 +301,8 @@ class CreateSurfaceWorkflow(object):
                                                    vaspdbinsert_parameters=
                                                    vaspdbinsert_parameters,
                                                    potcar_functional=potcar_functional,
-                                                   k_product=k_product)])
+                                                   k_product=k_product,
+                                                   miller_index=miller_index)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="Surface_Calculations")

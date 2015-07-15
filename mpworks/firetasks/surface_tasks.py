@@ -172,7 +172,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations"]
+                       "terminations", "miller_index"]
 
     def run_task(self, fw_spec):
 
@@ -222,6 +222,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
+        miller_index = dec.process_decoded(self.get("miller_index"))
 
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
@@ -245,7 +246,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
         bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.formula,
-                                     'structure_type': 'oriented_unit_cell'},
+                                     'structure_type': 'oriented_unit_cell',
+                                     'miller index': miller_index},
                                     optional_data=optional_data)[0]
 
         if bulk_entry.data['state'] != 'successful':
