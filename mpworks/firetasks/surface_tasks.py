@@ -92,9 +92,9 @@ class VaspSlabDBInsertTask(FireTaskBase):
         # Addtional info relating to slabs
         additional_fields={"author": os.environ.get("USER"),
                            "structure_type": struct_type,
-                           "miller_index": miller_index,
-                           "surface_area": surface_area, "shift": shift,
-                           "vac_size": vsize, "slab_size": ssize}
+                           "miller index": miller_index,
+                           "surface_area": surface_area, " shift": shift,
+                           "vac size": vsize, "slab size": ssize}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
