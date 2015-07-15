@@ -322,8 +322,8 @@ class CreateSurfaceWorkflow(object):
 
         # Data needed from DB to perform calculations
         optional_data = ["chemsys", "surface_area", "nsites",
-                         "structure_type", "miller index",
-                         " shift", "vac size", "slab size", "state"]
+                         "structure_type", "miller_index",
+                         "shift", "vac_size", "slab_size", "state"]
 
         to_Jperm2 = 16.0217656
         wulffshapes = {}
@@ -352,7 +352,7 @@ class CreateSurfaceWorkflow(object):
 
                 # Get entry of oriented unit cell calculation
                 # and its corresponding slab calculation
-                criteria = {'chemsys':el, 'miller index': miller_index}
+                criteria = {'chemsys':el, 'miller_index': miller_index}
                 slab_criteria = criteria.copy()
                 slab_criteria['structure_type'] = 'slab_cell'
                 unit_criteria = criteria.copy()
@@ -382,7 +382,7 @@ class CreateSurfaceWorkflow(object):
                     bulkE = oriented_ucell_entry[0].energy_per_atom*\
                             slab.data['nsites']
                     area = slab.data['surface_area']
-                    se_term[str(slab.data[' shift'])] = \
+                    se_term[str(slab.data['shift'])] = \
                         ((slabE-bulkE)/(2*area))*to_Jperm2
 
                 # Get the lowest SE of the various
