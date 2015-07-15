@@ -245,14 +245,14 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
-        bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.formula,
+        bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.reduced_formula,
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
-                                    optional_data=optional_data)[0]
+                                     optional_data=optional_data)[0]
 
         if bulk_entry.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
-                  %(relax_orient_uc.composition.formula)
+                  %(relax_orient_uc.composition.reduced_formula)
             return FWAction()
         else:
 
