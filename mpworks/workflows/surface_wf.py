@@ -88,7 +88,7 @@ class SurfaceWorkflowManager(object):
 
             e_per_atom = [entry.energy_per_atom for entry in entries]
             for entry in entries:
-                if min(e_per_atom) == entries.energy_per_atom:
+                if min(e_per_atom) == entry.energy_per_atom:
                     prim_unit_cell = mprest.get_structures(el)
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
