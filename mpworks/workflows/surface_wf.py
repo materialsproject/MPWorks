@@ -87,7 +87,9 @@ class SurfaceWorkflowManager(object):
             entries = mprest.get_entries(el)
 
             e_per_atom = [entry.energy_per_atom for entry in entries]
-            prim_unit_cell = mprest.get_structures(el)[e_per_atom.index(min(e_per_atom))]
+            for entry in entries:
+                if min(e_per_atom) == entries.energy_per_atom:
+                    prim_unit_cell = mprest.get_structures(el)
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
@@ -286,7 +288,8 @@ class CreateSurfaceWorkflow(object):
                 fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=cwd+folderbulk,
                                                user_incar_settings=user_incar_settings,
-                                               potcar_functional=potcar_functional),
+                                               potcar_functional=potcar_functional,
+                                               k_product=k_product),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                 loc=cwd+folderbulk,
@@ -297,7 +300,8 @@ class CreateSurfaceWorkflow(object):
                                                    custodian_params=cust_params,
                                                    vaspdbinsert_parameters=
                                                    vaspdbinsert_parameters,
-                                                   potcar_functional=potcar_functional)])
+                                                   potcar_functional=potcar_functional,
+                                                   k_product=k_product)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="Surface_Calculations")
