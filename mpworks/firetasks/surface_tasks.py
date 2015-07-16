@@ -258,7 +258,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                      'miller index': miller_index},
                                      optional_data=optional_data)
         print 'checking job completion'
-        print bulk_entry[0].data['state']
+        print bulk_entry
         for entry in bulk_entry:
             print 'for loop'
             print entry.data['state']
