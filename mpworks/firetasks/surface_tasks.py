@@ -253,7 +253,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
         print 'query bulk entry for job complettion'
-        bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.reduced_formula,
+        bulk_entry =  qe.get_entries({'chemsys':str(relax_orient_uc.composition.reduced_formula),
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
                                      optional_data=optional_data)
