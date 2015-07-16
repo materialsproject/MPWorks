@@ -260,6 +260,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         print 'checking job completion'
 
         for entry in bulk_entry:
+            print 'for loop'
             print entry.data['state']
             if entry.data['state'] != 'successful':
                 print "%s bulk calculations were incomplete, cancelling FW" \
