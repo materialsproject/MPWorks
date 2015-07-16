@@ -258,6 +258,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                      'miller index': miller_index},
                                      optional_data=optional_data)
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
+        print 'fomular data type is ', type(relax_orient_uc.composition.reduced_formula)
         print 'checking job completion'
         print bulk_entry
         for entry in bulk_entry:
