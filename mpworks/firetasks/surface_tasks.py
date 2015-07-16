@@ -224,6 +224,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
 
+        print 'about to make mplb'
+
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
                                   potcar_functional=potcar_functional,
@@ -233,22 +235,29 @@ class WriteSlabVaspInputs(FireTaskBase):
         # cell is already oriented with the miller index, entering (0,0,1)
         # into SlabGenerator is the same as obtaining a slab in the
         # orienetation of the original miller index.
+        print 'about to copy contcar'
         contcar = Poscar.from_file("%s/CONTCAR" %(folder))
         relax_orient_uc = contcar.structure
+        print 'made relaxed oriented structure'
+        print relax_orient_uc
+        print 'making slab'
         slabs = SlabGenerator(relax_orient_uc, (0,0,1),
                               min_slab_size=min_slab_size,
                               min_vacuum_size=min_vacuum_size)
 
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
+        print 'deciding terminations'
         slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
+        print 'query bulk entry for job complettion'
         bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.reduced_formula,
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
                                      optional_data=optional_data)
+        print 'checking job completion'
         for entry in bulk_entry:
             if entry.data['state'] != 'successful':
                 print "%s bulk calculations were incomplete, cancelling FW" \
