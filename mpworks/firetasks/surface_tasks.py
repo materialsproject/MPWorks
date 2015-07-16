@@ -168,11 +168,11 @@ class WriteSlabVaspInputs(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "custodian_params",
-                       "vaspdbinsert_parameters"]
+                       "vaspdbinsert_parameters", "miller_index"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations", "miller_index"]
+                       "terminations"]
 
     def run_task(self, fw_spec):
 
@@ -249,9 +249,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
                                      optional_data=optional_data)
-        bulk = bulk_entry[0]
 
-        if bulk.data['state'] != 'successful':
+        if bulk_entry.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
                   %(relax_orient_uc.composition.reduced_formula)
             return FWAction()

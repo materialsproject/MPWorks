@@ -222,7 +222,7 @@ class CreateSurfaceWorkflow(object):
             Creates a list of Fireworks. Each Firework represents calculations
             that will be done on a slab system of a compound in a specific
             orientation. Each Firework contains a oriented unit cell relaxation job
-            and a WriteSlabVaspInputs which creates additional Firework(s) depending
+            and a WriteSlabVaspInputs which creates os. Firework(s) depending
             on whether or not Termination=True. Vasp outputs from all slab and
             oriented unit cell calculations will then be inserted into a database.
 
