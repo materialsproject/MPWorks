@@ -284,6 +284,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                         surface_area=slab.surface_area,
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
+                                                        miller_index=miller_index,
                                                         **vaspdbinsert_parameters)])
                     FWs.append(fw)
 
