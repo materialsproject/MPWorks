@@ -249,8 +249,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
                                      optional_data=optional_data)
+        bulk = bulk_entry[0]
 
-        if bulk_entry[0].data['state'] != 'successful':
+        if bulk.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
                   %(relax_orient_uc.composition.reduced_formula)
             return FWAction()
@@ -266,7 +267,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                 **custodian_params),
                                VaspSlabDBInsertTask(struct_type="slab_cell",
                                                     loc=new_folder, shift=slab.shift,
-                                                    surface_area=slab.surface_area, 
+                                                    surface_area=slab.surface_area,
                                                     vsize=slabs.min_vac_size,
                                                     ssize=slabs.min_slab_size,
                                                     **vaspdbinsert_parameters)])
