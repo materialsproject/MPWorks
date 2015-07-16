@@ -256,6 +256,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 return FWAction()
             else:
 
+                print entry.data['state']
+
                 FWs = []
                 for slab in slab_list:
 
@@ -317,3 +319,6 @@ class RunCustodianTask(FireTaskBase):
         output = c.run()
 
         return FWAction(stored_data=output)
+
+
+# Task tests
