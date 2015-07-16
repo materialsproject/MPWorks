@@ -265,8 +265,6 @@ class CreateSurfaceWorkflow(object):
 
                 print str(miller_index)
 
-                vaspdbinsert_parameters = self.vaspdbinsert_params.copy()
-                vaspdbinsert_parameters['miller_index'] = miller_index
                 max_norm = max(miller_index) if self.max_normal_search else None
                 # Whether or not we want to use the
                 # max_normal_search algorithm from surface.py
@@ -293,15 +291,17 @@ class CreateSurfaceWorkflow(object):
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                     loc=cwd+folderbulk,
-                                                    **vaspdbinsert_parameters),
+                                                    miller_index=miller_index,
+                                                    **self.vaspdbinsert_params),
                                WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                    user_incar_settings=user_incar_settings,
                                                    terminations=self.terminations,
                                                    custodian_params=cust_params,
                                                    vaspdbinsert_parameters=
-                                                   vaspdbinsert_parameters,
+                                                   self.vaspdbinsert_params,
                                                    potcar_functional=potcar_functional,
-                                                   k_product=k_product)])
+                                                   k_product=k_product,
+                                                   miller_index=miller_index)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="Surface_Calculations")
