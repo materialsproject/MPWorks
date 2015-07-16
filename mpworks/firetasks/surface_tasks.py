@@ -248,9 +248,9 @@ class WriteSlabVaspInputs(FireTaskBase):
         bulk_entry =  qe.get_entries({'chemsys':relax_orient_uc.composition.reduced_formula,
                                      'structure_type': 'oriented_unit_cell',
                                      'miller index': miller_index},
-                                     optional_data=optional_data)[0]
+                                     optional_data=optional_data)
 
-        if bulk_entry.data['state'] != 'successful':
+        if bulk_entry[0].data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
                   %(relax_orient_uc.composition.reduced_formula)
             return FWAction()
@@ -265,10 +265,11 @@ class WriteSlabVaspInputs(FireTaskBase):
                 fw = Firework([RunCustodianTask(dir=new_folder,
                                                 **custodian_params),
                                VaspSlabDBInsertTask(struct_type="slab_cell",
-                               loc=new_folder, surface_area=slab.surface_area,
-                               shift=slab.shift, vsize=slabs.min_vac_size,
-                               ssize=slabs.min_slab_size,
-                               **vaspdbinsert_parameters)])
+                                                    loc=new_folder, shift=slab.shift,
+                                                    surface_area=slab.surface_area, 
+                                                    vsize=slabs.min_vac_size,
+                                                    ssize=slabs.min_slab_size,
+                                                    **vaspdbinsert_parameters)])
                 FWs.append(fw)
 
             return FWAction(additions=FWs)
