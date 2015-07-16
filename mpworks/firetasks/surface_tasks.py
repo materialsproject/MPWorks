@@ -35,8 +35,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
     """
 
     required_params = ["host", "port", "user", "password",
-                       "database", "collection", "struct_type",
-                       "miller_index", "loc"]
+                       "database", "collection", "struct_type", "loc"]
     optional_params = ["surface_area", "shift", "vsize", "ssize"]
 
     def run_task(self, fw_spec):
@@ -68,7 +67,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
         """
 
         dec = MontyDecoder()
-        miller_index = dec.process_decoded(self.get("miller_index"))
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
@@ -168,7 +166,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "custodian_params",
-                       "vaspdbinsert_parameters", "miller_index"]
+                       "vaspdbinsert_parameters"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
@@ -222,7 +220,6 @@ class WriteSlabVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
-        miller_index = dec.process_decoded(self.get("miller_index"))
 
         print 'about to make mplb'
 
@@ -284,7 +281,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                         surface_area=slab.surface_area,
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
-                                                        miller_index=miller_index,
                                                         **vaspdbinsert_parameters)])
                     FWs.append(fw)
 

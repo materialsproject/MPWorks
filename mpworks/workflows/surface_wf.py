@@ -286,14 +286,14 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[2]))
 
                 fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                               folder=cwd+folderbulk,
-                                               user_incar_settings=user_incar_settings,
-                                               potcar_functional=potcar_functional,
-                                               k_product=k_product),
+                                                 folder=cwd+folderbulk,
+                                                 user_incar_settings=user_incar_settings,
+                                                 potcar_functional=potcar_functional,
+                                                 k_product=k_product),
                                RunCustodianTask(dir=cwd+folderbulk, **cust_params),
                                VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                loc=cwd+folderbulk,
-                                                **vaspdbinsert_parameters),
+                                                    loc=cwd+folderbulk,
+                                                    **vaspdbinsert_parameters),
                                WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                    user_incar_settings=user_incar_settings,
                                                    terminations=self.terminations,
@@ -301,8 +301,7 @@ class CreateSurfaceWorkflow(object):
                                                    vaspdbinsert_parameters=
                                                    vaspdbinsert_parameters,
                                                    potcar_functional=potcar_functional,
-                                                   k_product=k_product,
-                                                   miller_index=miller_index)])
+                                                   k_product=k_product)])
 
                 fws.append(fw)
         wf = Workflow(fws, name="Surface_Calculations")
