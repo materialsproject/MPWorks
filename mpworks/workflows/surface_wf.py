@@ -363,11 +363,10 @@ class CreateSurfaceWorkflow(object):
                                             optional_data=optional_data)
                 print len(slab_entry)
                 # print '# of unit entries', len(oriented_ucell_entry)
-                oriented_ucell_entry = \
-                    qe.get_entries(unit_criteria,
-                                   optional_data=optional_data)[0]
-                if oriented_ucell_entry.data['state'] != "successful" or \
-                                slab_entry.data['state'] != "successful":
+                oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
+                print oriented_ucell_entry
+                if oriented_ucell_entry[0].data['state'] != "successful" or \
+                                slab_entry[0].data['state'] != "successful":
                     "%s Firework was unsuccessful" \
                     %(slab_entry.data['chemsys'])
                     continue
