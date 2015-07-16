@@ -258,9 +258,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                                      'miller index': miller_index},
                                      optional_data=optional_data)
         print 'checking job completion'
-        print bulk_entry.data['state']
-        
+
         for entry in bulk_entry:
+            print entry.data['state']
             if entry.data['state'] != 'successful':
                 print "%s bulk calculations were incomplete, cancelling FW" \
                       %(relax_orient_uc.composition.reduced_formula)
