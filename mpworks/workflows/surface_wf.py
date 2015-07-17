@@ -35,7 +35,7 @@ class SurfaceWorkflowManager(object):
 
     def __init__(self, api_key, list_of_elements=[], indices_dict=None,
                  host=None, port=None, user=None, password=None,
-                 symprec=0.001, angle_tolerance=5, database=None):
+                 symprec=0.001, angle_tolerance=5, database=None, collection="Surface_Collection"):
 
         """
             Args:
@@ -61,7 +61,7 @@ class SurfaceWorkflowManager(object):
                                'port': port, 'user': user,
                                'password': password,
                                'database': database,
-                               'collection': "Surface_Calculations"}
+                               'collection': collection}
 
         elements = [key for key in indices_dict.keys()] \
             if indices_dict else list_of_elements
@@ -304,7 +304,7 @@ class CreateSurfaceWorkflow(object):
                                                    miller_index=miller_index)])
 
                 fws.append(fw)
-        wf = Workflow(fws, name="Surface_Calculations")
+        wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])
         launchpad.add_wf(wf)
 
 
