@@ -108,7 +108,7 @@ class SurfaceWorkflowManager(object):
         self.elements = elements
 
 
-    def from_max_index(self, max_index, max_normal_search=False, terminations=False):
+    def from_max_index(self, max_index, max_normal_search=True, terminations=False):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -143,7 +143,7 @@ class SurfaceWorkflowManager(object):
                                      max_normal_search=False, terminations=terminations)
 
 
-    def from_list_of_indices(self, list_of_indices, max_normal_search=False,
+    def from_list_of_indices(self, list_of_indices, max_normal_search=True,
                              terminations=False):
 
         """
@@ -165,7 +165,7 @@ class SurfaceWorkflowManager(object):
                                      max_normal_search=False, terminations=terminations)
 
 
-    def from_indices_dict(self, max_normal_search=False, terminations=False):
+    def from_indices_dict(self, max_normal_search=True, terminations=False):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -189,7 +189,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
-                 terminations=False, max_normal_search=False):
+                 terminations=False, max_normal_search=True):
 
         """
             Args:
