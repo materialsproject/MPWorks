@@ -301,7 +301,8 @@ class CreateSurfaceWorkflow(object):
                                                    self.vaspdbinsert_params,
                                                    potcar_functional=potcar_functional,
                                                    k_product=k_product,
-                                                   miller_index=miller_index)])
+                                                   miller_index=miller_index)],
+                              name=folderbulk)
 
                 fws.append(fw)
         wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])
