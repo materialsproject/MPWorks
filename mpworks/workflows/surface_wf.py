@@ -12,6 +12,7 @@ import os
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
 from custodian.vasp.jobs import VaspJob
+from custodian.vasp.handlers import VaspErrorHandler
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
     get_symmetrically_distinct_miller_indices
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
@@ -276,6 +277,7 @@ class CreateSurfaceWorkflow(object):
                 # slabs are created in the WriteSlabVaspInputs task.
                 # WriteSlabVaspInputs will create the slabs from
                 # the contcar of the oriented unit cell calculation
+                handler = []
 
                 folderbulk = '/%s_%s_k%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
                                                    'bulk', k_product,
@@ -288,7 +290,9 @@ class CreateSurfaceWorkflow(object):
                                                  user_incar_settings=user_incar_settings,
                                                  potcar_functional=potcar_functional,
                                                  k_product=k_product),
-                               RunCustodianTask(dir=cwd+folderbulk, **cust_params),
+                               RunCustodianTask(dir=cwd+folderbulk,
+                                                handlers=[VaspErrorHandler()]
+                                                         **cust_params),
                                VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                     loc=cwd+folderbulk,
                                                     miller_index=miller_index,

@@ -10,7 +10,7 @@ import os
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
-from pymatgen.io.vaspio.vasp_output import Vasprun, Poscar
+from pymatgen.io.vaspio.vasp_output import Vasprun, Poscar, Incar
 from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 from matgendb.creator import VaspToDbTaskDrone
@@ -288,6 +288,15 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                         **vaspdbinsert_parameters)],
                                   name=new_folder)
                     FWs.append(fw)
+
+                    # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
+                    # Only change in parameters between slab and bulk should be MAGMOM and ISIF
+                    incar = Incar.from_file(folder +'/INCAR')
+                    magmom = Incar.from_file(new_folder +'/INCAR')
+                    mag = magmom.get('MAGMOM')
+                    incar.__setitem__('ISIF', 2)
+                    incar.__setitem__('MAGMOM', mag)
+                    incar.write_file(new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
