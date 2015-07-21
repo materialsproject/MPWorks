@@ -291,8 +291,8 @@ class CreateSurfaceWorkflow(object):
                                                  potcar_functional=potcar_functional,
                                                  k_product=k_product),
                                RunCustodianTask(dir=cwd+folderbulk,
-                                                handlers=[VaspErrorHandler()]
-                                                         **cust_params),
+                                                handlers=[VaspErrorHandler()],
+                                                **cust_params),
                                VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                     loc=cwd+folderbulk,
                                                     miller_index=miller_index,
