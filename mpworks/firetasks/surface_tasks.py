@@ -296,6 +296,11 @@ class WriteSlabVaspInputs(FireTaskBase):
                     mag = magmom.get('MAGMOM')
                     incar.__setitem__('ISIF', 2)
                     incar.__setitem__('MAGMOM', mag)
+                    incar.__setitem__('ISIF', 2)
+                    incar.__setitem__('AMIN', 0.01)
+                    incar.__setitem__('AMIX', 0.2)
+                    incar.__setitem__('BMIX', 0.001)
+                    incar.__setitem__('NELMIN', 8)
                     incar.write_file(new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
