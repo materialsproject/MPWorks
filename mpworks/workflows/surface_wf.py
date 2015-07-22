@@ -34,7 +34,7 @@ class SurfaceWorkflowManager(object):
 
     """
 
-    def __init__(self, api_key, list_of_elements=[], indices_dict=None,
+    def __init__(self, api_key, list_of_elements=[], indices_dict=None, slab_size=10, vac_size=10,
                  host=None, port=None, user=None, password=None,
                  symprec=0.001, angle_tolerance=5, database=None, collection="Surface_Collection"):
 
@@ -107,6 +107,8 @@ class SurfaceWorkflowManager(object):
         self.unit_cells_dict = unit_cells_dict
         self.indices_dict = indices_dict
         self.elements = elements
+        self.ssize = slab_size
+        self.vsize = vac_size
 
 
     def from_max_index(self, max_index, max_normal_search=True, terminations=False):
@@ -140,7 +142,7 @@ class SurfaceWorkflowManager(object):
             miller_dict[el] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params,
+                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=False, terminations=terminations)
 
 
@@ -162,7 +164,7 @@ class SurfaceWorkflowManager(object):
             miller_dict[el] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params,
+                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=False, terminations=terminations)
 
 
@@ -176,7 +178,7 @@ class SurfaceWorkflowManager(object):
         """
 
         return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params,
+                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=False, terminations=terminations)
 
 
@@ -189,7 +191,7 @@ class CreateSurfaceWorkflow(object):
         SurfaceWorkflowManager to create an object of this class.
     """
 
-    def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
+    def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
                  terminations=False, max_normal_search=True):
 
         """
@@ -212,6 +214,8 @@ class CreateSurfaceWorkflow(object):
         self.vaspdbinsert_params = vaspdbinsert_params
         self.max_normal_search = max_normal_search
         self.terminations = terminations
+        self.ssize = ssize
+        self.vsize = vsize
 
 
     def launch_workflow(self, launchpad_dir="",
@@ -271,7 +275,7 @@ class CreateSurfaceWorkflow(object):
                 # max_normal_search algorithm from surface.py
 
                 slab = SlabGenerator(self.unit_cells_dict[key], miller_index,
-                                     10, 10, max_normal_search=max_norm)
+                                     self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
@@ -305,7 +309,9 @@ class CreateSurfaceWorkflow(object):
                                                    self.vaspdbinsert_params,
                                                    potcar_functional=potcar_functional,
                                                    k_product=k_product,
-                                                   miller_index=miller_index)],
+                                                   miller_index=miller_index,
+                                                   min_slab_size=self.ssize,
+                                                   min_vacuum_size=self.vsize)],
                               name=folderbulk)
 
                 fws.append(fw)
