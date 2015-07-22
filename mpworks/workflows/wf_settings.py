@@ -13,7 +13,7 @@ QA_CONTROL = {'nnodes': 1, 'walltime': '00:30:00'}
 MOVE_TO_GARDEN_DEV = True
 MOVE_TO_GARDEN_PROD = False
 
-GARDEN = '/oasis/scratch/comet/mgcloud/temp_project/garden' # '/project/projectdirs/matgen/garden'
+GARDEN = '/oasis/projects/nsf/csd436/mgcloud/garden' # '/project/projectdirs/matgen/garden'
 
 RUN_LOCS = [GARDEN, GARDEN+'/dev',
             '/project/projectdirs/matgen/garden/control_blocks',
