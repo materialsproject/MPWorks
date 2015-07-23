@@ -96,7 +96,7 @@ class SurfaceWorkflowManager(object):
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[el] = conv_unit_cell
+            unit_cells_dict[el] = [conv_unit_cell, min(e_per_atom)]
             print el
 
 
@@ -132,7 +132,7 @@ class SurfaceWorkflowManager(object):
         for el in self.elements:
             # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el],
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el][0],
                                                           max_index)
 
             print 'surface ', el
@@ -274,7 +274,7 @@ class CreateSurfaceWorkflow(object):
                 # Whether or not we want to use the
                 # max_normal_search algorithm from surface.py
 
-                slab = SlabGenerator(self.unit_cells_dict[key], miller_index,
+                slab = SlabGenerator(self.unit_cells_dict[key][0], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
                 # This method only creates the oriented unit cell, the
@@ -319,7 +319,7 @@ class CreateSurfaceWorkflow(object):
         launchpad.add_wf(wf)
 
 
-    def get_energy_and_wulff(self):
+    def get_energy_and_wulff(self, bulk_e_from_mp=False):
 
         """
             This method queries a database to calculate
@@ -358,7 +358,7 @@ class CreateSurfaceWorkflow(object):
 
                 print "key", el
                 print self.miller_dict[el]
-                # print 'miller', miller_index
+                print 'miller', miller_index
 
                 # Get entry of oriented unit cell calculation
                 # and its corresponding slab calculation
@@ -388,8 +388,11 @@ class CreateSurfaceWorkflow(object):
                 min_e = []
                 for slab in slab_entry:
                     slabE = slab.uncorrected_energy
-                    bulkE = oriented_ucell_entry[0].energy_per_atom*\
-                            slab.data['nsites']
+                    if bulk_e_from_mp:
+                        bulkE = self.unit_cells_dict[el][1]*slab.data['nsites']
+                    else:
+                        bulkE = oriented_ucell_entry[0].energy_per_atom*\
+                                slab.data['nsites']
                     area = slab.data['surface_area']
                     se_term[str(slab.data['shift'])] = \
                         ((slabE-bulkE)/(2*area))*to_Jperm2
@@ -404,7 +407,7 @@ class CreateSurfaceWorkflow(object):
 
             # Create the wulff shape with the lowest surface
             # energies in slabs with multiple terminations
-            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el],
+            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el][0],
                                        miller_list, e_surf_list)
             surface_energies[el] = se_dict
 
