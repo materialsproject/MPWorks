@@ -273,6 +273,7 @@ class CreateSurfaceWorkflow(object):
                 max_norm = max(miller_index) if self.max_normal_search else None
                 # Whether or not we want to use the
                 # max_normal_search algorithm from surface.py
+                print 'true or false max norm is ', max_norm
 
                 slab = SlabGenerator(self.unit_cells_dict[key][0], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
