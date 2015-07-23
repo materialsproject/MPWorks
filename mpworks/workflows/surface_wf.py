@@ -146,7 +146,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=False, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
@@ -168,7 +168,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=False, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False):
@@ -182,7 +182,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=False, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations)
 
 
 class CreateSurfaceWorkflow(object):
