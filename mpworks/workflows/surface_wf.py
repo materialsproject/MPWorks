@@ -417,3 +417,35 @@ class CreateSurfaceWorkflow(object):
         # eg. wulffshapes={'ZnO': <wulffshape object>, ...etc}
         # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
         return wulffshapes, surface_energies
+
+class SingleTaskRuns(object):
+
+    def __init__(self, host, port, user, password, database, collection, launchpad_dir):
+
+        vaspdbinsert_params = {'host': host,
+                               'port': port, 'user': user,
+                               'password': password,
+                               'database': database,
+                               'collection': collection}
+
+        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
+                                                     launchpad_dir,
+                                                     "my_launchpad.yaml"))
+
+        self.db_parameters = vaspdbinsert_params
+
+    def single_runcustodiantask(self, jobs, handlers=[], dir=os.getcwd()):
+
+        cust_params = {"custodian_params":
+                           {"scratch_dir":
+                                os.path.join("/global/scratch2/sd/",
+                                             os.environ["USER"])},
+                       "jobs": job}
+
+        fw = Firework([RunCustodianTask(dir=cwd+folderbulk,
+                                        handlers=[VaspErrorHandler()],
+                                        **cust_params)])
+
+        fws = [fw]
+        wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])
+        launchpad.add_wf(wf)
