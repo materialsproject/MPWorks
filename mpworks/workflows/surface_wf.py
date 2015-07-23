@@ -23,7 +23,7 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
-from pymacy.surface_adsorption.wulff_dual import wulff_3d
+from pymatgen.core.wulff_dual import wulff_3d
 
 class SurfaceWorkflowManager(object):
 
