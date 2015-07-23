@@ -443,7 +443,7 @@ class SingleTaskRuns(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job}
+                       "jobs": jobs}
 
         fw = Firework([RunCustodianTask(dir=cwd+folderbulk,
                                         handlers=[VaspErrorHandler()],
