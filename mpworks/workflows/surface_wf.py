@@ -450,5 +450,5 @@ class SingleTaskRuns(object):
                                         **cust_params)])
 
         fws = [fw]
-        wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])
+        wf = Workflow(fws, name=self.db_parameters['collection'])
         launchpad.add_wf(wf)
