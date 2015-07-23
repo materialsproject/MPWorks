@@ -445,7 +445,7 @@ class SingleTaskRuns(object):
                                              os.environ["USER"])},
                        "jobs": jobs}
 
-        fw = Firework([RunCustodianTask(dir=cwd+folderbulk,
+        fw = Firework([RunCustodianTask(dir=dir,
                                         handlers=[VaspErrorHandler()],
                                         **cust_params)])
 
