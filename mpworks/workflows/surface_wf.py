@@ -453,3 +453,15 @@ class SingleTaskRuns(object):
         fws = [fw]
         wf = Workflow(fws, name=self.db_parameters['collection'])
         self.launchpad.add_wf(wf)
+
+
+    def single_vaspslabdbinserttask(self, miller_index, struct_type):
+
+        fw = Firework([VaspSlabDBInsertTask(struct_type=struct_type,
+                                            loc=dir,
+                                            miller_index=miller_index,
+                                            **self.db_parameters)])
+
+        fws = [fw]
+        wf = Workflow(fws, name=self.db_parameters['collection'])
+        self.launchpad.add_wf(wf)
