@@ -283,8 +283,8 @@ class CreateSurfaceWorkflow(object):
                 # the contcar of the oriented unit cell calculation
                 handler = []
 
-                folderbulk = '/%s_%s_k%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
-                                                   'bulk', k_product,
+                folderbulk = '/%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
+                                                   'bulk', k_product, self.ssize, self.vsize,
                                                    str(miller_index[0]),
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
