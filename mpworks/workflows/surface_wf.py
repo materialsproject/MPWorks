@@ -436,6 +436,7 @@ class SingleTaskRuns(object):
                                                      "my_launchpad.yaml"))
 
         self.db_parameters = vaspdbinsert_params
+        self.launchpad = launchpad
 
     def single_runcustodiantask(self, jobs, handlers=[], dir=os.getcwd()):
 
@@ -451,4 +452,4 @@ class SingleTaskRuns(object):
 
         fws = [fw]
         wf = Workflow(fws, name=self.db_parameters['collection'])
-        launchpad.add_wf(wf)
+        self.launchpad.add_wf(wf)
