@@ -23,7 +23,10 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
-from pymatgen.core.wulff_dual import wulff_3d
+import socket
+hostname = socket.gethostname()
+if hostname[:3] != 'cvr':
+    from pymatgen.core.wulff_dual import wulff_3d
 
 class SurfaceWorkflowManager(object):
 
