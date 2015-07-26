@@ -39,7 +39,7 @@ class SurfaceWorkflowManager(object):
 
     def __init__(self, api_key, list_of_elements=[], indices_dict=None, slab_size=10, vac_size=10,
                  host=None, port=None, user=None, password=None,
-                 symprec=0.001, angle_tolerance=5, database=None, collection="Surface_Collection"):
+                 symprec=0.001, angle_tolerance=5, database=None, collection="Surface_Collection", reset=False):
 
         """
             Args:
@@ -112,6 +112,7 @@ class SurfaceWorkflowManager(object):
         self.elements = elements
         self.ssize = slab_size
         self.vsize = vac_size
+        self.reset = reset
 
 
     def from_max_index(self, max_index, max_normal_search=True, terminations=False):
@@ -146,7 +147,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
@@ -168,7 +169,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False):
@@ -182,7 +183,7 @@ class SurfaceWorkflowManager(object):
 
         return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations)
+                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
 
 
 class CreateSurfaceWorkflow(object):
@@ -195,7 +196,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
-                 terminations=False, max_normal_search=True):
+                 terminations=False, max_normal_search=True, reset=False):
 
         """
             Args:
@@ -252,7 +253,8 @@ class CreateSurfaceWorkflow(object):
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                      launchpad_dir,
                                                      "my_launchpad.yaml"))
-        launchpad.reset('', require_password=False)
+        if reset:
+            launchpad.reset('', require_password=False)
 
         # Scratch directory reffered to by custodian.
         # May be different on non-Nersc systems.
