@@ -294,7 +294,7 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
                 if get_bulk_e:
-                    tasks.extend(WriteUCVaspInputs(oriented_ucell=oriented_uc,
+                    tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=cwd+folderbulk,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
@@ -305,7 +305,7 @@ class CreateSurfaceWorkflow(object):
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=cwd+folderbulk,
                                                       miller_index=miller_index,
-                                                      **self.vaspdbinsert_params))
+                                                      **self.vaspdbinsert_params)])
 
                 tasks.append(WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                  user_incar_settings=user_incar_settings,
