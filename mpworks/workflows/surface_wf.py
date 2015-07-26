@@ -224,7 +224,7 @@ class CreateSurfaceWorkflow(object):
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "16", "vasp"]),
-                        user_incar_settings=None, potcar_functional='PBE'):
+                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e = True):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -286,37 +286,42 @@ class CreateSurfaceWorkflow(object):
                 # WriteSlabVaspInputs will create the slabs from
                 # the contcar of the oriented unit cell calculation
                 handler = []
+                tasks = []
 
                 folderbulk = '/%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
                                                    'bulk', k_product, self.ssize, self.vsize,
                                                    str(miller_index[0]),
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
+                if get_bulk_e:
+                    tasks.extend(WriteUCVaspInputs(oriented_ucell=oriented_uc,
+                                               folder=cwd+folderbulk,
+                                               user_incar_settings=user_incar_settings,
+                                               potcar_functional=potcar_functional,
+                                               k_product=k_product),
+                                 RunCustodianTask(dir=cwd+folderbulk,
+                                                  handlers=[VaspErrorHandler()],
+                                                  **cust_params),
+                                 VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
+                                                      loc=cwd+folderbulk,
+                                                      miller_index=miller_index,
+                                                      **self.vaspdbinsert_params))
 
-                fw = Firework([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                                 folder=cwd+folderbulk,
+                tasks.append(WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                  user_incar_settings=user_incar_settings,
+                                                 terminations=self.terminations,
+                                                 custodian_params=cust_params,
+                                                 vaspdbinsert_parameters=
+                                                 self.vaspdbinsert_params,
                                                  potcar_functional=potcar_functional,
-                                                 k_product=k_product),
-                               RunCustodianTask(dir=cwd+folderbulk,
-                                                handlers=[VaspErrorHandler()],
-                                                **cust_params),
-                               VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                    loc=cwd+folderbulk,
-                                                    miller_index=miller_index,
-                                                    **self.vaspdbinsert_params),
-                               WriteSlabVaspInputs(folder=cwd+folderbulk,
-                                                   user_incar_settings=user_incar_settings,
-                                                   terminations=self.terminations,
-                                                   custodian_params=cust_params,
-                                                   vaspdbinsert_parameters=
-                                                   self.vaspdbinsert_params,
-                                                   potcar_functional=potcar_functional,
-                                                   k_product=k_product,
-                                                   miller_index=miller_index,
-                                                   min_slab_size=self.ssize,
-                                                   min_vacuum_size=self.vsize)],
-                              name=folderbulk)
+                                                 k_product=k_product,
+                                                 miller_index=miller_index,
+                                                 min_slab_size=self.ssize,
+                                                 min_vacuum_size=self.vsize,
+                                                 get_bulk_e=get_bulk_e,
+                                                 ucell=self.unit_cells_dict[key][0]))
+
+                fw = Firework(tasks, name=folderbulk)
 
                 fws.append(fw)
         wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])

@@ -172,7 +172,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations"]
+                       "terminations", "get_bulk_e", "ucell"]
 
     def run_task(self, fw_spec):
 
@@ -223,6 +223,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
+        get_bulk_e = dec.process_decoded(self.get("get_bulk_e"))
+        ucell = dec.process_decoded(self.get("ucell"))
 
         print 'about to make mplb'
 
@@ -241,7 +243,12 @@ class WriteSlabVaspInputs(FireTaskBase):
         print 'made relaxed oriented structure'
         print relax_orient_uc
         print 'making slab'
-        slabs = SlabGenerator(relax_orient_uc, (0,0,1),
+        miller = (0,0,1)
+
+        if get_bulk_e:
+            miller=miller_index
+            relax_orient_uc = ucell.copy()
+        slabs = SlabGenerator(relax_orient_uc, miller,
                               min_slab_size=min_slab_size,
                               min_vacuum_size=min_vacuum_size)
 
@@ -291,17 +298,18 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
                     # Only change in parameters between slab and bulk should be MAGMOM and ISIF
-                    incar = Incar.from_file(folder +'/INCAR')
-                    magmom = Incar.from_file(new_folder +'/INCAR')
-                    mag = magmom.get('MAGMOM')
-                    incar.__setitem__('ISIF', 2)
-                    incar.__setitem__('MAGMOM', mag)
-                    incar.__setitem__('ISIF', 2)
-                    incar.__setitem__('AMIN', 0.01)
-                    incar.__setitem__('AMIX', 0.2)
-                    incar.__setitem__('BMIX', 0.001)
-                    incar.__setitem__('NELMIN', 8)
-                    incar.write_file(new_folder+'/INCAR')
+                    if get_bulk_e:
+                        incar = Incar.from_file(folder +'/INCAR')
+                        magmom = Incar.from_file(new_folder +'/INCAR')
+                        mag = magmom.get('MAGMOM')
+                        incar.__setitem__('ISIF', 2)
+                        incar.__setitem__('MAGMOM', mag)
+                        incar.__setitem__('ISIF', 2)
+                        incar.__setitem__('AMIN', 0.01)
+                        incar.__setitem__('AMIX', 0.2)
+                        incar.__setitem__('BMIX', 0.001)
+                        incar.__setitem__('NELMIN', 8)
+                        incar.write_file(new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
