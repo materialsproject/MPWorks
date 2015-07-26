@@ -220,6 +220,7 @@ class CreateSurfaceWorkflow(object):
         self.terminations = terminations
         self.ssize = ssize
         self.vsize = vsize
+        self.reset = reset
 
 
     def launch_workflow(self, launchpad_dir="",
@@ -253,7 +254,7 @@ class CreateSurfaceWorkflow(object):
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                      launchpad_dir,
                                                      "my_launchpad.yaml"))
-        if reset:
+        if self.reset:
             launchpad.reset('', require_password=False)
 
         # Scratch directory reffered to by custodian.
