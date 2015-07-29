@@ -17,7 +17,7 @@ from matgendb.creator import VaspToDbTaskDrone
 
 from pymatgen.core.surface import SlabGenerator
 from monty.json import MontyDecoder
-from pymatgen.core.metal_slab import MPSlabVaspInputSet
+from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
 from matgendb import QueryEngine
 
 """
