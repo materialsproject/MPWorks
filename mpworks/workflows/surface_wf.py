@@ -26,7 +26,7 @@ from matgendb import QueryEngine
 import socket
 hostname = socket.gethostname()
 if hostname[:3] != 'cvr':
-    from pymatgen.core.wulff_dual import wulff_3d
+    from pymatgen.analysis.wulff_dual import wulff_3d
 
 class SurfaceWorkflowManager(object):
 
