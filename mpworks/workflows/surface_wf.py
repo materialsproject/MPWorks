@@ -84,7 +84,6 @@ class SurfaceWorkflowManager(object):
             """
 
             # This initializes the REST adaptor. Put your own API key in.
-            # e.g. MPRester("QMt7nBdIioOVySW2")
             mprest = MPRester(api_key)
             #Returns a list of MPIDs with the compositional formular, the
             # first MPID IS NOT the lowest energy per atom
@@ -226,7 +225,7 @@ class CreateSurfaceWorkflow(object):
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "16", "vasp"]),
-                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e = True):
+                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
