@@ -150,7 +150,7 @@ class SurfaceWorkflowManager(object):
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
-                             terminations=False, k_product=50):
+                             terminations=False):
 
         """
             Class method to create a surface workflow with a
@@ -167,11 +167,11 @@ class SurfaceWorkflowManager(object):
             miller_dict[el] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize, k_product=k_product,
+                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
 
 
-    def from_indices_dict(self, max_normal_search=True, terminations=False, k_product=50):
+    def from_indices_dict(self, max_normal_search=True, terminations=False):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -181,7 +181,7 @@ class SurfaceWorkflowManager(object):
         """
 
         return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize, k_product=k_product,
+                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
 
 
@@ -195,7 +195,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
-                 k_product=50, terminations=False, max_normal_search=True, reset=False):
+                 terminations=False, max_normal_search=True, reset=False):
 
         """
             Args:
@@ -220,11 +220,10 @@ class CreateSurfaceWorkflow(object):
         self.ssize = ssize
         self.vsize = vsize
         self.reset = reset
-        self.k_product = k_product
 
 
     def launch_workflow(self, launchpad_dir="",
-                        cwd=os.getcwd(),
+                        k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "16", "vasp"]),
                         user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True):
 
@@ -292,7 +291,7 @@ class CreateSurfaceWorkflow(object):
                 tasks = []
 
                 folderbulk = '/%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
-                                                   'bulk', self.k_product, self.ssize, self.vsize,
+                                                   'bulk', k_product, self.ssize, self.vsize,
                                                    str(miller_index[0]),
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
@@ -301,7 +300,7 @@ class CreateSurfaceWorkflow(object):
                                                folder=cwd+folderbulk,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
-                                               k_product=self.k_product),
+                                               k_product=k_product),
                                  RunCustodianTask(dir=cwd+folderbulk,
                                                   handlers=[VaspErrorHandler()],
                                                   **cust_params),
@@ -317,7 +316,7 @@ class CreateSurfaceWorkflow(object):
                                                  vaspdbinsert_parameters=
                                                  self.vaspdbinsert_params,
                                                  potcar_functional=potcar_functional,
-                                                 k_product=self.k_product,
+                                                 k_product=k_product,
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
                                                  min_vacuum_size=self.vsize,
