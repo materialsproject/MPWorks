@@ -18,6 +18,7 @@ from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
+from pymatgen.io.vaspio.vasp_output import Outcar
 
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
@@ -308,6 +309,16 @@ class CreateSurfaceWorkflow(object):
                                                       loc=cwd+folderbulk,
                                                       miller_index=miller_index,
                                                       **self.vaspdbinsert_params)])
+
+                    # Slab will inherit average final magnetic moment
+                    # of the bulk from outcar, will have to generalize
+                    # this for systems with different elements later
+                    element = oriented_uc.species[0]
+                    out = Outcar(cwd+folderbulk)
+                    out_mag = out.magnetization
+                    tot_mag = [mag['tot'] for mag in out_mag]
+                    magmom = np.mean(tot_mag)
+                    user_incar_settings['MAGMOM'] = {element: magmom}
 
                 tasks.append(WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                  user_incar_settings=user_incar_settings,
