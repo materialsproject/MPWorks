@@ -483,3 +483,10 @@ class SingleTaskRuns(object):
         fws = [fw]
         wf = Workflow(fws, name=self.db_parameters['collection'])
         self.launchpad.add_wf(wf)
+
+    # def single_writeslabvaspinputs(self, miller_index, folder, custodian_params,
+    #                                min_slab_size=10, min_vacuum_size=10, angle_tolerance=5,
+    #                                user_incar_settings=None, k_product=50,
+    #                                potcar_functional='PBE', symprec=0.001,
+    #                                terminations=False, get_bulk_e=True, ucell=None):
+    #
