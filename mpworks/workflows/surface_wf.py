@@ -313,12 +313,12 @@ class CreateSurfaceWorkflow(object):
                     # Slab will inherit average final magnetic moment
                     # of the bulk from outcar, will have to generalize
                     # this for systems with different elements later
-                    element = oriented_uc.species[0]
-                    out = Outcar(cwd+folderbulk)
-                    out_mag = out.magnetization
-                    tot_mag = [mag['tot'] for mag in out_mag]
-                    magmom = np.mean(tot_mag)
-                    user_incar_settings['MAGMOM'] = {element: magmom}
+                    # element = oriented_uc.species[0]
+                    # out = Outcar(cwd+folderbulk)
+                    # out_mag = out.magnetization
+                    # tot_mag = [mag['tot'] for mag in out_mag]
+                    # magmom = np.mean(tot_mag)
+                    # user_incar_settings['MAGMOM'] = {element: magmom}
 
                 tasks.append(WriteSlabVaspInputs(folder=cwd+folderbulk,
                                                  user_incar_settings=user_incar_settings,

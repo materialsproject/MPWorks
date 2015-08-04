@@ -300,8 +300,15 @@ class WriteSlabVaspInputs(FireTaskBase):
                     # Only change in parameters between slab and bulk should be MAGMOM and ISIF
                     if get_bulk_e:
                         incar = Incar.from_file(folder +'/INCAR')
-                        magmom = Incar.from_file(new_folder +'/INCAR')
-                        mag = magmom.get('MAGMOM')
+                        # magmom = Incar.from_file(new_folder +'/INCAR')
+                        # mag = magmom.get('MAGMOM')
+                        element = relax_orient_uc.species[0]
+                        out = Outcar(new_folder)
+                        out_mag = out.magnetization
+                        tot_mag = [mag['tot'] for mag in out_mag]
+                        magmom = np.mean(tot_mag)
+                        # user_incar_settings['MAGMOM'] = {element: magmom}
+                        mag= [magmom for i in relax_orient_uc]
                         incar.__setitem__('ISIF', 2)
                         incar.__setitem__('MAGMOM', mag)
                         incar.__setitem__('ISIF', 2)
@@ -310,6 +317,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('BMIX', 0.001)
                         incar.__setitem__('NELMIN', 8)
                         incar.write_file(new_folder+'/INCAR')
+
 
                 return FWAction(additions=FWs)
 
