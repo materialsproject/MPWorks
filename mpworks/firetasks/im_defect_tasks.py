@@ -101,6 +101,14 @@ def get_workflow(d_struct, data, history, i, fw_spec):
         spec['task_type'] = "Optimize defect supercell "
 
     spec['_priority'] = fw_spec['_priority']*2
+    trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'), Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
+    trackers_db = [Tracker('FW_job.out'), Tracker('FW_job.error')]
+             # run GGA structure optimization
+    #spec = _snl_to_spec(snl, enforce_gga=True, parameters=parameters)
+    spec.update(snl_spec)
+    spec['_queueadapter'] = QA_VASP
+    spec['_trackers'] = trackers
+                                 
     #Turn off dupefinder for supercell structure
     del spec['_dupefinder']
 
