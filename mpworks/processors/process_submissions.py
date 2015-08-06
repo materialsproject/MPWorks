@@ -83,6 +83,9 @@ class SubmissionProcessor():
                     elif "Customized" in snl.projects:
                         from mpworks.workflows.snl_to_wf_customize import snl_to_wf_customize
                         wf = snl_to_wf_customize(snl, job['parameters'])
+                    elif "IM_Defects" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_im_defects import snl_to_wf_im_defects
+                        wf=snl_to_wf_im_defects(snl, job['parameters'])
                     else:
                         from mpworks.workflows.snl_to_wf import snl_to_wf
                         wf = snl_to_wf(snl, job['parameters'])
