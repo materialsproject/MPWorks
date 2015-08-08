@@ -263,7 +263,7 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job}
+                       "jobs": job.double_relaxation_run(job.vasp_cmd)}
 
         fws=[]
         for key in self.miller_dict.keys():
@@ -370,6 +370,7 @@ class CreateSurfaceWorkflow(object):
             e_surf_list = []
             se_dict = {}
             miller_list = []
+            success = True
 
             print 'current key is ', el
 
@@ -397,10 +398,17 @@ class CreateSurfaceWorkflow(object):
                 # print '# of unit entries', len(oriented_ucell_entry)
                 oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
                 print oriented_ucell_entry
+                if oriented_ucell_entry==[] or slab_entry==[]:
+                    "%s Firework was unsuccessful" \
+                    %(el)
+                    success=False
+                    continue
+
                 if oriented_ucell_entry[0].data['state'] != "successful" or \
                                 slab_entry[0].data['state'] != "successful":
                     "%s Firework was unsuccessful" \
-                    %(slab_entry.data['chemsys'])
+                    %(el)
+                    success=False
                     continue
                 # print oriented_ucell_entry
                 print
@@ -429,8 +437,11 @@ class CreateSurfaceWorkflow(object):
 
             # Create the wulff shape with the lowest surface
             # energies in slabs with multiple terminations
-            wulffshapes[el] = wulff_3d(self.unit_cells_dict[el][0],
-                                       miller_list, e_surf_list)
+            if success:
+                wulffshapes[el] = wulff_3d(self.unit_cells_dict[el][0],
+                                           miller_list, e_surf_list)
+            else:
+                print "Slab calculation set incomplete, wulff shape cannot be generated"
             surface_energies[el] = se_dict
 
         # Returns dictionary of wulff
@@ -483,10 +494,3 @@ class SingleTaskRuns(object):
         fws = [fw]
         wf = Workflow(fws, name=self.db_parameters['collection'])
         self.launchpad.add_wf(wf)
-
-    # def single_writeslabvaspinputs(self, miller_index, folder, custodian_params,
-    #                                min_slab_size=10, min_vacuum_size=10, angle_tolerance=5,
-    #                                user_incar_settings=None, k_product=50,
-    #                                potcar_functional='PBE', symprec=0.001,
-    #                                terminations=False, get_bulk_e=True, ucell=None):
-    #
