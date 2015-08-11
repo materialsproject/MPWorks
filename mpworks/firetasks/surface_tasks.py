@@ -320,7 +320,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 wf = Workflow(FWs)
 
-                return FWAction(additions=wf)
+                return FWAction(additions=[wf])
 
 
 @explicit_serialize
