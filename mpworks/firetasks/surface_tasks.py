@@ -8,7 +8,7 @@ __date__ = "6/2/15"
 
 import os
 
-from fireworks.core.firework import FireTaskBase, FWAction, Firework
+from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks import explicit_serialize
 from pymatgen.io.vaspio.vasp_output import Vasprun, Poscar, Incar
 from custodian.custodian import Custodian
@@ -318,8 +318,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('NELMIN', 8)
                         incar.write_file(new_folder+'/INCAR')
 
+                wf = Workflow(FWs)
 
-                return FWAction(additions=FWs)
+                return FWAction(additions=wf)
 
 
 @explicit_serialize

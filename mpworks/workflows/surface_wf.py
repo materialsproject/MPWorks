@@ -340,7 +340,7 @@ class CreateSurfaceWorkflow(object):
                 fw = Firework(tasks, name=folderbulk)
 
                 fws.append(fw)
-        wf = Workflow(fws, name=self.vaspdbinsert_params['collection'])
+        wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
 
 
