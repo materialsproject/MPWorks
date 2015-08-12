@@ -303,7 +303,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         # magmom = Incar.from_file(new_folder +'/INCAR')
                         # mag = magmom.get('MAGMOM')
                         element = relax_orient_uc.species[0]
-                        out = Outcar(new_folder+'/OUTCAR.relax2.gz')
+                        out = Outcar(folder+'/OUTCAR.relax2.gz')
                         out_mag = out.magnetization
                         tot_mag = [mag['tot'] for mag in out_mag]
                         magmom = np.mean(tot_mag)
