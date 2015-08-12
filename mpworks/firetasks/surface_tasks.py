@@ -361,7 +361,7 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        c = Custodian(handlers=handlers, jobs=[jobs], **cust_params)
+        c = Custodian(handlers=handlers, jobs=jobs, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
