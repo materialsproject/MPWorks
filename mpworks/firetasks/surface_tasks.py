@@ -7,6 +7,7 @@ __email__ = "vivid0036@gmail.com"
 __date__ = "6/2/15"
 
 import os
+import numpy as np
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks import explicit_serialize
