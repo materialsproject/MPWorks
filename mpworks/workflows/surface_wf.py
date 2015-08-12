@@ -264,7 +264,8 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job.double_relaxation_run(job.vasp_cmd)}
+                       "jobs": job.double_relaxation_run(job.vasp_cmd)} # will return a list of jobs
+                                                                        # instead of just being on job
 
         fws=[]
         for key in self.miller_dict.keys():
@@ -453,47 +454,47 @@ class CreateSurfaceWorkflow(object):
         # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
         return wulffshapes, surface_energies
 
-class SingleTaskRuns(object):
-
-    def __init__(self, host, port, user, password, database, collection, launchpad_dir):
-
-        vaspdbinsert_params = {'host': host,
-                               'port': port, 'user': user,
-                               'password': password,
-                               'database': database,
-                               'collection': collection}
-
-        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-                                                     launchpad_dir,
-                                                     "my_launchpad.yaml"))
-
-        self.db_parameters = vaspdbinsert_params
-        self.launchpad = launchpad
-
-    def single_runcustodiantask(self, jobs, handlers=[], dir=os.getcwd()):
-
-        cust_params = {"custodian_params":
-                           {"scratch_dir":
-                                os.path.join("/global/scratch2/sd/",
-                                             os.environ["USER"])},
-                       "jobs": jobs}
-
-        fw = Firework([RunCustodianTask(dir=dir,
-                                        handlers=[VaspErrorHandler()],
-                                        **cust_params)])
-
-        fws = [fw]
-        wf = Workflow(fws, name=self.db_parameters['collection'])
-        self.launchpad.add_wf(wf)
-
-
-    def single_vaspslabdbinserttask(self, miller_index, struct_type):
-
-        fw = Firework([VaspSlabDBInsertTask(struct_type=struct_type,
-                                            loc=dir,
-                                            miller_index=miller_index,
-                                            **self.db_parameters)])
-
-        fws = [fw]
-        wf = Workflow(fws, name=self.db_parameters['collection'])
-        self.launchpad.add_wf(wf)
+# class SingleTaskRuns(object):
+#
+#     def __init__(self, host, port, user, password, database, collection, launchpad_dir):
+#
+#         vaspdbinsert_params = {'host': host,
+#                                'port': port, 'user': user,
+#                                'password': password,
+#                                'database': database,
+#                                'collection': collection}
+#
+#         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
+#                                                      launchpad_dir,
+#                                                      "my_launchpad.yaml"))
+#
+#         self.db_parameters = vaspdbinsert_params
+#         self.launchpad = launchpad
+#
+#     def single_runcustodiantask(self, jobs, handlers=[], dir=os.getcwd()):
+#
+#         cust_params = {"custodian_params":
+#                            {"scratch_dir":
+#                                 os.path.join("/global/scratch2/sd/",
+#                                              os.environ["USER"])},
+#                        "jobs": jobs}
+#
+#         fw = Firework([RunCustodianTask(dir=dir,
+#                                         handlers=[VaspErrorHandler()],
+#                                         **cust_params)])
+#
+#         fws = [fw]
+#         wf = Workflow(fws, name=self.db_parameters['collection'])
+#         self.launchpad.add_wf(wf)
+#
+#
+#     def single_vaspslabdbinserttask(self, miller_index, struct_type):
+#
+#         fw = Firework([VaspSlabDBInsertTask(struct_type=struct_type,
+#                                             loc=dir,
+#                                             miller_index=miller_index,
+#                                             **self.db_parameters)])
+#
+#         fws = [fw]
+#         wf = Workflow(fws, name=self.db_parameters['collection'])
+#         self.launchpad.add_wf(wf)
