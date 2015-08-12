@@ -147,8 +147,10 @@ class SurfaceWorkflowManager(object):
             miller_dict[el] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
+                                     self.vaspdbinsert_params, ssize=self.ssize,
+                                     vsize=self.vsize,
+                                     max_normal_search=max_normal_search,
+                                     terminations=terminations, reset=self.reset)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
