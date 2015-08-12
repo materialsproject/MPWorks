@@ -10,7 +10,7 @@ import os
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks import explicit_serialize
-from pymatgen.io.vaspio.vasp_outputs import Vasprun, Poscar, Incar, Outcar
+from pymatgen.io.vasp.vasp_outputs import Vasprun, Poscar, Incar, Outcar
 from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 from matgendb.creator import VaspToDbTaskDrone
