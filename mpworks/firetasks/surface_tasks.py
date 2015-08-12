@@ -259,7 +259,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
-        print 'query bulk entry for job complettion'
+        print 'query bulk entry for job completion'
         bulk_entry =  qe.get_entries({'chemsys': relax_orient_uc.composition.reduced_formula,
                                      'structure_type': 'oriented_unit_cell', 'miller_index': miller_index},
                                      optional_data=optional_data)
@@ -303,13 +303,12 @@ class WriteSlabVaspInputs(FireTaskBase):
                         # magmom = Incar.from_file(new_folder +'/INCAR')
                         # mag = magmom.get('MAGMOM')
                         element = relax_orient_uc.species[0]
-                        out = Outcar(new_folder)
+                        out = Outcar(new_folder+'/OUTCAR.relax2.gz')
                         out_mag = out.magnetization
                         tot_mag = [mag['tot'] for mag in out_mag]
                         magmom = np.mean(tot_mag)
                         # user_incar_settings['MAGMOM'] = {element: magmom}
                         mag= [magmom for i in relax_orient_uc]
-                        incar.__setitem__('ISIF', 2)
                         incar.__setitem__('MAGMOM', mag)
                         incar.__setitem__('ISIF', 2)
                         incar.__setitem__('AMIN', 0.01)
