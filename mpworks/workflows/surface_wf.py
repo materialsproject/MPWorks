@@ -19,7 +19,7 @@ from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
-from pymatgen.io.vaspio.vasp_output import Outcar
+from pymatgen.io.vaspio.vasp_outputs import Outcar
 
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
