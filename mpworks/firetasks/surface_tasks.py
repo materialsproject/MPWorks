@@ -238,7 +238,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # into SlabGenerator is the same as obtaining a slab in the
         # orienetation of the original miller index.
         print 'about to copy contcar'
-        contcar = Poscar.from_file("%s/CONTCAR" %(folder))
+        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(folder))
         relax_orient_uc = contcar.structure
         print 'made relaxed oriented structure'
         print relax_orient_uc
@@ -318,7 +318,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('NELMIN', 8)
                         incar.write_file(new_folder+'/INCAR')
 
-                return FWAction(additions=FWs)
+                wf = Workflow(FWs)
+                return FWAction(additions=[wf])
 
 
 @explicit_serialize
