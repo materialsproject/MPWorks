@@ -318,9 +318,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('NELMIN', 8)
                         incar.write_file(new_folder+'/INCAR')
 
-                wf = Workflow(FWs)
-
-                return FWAction(additions=wf)
+                return FWAction(additions=FWs)
 
 
 @explicit_serialize
