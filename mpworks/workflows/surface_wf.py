@@ -266,8 +266,11 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job.double_relaxation_run(job.vasp_cmd)} # will return a list of jobs
-                                                                        # instead of just being on job
+                       "jobs": job.double_relaxation_run(job.vasp_cmd),
+                       "handlers": [VaspErrorHandler(),
+                                    NonConvergingErrorHandler(),
+                                    UnconvergedErrorHandler()]} # will return a list of jobs
+                                                                # instead of just being on job
 
         fws=[]
         for key in self.miller_dict.keys():
@@ -307,9 +310,6 @@ class CreateSurfaceWorkflow(object):
                                                potcar_functional=potcar_functional,
                                                k_product=k_product),
                                  RunCustodianTask(dir=cwd+folderbulk,
-                                                  handlers=[VaspErrorHandler(),
-                                                            NonConvergingErrorHandler(),
-                                                            UnconvergedErrorHandler()],
                                                   **cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=cwd+folderbulk,
