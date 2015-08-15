@@ -270,7 +270,7 @@ class CreateSurfaceWorkflow(object):
                        "handlers": [VaspErrorHandler(),
                                     NonConvergingErrorHandler(),
                                     UnconvergedErrorHandler()],
-                       "max_errors": 3} # will return a list of jobs
+                       "max_errors": 100} # will return a list of jobs
                                                                 # instead of just being on job
 
         fws=[]
