@@ -326,7 +326,7 @@ class RunCustodianTask(FireTaskBase):
     """
 
     required_params = ["dir", "jobs"]
-    optional_params = ["custodian_params", "handlers"]
+    optional_params = ["custodian_params", "handlers", "max_errors"]
 
     def run_task(self, fw_spec):
 
@@ -348,6 +348,7 @@ class RunCustodianTask(FireTaskBase):
         os.chdir(dir)
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
+        max_errors = dec.process_decoded(self['max_errors'])
 
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
@@ -357,7 +358,7 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        c = Custodian(handlers=handlers, jobs=jobs, **cust_params)
+        c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
