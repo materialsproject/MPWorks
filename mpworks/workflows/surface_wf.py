@@ -269,7 +269,8 @@ class CreateSurfaceWorkflow(object):
                        "jobs": job.double_relaxation_run(job.vasp_cmd),
                        "handlers": [VaspErrorHandler(),
                                     NonConvergingErrorHandler(),
-                                    UnconvergedErrorHandler()]} # will return a list of jobs
+                                    UnconvergedErrorHandler()],
+                       "max_errors": 3} # will return a list of jobs
                                                                 # instead of just being on job
 
         fws=[]
