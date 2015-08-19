@@ -67,6 +67,39 @@ Before starting this documentation, you should have enough familiarity with pyma
 
 For the latter functionality, you might need to consult the pymatgen-db codebase.
 
+1.4 Other prerequisites
+-----------------------
+
+You should have the **MPWorks** codebase downloaded (so you can see the
+source code), e.g. through MPenv at NERSC. We’ll be referring to source
+code in MPWorks during the course of this guide, so it’s important you
+have it available.
+
+2. Designing Scientific Workflows for running at NERSC
+======================================================
+
+2.1 How workflow design fits in
+-------------------------------
+
+If you recall the FireWorks documentation, there are essentially two steps to running scientific workflows at NERSC (Figure 1):
+
+|image0|
+
+Figure 1 FireWorks operation
+
+The steps are:
+
+1. Defining Workflows in FireWorks format and putting them in the
+   “LaunchPad” (a MongoDB database that is hosted “somewhere”)
+
+2. Running Workflows on NERSC (a FireWorker) by pulling jobs from the
+   LaunchPad
+
+This section concentrates only on part 1 – defining workflows and
+putting them in the LaunchPad. This part does not actually require
+logging into a NERSC machine and can be done from your laptop at home.
+Running jobs will be covered later on.
+
 
 
 
