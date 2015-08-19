@@ -1,14 +1,56 @@
+=======
 MPWorks
 =======
 
 MPWorks merges pymatgen, custodian, and FireWorks into a custom workflow for Materials Project. It is very powerful in that it is used for all the calculations performed for the Materials Project database; however, it is also quite complicated and not completely flexible. This guide will try to explain the operation of the MPWorks system of running calculations
 
-Installation
-------------
+0. Installation
+===============
 
-MPWorks is in essence a system of running calculations. Thus, in addition to the code you need to have several MongoDB databases and environment variables set. The easiest way to install all of this is to use (or modify) `the MPenv code <https://github.com/materialsproject/MPenv>`_, which will install all the necessary dependencies of MPWorks, build the appropriate databases, and set the environment variables. Unfortunately, MPenv only works on a few systems.
+MPWorks is in essence a system of running calculations. Thus, in addition to the code you need to have several MongoDB databases and environment variables set. The easiest way to install all of this is to use (or modify) `the MPenv code <https://github.com/materialsproject/MPenv>`_, which will install all the necessary dependencies of MPWorks, build the appropriate databases, and set the environment variables. Unfortunately, MPenv only works on a few systems such as NERSC and (soon) ALCF.
 
-There are also some example workflows in MPWorks which can be attempted with much less complication. However, it is important to note that MPWorks is not intended to be a "general purpose" code at this time, and is mainly used by the Materials Project team.
+There are also some example workflows in MPWorks that can be attempted with much less complication. This guide will also cover those, but you will still need to learn the fundamentals and will still need a FireWorks database. It is important to note that MPWorks is not intended to be a "general purpose" code at this time, and is mainly used internally by the Materials Project team.
+
+1. Introduction and Pre-requisites
+==================================
+
+This document is a guide for designing and running materials science and chemistry workflows using the Materials Project codebases (pymatgen, FireWorks, custodian, etc.) and NERSC resources.
+
+The advantage of learning the infrastructure is that once you gain familiarity, you will be able to very easily run and manage your calculations. If you need to perform a set of computations over a new compound, you will simply need to execute a command rather than editing input files, ssh’ing them to NERSC, running qsub, etc…This is crucial when running hundreds of thousands of jobs, but you’ll probably find it very nice to have in your day-to-day work as well. Whenever you want to compute a new structure, you can do it in almost no time.
+
+In addition, the infrastructure is meant to help you rigorously test your workflows over test sets of compounds and rapidly analyze the results.
+
+However, before taking advantage of this infrastructure you must take a little time to learn it. In particular, there are many components to making the Materials Project high-throughput project function and you will need to learn at least a bit about all of them:
+
+* The **pymatgen** codebase (http://pymatgen.org) is used to read and write input and output files for various computational codes (like VASP or NWChem) given arbitrary structures and for different computational types (like static or structure optimization). The **pymatgen-db** codebase (http://pythonhosted.org/pymatgen-db/) is used to parse output files.
+* The **custodian** codebase (http://pythonhosted.org/custodian/) is used to execute the desired code in a way that can fix most errors that might be encountered during the run
+* The **FireWorks** codebase (http://pythonhosted.org/FireWorks/) allows us to automically run and track many thousands of jobs (such as custodian jobs) over supercomputing resources. FireWorks can also fix more complicated errors that may arise (like server crashes) and help design dynamic workflows.
+
+This documentation focuses on how these codebases work together and is *not* intended to teach you how to use the codebases individually. Before starting, it is therefore crucial that you review and have a basic understanding of each codebase in isolation, so things will make sense when we start putting things together.
+
+1.1 FireWorks prerequisites
+---------------------------
+
+.. pull-quote:: | FireWorks documentation can be found at http://pythonhosted.org/FireWorks/
+
+Before starting this documentation, make sure you have read through all the documentation on FireWorks and have a basic understanding of at least the following tutorials:
+*	Quickstart
+*	Defining Jobs using FireTasks
+*	Creating Workflows
+*	Dynamic Workflows
+*	Tips for designing FireTasks, FireWorks, and Workflows
+
+This documentation assumes that you have at least a basic grasp of the concepts of those tutorials. If you are interested in not only designing and submitting workflows, but running testing or production jobs at NERSC, you should also review the following FireWorks documentation (you should read the tutorials, but you don’t have to actually follow the instructions to install anything at NERSC; remember, MPEnv will do that for you):
+*	Worker Tutorial
+*	Launch Rockets through a queue
+*	Reserving FireWorks upon queue submission
+*	Installation Notes on various clusters / supercomputing centers
+
+
+
+
+
+
 
 Part 1 - The basics
 -------------------
