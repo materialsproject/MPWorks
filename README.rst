@@ -745,7 +745,21 @@ A schematic is shown below
 
 The nice thing about this method is that, once set up, all you need to
 do is submit StructureNL or molecule objects and not worry about
-Workflows or FireWorks. To submit a compound, use code that looks like
+Workflows or FireWorks.
+
+There are 4(!) main databases that interact within MPenv in this framework. You have credentials for these 4 databases in the MPenv files sent to you by the MPenv admin.
+
+1. The **FireWorks** database contains all the workflows that you want to run.
+
+2. The **VASP** database contains the results of your calculations
+
+3. There is also a **submissions** database where you can submit Structure objects (actually SNL objects) for computation. Using this database is optional but (as demonstrated later) can be simpler than trying to create FireWorks directly.
+
+4. Finally, there is an **SNL** database that contains all the structures you've submitted and relaxed. It is used for duplicate checking as well as record-keeping. Generally speaking, you do not need to do worry that this database exists.
+
+In the procedure above, you submit Structures to the **submissions** database, then use an *automated* command to convert those submissions into **FireWorks** workflows and run them. The results are checked via the **VASP** database. The order of operations is  **submissions** -> **FireWorks** --> **VASP**, but your interaction is only with **submissions** and **VASP** databases.
+
+To submit a compound, use code that looks like
 this::
 
    from mpworks.submission.submission_mongo import SubmissionMongoAdapter
@@ -766,7 +780,7 @@ yet create FireWorks to run. To create the FireWorks, you must:
 3. Run the command: ``go_submissions``
 
 The go\_submissions command will use snl\_to\_wf() to convert all your
-SNL into FireWork workflows.
+SNL into FireWork workflows. If you then use the qlaunch tools of FireWorks, your jobs will automatically be queued and run. Finally, you can connect to your VASP database to check the results when finished.
 
 3.3.1.4 Option 4 : Use the built-in test set
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -775,33 +789,42 @@ Using the built in test set, you can create Workflows for 45 “test”
 materials automatically. Like in the previous section, this method uses
 the snl\_to\_wf() method to create Workflows. The difference is that a
 set of about 45 compounds are pre-chosen and you don’t need to do any
-work to create SNL files or Workflow files.
+work to create SNL files or Workflow files. This test follows the **submissions** -> **FireWorks** --> **VASP** paradigm.
 
-This method is useful if you change the Workflow defined in
-snl\_to\_wf(), and want to test your changes over a set of 45 compounds.
-
-To use this method
+To use this method:
 
 1. Log into NERSC
 
 2. Activate your desired test environment using ACTIVATE\_CMD , e.g.
    “use\_test”
 
-3. Run the command: ``go_testing --clear (!!warning, this clears your databases!!)
+3. Note the following re-initializes/clears your database and adds a bunch of new submissions - run the command: ``go_testing --clear (!!warning, this clears your databases!!)``. (Note: You can run this command without the --clear option.
+There is also a --name option to submit only single compound rather than all ~40 compounds.) 
 
-4. Run the command: ``go_submissions``
+4. If you want, you can at this point try connecting to your **submissions** database (e.g. via MongoHub) and confirm that you see compounds there.
 
-The first command (“go\_testing --clear”) will clear all test databases
-(submissions, FireWorks, vasp, SNL) and then submit 45 compounds to
-submissions. (Note: You can run this command without the --clear option.
-There is also a --name option to submit only single compound.)
+5. Run the command: ``go_submissions``.
 
     **Important:** Never run “go\_testing –clear” when in a production
     environment! You will destroy all your results.
 
-The second command (“go\_submissions”) is the same as in the last
-section – this will use the snl\_to\_wf() method to convert the
-submissions into Workflows and enter them in the LaunchPad.
+6. You will see output saying that you have new workflows. This command *automatically* turned the new submissions into workflows in the **FireWorks** database that can can be run at NERSC. If you want, you can at this point try connecting to your **FireWorks** database (e.g. via MongoHub) and confirm that you see Workflows there. Or you can type ``lpad get_wflows -d less`` as another option to see what's in the FireWorks database.
+
+7. Let's run our FireWorks by navigating to a scratch directory and using the ``qlaunch`` command of FireWorks::
+
+    cd $GSCRATCH2
+    mkdir first_tests
+    cd first_tests
+    qlaunch -r rapidfire --nlaunches infinite -m 50 --sleep 100 -b 10000
+
+8. This should have submitted some jobs to the queues at NERSC. You should keep the qlaunch command running (or run it periodically) so that as workflow steps complete, new jobs can be submitted.
+
+9. You can check progress of your workflows using the built-in FireWorks monitoring tools. Several such tools, including a web gui, are documented in the FW docs. If you want to be efficient, you will actually look this up (as well as how to rerun jobs, detect failures, etc.). Here is a simple command you can use for basic checking::
+
+    lpad get_wflows -d more
+
+10. When your workflows complete, you should see the results in the **VASP** database (e.g. connect via MongoHub or via pymatgen-db frontend).
+
 
 3.3.2 Verifying your workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -885,61 +908,6 @@ commands left out. Please give your feedback to improve this as a
 reference for yourself and others.
 
 
-
-Part 1 - The basics
--------------------
-
-There are 4(!) main databases that interact within MPenv. You have credentials for these 4 databases in the MPenv files sent to you by the MPenv admin. As a first step, you might set up a connection to these database via MongoHub (or similar) so you can easily check the contents of these databases. If you do not have a Mac, you cannot use Mongohub to check database contents, but you can either (i) skip monitoring databases directly and just use the tools built into FireWorks and other packages or (ii) use another program or just the MongoDB command line tools. You can read "The Little MongoDB book" (available for free online) to see how to use the MongoDB command line as one alternative. Mongohub is **not** by any means a requirement.
-
-1. The most important database is the **FireWorks** database. This contains all the workflows that you want to run.
-
-2. The 2nd most important database is the **VASP** database. This contains the results of your calculations
-
-3. There is also a **submissions** database where you can submit Structure objects (actually SNL objects) for computation. Using this database is optional but (as demonstrated later) can be simpler than trying to create FireWorks directly.
-
-4. Finally, there is an **SNL** database that contains all the structures you've submitted and relaxed. It is used for duplicate checking as well as record-keeping. Generally speaking, you do not need to do worry that this database exists.
-
-One type of MPenv procedure is to submit Structures to the **submissions** database, then use an *automated* command to convert those submissions into **FireWorks** workflows and run them. The results are checked via the **VASP** database. The order of operations is  **submissions** -> **FireWorks** --> **VASP**, but your interaction is only with **submissions** and **VASP** databases.
-
-Another type of MPenv procedure is to dispense with submissions database and instead submit workflows directly to the **FireWorks** database. In this case, your interaction is with **FireWorks** and **VASP** databases.
-
-Part 2 - Running test workflows
--------------------------------
-
-You can run test workflows by the following procedure. This test follows the **submissions** -> **FireWorks** --> **VASP** paradigm.
-
-1. Log into a NERSC machine
-
-2. Activate your environment::
-
-    use_<ENV_NAME>
-
-3. Note: the following command clears all your databases. Type the command::
-
-    go_testing --clear
-
-4. The command above clears all your databases AND submits ~40 test compounds to your **submissions** database. If you want, you can at this point try connecting to your **submissions** database (e.g. via MongoHub) and confirm that you see compounds there.
-
-5. Items in the **submissions** database cannot be run directly. They must first be converted into FireWorks that state the actual calculations we want to perform. Type the command::
-
-    go_submissions
-
-6. You will see output saying that you have new workflows. This command *automatically* turned the new submissions into workflows in the **FireWorks** database that can can be run at NERSC. If you want, you can at this point try connecting to your **FireWorks** database (e.g. via MongoHub) and confirm that you see Workflows there. Or you can type ``lpad get_wflows -d less`` as another option to see what's in the FireWorks database.
-
-7. Let's run our FireWorks by navigating to a scratch directory and using the ``qlaunch`` command of FireWorks::
-
-    cd $GSCRATCH2
-    mkdir first_tests
-    cd first_tests
-    qlaunch -r rapidfire --nlaunches infinite -m 50 --sleep 100 -b 10000
-
-8. This should have submitted some jobs to the queues at NERSC. You should keep the qlaunch command running (or run it periodically) so that as workflow steps complete, new jobs can be submitted.
-
-9. You can check progress of your workflows using the built-in FireWorks monitoring tools. Several such tools, including a web gui, are documented in the FW docs. If you want to be efficient, you will actually look this up (as well as how to rerun jobs, detect failures, etc.). Here is a simple command you can use for basic checking::
-
-    lpad get_wflows -d more
-
-10. When your workflows complete, you should see the results in the **VASP** database (e.g. connect via MongoHub or via pymatgen-db frontend).
 
 Part 3 - Running custom structures
 ----------------------------------
