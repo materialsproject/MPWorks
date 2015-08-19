@@ -249,6 +249,93 @@ reading parameters like *job* or *handlers*, and make life simple.
 However, if we did this we would not be able to use the error-correction
 features of custodian.
 
+2.3.3 VaspCopyTask
+~~~~~~~~~~~~~~~~~~~
+
+    VaspCopyTask is located in **/mpworks/firetasks/vasp\_io\_tasks.py**
+
+The VaspCopyTask in MPWorks is also very simple. All it’s doing is
+copying a bunch of files from some directory to the current directory.
+This FireTask is used, for example, to copy output files from the
+structure optimization run to the static run. The directory containing
+the previous run must be defined in the FireWork specification under the
+“prev\_vasp\_dir” key. Other than that, there are some options for
+choosing what files to move and dealing with tricky things like
+“.relax#” extensions to output files added by certain types of VASP
+custodian runs.
+
+2.3.4. VaspToDBTask
+~~~~~~~~~~~~~~~~~~~~
+
+    A simplified version of VaspToDBTask called VaspToDBTaskEx is
+    located in **/mpworks/examples/firetasks\_ex.py.** The actual
+    VaspToDBTask is located in
+    **/mpworks/firetasks/vasp\_io\_tasks.py**. We will discuss the
+    simple version first, then the more complex version.
+
+The VASPtoDBTaskEx uses the pymatgen-db codebase to enter the output of
+a VASP run into the database.
+
+First, it loads the VASP output directory from the “prev\_dir”
+parameter. Then, it instantiates a *VaspToDBTaskDrone* object which,
+given database credentials, can parse the output directory and enter the
+results into the database. The actual database insertion is done via the
+command::
+
+t_id = drone.assimilate(prev_dir)
+
+At this point, we are largely done with the simplified VaspToDBTaskEx.
+
+The more complex VaspToDBTask (without the Ex) uses MPVaspDrone and does
+the following (feel free to skip these details if you’re just getting
+started):
+
+-  Before database insertion, this task is also moving files from
+   NERSC’s **$SCRATCH** filesystem to NERSC’s **$PROJECT** filesystem
+   (we refer to it as the “garden”). All runs need to be moved from
+   SCRATCH to PROJECT after completion, due to limited space (but better
+   disk performance) on SCRATCH.
+
+-  After database insertion, there is a lot of complicated code
+   determining whether this task should be rerun using a new Workflow
+   step. Feel free to ignore this detail for the moment. Normally, this
+   whole ordeal would be handled by **custodian** in a cleaner way.
+   However, the limitation of **custodian** is that all job restarts
+   occur within the same walltime at NERSC. If we have a 7-day walltime,
+   and the job fails after 6.5 days, a **custodian**-based restart would
+   only give the job’s reincarnation 0.5 days to complete. Most of the
+   time, jobs fail early and it’s OK to use **custodian** and restart
+   within the same walltime limit. However, some errors (like those
+   detected by UnconvergedHandler) fail very late or at the end of the
+   job, and they need to be wrapped in a new FireWork that will allow
+   the reincarnation of the job to run with a brand new 7-day walltime.
+
+2.3.4. Other MPWorks tasks, e.g. “Setup”-style tasks and Controller tasks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    Setup-style tasks are located in
+    **/mpworks/firetasks/vasp\_setup\_tasks.py**. Controller tasks are
+    located in **/mpworks/firetasks/controller\_tasks.py**
+
+There are many MPWorks tasks that take the output of a previous VASP
+directory and modify some of the inputs for the next step in the
+workflow. For example, the final structure and run parameters of a
+structure optimization run is used to create the input parameters of a
+static run (with just a few parameters changed). The “Setup” style tasks
+will read in the output files of the previous run (after they are moved
+using VaspCopyTask), and perform the necessary operations to create
+input files for the current run.
+
+The “Controller Task” is more complicated in that it reads in data from
+a previous VASP run and dynamically creates new jobs as needed. At the
+time of this writing, the controller task will create more VASP jobs if
+initial calculations demonstrate the material to be an insulator with
+gap > 0.5 eV.
+
+You can review these tasks on your own and contact the MP development
+list if you have questions. In our example FireTask, we won’t be using
+some of these FireTasks.
+
 
 
 
