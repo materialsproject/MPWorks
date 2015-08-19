@@ -83,9 +83,9 @@ have it available.
 
 If you recall the FireWorks documentation, there are essentially two steps to running scientific workflows at NERSC (Figure 1):
 
-|image0|
+.. image:: mpworks/docs/a.png
 
-Figure 1 FireWorks operation
+**Figure 1 FireWorks operation**
 
 The steps are:
 
@@ -99,6 +99,55 @@ This section concentrates only on part 1 – defining workflows and
 putting them in the LaunchPad. This part does not actually require
 logging into a NERSC machine and can be done from your laptop at home.
 Running jobs will be covered later on.
+
+2.2 Designing Workflows for Materials Science
+---------------------------------------------
+
+The goal of this section is to explain how, given any crystal or
+molecule, one might construct a FireWorks Workflow for computing its
+properties (Figure 2):
+
+`img src="https://github.com/materialsproject/MPWorks/mpworks/docs/b.png" width="400"`_
+
+.. image:: mpworks/docs/b.png
+
+**Figure 2 Goal of this section – automatically create a FireWorks
+workflow for any crystal or molecule**
+
+Once we can write some code that will take any compound and construct a
+workflow, automation is easy. Those workflows can be run very easily at
+NERSC using the job execution features of FireWorks.
+
+The issue then is how to write code that will take in a compound and
+create a Workflow. If you recall the FireWorks documentation, a Workflow
+is composed of multiple FireWorks, which are in turn composed of
+multiple FireTasks. Each FireTask is meant to be an atomic “action”. In
+our case, a single FireTask might:
+
+-  write some input files for a code
+
+-  execute code (e.g. VASP or NWChem), either directly in Python or
+   within a **custodian**
+
+-  move files around
+
+-  parse some files and enter them in a database
+
+-  decide whether more computations are needed and add them to the
+   database if needed (using dynamic workflow features built into
+   FireWorks)
+
+By putting together multiple FireTasks and FireWorks, we’ll end up with
+a Workflow that suits our needs. So we need to do two things:
+
+-  write the code for each individual FireTask
+
+-  meld them into an appropriate Workflow sequence, splitting some of
+   them up into different FireWorks
+
+Although these topics are somewhat related, we’ll try to cover some
+examples of writing FireTasks first, and then move onto constructing
+Workflows that tie them together.
 
 
 
