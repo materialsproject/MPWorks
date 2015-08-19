@@ -34,17 +34,19 @@ This documentation focuses on how these codebases work together and is *not* int
 .. pull-quote:: | FireWorks documentation can be found at http://pythonhosted.org/FireWorks/
 
 Before starting this documentation, make sure you have read through all the documentation on FireWorks and have a basic understanding of at least the following tutorials:
-*	Quickstart
-*	Defining Jobs using FireTasks
-*	Creating Workflows
-*	Dynamic Workflows
-*	Tips for designing FireTasks, FireWorks, and Workflows
+
+* Quickstart
+* Defining Jobs using FireTasks
+* Creating Workflows
+* Dynamic Workflows
+* Tips for designing FireTasks, FireWorks, and Workflows
 
 This documentation assumes that you have at least a basic grasp of the concepts of those tutorials. If you are interested in not only designing and submitting workflows, but running testing or production jobs at NERSC, you should also review the following FireWorks documentation (you should read the tutorials, but you don’t have to actually follow the instructions to install anything at NERSC; remember, MPEnv will do that for you):
-*	Worker Tutorial
-*	Launch Rockets through a queue
-*	Reserving FireWorks upon queue submission
-*	Installation Notes on various clusters / supercomputing centers
+
+* Worker Tutorial
+* Launch Rockets through a queue
+* Reserving FireWorks upon queue submission
+* Installation Notes on various clusters / supercomputing centers
 
 
 
