@@ -107,8 +107,6 @@ The goal of this section is to explain how, given any crystal or
 molecule, one might construct a FireWorks Workflow for computing its
 properties (Figure 2):
 
-`img src="https://github.com/materialsproject/MPWorks/mpworks/docs/b.png" width="400"`_
-
 .. image:: mpworks/docs/b.png
 
 **Figure 2 Goal of this section – automatically create a FireWorks
@@ -149,7 +147,107 @@ Although these topics are somewhat related, we’ll try to cover some
 examples of writing FireTasks first, and then move onto constructing
 Workflows that tie them together.
 
+2.3 Writing FireTasks: a few examples
+-------------------------------------
 
+It is somewhat difficult to create a guide for writing FireTasks – a
+FireTask can really be arbitrary code. Therefore, we’ll just point to a
+few case studies in the MPWorks and Rubicon codebases. These codebases
+contain specific implementations of FireTasks for the Materials Project
+and JCESR project, respectively. They depend on **pymatgen**,
+**custodian**, and **FireWorks** in order to work.
+
+Note that these FireTasks change from time to time, so use this as a
+rough guide. Also, don’t worry about understanding every detail of these
+FireTasks – just get a rough sense for what they’re doing and try to get
+through this section with a basic understanding the first time. Ask an
+MPWorks expert (e.g., Wei or Anubhav) when you really need to understand
+the fine details.
+
+**Important note:** Recall from the FireTasks documentation that the
+*run\_task()* method of a FireTask is what gets executed. You should
+concentrate on this method for each FireTask.
+
+2.3.1 VaspWriterTask
+~~~~~~~~~~~~~~~~~~~
+
+    VaspWriterTask is located in
+    **/mpworks/firetasks/vasp\_io\_tasks.py**
+
+The VaspWriterTask is about as simple as it gets – it is just a few
+lines of code. It reads information from the *fw\_spec* and uses that
+information to write INCAR, KPOINTS, POSCAR, and POTCAR files to the
+current directory. The expectation is that the next FireTask in the
+sequence will run VASP.
+
+More specifically, this task is reading in the “vasp” key of the
+*fw\_spec* that was stored by the person creating the FireWork. This key
+contains the information needed generate the input files. The format of
+the “vasp” key is pymatgen dictionary representations of the INCAR,
+POSCAR, etc objects. Given these dictionary objects, this FireTask will
+write the input files.
+
+Therefore, if you are trying to write some VASP input files, you can
+just create a FireWork with the appropriate *spec* (a “vasp” key with
+Pymatgen dictionary representations of input files) and then add the
+*VaspWriterTask* as one of your FireTasks.
+
+Note that you might wonder why the specification expects pymatgen
+representations of these files, rather than just the raw String content.
+Either would work; the pymatgen dictionary representations are much
+easier to query and explore with MongoDB. For example, you can very
+easily search for all the FireWorks where the INCAR parameter has NSW
+set to 0, which is harder (and slower) to do via String matching over
+the database.
+
+2.3.2 VaspCustodianTask
+~~~~~~~~~~~~~~~~~~~~~~~
+
+    A simplified version of VaspCustodianTask (called
+    VaspCustodianTaskEx) is located in
+    **/mpworks/examples/firetasks\_ex.py.** The actual VaspCustodianTask
+    is located in **/mpworks/firetasks/custodian\_task.py**. We will
+    discuss the simple version.
+
+The VaspCustodianTaskEx uses custodian to run an executable such as
+VASP. It expects that all input files for VASP are already written in
+the directory (e.g., via a VaspWriterTask). The job of
+VaspCustodianTaskEx is to execute a **custodian** to call the VASP
+executable.
+
+This is the core code that loads a custodian and runs it::
+
+   c = Custodian(self.handlers, self.jobs, self.max_errors)
+   custodian_out = c.run()
+
+You might notice that this code has nothing to do with VASP. The
+parameters *self.handlers* and *self.jobs* contain **custodian** objects
+that represent VASP jobs. The user passes these in via the FireTask’s
+*parameters*. In the constructor for VaspCustodianTask, you’ll notice a
+line of code that looks like this::
+
+   self.jobs = map(VaspJob.from_dict, parameters['jobs'])
+
+This is what is loading the Vasp Jobs based on the parameters of the
+FireTask. To use VaspCustodianTaskEx, you must therefore create this
+FireTask with the *job* and *handlers* parameters set to dictionary
+representations of VaspJob and VasprunHandler objects from custodian.
+
+There is some extra code in this task regarding a choice between “aprun”
+and “mpirun” because the command to execute VASP depends on the machine
+we are running on. But the core of this method is to load custodian Job
+and Handler objects in the constructor, and then instantiate and run the
+custodian in the run() method.
+
+Note that another way to run VASP is to simply use the command::
+
+   import subprocess
+   subprocess.check_call([“vasp”])
+
+inside the run() method, and do away with complicated constructors,
+reading parameters like *job* or *handlers*, and make life simple.
+However, if we did this we would not be able to use the error-correction
+features of custodian.
 
 
 
