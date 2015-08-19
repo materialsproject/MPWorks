@@ -83,9 +83,11 @@ have it available.
 
 If you recall the FireWorks documentation, there are essentially two steps to running scientific workflows at NERSC (Figure 1):
 
-|image0|
+.. image:: docs/a.png
+   :width: 400px
+   :align: center
 
-Figure 1 FireWorks operation
+**Figure 1 FireWorks operation**
 
 The steps are:
 
