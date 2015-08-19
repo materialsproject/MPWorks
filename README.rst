@@ -48,6 +48,26 @@ This documentation assumes that you have at least a basic grasp of the concepts 
 * Reserving FireWorks upon queue submission
 * Installation Notes on various clusters / supercomputing centers
 
+1.2 custodian prerequisites
+---------------------------
+
+.. pull-quote:: | custodian documentation can be found at http://pythonhosted.org/custodian/
+
+Additionally, you should read all the documentation on custodian (it is a single page)
+
+1.3	pymatgen and pymatgen-db prerequisites
+
+.. pull-quote:: | pymatgen documentation can be found at http://pythonhosted.org/pymatgen/
+.. pull-quote:: | pymatgen db documentation is at http://pythonhosted.org/pymatgen-db/
+
+Before starting this documentation, you should have enough familiarity with pymatgen to:
+
+* write input files for the code you want to execute (e.g., VASP or NWChem) and
+* parse output files for the code you want to execute into a MongoDB (JSON) format
+
+For the latter functionality, you might need to consult the pymatgen-db codebase.
+
+
 
 
 
