@@ -763,9 +763,7 @@ yet create FireWorks to run. To create the FireWorks, you must:
 2. Activate your desired test environment using ACTIVATE\_CMD, e.g.
    “use\_test”
 
-3. Run the command
-
-go\_submissions
+3. Run the command: ``go_submissions``
 
 The go\_submissions command will use snl\_to\_wf() to convert all your
 SNL into FireWork workflows.
@@ -789,10 +787,9 @@ To use this method
 2. Activate your desired test environment using ACTIVATE\_CMD , e.g.
    “use\_test”
 
-3. Run the commands::
+3. Run the command: ``go_testing --clear (!!warning, this clears your databases!!)
 
-   go_testing --clear (warning, this clears your databases!!)
-   go_submissions
+4. Run the command: ``go_submissions``
 
 The first command (“go\_testing --clear”) will clear all test databases
 (submissions, FireWorks, vasp, SNL) and then submit 45 compounds to
@@ -806,6 +803,86 @@ The second command (“go\_submissions”) is the same as in the last
 section – this will use the snl\_to\_wf() method to convert the
 submissions into Workflows and enter them in the LaunchPad.
 
+3.3.2 Verifying your workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To verify your workflows got entered:
+
+1. Log into NERSC
+
+2. Activate your desired test environment using ACTIVATE\_CMD , e.g. ``use_test``
+
+3. Run the command ``lpad get_fws –d less``
+
+(this will print all your workflows)
+
+For a more comprehensive list of query commands, see the FireWorks
+documentation on Querying FireWorks and Workflows. For example, you can
+count the number of Workflows completed over time.
+
+http://pythonhosted.org/FireWorks/query_tutorial.html
+
+3.3.3 Running the workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once your Workflows are in the LaunchPad, running them is really simple
+
+-  Log into NERSC
+
+-  Navigate to a SCRATCH directory, e.g. ``cd $SCRATCH/<my_name>``
+
+where <my\_name> is the directory you created when setting up your
+environment (see Section 3.3.1)
+
+-  Now that you are in the correct directory, type the command::
+
+   qlaunch -r rapidfire --nlaunches infinite -m 20 --sleep 100 -b 1000
+
+(type qlaunch rapidfire –h if you want help on what the options mean).
+This will start launching jobs to the queue . You will want to keep this
+window alive as long as possible (or until all your workflows complete).
+Unfortunately, this is difficult to do at NERSC as NERSC will timeout a
+terminal after inactivity and close the connection. Another option
+employed by Materials Project is to coordinate setting up a crontab with
+NERSC to periodically run jobs. In this case you should set --nlaunches
+to be 0 as this will prevent infinite looping of many queue launchers.
+
+3.3.4 Updating code
+~~~~~~~~~~~~~~~~~~~
+
+After activating the new environment, you can update all codes with the
+command::
+
+   update_codes
+
+You can also update individual codebases::
+
+   cd <ENV_NAME>/codes
+   cd MPWorks
+   git pull
+   python setup.py develop (this command is needed when version changes)
+
+3.4 Looking under the hood and concluding remarks
+-------------------------------------------------
+
+You’ve now created a personal execution environment, added Workflows
+using one of several methods, and executed the Workflowsusing FireWorks.
+With this infrastructure, you should be able to automate as many jobs as
+you need.
+
+However, even with this lengthy tutorial, there are many aspects of the
+MP workflow that were not covered. The best way to ask questions is
+through the Materials Project development group:
+
+https://groups.google.com/forum/#!forum/matproj-develop
+
+4. Give feedback!
+=================
+
+This documentation, and the testing environment in general, are works in
+progress. Despite best efforts, there might be typos and topics or
+commands left out. Please give your feedback to improve this as a
+reference for yourself and others.
 
 
 
