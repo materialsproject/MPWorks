@@ -107,7 +107,7 @@ The goal of this section is to explain how, given any crystal or
 molecule, one might construct a FireWorks Workflow for computing its
 properties (Figure 2):
 
-.. image:: mpworks/docs/b.png
+.. image:: mpworks/docs/d.png
 
 **Figure 2 Goal of this section – automatically create a FireWorks
 workflow for any crystal or molecule**
@@ -336,6 +336,84 @@ You can review these tasks on your own and contact the MP development
 list if you have questions. In our example FireTask, we won’t be using
 some of these FireTasks.
 
+2.4 Organizing FireTasks into Workflows
+---------------------------------------
+
+After studying the previous section, you should have a good idea of what
+FireTasks are and some idea of how you might write some simple
+FireTasks. The next step is to organize FireTasks into Workflows. Recall
+that there are multiple ways to do this, in particular whether to put
+many FireTasks in a single FireWork or to use multiple FireWorks (Figure
+3):
+
+.. image:: mpworks/docs/h.png
+
+**Figure 3 Put all FireTasks in a single FireWork, or split the tasks
+amongst multiple FireWorks?**
+
+The FireWorks documentation, in particular the tutorial on “Tips for
+designing FireTasks, FireWorks, and Workflows”, contains many details on
+how to do the design. In this section, we’ll follow one of the
+recommendations in that tutorial and begin by putting all the FireTasks
+in a single FireWork (left side of the diagram), and then iterating on
+that design to see where multiple FireWorks are needed.
+
+2.4.1 A prototypical Materials Science workflow – iteration 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In Figure 4, we draw a prototypical materials science workflow, where
+FireTasks are in purple and all are within a single FireWork:
+
+.. image:: mpworks/docs/e.png
+
+Figure 4 Initial draft of how a Workflow could be written. *This is not
+the suggested way to do things.*
+
+The Workflow in Figure 4 runs two types of calculations and two database
+insertions (one for each calculation). Each calculation might represent
+a VASP run, GULP calculation, NWChem calculation, or MD simulation.
+
+While putting everything in a single FireWork is an easy way to design a
+Workflow, it suffers from several limitations:
+
+-  Recall that each FireWork gets its own job at NERSC, with a single
+   walltime. The walltime at NERSC (7 days) might not be enough to
+   confidently finish both calculations. We might want to give each
+   calculation its own 7-day walltime
+
+-  We might want to run the calculations on different machines or with
+   different parameters. e.g., if calculation 1 requires using 2 nodes
+   with low memory but calculation 2 requires using 100 nodes with high
+   memory, you would need to put the jobs in different FireWorks so they
+   can use different queue settings or run on different machines
+   altogether.
+
+-  Recall that if you want to rerun a job, you’ll need to rerun the
+   entire FireWork from scratch. This means that if you embed the
+   Workflow within a single FireWork, and a server crashes or memory
+   error occurs during calculation 2, FireWorks must rerun everything
+   from scratch in this design.
+
+-  Similarly, duplicate checking occurs at the FireWork level. So if
+   you’ve already run calculation 1 in the past but not calculation 2,
+   FireWorks cannot do atomistic duplicate checking and only run
+   calculation 2 (unless you split the Workflow into 2 FireWorks).
+
+-  We might want to do some branching operation in between the
+   calculations. For example, calculation 2 might not be necessary if
+   calculation 1 finishes with an error. It is then more natural to
+   program this using 2 FireWorks, and have the first FireWork send an
+   instruction to quit or branch the workflow after its execution
+   through the FWAction object.
+
+-  We might want the FireWorks codebase to compile runtime statistics
+   for us, and get separate reports for calculation 1 and calculation 2.
+   This cannot be done if everything is within a single FireWork – only
+   the overall stats for that FireWork will be reported.
+
+All these considerations lead to the conclusion that each executable job
+should probably be run within its own FireWork. Let’s consider this
+option in the next iteration of our Workflow.
 
 
 
