@@ -687,6 +687,125 @@ VENV\_LOC, and SCRIPT\_LOC to environment-specific locations. The
 MPWorks code uses these environment variables to dynamically shift what
 databases and queue parameters are being used.
 
+3.3 Running workflows within the environment system
+---------------------------------------------------
+
+Now that you are all set up, the next step is to add some Workflows to
+your personal FireWorks database and run it.
+
+3.3.1 Adding Workflows to your LaunchPad
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+3.3.1.1 Option 1: Add a simple MPWorks workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Recall that we earlier created a simple Workflow object called
+“Si\_wf.json” in Section 2.5.1. We can navigate to this file in the
+MPWorks code on the NERSC machine by typing the following your prompt::
+
+   cd <env_name>/codes/MPWorks/mpworks/examples
+   lpad add Si_wf.json
+
+Note: Make sure that the “mpworks.examples” directory is in your ADD\_USER\_PACKAGES option in your FWConfig.yaml file in<env\_name>/ configs/config\_XXXX)
+
+3.3.1.2 Option 2 : Add a workflow from your laptop
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you have a Workflow object already (called, for example, *my\_wf*),
+you can add it to your testing environment using the following Python
+code::
+
+   lp = LaunchPad.from_file(“my_launchpad.yaml”)
+   lp.add_wf(my_wf)
+
+where *my\_wf* is your workflow and my\_launchpad.yaml is the db file
+from MPenv located in in *<env\_name>/config/config\_Hopper*. You might
+have to delete a few lines in my\_launchpad.yaml, e.g. ones relating to
+log directories on your remote machine, to get it working.
+
+3.3.1.3 Option 3 : Use the submissions framework
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The MPWorks submissions framework will add a production-level workflow
+from an SNL object using the snl\_to\_wf() function discussed in 2.5.2.
+The sequence of events is as follows:
+
+-  You use the SubmissionMongoAdapter to submit raw SNL objects to a
+   submissions database
+
+-  You use the SubmissionProcessor to turn those submitted SNL to
+   Workflows that get added to the LaunchPad (this uses snl\_to\_wf()
+   under the hood)
+
+A schematic is shown below
+
+.. image:: mpworks/docs/b.png
+
+**Figure 8 Submissions framework**
+
+The nice thing about this method is that, once set up, all you need to
+do is submit StructureNL or molecule objects and not worry about
+Workflows or FireWorks. To submit a compound, use code that looks like
+this::
+
+   from mpworks.submission.submission_mongo import SubmissionMongoAdapter
+   sma = SubmissionMongoAdapter.from_file("submission_db.yaml")
+   sma.submit_snl(my_snl_object)
+
+where *my\_snl\_object* is your StructureNL object (compound), and
+“submission\_db.yaml” can be found in *<env\_name>/config/dbs*.
+
+This will only add a compound to the submissions database. It does not
+yet create FireWorks to run. To create the FireWorks, you must:
+
+1. Log into NERSC
+
+2. Activate your desired test environment using ACTIVATE\_CMD, e.g.
+   “use\_test”
+
+3. Run the command
+
+go\_submissions
+
+The go\_submissions command will use snl\_to\_wf() to convert all your
+SNL into FireWork workflows.
+
+3.3.1.4 Option 4 : Use the built-in test set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using the built in test set, you can create Workflows for 45 “test”
+materials automatically. Like in the previous section, this method uses
+the snl\_to\_wf() method to create Workflows. The difference is that a
+set of about 45 compounds are pre-chosen and you don’t need to do any
+work to create SNL files or Workflow files.
+
+This method is useful if you change the Workflow defined in
+snl\_to\_wf(), and want to test your changes over a set of 45 compounds.
+
+To use this method
+
+1. Log into NERSC
+
+2. Activate your desired test environment using ACTIVATE\_CMD , e.g.
+   “use\_test”
+
+3. Run the commands::
+
+   go_testing --clear (warning, this clears your databases!!)
+   go_submissions
+
+The first command (“go\_testing --clear”) will clear all test databases
+(submissions, FireWorks, vasp, SNL) and then submit 45 compounds to
+submissions. (Note: You can run this command without the --clear option.
+There is also a --name option to submit only single compound.)
+
+    **Important:** Never run “go\_testing –clear” when in a production
+    environment! You will destroy all your results.
+
+The second command (“go\_submissions”) is the same as in the last
+section – this will use the snl\_to\_wf() method to convert the
+submissions into Workflows and enter them in the LaunchPad.
+
 
 
 
