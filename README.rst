@@ -366,8 +366,8 @@ FireTasks are in purple and all are within a single FireWork:
 
 .. image:: mpworks/docs/e.png
 
-Figure 4 Initial draft of how a Workflow could be written. *This is not
-the suggested way to do things.*
+**Figure 4 Initial draft of how a Workflow could be written. This is not
+the suggested way to do things.**
 
 The Workflow in Figure 4 runs two types of calculations and two database
 insertions (one for each calculation). Each calculation might represent
@@ -415,7 +415,103 @@ All these considerations lead to the conclusion that each executable job
 should probably be run within its own FireWork. Let’s consider this
 option in the next iteration of our Workflow.
 
+2.4.2 A prototypical Materials Science workflow – iteration 2
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+If we put each of the two calculations within its own FireWork, the
+Workflow will look like Figure 5:
+
+.. image:: mpworks/docs/f.png
+
+**Figure 5 Second iteration of how a Workflow could be written. This is
+not the suggested way to do things.**
+
+In Figure 5, each calculation gets its own FireWork, which solves most
+of the issues in our initial draft. For example, now each calculation
+will get its own job at NERSC and its own walltime. If something goes
+wrong during the second calculation, we can rerun just that calculation
+without repeating calculation 1 using FireWork’s rerun features.
+
+However, splitting the Workflow also adds some complications:
+
+-  The second calculation might need to know some information from the
+   first one. For example, it might need to know some of the results, or
+   might even need to know the directory where it output files so it can
+   copy some of them. As a user, you will need to explictly pass the
+   information you need between FireWorks using the FWAction object.
+   This complicates things. Two key pieces of information passed between
+   FireWorks in the MPWorks codebase are:
+
+   -  the directory where the previous job ran
+
+   -  the type of task of the previous job (“structure optimization”,
+      “static”, etc…)
+
+-  By default, the calculations may run on different machines: the
+   FireWorks codebase runs each FireWork on whatever machine is
+   available. If you want to run the jobs on the same machine, or on
+   specific machines, you as a user will need to setup FireWorks to do
+   this explicitly (see the docs). Of course, you now also gain the
+   freedom to run the jobs on different machines (or the first available
+   machine) if this is what you’d like to do.
+
+These issues are all solvable, but require extra effort on the part of
+the user to setup FireWorks correctly. In addition, our second iteration
+has more pressing problems:
+
+-  File movement and database insertion are performed at the end of a
+   FireWork. If the calculation doesn’t leave enough walltime for these
+   operations to complete, you might end up with an incomplete state
+   where file movement or database insertion is incomplete.
+
+-  If database insertion fails due to a parse error, you cannot rerun
+   only database insertion (e.g., with a patched code). You must rerun
+   the entire FireWork (including the calculation part)
+
+-  We might want to track stats like database insertion time or
+   calculation time separately within FireWorks
+
+For these reasons, it might make sense to separate these steps into
+their own FireWork, so that you can be confident that these operations
+will have their own walltime that you can set as high as you need and so
+you can rerun these steps atomically as needed. This leads us to the
+next (and final iteration) of the workflow.
+
+2.4.3 A prototypical Materials Science workflow – iteration 3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this third (and final) iteration of the Workflow, both calculations
+and file movement/database steps are given their own FireWorks (Figure
+6):
+
+.. image:: mpworks/docs/g.png
+
+**Figure 6 Third iteration of how a Workflow could be written – both
+calculations and database insertions are given their own FireWorks.**
+
+Now we finally have a situation where all our major tasks have their own
+FireWork. They can be rerun independently, all get their own walltime
+and resources, and are tracked and monitored independently. This is all
+quite helpful, but we did add some complications:
+
+-  We still need to make sure we pass all the necessary data between
+   FireWorks, and there is even more data passing going on now
+
+-  We again need to set things up so each job runs on the appropriate
+   machine and with the right resources. For example, we might want the
+   database insertions to occur on a different machine (maybe even on
+   regular server without walltime rather than a supercomputer). If you
+   want to do anything other than “run any job on any machine”, you’ll
+   need to provide specifics to FireWorks
+
+-  Each FireWork carries some overhead. For example, each FireWork has
+   its own run directory on the filesystem, and typically writes a few
+   files like FW.json in that directory. More FireWorks means more run
+   directories and more files written for this overhead (you can turn
+   off certain things like the FW.json in the configuration).
+
+All of these bullet points have solutions, but you may need to send a
+message to the development list if you get stuck.
 
 
 
