@@ -1,12 +1,14 @@
 MPWorks
 =======
 
-merges pymatgen, custodian, and FireWorks into a custom workflow for Materials Project. See mpworks/docs directory for some basic explanation of the tasks.
+MPWorks merges pymatgen, custodian, and FireWorks into a custom workflow for Materials Project. It is very powerful in that it is used for all the calculations performed for the Materials Project database; however, it is also quite complicated and not completely flexible. This guide will try to explain the operation of the MPWorks system of running calculations
 
-Getting started with MPenv
-==========================
+Installation
+------------
 
-  .. note:: This applies to Materials Project environments and to a certain extent, rubicon environments.
+MPWorks is in essence a system of running calculations. Thus, in addition to the code you need to have several MongoDB databases and environment variables set. The easiest way to install all of this is to use (or modify) `the MPenv code <https://github.com/materialsproject/MPenv>`_, which will install all the necessary dependencies of MPWorks, build the appropriate databases, and set the environment variables. Unfortunately, MPenv only works on a few systems.
+
+There are also some example workflows in MPWorks which can be attempted with much less complication. However, it is important to note that MPWorks is not intended to be a "general purpose" code at this time, and is mainly used by the Materials Project team.
 
 Part 1 - The basics
 -------------------
