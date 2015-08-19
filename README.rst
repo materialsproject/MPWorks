@@ -591,6 +591,103 @@ Here is a rough guide to the current workflow:
    structure calculations. This GGA+U “branch” acts independently and
    parallel to the GGA branch, after the initial structure optimization.
 
+3. Running Workflows at NERSC
+=============================
+
+The main purpose of writing workflow code and using FireWorks was to
+make it easy to run your jobs at supercomputing centers (there are also
+other benefits, like having a database and built in FW web tool in which
+you can query your jobs). This section will show you how to run your
+jobs at NERSC. In particular, it will show you how to run your jobs in a
+*personal environment* that will let you test and run your workflows.
+While users have used the *personal environment* to do their own
+research, one of the main goals of a personal environment is to allow
+you to develop and test workflows so that they can be integrated into
+the Materials Project production environment.
+
+3.1 Installing MPenv
+--------------------
+
+The MPenv codebase is used to automatically install one or more personal
+environments into your user account at NERSC. Once you are up and
+running with your environment, it is your job to manage it. Note that
+your environment is a sandbox that does not interact with other
+environments or the Materials Project production environment. This is
+because it uses separate codebase copies and separate databases from
+other environments. So, you can develop confidently and not be afraid of
+messing something up in production.
+
+    Note: make sure you’ve set up you’re environment to use 2 nodes
+    (mppwidth=48 on Hopper) in order to run VASP jobs.
+
+3.2 Environment system
+----------------------
+
+An *environment* is combination of:
+
+-  A particular version of all the Materials Project codebases
+   (pymatgen, FireWorks, rubicon, etc)
+
+-  A set of databases
+
+-  Settings files, e.g. config files for FireWorks that choose a queue
+   to run on, default walltimes, etc.
+
+A user might have several environments, e.g. one for testing and one for
+production, or one for each separate projects. Each environment is a
+standalone sandbox for storing and running FireWorks computations with
+the Materials Project infrastructure (e.g. pymatgen, custodian, etc).
+
+You can switch between environments by “activating” them through the
+command “use\_\ *<env\_name>*\ ”. For example, suppose you have two
+environments, “test” and “prod”. If you type “use\_test” you will be in
+the testing environment. Now, if you clear the FireWorks database,
+nothing in the production environment will be affected. Only the test
+environment will be affected. Similarly, if you change queue config
+parameters in your test environment, your production environment will
+continue running as before.
+
+.. image:: mpworks/docs/c.png
+
+**Figure 7 Activating an environment on the matcomp user chooses a set of
+codebases (left) and databases (right) to use. You can then operate on
+one environment without affecting the others.**
+
+When you *activate* an environment, the following happens (Figure 7):
+
+-  A Python virtual environment is chosen and activated. If you activate
+   the test environment, for example, the code copies in the directory
+   *test/codes* will be used. (There are separate copies of the code for
+   each environment)
+
+-  A set of standard environment variables are set, which give the paths
+   to database credentials and settings files. Because codes like
+   MPWorks use environment variables to determine what database to
+   connect to, by switching the environment variables we can connect to
+   different versions of a database. These settings files are located in
+   the “config” directory of your environment (e.g., *test/config*).
+   They contain credentials for the databases to connect to (e.g.,
+   *test/config/dbs*) as well as the FireWorks settings to use (e.g.,
+   *test/config/config\_Hopper*).
+
+To see how the environment variables are being modified to point to
+different database and settings files based on the environment, look
+inside your “.bashrc.ext” file. You’ll see a line like::
+
+   alias use_aj='source /global/u2/a/ajain/aj/virtenv_aj/bin/activate;
+   export FW_CONFIG_FILE=$FW_CONFIG_aj; export
+   DB_LOC=/global/u2/a/ajain/aj/config/dbs; export
+   VENV_LOC=/global/u2/a/ajain/aj/virtenv_aj/bin/activate; export
+   SCRIPT_LOC=/global/u2/a/ajain/aj/config/scripts; echo "You are in
+   environment aj."'
+
+As you can see, this line of code is for activating the “aj” environment
+and sets several environment variables like FW\_CONFIG\_FILE, DB\_LOC,
+VENV\_LOC, and SCRIPT\_LOC to environment-specific locations. The
+MPWorks code uses these environment variables to dynamically shift what
+databases and queue parameters are being used.
+
+
 
 
 Part 1 - The basics
