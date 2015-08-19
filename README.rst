@@ -513,6 +513,84 @@ quite helpful, but we did add some complications:
 All of these bullet points have solutions, but you may need to send a
 message to the development list if you get stuck.
 
+2.5 Workflow implementations
+----------------------------
+
+Recall in the beginning of this Chapter, we stated that the goal was to
+start with a crystal or molecule and end up with a Workflow (Figure 2).
+Throughout this chapter, we’ve provided an introduction to some concepts
+on how to achieve this. Now that you’re familiar with these concepts,
+the next step is to look at some of the actual code used in MPWorks and
+Rubicon to construct these workflows.
+
+2.5.1 A simple workflow to start with – Structure to Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    structure\_to\_wf() is located in **/mpworks/examples/wf\_ex.py**
+
+Recall that the goal is to start with a pymatgen *Structure* object and
+transform it to a FireWorks *Workflow* object. You can then add that
+*Workflow* to the FireWorks database and run it.
+
+A simple example to get started with is wf\_ex.py. You can try running
+this method and seeing that a Workflow object is indeed produced
+(“Si\_wf.json”). The key method is *structure\_to\_wf()*, which
+transforms a structure into a workflow. This workflow uses the concepts
+of the previous sections to build a simple Workflow that will optimize a
+structure with VASP and then perform a static run on it, along with
+database insertion after each step. Later in this manual, we will add
+this Workflow to the FireWorks database and run it. Note that instead of
+generating a file, we could also have directly used Python code to enter
+the Workflow in the FireWorks database, but for simplicity in this
+tutorial we will use the file method.
+
+Note that anytime you have *any* pymatgen Structure, you can now use the
+s\ *tructure\_to\_wf()* to transform that into a Workflow file!
+
+2.5.2 MPWorks – SNL to Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    snl\_to\_wf() is located in **/mpworks/workflows/snl\_to\_wf.py**
+
+If you want to graduate to the big leagues, you can take a look at
+*snl\_to\_wf()*. However, this method is significantly more complicated
+than the previous one so we suggest that you skip it the first time
+around.
+
+The MPWorks code that takes any crystal and creates a Workflow is
+*snl\_to\_wf()*. Recall that SNL (or StructureNL) is just a pymatgen
+Structure with some additional information attached (like authors,
+references, tags, etc.). We suggest that you take a look at
+*snl\_to\_wf()* now.
+
+Here is a rough guide to the current workflow:
+
+-  The initial step adds the submission to an “SNL” database and does
+   some duplicate checking on the structure alone (insufficient to do
+   real duplicate checks which also involve VASP parameters) – *for now,
+   just ignore this step*
+
+-  A GGA structure optimization job is created as the first step, just
+   like Figure 6
+
+-  A database insertion job is created as the second step, just like
+   Figure 6
+
+-  The third step is different; it is a “Controller” job that can
+   dynamically create more calculations depending on the output of the
+   first calculation. The current Controller creates static, Uniform,
+   and band structure calculations if the calculated gap from the
+   structure optimization is greater than 0.5 eV (see the code for
+   ControllerTask).
+
+-  Finally, the second step forks into another branch for transition
+   metal oxides. For these systems, we run a GGA+U calculation that uses
+   the optimized structure of the GGA calculation as a starting point.
+   After the GGA+U calculation is another DB step, and another
+   controller step that creates GGA+U static, Uniform, and band
+   structure calculations. This GGA+U “branch” acts independently and
+   parallel to the GGA branch, after the initial structure optimization.
+
 
 
 Part 1 - The basics
