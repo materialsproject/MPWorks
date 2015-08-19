@@ -1,9 +1,11 @@
 import os
 import traceback
-from pymongo import MongoClient
 import time
+
+from pymongo import MongoClient
 import yaml
-from mpworks.legacy.mps_to_snl import mps_dict_to_snl
+
+from mpworks.fix_scripts.legacy.mps_to_snl import mps_dict_to_snl
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 
 __author__ = 'Anubhav Jain'
