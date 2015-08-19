@@ -759,15 +759,24 @@ There are 4(!) main databases that interact within MPenv in this framework. You 
 
 In the procedure above, you submit Structures to the **submissions** database, then use an *automated* command to convert those submissions into **FireWorks** workflows and run them. The results are checked via the **VASP** database. The order of operations is  **submissions** -> **FireWorks** --> **VASP**, but your interaction is only with **submissions** and **VASP** databases.
 
-To submit a compound, use code that looks like
-this::
+Here is some code you can use to submit a custom Structure to the **submissions** database (you will need to copy your ``<ENV_NAME>/configs/db/submission_db.yaml`` file to the location you run this code, and also have set up your MPRester API key if you want to grab a structure from Materials Project as in this example)::
 
-   from mpworks.submission.submission_mongo import SubmissionMongoAdapter
-   sma = SubmissionMongoAdapter.from_file("submission_db.yaml")
-   sma.submit_snl(my_snl_object)
+    from mpworks.submission.submission_mongo import SubmissionMongoAdapter
+    from pymatgen import MPRester
+    from pymatgen.matproj.snl import StructureNL
 
-where *my\_snl\_object* is your StructureNL object (compound), and
-“submission\_db.yaml” can be found in *<env\_name>/config/dbs*.
+    submissions_file = 'submission_db.yaml'
+    sma = SubmissionMongoAdapter.from_file(submissions_file)
+
+    # get a Structure object
+    mpr = MPRester()
+    s = mpr.get_structure_by_material_id("mp-149")  # this is Silicon
+
+    # At this point, you could modify the structure if you want.
+
+    # create an SNL object and submit to your submissions database
+    snl = StructureNL(s, 'John Doe <my_email@gmail.com>')
+    sma.submit_snl(snl, 'my_email@gmail.com', parameters=None)
 
 This will only add a compound to the submissions database. It does not
 yet create FireWorks to run. To create the FireWorks, you must:
@@ -780,10 +789,12 @@ yet create FireWorks to run. To create the FireWorks, you must:
 3. Run the command: ``go_submissions``
 
 The go\_submissions command will use snl\_to\_wf() to convert all your
-SNL into FireWork workflows. If you then use the qlaunch tools of FireWorks, your jobs will automatically be queued and run. Finally, you can connect to your VASP database to check the results when finished.
+SNL into FireWork workflows. After this, follow steps 6-10 in the previous section to complete running your workflows using FireWorks.
 
-3.3.1.4 Option 4 : Use the built-in test set
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+There are many advanced options for setting priority, basic WF tailoring, auto-setting the submission database based on environment, etc. Consult the email list if you need help with a specific problem.
+
+3.3.1.4 Option 4 : Use the submissions framework + built-in test set
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Using the built in test set, you can create Workflows for 45 “test”
 materials automatically. Like in the previous section, this method uses
@@ -825,6 +836,14 @@ There is also a --name option to submit only single compound rather than all ~40
 
 10. When your workflows complete, you should see the results in the **VASP** database (e.g. connect via MongoHub or via pymatgen-db frontend).
 
+3.3.1.5 - Running custom workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The previous sections were about running custom *structures* through a typical MP workflow. If you want to run custom workflows (new types of calculations not coded in MP), you have a couple of options. You can either learn a bit more about MPWorks and try to code your workflow so that it can be run as in Part 3, but submitted with certain parameters (e.g., ``sma.submit_snl(snl, 'my_email@gmail.com', parameters={"calculation_type":"CUSTOM_STUFF"})``). This requires modifying the code that turns StructureNL into Workflows. In this case you are still following the **submissions** -> **FireWorks** --> **VASP** paradigm.
+
+The alternate strategy is to create Workflow objects directly and put them in the **FireWorks** database, bypassing the submissions database entirely. Then you are just doing  **FireWorks** --> **VASP**. Once the Workflow objects are in the **FireWorks** database, you can run them by following steps 7-10 in Part 2 of this guide (i.e., basically you just need to run the ``qlaunch`` command.
+
+One code in development to create basic workflows that can run VASP is the **fireworks-vasp** repository (https://github.com/materialsvirtuallab/fireworks-vasp). This code can create Workflow objects that you can directly enter into your FireWorks database (the credentials for your FW database is in the ``my_launchpad.yaml`` given to you by the MPenv admin). This is not the code used by Materials Project for running workflows (MPWorks does that), but is considerably simpler to understand and modify for your needs. You can probably get started with custom workflows much more quickly with this strategy.
 
 3.3.2 Verifying your workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -906,46 +925,3 @@ This documentation, and the testing environment in general, are works in
 progress. Despite best efforts, there might be typos and topics or
 commands left out. Please give your feedback to improve this as a
 reference for yourself and others.
-
-
-
-Part 3 - Running custom structures
-----------------------------------
-
-You can run custom structures through the typical MP workflow very easily. You need to submit your Structures (as StructureNL objects) to your **submissions** database. Then simply use the same procedure as last time to convert those into FireWorks and run them (we are still following the **submissions** -> **FireWorks** --> **VASP** paradigm).
-
-1. If you want, you can clear all your databases via::
-
-    go_testing --clear -n 'no_submissions'
-
-2. Here is some code you can use to submit a custom Structure to the **submissions** database (you will need to copy your ``<ENV_NAME>/configs/db/submission_db.yaml`` file to the location you run this code, and also have set up your MPRester API key if you want to grab a structure from Materials Project as in this example)::
-
-    from mpworks.submission.submission_mongo import SubmissionMongoAdapter
-    from pymatgen import MPRester
-    from pymatgen.matproj.snl import StructureNL
-
-    submissions_file = 'submission_db.yaml'
-    sma = SubmissionMongoAdapter.from_file(submissions_file)
-
-    # get a Structure object
-    mpr = MPRester()
-    s = mpr.get_structure_by_material_id("mp-149")  # this is Silicon
-
-    # At this point, you could modify the structure if you want.
-
-    # create an SNL object and submit to your submissions database
-    snl = StructureNL(s, 'John Doe <my_email@gmail.com>')
-    sma.submit_snl(snl, 'my_email@gmail.com', parameters=None)
-
-3. Once all your structures are submitted, follow steps 5-10 in the previous part to run it.
-
-4. There are many advanced options for setting priority, basic WF tailoring, auto-setting the submission database based on environment, etc. Consult the email list if you need help with a specific problem.
-
-Part 4 - Running custom workflows
----------------------------------
-
-Part 3 was about running custom *structures* through a typical MP workflow. If you want to run custom workflows (new types of calculations not coded in MP), you have a couple of options. You can either learn a bit more about MPWorks and try to code your workflow so that it can be run as in Part 3, but submitted with certain parameters (e.g., ``sma.submit_snl(snl, 'my_email@gmail.com', parameters={"calculation_type":"CUSTOM_STUFF"})``). This requires modifying the code that turns StructureNL into Workflows. In this case you are still following the **submissions** -> **FireWorks** --> **VASP** paradigm. Some (long and a bit outdated) documentation on this is in the MPWorks code in the docs folder.
-
-The alternate strategy is to create Workflow objects directly and put them in the **FireWorks** database, bypassing the submissions database entirely. Then you are just doing  **FireWorks** --> **VASP**. Once the Workflow objects are in the **FireWorks** database, you can run them by following steps 7-10 in Part 2 of this guide (i.e., basically you just need to run the ``qlaunch`` command.
-
-One code in development to create basic workflows that can run VASP is the **fireworks-vasp** repository (https://github.com/materialsvirtuallab/fireworks-vasp). This code can create Workflow objects that you can directly enter into your FireWorks database (the credentials for your FW database is in the ``my_launchpad.yaml`` given to you by the MPenv admin). This is not the code used by Materials Project for running workflows (MPWorks does that), but is considerably simpler to understand and modify for your needs. You can probably get started with custom workflows much more quickly with this strategy.
