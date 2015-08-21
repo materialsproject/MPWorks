@@ -177,6 +177,10 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
             # put the data in the database
             bta = BoltztrapAnalyzer.from_files(dir)
+
+            # 8/21/15 - Anubhav removed fs_id (also see line further below, ted['boltztrap_full_fs_id'] ...)
+            # 8/21/15 - this is to save space in MongoDB, as well as non-use of full Boltztrap output (vs rerun)
+            """
             data = bta.as_dict()
             data.update(get_meta_from_structure(bs._structure))
             data['snlgroup_id'] = fw_spec['snlgroup_id']
@@ -188,6 +192,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             del data['hall']  # remove because it is too large and not useful
             fs = gridfs.GridFS(tdb, "boltztrap_full_fs")
             btid = fs.put(json.dumps(jsanitize(data)))
+            """
 
             # now for the "sanitized" data
             te_analyzer = BoltztrapAnalyzerTE.from_BoltztrapAnalyzer(bta)
@@ -198,7 +203,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             del ted['kappa']
             del ted['cond']
 
-            ted['boltztrap_full_fs_id'] = btid
+            # ted['boltztrap_full_fs_id'] = btid
             ted['snlgroup_id'] = fw_spec['snlgroup_id']
             ted['run_tags'] = fw_spec['run_tags']
             ted['snl'] = fw_spec['mpsnl']
