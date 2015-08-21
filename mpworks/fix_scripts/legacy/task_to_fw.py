@@ -13,6 +13,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 14, 2013'
 
+# Before the FireWorks code existed, we had already run many jobs. This code was used to convert all those jobs into "fake" FireWorks runs that were entered into the database for legacy and completeness.
 
 def task_dict_to_wf(task_dict, launchpad):
     fw_id = launchpad.get_new_fw_id()

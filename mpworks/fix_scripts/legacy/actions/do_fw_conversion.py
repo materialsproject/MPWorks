@@ -1,8 +1,7 @@
 import os
+
 from pymongo import MongoClient, ASCENDING
 import yaml
-from fireworks.core.launchpad import LaunchPad
-from mpworks.legacy.task_to_fw import task_dict_to_wf
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'

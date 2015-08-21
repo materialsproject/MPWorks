@@ -2,14 +2,16 @@ import json
 import os
 import datetime
 import logging
+
 from pymongo import MongoClient
 import gridfs
+
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.signals import VASPInputsExistSignal, \
     VASPOutputsExistSignal, VASPOutSignal, HitAMemberSignal, SegFaultSignal, \
     VASPStartedCompletedSignal, WallTimeSignal, DiskSpaceExceededSignal, \
     SignalDetectorList
-from mpworks.legacy.mps_to_snl import mps_dict_to_snl
+from mpworks.fix_scripts.legacy.mps_to_snl import mps_dict_to_snl
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
 from pymatgen.core.structure import Structure

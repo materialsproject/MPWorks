@@ -11,6 +11,10 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Nov 11, 2013'
 
+# This script tries to examine the FIZZLED FWS and classify them into groups
+# This can be used to identify the greatest causes of failure and fix those first
+# The types of failure groups will need to be updated
+
 def get_parent_launch_locs(fw_id, lpdb):
     parent_fw_id = lpdb.workflows.find_one({"nodes": fw_id}, {"parent_links":1})['parent_links'][str(fw_id)][0]
     launch_ids = lpdb.fireworks.find_one({"fw_id": parent_fw_id},{'launches': 1})['launches']

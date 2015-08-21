@@ -12,6 +12,7 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'May 12, 2013'
 
+# Convert ICSD database (already converted to MongoDB by MIT from an SQL source) into SNL
 
 def icsd_dict_to_snl(icsd_dict):
     if 'structure' not in icsd_dict:
