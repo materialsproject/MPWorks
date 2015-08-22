@@ -13,7 +13,7 @@ from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
-    UnconvergedErrorHandler
+    UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
     get_symmetrically_distinct_miller_indices
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
@@ -269,7 +269,9 @@ class CreateSurfaceWorkflow(object):
                        "jobs": job.double_relaxation_run(job.vasp_cmd),
                        "handlers": [VaspErrorHandler(),
                                     NonConvergingErrorHandler(),
-                                    UnconvergedErrorHandler()],
+                                    UnconvergedErrorHandler(),
+                                    PotimErrorHandler(),
+                                    PositiveEnergyErrorHandler()],
                        "max_errors": 100} # will return a list of jobs
                                                                 # instead of just being on job
 
