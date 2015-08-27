@@ -228,7 +228,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
-                        job=VaspJob(["mpirun", "-n", "16", "vasp"], copy_magmom=True),
+                        job=VaspJob(["mpirun", "-n", "64", "vasp"], copy_magmom=True),
                         user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True):
 
         """
