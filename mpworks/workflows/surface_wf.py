@@ -229,7 +229,7 @@ class CreateSurfaceWorkflow(object):
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
                         job=VaspJob(["mpirun", "-n", "64", "vasp"], auto_npar=False, copy_magmom=True),
-                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True):
+                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True, no_handlers=False):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -262,18 +262,24 @@ class CreateSurfaceWorkflow(object):
 
         # Scratch directory reffered to by custodian.
         # May be different on non-Nersc systems.
+        
+        if no_handlers:
+            handlers=[]
+        else:
+            handlers = [VaspErrorHandler(),
+                        NonConvergingErrorHandler(),
+                        UnconvergedErrorHandler(),
+                        PotimErrorHandler(),
+                        PositiveEnergyErrorHandler()]
+
         cust_params = {"custodian_params":
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
                        "jobs": job.double_relaxation_run(job.vasp_cmd),
-                       "handlers": [VaspErrorHandler(),
-                                    NonConvergingErrorHandler(),
-                                    UnconvergedErrorHandler(),
-                                    PotimErrorHandler(),
-                                    PositiveEnergyErrorHandler()],
+                       "handlers": handlers,
                        "max_errors": 100} # will return a list of jobs
-                                                                # instead of just being on job
+                                          # instead of just being one job
 
         fws=[]
         for key in self.miller_dict.keys():
