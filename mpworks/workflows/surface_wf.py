@@ -228,8 +228,8 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="",
                         k_product=50, cwd=os.getcwd(),
-                        job=VaspJob(["mpirun", "-n", "64", "vasp"], auto_npar=False, copy_magmom=True),
-                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True, no_handlers=False):
+                        job=None,
+                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True, additional_handlers=[]):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -263,20 +263,23 @@ class CreateSurfaceWorkflow(object):
         # Scratch directory reffered to by custodian.
         # May be different on non-Nersc systems.
 
-        if no_handlers:
-            handlers=[]
-        else:
-            handlers = [VaspErrorHandler(),
-                        NonConvergingErrorHandler(),
-                        UnconvergedErrorHandler(),
-                        PotimErrorHandler(),
-                        PositiveEnergyErrorHandler()]
+        if not job:
+            job = VaspJob(["mpirun", "-n", "64", "vasp"], auto_npar=False, copy_magmom=True)
+
+
+        handlers = [VaspErrorHandler(),
+                    NonConvergingErrorHandler(),
+                    UnconvergedErrorHandler(),
+                    PotimErrorHandler(),
+                    PositiveEnergyErrorHandler()]
+        if additional_handlers:
+            handlers.extend(additional_handlers)
 
         cust_params = {"custodian_params":
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": [job],#.double_relaxation_run(job.vasp_cmd),
+                       "jobs": job.full_opt_run(job.vasp_cmd, auto_npar=False),
                        "handlers": handlers,
                        "max_errors": 100} # will return a list of jobs
                                           # instead of just being one job
