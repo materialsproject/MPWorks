@@ -266,7 +266,6 @@ class CreateSurfaceWorkflow(object):
         if not job:
             job = VaspJob(["mpirun", "-n", "64", "vasp"], auto_npar=False, copy_magmom=True)
 
-
         handlers = [VaspErrorHandler(),
                     NonConvergingErrorHandler(),
                     UnconvergedErrorHandler(),
@@ -279,7 +278,7 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job.full_opt_run(job.vasp_cmd, auto_npar=False),
+                       "jobs": job.double_relaxation_run(job.vasp_cmd, auto_npar=False),
                        "handlers": handlers,
                        "max_errors": 100} # will return a list of jobs
                                           # instead of just being one job
