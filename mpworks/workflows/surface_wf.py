@@ -278,7 +278,7 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job.double_relaxation_run(job.vasp_cmd, auto_npar=False),
+                       "jobs": job.full_opt_run(job.vasp_cmd, auto_npar=False),
                        "handlers": handlers,
                        "max_errors": 100} # will return a list of jobs
                                           # instead of just being one job
