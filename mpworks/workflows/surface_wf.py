@@ -13,7 +13,8 @@ from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
-    UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler
+    UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
+    FrozenJobErrorHandler
 from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
     get_symmetrically_distinct_miller_indices
 from pymatgen.core.surface import SlabGenerator, generate_all_slabs
@@ -39,9 +40,10 @@ class SurfaceWorkflowManager(object):
 
     """
 
-    def __init__(self, api_key, list_of_elements=[], indices_dict=None, slab_size=10, vac_size=10,
-                 host=None, port=None, user=None, password=None,
-                 symprec=0.001, angle_tolerance=5, database=None, collection="Surface_Collection", reset=False):
+    def __init__(self, api_key, list_of_elements=[], indices_dict=None,
+                 slab_size=10, vac_size=10, host=None, port=None, user=None,
+                 password=None, symprec=0.001, angle_tolerance=5, database=None,
+                 collection="Surface_Collection", fail_safe=True, reset=False):
 
         """
             Args:
@@ -114,6 +116,7 @@ class SurfaceWorkflowManager(object):
         self.ssize = slab_size
         self.vsize = vac_size
         self.reset = reset
+        self.fail_safe = fail_safe
 
 
     def from_max_index(self, max_index, max_normal_search=True, terminations=False):
@@ -150,7 +153,8 @@ class SurfaceWorkflowManager(object):
                                      self.vaspdbinsert_params, ssize=self.ssize,
                                      vsize=self.vsize,
                                      max_normal_search=max_normal_search,
-                                     terminations=terminations, reset=self.reset)
+                                     terminations=terminations,
+                                     fail_safe=self.fail_safe, reset=self.reset)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
@@ -171,8 +175,11 @@ class SurfaceWorkflowManager(object):
             miller_dict[el] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
+                                     self.vaspdbinsert_params,
+                                     ssize=self.ssize, vsize=self.vsize,
+                                     max_normal_search=max_normal_search,
+                                     terminations=terminations,
+                                     fail_safe=self.fail_safe, reset=self.reset)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False):
@@ -185,8 +192,11 @@ class SurfaceWorkflowManager(object):
         """
 
         return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search, terminations=terminations, reset=self.reset)
+                                     self.vaspdbinsert_params,
+                                     ssize=self.ssize, vsize=self.vsize,
+                                     max_normal_search=max_normal_search,
+                                     terminations=terminations,
+                                     fail_safe=self.fail_safe, reset=self.reset)
 
 
 class CreateSurfaceWorkflow(object):
@@ -199,7 +209,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
-                 terminations=False, max_normal_search=True, reset=False):
+                 terminations=False, max_normal_search=True, fail_safe=True, reset=False):
 
         """
             Args:
@@ -226,10 +236,9 @@ class CreateSurfaceWorkflow(object):
         self.reset = reset
 
 
-    def launch_workflow(self, launchpad_dir="",
-                        k_product=50, cwd=os.getcwd(),
-                        job=None,
-                        user_incar_settings=None, potcar_functional='PBE', get_bulk_e=True, additional_handlers=[]):
+    def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
+                        user_incar_settings=None, potcar_functional='PBE',
+                        get_bulk_e=True, additional_handlers=[]):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -264,13 +273,15 @@ class CreateSurfaceWorkflow(object):
         # May be different on non-Nersc systems.
 
         if not job:
-            job = VaspJob(["mpirun", "-n", "64", "vasp"], auto_npar=False, copy_magmom=True)
+            job = VaspJob(["mpirun", "-n", "64", "vasp"],
+                          auto_npar=False, copy_magmom=True)
 
         handlers = [VaspErrorHandler(),
                     NonConvergingErrorHandler(),
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
-                    PositiveEnergyErrorHandler()]
+                    PositiveEnergyErrorHandler(),
+                    FrozenJobErrorHandler()]
         if additional_handlers:
             handlers.extend(additional_handlers)
 
@@ -278,7 +289,8 @@ class CreateSurfaceWorkflow(object):
                            {"scratch_dir":
                                 os.path.join("/global/scratch2/sd/",
                                              os.environ["USER"])},
-                       "jobs": job.double_relaxation_run(job.vasp_cmd, auto_npar=False),
+                       "jobs": job.double_relaxation_run(job.vasp_cmd,
+                                                         auto_npar=False),
                        "handlers": handlers,
                        "max_errors": 100} # will return a list of jobs
                                           # instead of just being one job
@@ -302,6 +314,9 @@ class CreateSurfaceWorkflow(object):
                 slab = SlabGenerator(self.unit_cells_dict[key][0], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
+
+                if fail_safe and len(oriented_uc)> 199:
+                    break
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
                 # WriteSlabVaspInputs will create the slabs from
@@ -316,14 +331,14 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[2]))
                 if get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                               folder=cwd+folderbulk,
+                                               folder=folderbulk,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
                                                k_product=k_product),
-                                 RunCustodianTask(dir=cwd+folderbulk,
+                                 RunCustodianTask(dir=folderbulk,
                                                   **cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                      loc=cwd+folderbulk,
+                                                      loc=folderbulk,
                                                       miller_index=miller_index,
                                                       **self.vaspdbinsert_params)])
 
@@ -337,7 +352,7 @@ class CreateSurfaceWorkflow(object):
                     # magmom = np.mean(tot_mag)
                     # user_incar_settings['MAGMOM'] = {element: magmom}
 
-                tasks.append(WriteSlabVaspInputs(folder=cwd+folderbulk,
+                tasks.append(WriteSlabVaspInputs(folder=folderbulk,
                                                  user_incar_settings=user_incar_settings,
                                                  terminations=self.terminations,
                                                  custodian_params=cust_params,
@@ -467,47 +482,3 @@ class CreateSurfaceWorkflow(object):
         # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
         return wulffshapes, surface_energies
 
-# class SingleTaskRuns(object):
-#
-#     def __init__(self, host, port, user, password, database, collection, launchpad_dir):
-#
-#         vaspdbinsert_params = {'host': host,
-#                                'port': port, 'user': user,
-#                                'password': password,
-#                                'database': database,
-#                                'collection': collection}
-#
-#         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-#                                                      launchpad_dir,
-#                                                      "my_launchpad.yaml"))
-#
-#         self.db_parameters = vaspdbinsert_params
-#         self.launchpad = launchpad
-#
-#     def single_runcustodiantask(self, jobs, handlers=[], dir=os.getcwd()):
-#
-#         cust_params = {"custodian_params":
-#                            {"scratch_dir":
-#                                 os.path.join("/global/scratch2/sd/",
-#                                              os.environ["USER"])},
-#                        "jobs": jobs}
-#
-#         fw = Firework([RunCustodianTask(dir=dir,
-#                                         handlers=[VaspErrorHandler()],
-#                                         **cust_params)])
-#
-#         fws = [fw]
-#         wf = Workflow(fws, name=self.db_parameters['collection'])
-#         self.launchpad.add_wf(wf)
-#
-#
-#     def single_vaspslabdbinserttask(self, miller_index, struct_type):
-#
-#         fw = Firework([VaspSlabDBInsertTask(struct_type=struct_type,
-#                                             loc=dir,
-#                                             miller_index=miller_index,
-#                                             **self.db_parameters)])
-#
-#         fws = [fw]
-#         wf = Workflow(fws, name=self.db_parameters['collection'])
-#         self.launchpad.add_wf(wf)

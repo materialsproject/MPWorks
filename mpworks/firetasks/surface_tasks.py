@@ -157,7 +157,7 @@ class WriteUCVaspInputs(FireTaskBase):
                                   k_product=k_product, bulk=True,
                                   potcar_functional=potcar_functional,
                                   ediff_per_atom=False)
-        mplb.write_input(oriented_ucell, folder)
+        mplb.write_input(oriented_ucell, os.getcwd()+folder)
 
 
 @explicit_serialize
@@ -239,7 +239,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # into SlabGenerator is the same as obtaining a slab in the
         # orienetation of the original miller index.
         print 'about to copy contcar'
-        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(folder))
+        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(os.getcwd()+folder))
         relax_orient_uc = contcar.structure
         print 'made relaxed oriented structure'
         print relax_orient_uc
@@ -284,11 +284,11 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
-                    mplb.write_input(slab, new_folder)
-                    fw = Firework([RunCustodianTask(dir=new_folder,
+                    mplb.write_input(slab, os.getcwd()+new_folder)
+                    fw = Firework([RunCustodianTask(dir=os.getcwd()+new_folder,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                        loc=new_folder, shift=slab.shift,
+                                                        loc=os.getcwd()+new_folder, shift=slab.shift,
                                                         surface_area=slab.surface_area,
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
@@ -300,8 +300,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                     # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
                     # Only change in parameters between slab and bulk should be MAGMOM and ISIF
                     if get_bulk_e:
-                        incar = Incar.from_file(folder +'/INCAR')
-                        out = Outcar(folder+'/OUTCAR.relax2.gz')
+                        incar = Incar.from_file(os.getcwd()+folder +'/INCAR')
+                        out = Outcar(os.getcwd()+folder+'/OUTCAR.relax2.gz')
                         out_mag = out.magnetization
                         tot_mag = [mag['tot'] for mag in out_mag]
                         magmom = np.mean(tot_mag)
@@ -312,7 +312,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('AMIX', 0.2)
                         incar.__setitem__('BMIX', 0.001)
                         incar.__setitem__('NELMIN', 8)
-                        incar.write_file(new_folder+'/INCAR')
+                        incar.write_file(os.getcwd()+new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
