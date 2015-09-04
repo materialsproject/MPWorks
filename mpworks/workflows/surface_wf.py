@@ -234,6 +234,7 @@ class CreateSurfaceWorkflow(object):
         self.ssize = ssize
         self.vsize = vsize
         self.reset = reset
+        self.fail_safe = fail_safe
 
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
@@ -315,7 +316,7 @@ class CreateSurfaceWorkflow(object):
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
 
-                if fail_safe and len(oriented_uc)> 199:
+                if self.fail_safe and len(oriented_uc)> 199:
                     break
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
