@@ -37,7 +37,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
     required_params = ["host", "port", "user", "password",
                        "database", "collection", "struct_type", "loc",
-                       "miller_index"]
+                       "cwd", "miller_index"]
     optional_params = ["surface_area", "shift", "vsize", "ssize"]
 
     def run_task(self, fw_spec):
@@ -71,6 +71,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         dec = MontyDecoder()
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
+        cwd = dec.process_decoded(self.get("cwd"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
         shift = dec.process_decoded(self.get("shift", None))
         vsize = dec.process_decoded(self.get("vsize", None))
@@ -104,7 +105,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   use_full_uri=False,
                                   additional_fields=additional_fields,
                                   collection=self["collection"])
-        drone.assimilate(loc)
+        drone.assimilate(cwd+loc)
         # print loc
         # print self["collection"]
         # print additional_fields['vsize']
@@ -117,7 +118,7 @@ class WriteUCVaspInputs(FireTaskBase):
         Writes VASP inputs for an oriented unit cell
     """
 
-    required_params = ["oriented_ucell", "folder"]
+    required_params = ["oriented_ucell", "folder", "cwd"]
     optional_params = ["angle_tolerance", "user_incar_settings",
                        "k_product", "potcar_functional", "symprec"]
 
@@ -142,6 +143,7 @@ class WriteUCVaspInputs(FireTaskBase):
         dec = MontyDecoder()
         oriented_ucell = dec.process_decoded(self.get("oriented_ucell"))
         folder = dec.process_decoded(self.get("folder"))
+        cwd = dec.process_decoded(self.get("cwd"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
 
@@ -157,7 +159,7 @@ class WriteUCVaspInputs(FireTaskBase):
                                   k_product=k_product, bulk=True,
                                   potcar_functional=potcar_functional,
                                   ediff_per_atom=False)
-        mplb.write_input(oriented_ucell, os.getcwd()+folder)
+        mplb.write_input(oriented_ucell, cwd+folder)
 
 
 @explicit_serialize
@@ -168,7 +170,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "custodian_params",
+    required_params = ["folder", "cwd", "custodian_params",
                        "vaspdbinsert_parameters", "miller_index"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
@@ -207,6 +209,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         """
         dec = MontyDecoder()
         folder = dec.process_decoded(self.get("folder"))
+        cwd = dec.process_decoded(self.get("cwd"))
         symprec = dec.process_decoded(self.get("symprec", 0.001))
         angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
         terminations = dec.process_decoded(self.get("terminations", False))
@@ -238,7 +241,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # into SlabGenerator is the same as obtaining a slab in the
         # orienetation of the original miller index.
         print 'about to copy contcar'
-        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(os.getcwd()+folder))
+        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(cwd+folder))
         relax_orient_uc = contcar.structure
         print 'made relaxed oriented structure'
         print relax_orient_uc
@@ -280,11 +283,11 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
-                    mplb.write_input(slab, os.getcwd()+new_folder)
-                    fw = Firework([RunCustodianTask(dir=os.getcwd()+new_folder,
+                    mplb.write_input(slab, cwd+new_folder)
+                    fw = Firework([RunCustodianTask(dir=cwd+new_folder,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                        loc=os.getcwd()+new_folder, shift=slab.shift,
+                                                        loc=cwd+new_folder, shift=slab.shift,
                                                         surface_area=slab.surface_area,
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
@@ -296,8 +299,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                     # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
                     # Only change in parameters between slab and bulk should be MAGMOM and ISIF
 
-                    incar = Incar.from_file(os.getcwd()+folder +'/INCAR')
-                    out = Outcar(os.getcwd()+folder+'/OUTCAR.relax2.gz')
+                    incar = Incar.from_file(cwd+folder +'/INCAR')
+                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
                     out_mag = out.magnetization
                     tot_mag = [mag['tot'] for mag in out_mag]
                     magmom = np.mean(tot_mag)
@@ -308,7 +311,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                     incar.__setitem__('AMIX', 0.2)
                     incar.__setitem__('BMIX', 0.001)
                     incar.__setitem__('NELMIN', 8)
-                    incar.write_file(os.getcwd()+new_folder+'/INCAR')
+                    incar.write_file(cwd+new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
@@ -319,7 +322,7 @@ class RunCustodianTask(FireTaskBase):
         Runs Custodian.
     """
 
-    required_params = ["dir", "jobs"]
+    required_params = ["dir", "jobs", "cwd"]
     optional_params = ["custodian_params", "handlers", "max_errors"]
 
     def run_task(self, fw_spec):
@@ -337,9 +340,10 @@ class RunCustodianTask(FireTaskBase):
 
         dec = MontyDecoder()
         dir = dec.process_decoded(self['dir'])
+        cwd = dec.process_decoded(self['cwd'])
 
         # Change to the directory with the vasp inputs to run custodian
-        os.chdir(dir)
+        os.chdir(cwd+dir)
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
         max_errors = dec.process_decoded(self['max_errors'])
