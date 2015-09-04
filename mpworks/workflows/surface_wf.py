@@ -281,7 +281,7 @@ class CreateSurfaceWorkflow(object):
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
-                    FrozenJobErrorHandler()]
+                    FrozenJobErrorHandler(timeout=3600)]
         if additional_handlers:
             handlers.extend(additional_handlers)
 
@@ -363,7 +363,6 @@ class CreateSurfaceWorkflow(object):
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
                                                  min_vacuum_size=self.vsize,
-                                                 get_bulk_e=get_bulk_e,
                                                  ucell=self.unit_cells_dict[key][0]))
 
                 fw = Firework(tasks, name=folderbulk)
