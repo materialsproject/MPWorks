@@ -330,16 +330,17 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[0]),
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
+                cwd = os.getcwd()
                 if get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                               folder=folderbulk,
+                                               folder=folderbulk, cwd=cwd,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
                                                k_product=k_product),
-                                 RunCustodianTask(dir=folderbulk,
+                                 RunCustodianTask(dir=folderbulk, cwd=cwd,
                                                   **cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                      loc=folderbulk,
+                                                      loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index,
                                                       **self.vaspdbinsert_params)])
 
@@ -353,7 +354,7 @@ class CreateSurfaceWorkflow(object):
                     # magmom = np.mean(tot_mag)
                     # user_incar_settings['MAGMOM'] = {element: magmom}
 
-                tasks.append(WriteSlabVaspInputs(folder=folderbulk,
+                tasks.append(WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                  user_incar_settings=user_incar_settings,
                                                  terminations=self.terminations,
                                                  custodian_params=cust_params,
