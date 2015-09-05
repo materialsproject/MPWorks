@@ -284,10 +284,10 @@ class WriteSlabVaspInputs(FireTaskBase):
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
                     mplb.write_input(slab, cwd+new_folder)
-                    fw = Firework([RunCustodianTask(dir=cwd+new_folder,
+                    fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                        loc=cwd+new_folder, shift=slab.shift,
+                                                        loc=new_folder, cwd=cwd, shift=slab.shift,
                                                         surface_area=slab.surface_area,
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
