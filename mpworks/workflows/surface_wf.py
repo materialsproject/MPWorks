@@ -119,7 +119,7 @@ class SurfaceWorkflowManager(object):
         self.fail_safe = fail_safe
 
 
-    def from_max_index(self, max_index, max_normal_search=True, terminations=False):
+    def from_max_index(self, max_index, max_normal_search=True, terminations=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -154,11 +154,11 @@ class SurfaceWorkflowManager(object):
                                      vsize=self.vsize,
                                      max_normal_search=max_normal_search,
                                      terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset)
+                                     fail_safe=self.fail_safe, reset=self.reset, get_bulk_e=get_bulk_e)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
-                             terminations=False):
+                             terminations=False, get_bulk_e = True):
 
         """
             Class method to create a surface workflow with a
@@ -179,10 +179,10 @@ class SurfaceWorkflowManager(object):
                                      ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search,
                                      terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset)
+                                     fail_safe=self.fail_safe, reset=self.reset, get_bulk_e=get_bulk_e)
 
 
-    def from_indices_dict(self, max_normal_search=True, terminations=False):
+    def from_indices_dict(self, max_normal_search=True, terminations=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -196,7 +196,7 @@ class SurfaceWorkflowManager(object):
                                      ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search,
                                      terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset)
+                                     fail_safe=self.fail_safe, reset=self.reset, get_bulk_e=get_bulk_e)
 
 
 class CreateSurfaceWorkflow(object):
@@ -209,7 +209,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
-                 terminations=False, max_normal_search=True, fail_safe=True, reset=False):
+                 terminations=False, max_normal_search=True, fail_safe=True, reset=False, get_bulk_e=True):
 
         """
             Args:
@@ -235,11 +235,12 @@ class CreateSurfaceWorkflow(object):
         self.vsize = vsize
         self.reset = reset
         self.fail_safe = fail_safe
+        self.get_bulk_e = get_bulk_e
 
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
                         user_incar_settings=None, potcar_functional='PBE',
-                        get_bulk_e=True, additional_handlers=[]):
+                        additional_handlers=[]):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -331,7 +332,7 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[1]),
                                                    str(miller_index[2]))
                 cwd = os.getcwd()
-                if get_bulk_e:
+                if self.get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
                                                folder=folderbulk, cwd=cwd,
                                                user_incar_settings=user_incar_settings,
