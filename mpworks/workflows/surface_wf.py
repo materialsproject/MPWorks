@@ -282,7 +282,7 @@ class CreateSurfaceWorkflow(object):
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
-                    FrozenJobErrorHandler(timeout=3600)]
+                    FrozenJobErrorHandler(timeout=1800)]
         if additional_handlers:
             handlers.extend(additional_handlers)
 
