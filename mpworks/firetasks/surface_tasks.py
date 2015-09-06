@@ -283,11 +283,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     print slab
 
-                    if len(slab)%len(relax_orient_uc) != 0:
-                        print 'modulo of slab%ucell', len(slab)%len(relax_orient_uc)
-                        print "# ATOMS IN UCELL IS NOT A MULTIPLE OF SLABS"
-                        continue
-
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
                     mplb.write_input(slab, cwd+new_folder)
