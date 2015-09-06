@@ -283,7 +283,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     print slab
 
-                    if len(slab)%len(relax_orient_uc) == 0:
+                    if len(slab)%len(relax_orient_uc) != 0:
                         print 'modulo of slab%ucell', len(slab)%len(relax_orient_uc)
                         print "# ATOMS IN UCELL IS NOT A MULTIPLE OF SLABS"
                         continue
