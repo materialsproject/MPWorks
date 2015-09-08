@@ -22,6 +22,8 @@ This script re-runs the MPVaspDrone over all the *new-style* tasks. It can be us
 A few notes:
 * The old-style tasks will be unaffected by this script
 * The dos_fs and band_structure_fs collections should be completely deleted before running this script over the database.
+
+Note - AJ has not run this code since its inception in May 2013. Changes may be needed.
 '''
 
 class TaskBuilder():

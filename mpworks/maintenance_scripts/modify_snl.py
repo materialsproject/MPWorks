@@ -18,8 +18,14 @@ __date__ = 'Feb 20, 2014'
 
 
 """
-This is used to modify SNL data. It tries to properly update all relevant databases with the SNL
-changes, not just the basic SNL collection. Note that the lattice and sites of an SNL cannot be changed!
+This is used to modify SNL data. An SNL should not just be changed in the SNL collection because
+that SNL is referred to in many different databases.
+
+This code tries to properly update all relevant databases with the SNL
+changes, not just the basic SNL collection.
+
+Note that the lattice and sites of an SNL cannot be changed! This would be a different material
+altogether and have affected the runs / duplicate checking.
 """
 
 

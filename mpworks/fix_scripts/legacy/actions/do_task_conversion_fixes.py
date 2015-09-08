@@ -1,12 +1,12 @@
-from argparse import ArgumentParser
 import json
 import logging
-import multiprocessing
 import os
 import traceback
-from pymongo import MongoClient, ASCENDING
+
+from pymongo import MongoClient
 import yaml
-from mpworks.legacy.old_task_drone import MPVaspDrone_CONVERSION
+
+from mpworks.fix_scripts.legacy import MPVaspDrone_CONVERSION
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'

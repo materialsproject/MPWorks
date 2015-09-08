@@ -156,7 +156,7 @@ def snl_to_wf(snl, parameters=None):
             connections[11] = [12]
 
     wf_meta = get_meta_from_structure(snl.structure)
-    wf_meta['run_version'] = 'May 2013 (1)'
+    wf_meta['run_version'] = 'May 2013 (1)'  # not maintained
 
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
