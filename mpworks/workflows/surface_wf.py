@@ -28,7 +28,7 @@ from matgendb import QueryEngine
 
 import socket
 hostname = socket.gethostname()
-if hostname[:3] != 'cvr':
+if hostname[:3] != 'cvr' or hostname[:6] != 'hopper' or hostname[:6] != 'edison':
     from pymatgen.analysis.wulff_dual import wulff_3d
 
 class SurfaceWorkflowManager(object):
@@ -283,7 +283,7 @@ class CreateSurfaceWorkflow(object):
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
-                    FrozenJobErrorHandler(timeout=900)]
+                    FrozenJobErrorHandler(timeout=3600)]
         if additional_handlers:
             handlers.extend(additional_handlers)
 
