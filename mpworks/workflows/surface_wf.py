@@ -30,6 +30,8 @@ import socket
 hostname = socket.gethostname()
 if hostname[:3] != 'cvr' or hostname[:6] != 'hopper' or hostname[:6] != 'edison':
     from pymatgen.analysis.wulff_dual import wulff_3d
+else:
+    print "working on nersc, turning off wulff_dual"
 
 class SurfaceWorkflowManager(object):
 
