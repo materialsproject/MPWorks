@@ -175,7 +175,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations", "ucell"]
+                       "terminations"]
 
     def run_task(self, fw_spec):
 
@@ -227,7 +227,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
-        ucell = dec.process_decoded(self.get("ucell"))
 
         print 'about to make mplb'
 
