@@ -26,12 +26,12 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
-import socket
-hostname = socket.gethostname()
-if hostname[:3] != 'cvr' or hostname[:6] != 'hopper' or hostname[:6] != 'edison':
-    from pymatgen.analysis.wulff_dual import wulff_3d
-else:
-    print "working on nersc, turning off wulff_dual"
+# import socket
+# hostname = socket.gethostname()
+# if hostname[:3] != 'cvr' or hostname[:6] != 'hopper' or hostname[:6] != 'edison':
+#     from pymatgen.analysis.wulff_dual import wulff_3d
+# else:
+#     print "working on nersc, turning off wulff_dual"
 
 class SurfaceWorkflowManager(object):
 
@@ -377,112 +377,112 @@ class CreateSurfaceWorkflow(object):
         launchpad.add_wf(wf)
 
 
-    def get_energy_and_wulff(self, bulk_e_from_mp=False):
-
-        """
-            This method queries a database to calculate
-            all surface energies as well as wulff shapes
-            for all calculations ran by the workflow
-            created by the same object being used
-        """
-
-        qe = QueryEngine(**self.vaspdbinsert_params)
-
-        # Data needed from DB to perform calculations
-        optional_data = ["chemsys", "surface_area", "nsites",
-                         "structure_type", "miller_index",
-                         "shift", "vac_size", "slab_size", "state"]
-
-        to_Jperm2 = 16.0217656
-        wulffshapes = {}
-        surface_energies = {}
-        print 'miller dictionary is ', self.miller_dict
-        for el in self.miller_dict.keys():
-            # Each loop generates and wulff shape object and puts
-            # it in a wulffshapes dictionary where the key is the
-            # compositional formula of the material used to obtain
-            # the surface energies to generate the shape
-
-            e_surf_list = []
-            se_dict = {}
-            miller_list = []
-            success = True
-
-            print 'current key is ', el
-
-            for miller_index in self.miller_dict[el]:
-                # Each loop generates a surface energy value
-                # corresponding to a material and a miller index.
-                # Append to se_dict where the key is the miller index
-
-                print "key", el
-                print self.miller_dict[el]
-                print 'miller', miller_index
-
-                # Get entry of oriented unit cell calculation
-                # and its corresponding slab calculation
-                criteria = {'chemsys':el, 'miller_index': miller_index}
-                slab_criteria = criteria.copy()
-                slab_criteria['structure_type'] = 'slab_cell'
-                unit_criteria = criteria.copy()
-                unit_criteria['structure_type'] = 'oriented_unit_cell'
-                # print slab_criteria
-
-                slab_entry = qe.get_entries(slab_criteria,
-                                            optional_data=optional_data)
-                print len(slab_entry)
-                # print '# of unit entries', len(oriented_ucell_entry)
-                oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
-                print oriented_ucell_entry
-                if oriented_ucell_entry==[] or slab_entry==[]:
-                    "%s Firework was unsuccessful" \
-                    %(el)
-                    success=False
-                    continue
-
-                if oriented_ucell_entry[0].data['state'] != "successful" or \
-                                slab_entry[0].data['state'] != "successful":
-                    "%s Firework was unsuccessful" \
-                    %(el)
-                    success=False
-                    continue
-                # print oriented_ucell_entry
-                print
-
-                # Calculate SE of each termination
-                se_term = {}
-                min_e = []
-                for slab in slab_entry:
-                    slabE = slab.uncorrected_energy
-                    if bulk_e_from_mp:
-                        bulkE = self.unit_cells_dict[el][1]*slab.data['nsites']
-                    else:
-                        bulkE = oriented_ucell_entry[0].energy_per_atom*\
-                                slab.data['nsites']
-                    area = slab.data['surface_area']
-                    se_term[str(slab.data['shift'])] = \
-                        ((slabE-bulkE)/(2*area))*to_Jperm2
-
-                # Get the lowest SE of the various
-                # terminations to build the wulff shape from
-                min_e = [se_term[shift] for shift in se_term.keys()]
-                print min_e
-                e_surf_list.append(min(min_e))
-                se_dict[str(miller_index)] = se_term
-                miller_list.append(miller_index)
-
-            # Create the wulff shape with the lowest surface
-            # energies in slabs with multiple terminations
-            if success:
-                wulffshapes[el] = wulff_3d(self.unit_cells_dict[el][0],
-                                           miller_list, e_surf_list)
-            else:
-                print "Slab calculation set incomplete, wulff shape cannot be generated"
-            surface_energies[el] = se_dict
-
-        # Returns dictionary of wulff
-        # shape objects and surface energy
-        # eg. wulffshapes={'ZnO': <wulffshape object>, ...etc}
-        # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
-        return wulffshapes, surface_energies
-
+    # def get_energy_and_wulff(self, bulk_e_from_mp=False):
+    #
+    #     """
+    #         This method queries a database to calculate
+    #         all surface energies as well as wulff shapes
+    #         for all calculations ran by the workflow
+    #         created by the same object being used
+    #     """
+    #
+    #     qe = QueryEngine(**self.vaspdbinsert_params)
+    #
+    #     # Data needed from DB to perform calculations
+    #     optional_data = ["chemsys", "surface_area", "nsites",
+    #                      "structure_type", "miller_index",
+    #                      "shift", "vac_size", "slab_size", "state"]
+    #
+    #     to_Jperm2 = 16.0217656
+    #     wulffshapes = {}
+    #     surface_energies = {}
+    #     print 'miller dictionary is ', self.miller_dict
+    #     for el in self.miller_dict.keys():
+    #         # Each loop generates and wulff shape object and puts
+    #         # it in a wulffshapes dictionary where the key is the
+    #         # compositional formula of the material used to obtain
+    #         # the surface energies to generate the shape
+    #
+    #         e_surf_list = []
+    #         se_dict = {}
+    #         miller_list = []
+    #         success = True
+    #
+    #         print 'current key is ', el
+    #
+    #         for miller_index in self.miller_dict[el]:
+    #             # Each loop generates a surface energy value
+    #             # corresponding to a material and a miller index.
+    #             # Append to se_dict where the key is the miller index
+    #
+    #             print "key", el
+    #             print self.miller_dict[el]
+    #             print 'miller', miller_index
+    #
+    #             # Get entry of oriented unit cell calculation
+    #             # and its corresponding slab calculation
+    #             criteria = {'chemsys':el, 'miller_index': miller_index}
+    #             slab_criteria = criteria.copy()
+    #             slab_criteria['structure_type'] = 'slab_cell'
+    #             unit_criteria = criteria.copy()
+    #             unit_criteria['structure_type'] = 'oriented_unit_cell'
+    #             # print slab_criteria
+    #
+    #             slab_entry = qe.get_entries(slab_criteria,
+    #                                         optional_data=optional_data)
+    #             print len(slab_entry)
+    #             # print '# of unit entries', len(oriented_ucell_entry)
+    #             oriented_ucell_entry = qe.get_entries(unit_criteria, optional_data=optional_data)
+    #             print oriented_ucell_entry
+    #             if oriented_ucell_entry==[] or slab_entry==[]:
+    #                 "%s Firework was unsuccessful" \
+    #                 %(el)
+    #                 success=False
+    #                 continue
+    #
+    #             if oriented_ucell_entry[0].data['state'] != "successful" or \
+    #                             slab_entry[0].data['state'] != "successful":
+    #                 "%s Firework was unsuccessful" \
+    #                 %(el)
+    #                 success=False
+    #                 continue
+    #             # print oriented_ucell_entry
+    #             print
+    #
+    #             # Calculate SE of each termination
+    #             se_term = {}
+    #             min_e = []
+    #             for slab in slab_entry:
+    #                 slabE = slab.uncorrected_energy
+    #                 if bulk_e_from_mp:
+    #                     bulkE = self.unit_cells_dict[el][1]*slab.data['nsites']
+    #                 else:
+    #                     bulkE = oriented_ucell_entry[0].energy_per_atom*\
+    #                             slab.data['nsites']
+    #                 area = slab.data['surface_area']
+    #                 se_term[str(slab.data['shift'])] = \
+    #                     ((slabE-bulkE)/(2*area))*to_Jperm2
+    #
+    #             # Get the lowest SE of the various
+    #             # terminations to build the wulff shape from
+    #             min_e = [se_term[shift] for shift in se_term.keys()]
+    #             print min_e
+    #             e_surf_list.append(min(min_e))
+    #             se_dict[str(miller_index)] = se_term
+    #             miller_list.append(miller_index)
+    #
+    #         # Create the wulff shape with the lowest surface
+    #         # energies in slabs with multiple terminations
+    #         if success:
+    #             wulffshapes[el] = wulff_3d(self.unit_cells_dict[el][0],
+    #                                        miller_list, e_surf_list)
+    #         else:
+    #             print "Slab calculation set incomplete, wulff shape cannot be generated"
+    #         surface_energies[el] = se_dict
+    #
+    #     # Returns dictionary of wulff
+    #     # shape objects and surface energy
+    #     # eg. wulffshapes={'ZnO': <wulffshape object>, ...etc}
+    #     # surface_energies={'ZnO': {(1,1,0): {0.3: 3.532, etc..}, etc ...}, etc ...}
+    #     return wulffshapes, surface_energies
+    #
