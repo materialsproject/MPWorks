@@ -344,13 +344,7 @@ class CreateSurfaceWorkflow(object):
                 cwd = os.getcwd()
                 if self.get_bulk_e:
 
-                    if not continuing_calcs:
-                        tasks.append(WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                                   folder=folderbulk, cwd=cwd,
-                                                   user_incar_settings=user_incar_settings,
-                                                   potcar_functional=potcar_functional,
-                                                   k_product=k_product))
-                    else:
+                    if continuing_calcs and os.path.getsize(cwd+folderbulk+'/CONTCAR.gz') > 0:
                         old_calcs = cwd+folderbulk+'/' + "prev_calculations_" + str(uuid.uuid4())
                         os.system('mkdir %s' %(old_calcs))
                         os.system('mv %s* %s' %(cwd+folderbulk+'/', old_calcs))
@@ -359,6 +353,13 @@ class CreateSurfaceWorkflow(object):
                                      old_calcs+'/', cwd+folderbulk+'/'))
                         os.system('gunzip %s*' %(cwd+folderbulk+'/'))
                         os.system('mv %sCONTCAR %sPOSCAR' %(cwd+folderbulk+'/', cwd+folderbulk+'/'))
+
+                    else:
+                        tasks.append(WriteUCVaspInputs(oriented_ucell=oriented_uc,
+                                                   folder=folderbulk, cwd=cwd,
+                                                   user_incar_settings=user_incar_settings,
+                                                   potcar_functional=potcar_functional,
+                                                   k_product=k_product))
 
 
 

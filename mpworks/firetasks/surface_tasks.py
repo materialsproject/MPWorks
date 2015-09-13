@@ -229,6 +229,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         miller_index = dec.process_decoded(self.get("miller_index"))
         continuing_calcs = dec.process_decoded(self.get("continuing_calcs", False))
 
+
         print 'about to make mplb'
 
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
@@ -285,6 +286,9 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
+
+                    if os.path.getsize(cwd+new_folder+'/CONTCAR.gz') == 0:
+                        continuing_calcs = False
 
                     if continuing_calcs:
                         old_calcs = cwd+new_folder+'/' + "prev_calculations_" + str(uuid.uuid4())
