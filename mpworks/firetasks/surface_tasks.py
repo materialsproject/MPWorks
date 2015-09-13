@@ -175,7 +175,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations"]
+                       "terminations", "continuing_calcs"]
 
     def run_task(self, fw_spec):
 
@@ -227,6 +227,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
+        continuing_calcs = dec.process_decoded(self.get("continuing_calcs", False))
 
         print 'about to make mplb'
 
@@ -284,7 +285,19 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
-                    mplb.write_input(slab, cwd+new_folder)
+
+                    if continuing_calcs:
+                        old_calcs = cwd+new_folder+'/' + "prev_calculations_" + str(uuid.uuid4())
+                        os.system('mkdir %s' %(old_calcs))
+                        os.system('mv %s* %s' %(cwd+new_folder+'/', old_calcs))
+                        os.system('cp %sINCAR.gz %sPOTCAR.gz %sKPOINTS.gz %sCONTCAR.gz %s'
+                                  %s(old_calcs+'/', old_calcs+'/', old_calcs+'/',
+                                     old_calcs+'/', cwd+new_folder+'/'))
+                        os.system('gunzip %s*' %(cwd+new_folder+'/'))
+                        os.system('mv %sCONTCAR %sPOSCAR' %(cwd+new_folder+'/', cwd+new_folder+'/'))
+                    else:
+                        mplb.write_input(slab, cwd+new_folder)
+
                     fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
@@ -297,22 +310,24 @@ class WriteSlabVaspInputs(FireTaskBase):
                                   name=new_folder)
                     FWs.append(fw)
 
-                    # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
-                    # Only change in parameters between slab and bulk should be MAGMOM and ISIF
+                    if not continuing_calcs:
 
-                    incar = Incar.from_file(cwd+folder +'/INCAR')
-                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
-                    out_mag = out.magnetization
-                    tot_mag = [mag['tot'] for mag in out_mag]
-                    magmom = np.mean(tot_mag)
-                    mag= [magmom for i in slab]
-                    incar.__setitem__('MAGMOM', mag)
-                    incar.__setitem__('ISIF', 2)
-                    incar.__setitem__('AMIN', 0.01)
-                    incar.__setitem__('AMIX', 0.2)
-                    incar.__setitem__('BMIX', 0.001)
-                    incar.__setitem__('NELMIN', 8)
-                    incar.write_file(cwd+new_folder+'/INCAR')
+                        # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
+                        # Only change in parameters between slab and bulk should be MAGMOM and ISIF
+
+                        incar = Incar.from_file(cwd+folder +'/INCAR')
+                        out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
+                        out_mag = out.magnetization
+                        tot_mag = [mag['tot'] for mag in out_mag]
+                        magmom = np.mean(tot_mag)
+                        mag= [magmom for i in slab]
+                        incar.__setitem__('MAGMOM', mag)
+                        incar.__setitem__('ISIF', 2)
+                        incar.__setitem__('AMIN', 0.01)
+                        incar.__setitem__('AMIX', 0.2)
+                        incar.__setitem__('BMIX', 0.001)
+                        incar.__setitem__('NELMIN', 8)
+                        incar.write_file(cwd+new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
