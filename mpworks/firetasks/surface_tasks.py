@@ -8,6 +8,8 @@ __date__ = "6/2/15"
 
 import os
 import numpy as np
+import uuid
+import socket
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks import explicit_serialize
@@ -229,6 +231,11 @@ class WriteSlabVaspInputs(FireTaskBase):
         miller_index = dec.process_decoded(self.get("miller_index"))
         continuing_calcs = dec.process_decoded(self.get("continuing_calcs", False))
 
+        # change the vasp command for cray systems (Hopper or Edison)
+        if socket.gethostbyname()[:3] != 'cvr':
+            custodian_params['jobs'][0].vasp_cmd[0] ='apirun'
+            custodian_params['jobs'][1].vasp_cmd[0] ='apirun'
+
 
         print 'about to make mplb'
 
@@ -295,7 +302,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         os.system('mkdir %s' %(old_calcs))
                         os.system('mv %s* %s' %(cwd+new_folder+'/', old_calcs))
                         os.system('cp %sINCAR.gz %sPOTCAR.gz %sKPOINTS.gz %sCONTCAR.gz %s'
-                                  %s(old_calcs+'/', old_calcs+'/', old_calcs+'/',
+                                  %(old_calcs+'/', old_calcs+'/', old_calcs+'/',
                                      old_calcs+'/', cwd+new_folder+'/'))
                         os.system('gunzip %s*' %(cwd+new_folder+'/'))
                         os.system('mv %sCONTCAR %sPOSCAR' %(cwd+new_folder+'/', cwd+new_folder+'/'))
@@ -375,6 +382,11 @@ class RunCustodianTask(FireTaskBase):
         if fw_env.get('scratch_root'):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
+
+        # change the vasp command for cray systems (Hopper or Edison)
+        if socket.gethostbyname()[:3] != 'cvr':
+            jobs[0].vasp_cmd[0] = 'apirun'
+            jobs[1].vasp_cmd[1] = 'apirun'
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
         output = c.run()
