@@ -232,9 +232,9 @@ class WriteSlabVaspInputs(FireTaskBase):
         continuing_calcs = dec.process_decoded(self.get("continuing_calcs", False))
 
         # change the vasp command for cray systems (Hopper or Edison)
-        if socket.gethostbyname()[:3] != 'cvr':
-            custodian_params['jobs'][0].vasp_cmd[0] ='apirun'
-            custodian_params['jobs'][1].vasp_cmd[0] ='apirun'
+        # if socket.gethostbyname()[:3] != 'cvr':
+        #     custodian_params['jobs'][0].vasp_cmd[0] ='apirun'
+        #     custodian_params['jobs'][1].vasp_cmd[0] ='apirun'
 
 
         print 'about to make mplb'
@@ -384,9 +384,9 @@ class RunCustodianTask(FireTaskBase):
                 fw_env['scratch_root'])
 
         # change the vasp command for cray systems (Hopper or Edison)
-        if socket.gethostbyname()[:3] != 'cvr':
-            jobs[0].vasp_cmd[0] = 'apirun'
-            jobs[1].vasp_cmd[1] = 'apirun'
+        # if socket.gethostbyname()[:3] != 'cvr':
+        #     jobs[0].vasp_cmd[0] = 'apirun'
+        #     jobs[1].vasp_cmd[1] = 'apirun'
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
         output = c.run()
