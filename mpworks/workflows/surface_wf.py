@@ -349,7 +349,7 @@ class CreateSurfaceWorkflow(object):
                         os.system('mkdir %s' %(old_calcs))
                         os.system('mv %s* %s' %(cwd+folderbulk+'/', old_calcs))
                         os.system('cp %sINCAR.gz %sPOTCAR.gz %sKPOINTS.gz %sCONTCAR.gz %s'
-                                  %s(old_calcs+'/', old_calcs+'/', old_calcs+'/',
+                                  %(old_calcs+'/', old_calcs+'/', old_calcs+'/',
                                      old_calcs+'/', cwd+folderbulk+'/'))
                         os.system('gunzip %s*' %(cwd+folderbulk+'/'))
                         os.system('mv %sCONTCAR %sPOSCAR' %(cwd+folderbulk+'/', cwd+folderbulk+'/'))
