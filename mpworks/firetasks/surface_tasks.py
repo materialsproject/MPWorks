@@ -340,6 +340,7 @@ class RunCustodianTask(FireTaskBase):
 
         # Change to the directory with the vasp inputs to run custodian
         os.chdir(cwd+dir)
+        print 'changing to directory', cwd+dir
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
         max_errors = dec.process_decoded(self['max_errors'])
@@ -353,7 +354,6 @@ class RunCustodianTask(FireTaskBase):
         if fw_env.get('scratch_root'):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
-
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
         output = c.run()
