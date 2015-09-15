@@ -349,7 +349,6 @@ class RunCustodianTask(FireTaskBase):
         cust_params = self.get("custodian_params", {})
 
         print 'scratch folder is in', cust_params['scratch_dir']
-        print os.path.expandvars(fw_env['scratch_root'])
 
         # Get the scratch directory
         if fw_env.get('scratch_root'):
@@ -357,6 +356,11 @@ class RunCustodianTask(FireTaskBase):
                 fw_env['scratch_root'])
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
+
+        print handlers
+        print jobs
+        print max_errors
+        print cust_params
         output = c.run()
 
         return FWAction(stored_data=output)
