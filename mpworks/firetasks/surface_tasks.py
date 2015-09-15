@@ -349,6 +349,7 @@ class RunCustodianTask(FireTaskBase):
         cust_params = self.get("custodian_params", {})
 
         print 'scratch folder is in', cust_params['scratch_dir']
+        print os.path.expandvars(fw_env['scratch_root'])
 
         # Get the scratch directory
         if fw_env.get('scratch_root'):
