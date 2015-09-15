@@ -250,7 +250,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
                         user_incar_settings=None, potcar_functional='PBE',
-                        additional_handlers=[], continuing_calcs=False):
+                        additional_handlers=[]):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -259,7 +259,6 @@ class CreateSurfaceWorkflow(object):
             and a WriteSlabVaspInputs which creates os. Firework(s) depending
             on whether or not Termination=True. Vasp outputs from all slab and
             oriented unit cell calculations will then be inserted into a database.
-
             Args:
                 launchpad_dir (str path): The path to my_launchpad.yaml. Defaults to
                     the current working directory containing your runs
@@ -343,27 +342,12 @@ class CreateSurfaceWorkflow(object):
                                                    str(miller_index[2]))
                 cwd = os.getcwd()
                 if self.get_bulk_e:
-
-                    if continuing_calcs and os.path.getsize(cwd+folderbulk+'/CONTCAR.gz') > 0:
-                        old_calcs = cwd+folderbulk+'/' + "prev_calculations_" + str(uuid.uuid4())
-                        os.system('mkdir %s' %(old_calcs))
-                        os.system('mv %s* %s' %(cwd+folderbulk+'/', old_calcs))
-                        os.system('cp %sINCAR.gz %sPOTCAR.gz %sKPOINTS.gz %sCONTCAR.gz %s'
-                                  %(old_calcs+'/', old_calcs+'/', old_calcs+'/',
-                                     old_calcs+'/', cwd+folderbulk+'/'))
-                        os.system('gunzip %s*' %(cwd+folderbulk+'/'))
-                        os.system('mv %sCONTCAR %sPOSCAR' %(cwd+folderbulk+'/', cwd+folderbulk+'/'))
-
-                    else:
-                        tasks.append(WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                                   folder=folderbulk, cwd=cwd,
-                                                   user_incar_settings=user_incar_settings,
-                                                   potcar_functional=potcar_functional,
-                                                   k_product=k_product))
-
-
-
-                    tasks.extend([RunCustodianTask(dir=folderbulk, cwd=cwd,
+                    tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
+                                               folder=folderbulk, cwd=cwd,
+                                               user_incar_settings=user_incar_settings,
+                                               potcar_functional=potcar_functional,
+                                               k_product=k_product),
+                                 RunCustodianTask(dir=folderbulk, cwd=cwd,
                                                   **cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
@@ -380,10 +364,6 @@ class CreateSurfaceWorkflow(object):
                     # magmom = np.mean(tot_mag)
                     # user_incar_settings['MAGMOM'] = {element: magmom}
 
-                cont_slab_calcs = False
-                if continuing_calcs and not self.get_bulk_e:
-                    cont_slab_calcs = True
-
                 tasks.append(WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                  user_incar_settings=user_incar_settings,
                                                  terminations=self.terminations,
@@ -395,12 +375,10 @@ class CreateSurfaceWorkflow(object):
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
                                                  min_vacuum_size=self.vsize,
-                                                 ucell=self.unit_cells_dict[key][0],
-                                                 continuing_calcs=cont_slab_calcs))
+                                                 ucell=self.unit_cells_dict[key][0]))
 
                 fw = Firework(tasks, name=folderbulk)
 
                 fws.append(fw)
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
-

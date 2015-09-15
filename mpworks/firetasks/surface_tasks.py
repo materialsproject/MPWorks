@@ -8,8 +8,6 @@ __date__ = "6/2/15"
 
 import os
 import numpy as np
-import uuid
-import socket
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks import explicit_serialize
@@ -57,7 +55,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
                     unit cell or slab
                 loc (str path): Location of the outputs of
                     the vasp calculations
-
             Optional Parameters:
                 surface_area (float): surface area of the slab, obtained
                     from slab object before relaxation
@@ -131,7 +128,6 @@ class WriteUCVaspInputs(FireTaskBase):
                 oriented_unit_cell (Structure): Generated with surface.py
                 folder (str path): Location where vasp inputs
                     are to be written
-
             Optional Parameters:
                 angle_tolerance (int): See SpaceGroupAnalyzer in analyzer.py
                 user_incar_settings (dict): See launch_workflow() method in
@@ -177,7 +173,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
-                       "terminations", "continuing_calcs"]
+                       "terminations"]
 
     def run_task(self, fw_spec):
 
@@ -190,7 +186,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                 vaspdbinsert_parameters (dict **kwargs): Contains
                     informations needed to acess a DB, eg, host,
                     port, password etc.
-
             Optional Parameters:
                 min_vac_size (float): Size of vacuum layer of slab in Angstroms
                 min_slab_size (float): Size of slab layer of slab in Angstroms
@@ -207,7 +202,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                     specific shift value will have its own Firework and each of the
                     slab calculations will run in parallel. Defaults to false which
                     sets the shift value to 0.
-
         """
         dec = MontyDecoder()
         folder = dec.process_decoded(self.get("folder"))
@@ -229,13 +223,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
-        continuing_calcs = dec.process_decoded(self.get("continuing_calcs", False))
-
-        # change the vasp command for cray systems (Hopper or Edison)
-        # if socket.gethostbyname()[:3] != 'cvr':
-        #     custodian_params['jobs'][0].vasp_cmd[0] ='aprun'
-        #     custodian_params['jobs'][1].vasp_cmd[0] ='aprun'
-
 
         print 'about to make mplb'
 
@@ -293,22 +280,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
-
-                    if os.path.getsize(cwd+new_folder+'/CONTCAR.gz') == 0:
-                        continuing_calcs = False
-
-                    if continuing_calcs:
-                        old_calcs = cwd+new_folder+'/' + "prev_calculations_" + str(uuid.uuid4())
-                        os.system('mkdir %s' %(old_calcs))
-                        os.system('mv %s* %s' %(cwd+new_folder+'/', old_calcs))
-                        os.system('cp %sINCAR.gz %sPOTCAR.gz %sKPOINTS.gz %sCONTCAR.gz %s'
-                                  %(old_calcs+'/', old_calcs+'/', old_calcs+'/',
-                                     old_calcs+'/', cwd+new_folder+'/'))
-                        os.system('gunzip %s*' %(cwd+new_folder+'/'))
-                        os.system('mv %sCONTCAR %sPOSCAR' %(cwd+new_folder+'/', cwd+new_folder+'/'))
-                    else:
-                        mplb.write_input(slab, cwd+new_folder)
-
+                    mplb.write_input(slab, cwd+new_folder)
                     fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
@@ -321,24 +293,22 @@ class WriteSlabVaspInputs(FireTaskBase):
                                   name=new_folder)
                     FWs.append(fw)
 
-                    if not continuing_calcs:
+                    # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
+                    # Only change in parameters between slab and bulk should be MAGMOM and ISIF
 
-                        # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
-                        # Only change in parameters between slab and bulk should be MAGMOM and ISIF
-
-                        incar = Incar.from_file(cwd+folder +'/INCAR')
-                        out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
-                        out_mag = out.magnetization
-                        tot_mag = [mag['tot'] for mag in out_mag]
-                        magmom = np.mean(tot_mag)
-                        mag= [magmom for i in slab]
-                        incar.__setitem__('MAGMOM', mag)
-                        incar.__setitem__('ISIF', 2)
-                        incar.__setitem__('AMIN', 0.01)
-                        incar.__setitem__('AMIX', 0.2)
-                        incar.__setitem__('BMIX', 0.001)
-                        incar.__setitem__('NELMIN', 8)
-                        incar.write_file(cwd+new_folder+'/INCAR')
+                    incar = Incar.from_file(cwd+folder +'/INCAR')
+                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
+                    out_mag = out.magnetization
+                    tot_mag = [mag['tot'] for mag in out_mag]
+                    magmom = np.mean(tot_mag)
+                    mag= [magmom for i in slab]
+                    incar.__setitem__('MAGMOM', mag)
+                    incar.__setitem__('ISIF', 2)
+                    incar.__setitem__('AMIN', 0.01)
+                    incar.__setitem__('AMIX', 0.2)
+                    incar.__setitem__('BMIX', 0.001)
+                    incar.__setitem__('NELMIN', 8)
+                    incar.write_file(cwd+new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
@@ -358,7 +328,6 @@ class RunCustodianTask(FireTaskBase):
             Required Parameters:
                 dir (str path): directory containing the vasp inputs
                 jobs (VaspJob): Contains the cmd needed to run vasp
-
             Optional Parameters:
                 custodian_params (dict **kwargs): Contains the job and the
                     scratch directory for a custodian run
@@ -383,15 +352,7 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        # # change the vasp command for cray systems (Hopper or Edison)
-        # if socket.gethostbyname()[:3] != 'cvr':
-        #     jobs[0].vasp_cmd[0] = 'aprun'
-        #     jobs[1].vasp_cmd[1] = 'aprun'
-
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
-
-
-# Task tests
