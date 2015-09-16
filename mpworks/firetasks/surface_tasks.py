@@ -153,11 +153,28 @@ class WriteUCVaspInputs(FireTaskBase):
         potcar_functional = \
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
-        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                  k_product=k_product, bulk=True,
-                                  potcar_functional=potcar_functional,
-                                  ediff_per_atom=False)
-        mplb.write_input(oriented_ucell, cwd+folder)
+        # Will continue an incomplete job from a previous contcar file if it exists
+        path = os.path.join(os.getcwd(), folder)
+        newfolder = os.path.join(path, 'prev_run')
+
+        if os.path.exists(path) and \
+                os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
+                        os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+            print folder, 'already exists'
+            os.system('mkdir %s' %(newfolder))
+            os.system('mv %s/* %s/prev_run' %(path, path))
+            os.system('cp %s/CONTCAR.gz %s/INCAR.gz %s/POTCAR.gz %s/KPOINTS.gz %s'
+                      %(newfolder, newfolder, newfolder, newfolder, path))
+            os.system('gunzip %s/*' %(path))
+            os.system('mv %s/CONTCAR %s/POSCAR' %(path, path))
+
+        else:
+
+            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                      k_product=k_product, bulk=True,
+                                      potcar_functional=potcar_functional,
+                                      ediff_per_atom=False)
+            mplb.write_input(oriented_ucell, cwd+folder)
 
 
 @explicit_serialize
@@ -280,7 +297,42 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                                 %(slab.shift)
-                    mplb.write_input(slab, cwd+new_folder)
+
+                    # Will continue an incomplete job from a previous contcar file if it exists
+                    path = os.path.join(os.getcwd(), new_folder)
+                    newfolder = os.path.join(path, 'prev_run')
+
+                    if os.path.exists(path) and \
+                            os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
+                                    os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+                        print folder, 'already exists'
+                        os.system('mkdir %s' %(newfolder))
+                        os.system('mv %s/* %s/prev_run' %(path, path))
+                        os.system('cp %s/CONTCAR.gz %s/INCAR.gz %s/POTCAR.gz %s/KPOINTS.gz %s'
+                                  %(newfolder, newfolder, newfolder, newfolder, path))
+                        os.system('gunzip %s/*' %(path))
+                        os.system('mv %s/CONTCAR %s/POSCAR' %(path, path))
+
+                    else:
+                        mplb.write_input(slab, cwd+new_folder)
+
+                        # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
+                        # Only change in parameters between slab and bulk should be MAGMOM and ISIF
+
+                        incar = Incar.from_file(cwd+folder +'/INCAR')
+                        out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
+                        out_mag = out.magnetization
+                        tot_mag = [mag['tot'] for mag in out_mag]
+                        magmom = np.mean(tot_mag)
+                        mag= [magmom for i in slab]
+                        incar.__setitem__('MAGMOM', mag)
+                        incar.__setitem__('ISIF', 2)
+                        incar.__setitem__('AMIN', 0.01)
+                        incar.__setitem__('AMIX', 0.2)
+                        incar.__setitem__('BMIX', 0.001)
+                        incar.__setitem__('NELMIN', 8)
+                        incar.write_file(cwd+new_folder+'/INCAR')
+
                     fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                                     **custodian_params),
                                    VaspSlabDBInsertTask(struct_type="slab_cell",
@@ -292,23 +344,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                         **vaspdbinsert_parameters)],
                                   name=new_folder)
                     FWs.append(fw)
-
-                    # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
-                    # Only change in parameters between slab and bulk should be MAGMOM and ISIF
-
-                    incar = Incar.from_file(cwd+folder +'/INCAR')
-                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
-                    out_mag = out.magnetization
-                    tot_mag = [mag['tot'] for mag in out_mag]
-                    magmom = np.mean(tot_mag)
-                    mag= [magmom for i in slab]
-                    incar.__setitem__('MAGMOM', mag)
-                    incar.__setitem__('ISIF', 2)
-                    incar.__setitem__('AMIN', 0.01)
-                    incar.__setitem__('AMIX', 0.2)
-                    incar.__setitem__('BMIX', 0.001)
-                    incar.__setitem__('NELMIN', 8)
-                    incar.write_file(cwd+new_folder+'/INCAR')
 
                 return FWAction(additions=FWs)
 
@@ -340,15 +375,13 @@ class RunCustodianTask(FireTaskBase):
 
         # Change to the directory with the vasp inputs to run custodian
         os.chdir(cwd+dir)
-        print 'changing to directory', cwd+dir
+
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
         max_errors = dec.process_decoded(self['max_errors'])
 
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
-
-        print 'scratch folder is in', cust_params['scratch_dir']
 
         # Get the scratch directory
         if fw_env.get('scratch_root'):
@@ -357,10 +390,6 @@ class RunCustodianTask(FireTaskBase):
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
 
-        print handlers
-        print jobs
-        print max_errors
-        print cust_params
         output = c.run()
 
         return FWAction(stored_data=output)
