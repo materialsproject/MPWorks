@@ -160,12 +160,17 @@ class WriteUCVaspInputs(FireTaskBase):
         if os.path.exists(path) and \
                 os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
                         os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
-            print folder, 'already exists'
+            print folder, 'already exists, will now continue calculation'
+            print 'making prev_run folder'
             os.system('mkdir %s' %(newfolder))
+            print 'moving outputs to prev_run'
             os.system('mv %s/* %s/prev_run' %(path, path))
+            print 'moving outputs as inputs for next calculation'
             os.system('cp %s/CONTCAR.gz %s/INCAR.gz %s/POTCAR.gz %s/KPOINTS.gz %s'
                       %(newfolder, newfolder, newfolder, newfolder, path))
+            print 'unzipping new inputs'
             os.system('gunzip %s/*' %(path))
+            print 'copying contcar as new poscar'
             os.system('mv %s/CONTCAR %s/POSCAR' %(path, path))
 
         else:
