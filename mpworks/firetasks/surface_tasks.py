@@ -157,6 +157,12 @@ class WriteUCVaspInputs(FireTaskBase):
         path = os.path.join(os.getcwd(), folder)
         newfolder = os.path.join(path, 'prev_run')
 
+        print 'check if conditions for continuing calculations have been satisfied'
+        print os.path.exists(path)
+        print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
+        print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
+
+
         if os.path.exists(path) and \
                 os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
                         os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
