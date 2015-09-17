@@ -187,11 +187,17 @@ class WriteUCVaspInputs(FireTaskBase):
                 os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
 
 
-        if os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR')) and os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
+        if os.path.exists(path) and \
+                os.path.exists(os.path.join(path, 'CONTCAR')) and \
+                        os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
             continue_vasp('CONTCAR')
-        elif os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR.gz')) and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+        elif os.path.exists(path) and \
+                os.path.exists(os.path.join(path, 'CONTCAR.gz')) \
+                and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
             continue_vasp('CONTCAR.gz')
-        elif os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
+        elif os.path.exists(path) and \
+                os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and \
+                        os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
             continue_vasp('CONTCAR.relax1.gz')
 
         else:
@@ -325,19 +331,51 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                                 %(slab.shift)
 
                     # Will continue an incomplete job from a previous contcar file if it exists
-                    path = os.path.join(os.getcwd(), new_folder)
+                    print 'cwd is %s' %(os.getcwd())
+                    print 'the folder is %s' %(new_folder)
+                    print os.path.join(os.getcwd(), new_folder)
+                    print cwd+'/'+new_folder
+                    path = cwd+'/'+new_folder
+
+                    # path = os.path.join(os.getcwd(), folder)
                     newfolder = os.path.join(path, 'prev_run')
 
-                    if os.path.exists(path) and \
-                            os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
-                                    os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
-                        print folder, 'already exists'
+                    print 'check if conditions for continuing calculations have been satisfied'
+                    print 'check for the following path: %s' %(path)
+                    print os.path.exists(path)
+                    print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
+                    print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
+
+                    def continue_vasp(contcar):
+                        print folder, 'already exists, will now continue calculation'
+                        print 'making prev_run folder'
                         os.system('mkdir %s' %(newfolder))
+                        print 'moving outputs to prev_run'
                         os.system('mv %s/* %s/prev_run' %(path, path))
-                        os.system('cp %s/CONTCAR.gz %s/INCAR.gz %s/POTCAR.gz %s/KPOINTS.gz %s'
-                                  %(newfolder, newfolder, newfolder, newfolder, path))
+                        print 'moving outputs as inputs for next calculation'
+                        os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
+                                  %(newfolder, contcar, newfolder, newfolder, newfolder, path))
+                        print 'unzipping new inputs'
                         os.system('gunzip %s/*' %(path))
-                        os.system('mv %s/CONTCAR %s/POSCAR' %(path, path))
+                        print 'copying contcar as new poscar'
+                        if contcar == 'CONTCAR.relax1.gz':
+                            os.system('mv %s/CONTCAR.relax1 %s/POSCAR' %(path , path))
+                        else:
+                            os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
+
+
+                    if os.path.exists(path) and \
+                            os.path.exists(os.path.join(path, 'CONTCAR')) and \
+                                    os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
+                        continue_vasp('CONTCAR')
+                    elif os.path.exists(path) and \
+                            os.path.exists(os.path.join(path, 'CONTCAR.gz')) \
+                            and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+                        continue_vasp('CONTCAR.gz')
+                    elif os.path.exists(path) and \
+                            os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and \
+                                    os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
+                        continue_vasp('CONTCAR.relax1.gz')
 
                     else:
                         mplb.write_input(slab, cwd+new_folder)
