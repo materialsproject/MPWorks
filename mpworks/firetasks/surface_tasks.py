@@ -162,22 +162,27 @@ class WriteUCVaspInputs(FireTaskBase):
         print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
         print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
 
-
-        if os.path.exists(path) and \
-                os.path.exists(os.path.join(path, 'CONTCAR.gz')) and \
-                        os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+        def continue_vasp(contcar):
             print folder, 'already exists, will now continue calculation'
             print 'making prev_run folder'
             os.system('mkdir %s' %(newfolder))
             print 'moving outputs to prev_run'
             os.system('mv %s/* %s/prev_run' %(path, path))
             print 'moving outputs as inputs for next calculation'
-            os.system('cp %s/CONTCAR.gz %s/INCAR.gz %s/POTCAR.gz %s/KPOINTS.gz %s'
-                      %(newfolder, newfolder, newfolder, newfolder, path))
+            os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
+                      %(newfolder, contcar, newfolder, newfolder, newfolder, path))
             print 'unzipping new inputs'
             os.system('gunzip %s/*' %(path))
             print 'copying contcar as new poscar'
-            os.system('mv %s/CONTCAR %s/POSCAR' %(path, path))
+            os.system('mv %s/%s %s/POSCAR' %(path, contcar, path))
+
+
+        if os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR')) and os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
+            continue_vasp('CONTCAR')
+        elif os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR.gz')) and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
+            continue_vasp('CONTCAR.gz')
+        elif os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
+            continue_vasp('CONTCAR.relax1.gz')
 
         else:
 
