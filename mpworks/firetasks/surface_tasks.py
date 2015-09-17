@@ -181,7 +181,10 @@ class WriteUCVaspInputs(FireTaskBase):
             print 'unzipping new inputs'
             os.system('gunzip %s/*' %(path))
             print 'copying contcar as new poscar'
-            os.system('mv %s/%s %s/POSCAR' %(path, contcar, path))
+            if contcar == 'CONTCAR.relax1.gz':
+                os.system('mv %s/CONTCAR.relax1 %s/POSCAR' %(path , path))
+            else:
+                os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
 
 
         if os.path.exists(path) and os.path.exists(os.path.join(path, 'CONTCAR')) and os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
