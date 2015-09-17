@@ -157,8 +157,10 @@ class WriteUCVaspInputs(FireTaskBase):
         print 'cwd is %s' %(os.getcwd())
         print 'the folder is %s' %(folder)
         print os.path.join(os.getcwd(), folder)
+        print cwd+'/'+folder
+        path = cwd+'/'+folder
 
-        path = os.path.join(os.getcwd(), folder)
+        # path = os.path.join(os.getcwd(), folder)
         newfolder = os.path.join(path, 'prev_run')
 
         print 'check if conditions for continuing calculations have been satisfied'
