@@ -154,6 +154,9 @@ class WriteUCVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
         # Will continue an incomplete job from a previous contcar file if it exists
+        print 'cwd is %s' %(os.getcwd())
+        print 'the folder is %s' %(folder)
+
         path = os.path.join(os.getcwd(), folder)
         newfolder = os.path.join(path, 'prev_run')
 
