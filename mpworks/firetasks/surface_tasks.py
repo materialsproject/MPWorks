@@ -385,14 +385,9 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                         # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
                         # Only change in parameters between slab and bulk should be MAGMOM and ISIF
-                        if os.path.exists("%s/INCAR.relax2.gz" %(cwd+folder)):
-                            incar = Incar.from_file(cwd+folder +'/INCAR.relax2.gz')
-                        else:
-                            incar = Incar.from_file(cwd+folder +'/INCAR.relax2')
-                        if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
-                            out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
-                        else:
-                            out = Outcar(cwd+folder+'/OUTCAR.relax2')
+
+                        incar = Incar.from_file(cwd+folder +'/INCAR')
+                        out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
                         out_mag = out.magnetization
                         tot_mag = [mag['tot'] for mag in out_mag]
                         magmom = np.mean(tot_mag)
@@ -403,7 +398,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('AMIX', 0.2)
                         incar.__setitem__('BMIX', 0.001)
                         incar.__setitem__('NELMIN', 8)
-                        incar.__setitem__('ISTART', 0)
                         incar.write_file(cwd+new_folder+'/INCAR')
 
                     fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
