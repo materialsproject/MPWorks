@@ -285,10 +285,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # into SlabGenerator is the same as obtaining a slab in the
         # orienetation of the original miller index.
         print 'about to copy contcar'
-        if os.path.exists("%s/CONTCAR.relax2.gz" %(cwd+folder)):
-            contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(cwd+folder))
-        else:
-            contcar = Poscar.from_file("%s/CONTCAR.relax2" %(cwd+folder))
+        contcar = Poscar.from_file("%s/CONTCAR.relax2.gz" %(cwd+folder))
         relax_orient_uc = contcar.structure
         print 'made relaxed oriented structure'
         print relax_orient_uc
