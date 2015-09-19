@@ -336,12 +336,10 @@ class WriteSlabVaspInputs(FireTaskBase):
                     # Will continue an incomplete job from a previous contcar file if it exists
                     print 'cwd is %s' %(os.getcwd())
                     print 'the folder is %s' %(new_folder)
-                    print os.path.join(os.getcwd(), new_folder)
-                    print cwd+'/'+new_folder
-                    path = cwd+'/'+new_folder
+                    path = cwd + new_folder
 
                     # path = os.path.join(os.getcwd(), folder)
-                    newfolder = os.path.join(path, 'prev_run')
+                    newfolder = os.path.join(path, new_folder+'_prev_run')
 
                     # print 'check if conditions for continuing calculations have been satisfied'
                     # print 'check for the following path: %s' %(path)
@@ -354,7 +352,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         print 'making prev_run folder'
                         os.system('mkdir %s' %(newfolder))
                         print 'moving outputs to prev_run'
-                        os.system('mv %s/* %s/prev_run' %(path, path))
+                        os.system('mv %s/* %s%s' %(path, path, new_folder+'_prev_run'))
                         print 'moving outputs as inputs for next calculation'
                         os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
                                   %(newfolder, contcar, newfolder, newfolder, newfolder, path))
@@ -365,6 +363,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                             os.system('mv %s/CONTCAR.relax1 %s/POSCAR' %(path , path))
                         else:
                             os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
+                        print 'moving previous outputs out of run folder'
+                        os.system('mv %s %s' %(new_folder+'_prev_run', cwd))
 
 
                     if os.path.exists(path) and \
