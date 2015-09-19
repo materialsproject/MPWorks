@@ -404,7 +404,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         incar.__setitem__('AMIN', 0.01)
                         incar.__setitem__('AMIX', 0.2)
                         incar.__setitem__('BMIX', 0.001)
-			incar.__setitem__('ISTART', 0)
+                        incar.__setitem__('ISTART', 0)
                         incar.__setitem__('NELMIN', 8)
                         incar.write_file(cwd+new_folder+'/INCAR')
 
