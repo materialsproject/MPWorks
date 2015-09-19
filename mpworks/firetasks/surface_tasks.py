@@ -350,7 +350,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                     def continue_vasp(contcar):
                         print folder, 'already exists, will now continue calculation'
                         print 'making prev_run folder'
-                        os.system('mkdir %s' %(newfolder))
+                        os.system('mkdir %s' %(path+newfolder))
                         print 'moving outputs to prev_run'
                         os.system('mv %s/* %s%s' %(path, path, new_folder+'_prev_run'))
                         print 'moving outputs as inputs for next calculation'
