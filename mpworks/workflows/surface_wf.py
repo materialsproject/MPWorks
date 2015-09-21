@@ -42,7 +42,7 @@ class SurfaceWorkflowManager(object):
         to a list of miller indices.
     """
 
-    def __init__(self, api_key, list_of_elements=[], indices_dict=None,
+    def __init__(self, elements_and_mpids=[], indices_dict=None,
                  slab_size=10, vac_size=10, host=None, port=None, user=None,
                  password=None, symprec=0.001, angle_tolerance=5, database=None,
                  collection="Surface_Collection", fail_safe=True, reset=False):
@@ -67,21 +67,31 @@ class SurfaceWorkflowManager(object):
         """
 
         unit_cells_dict = {}
+
+        # This initializes the REST adaptor. Put your own API key in.
+
+        if "MAPI_KEY" not in os.environ:
+            apikey = raw_input('Enter your api key (str): ')
+        else:
+            apikey = os.environ["MAPI_KEY"]
+
+        mprest = MPRester(apikey)
+
         vaspdbinsert_params = {'host': host,
                                'port': port, 'user': user,
                                'password': password,
                                'database': database,
                                'collection': collection}
 
-        elements = [key for key in indices_dict.keys()] \
-            if indices_dict else list_of_elements
+        compounds = [key for key in indices_dict.keys()] \
+            if indices_dict else elements_and_mpids
 
         # For loop will eneumerate through all the compositional
         # formulas in list_of_elements or indices_dict to get a
         # list of relaxed conventional unit cells froom MP. These
         # will be used to generate all oriented unit cells and slabs.
 
-        for el in elements:
+        for el in compounds:
 
             """
             element: str, element name of Metal
@@ -89,32 +99,37 @@ class SurfaceWorkflowManager(object):
             api_key: to get access to MP DB
             """
 
-            # This initializes the REST adaptor. Put your own API key in.
-            mprest = MPRester(api_key)
-            #Returns a list of MPIDs with the compositional formular, the
+            #Returns a list of MPIDs with the compositional formula, the
             # first MPID IS NOT the lowest energy per atom
             entries = mprest.get_entries(el, inc_structure="final")
 
-            e_per_atom = [entry.energy_per_atom for entry in entries]
-            for entry in entries:
-                if min(e_per_atom) == entry.energy_per_atom:
-                    prim_unit_cell = entry.structure
+            if el[:2] != 'mp':
+                e_per_atom = [entry.energy_per_atom for entry in entries]
+                for i, entry in enumerate(entries):
+                    if min(e_per_atom) == entry.energy_per_atom:
+                        prim_unit_cell = entry.structure
+                        spacegroup = mprest.get_data(el, prop='spacegroup')[i]
+            else:
+                prim_unit_cell = entries[0].structure
+                spacegroup = mprest.get_data(el, prop='spacegroup')[0]
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[el] = [conv_unit_cell, min(e_per_atom)]
+            unit_cells_dict[el] = {'conv_unit_cell': conv_unit_cell,
+                                   'e_per_atom': min(e_per_atom),
+                                   'spacegroup': spacegroup}
             print el
 
 
-        self.api_key = api_key
+        self.apikey = apikey
         self.vaspdbinsert_params = vaspdbinsert_params
         self.symprec = symprec
         self.angle_tolerance = angle_tolerance
         self.unit_cells_dict = unit_cells_dict
         self.indices_dict = indices_dict
-        self.elements = elements
+        self.elements = compounds
         self.ssize = slab_size
         self.vsize = vac_size
         self.reset = reset
@@ -143,7 +158,7 @@ class SurfaceWorkflowManager(object):
             max_miller = []
             # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el][0],
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el]['conv_unit_cell'],
                                                           max_index)
 
             print 'surface ', el
@@ -322,7 +337,7 @@ class CreateSurfaceWorkflow(object):
                 # max_normal_search algorithm from surface.py
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
-                slab = SlabGenerator(self.unit_cells_dict[key][0], miller_index,
+                slab = SlabGenerator(self.unit_cells_dict[key]['conv_unit_cell'], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
 
@@ -352,6 +367,7 @@ class CreateSurfaceWorkflow(object):
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index,
+                                                      original_ucell_dict=self.unit_cells_dict[key],
                                                       **self.vaspdbinsert_params)])
 
                     # Slab will inherit average final magnetic moment
@@ -375,7 +391,7 @@ class CreateSurfaceWorkflow(object):
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
                                                  min_vacuum_size=self.vsize,
-                                                 ucell=self.unit_cells_dict[key][0]))
+                                                 ucell=self.unit_cells_dict[key]['conv_unit_cell']))
 
                 fw = Firework(tasks, name=folderbulk)
 
