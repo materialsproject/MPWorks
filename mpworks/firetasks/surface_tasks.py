@@ -339,20 +339,20 @@ class WriteSlabVaspInputs(FireTaskBase):
                     path = cwd + new_folder
 
                     # path = os.path.join(os.getcwd(), folder)
-                    newfolder = os.path.join(path, new_folder+'_prev_run')
+                    newfolder = path + new_folder + '_prev_run'
 
                     # print 'check if conditions for continuing calculations have been satisfied'
                     # print 'check for the following path: %s' %(path)
                     # print os.path.exists(path)
                     # print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
                     # print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
-
+  		    print newfolder
                     def continue_vasp(contcar):
                         print folder, 'already exists, will now continue calculation'
                         print 'making prev_run folder'
                         os.system('mkdir %s' %(newfolder))
                         print 'moving outputs to prev_run'
-                        os.system('mv %s/* %s%s' %(path, path, newfolder))
+                        os.system('mv %s/* %s' %(path, newfolder))
                         print 'moving outputs as inputs for next calculation'
                         os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
                                   %(newfolder, contcar, newfolder, newfolder, newfolder, path))
@@ -364,7 +364,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         else:
                             os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
                         print 'moving previous outputs out of run folder'
-                        os.system('mv %s %s' %(new_folder+'_prev_run', cwd))
+                        os.system('mv %s ../' %(newfolder))
 
 
                     if os.path.exists(path) and \
@@ -454,7 +454,7 @@ class RunCustodianTask(FireTaskBase):
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
         max_errors = dec.process_decoded(self['max_errors'])
-
+	#print "number of errors allowed is %s" %(max_errors)
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
 
@@ -464,7 +464,7 @@ class RunCustodianTask(FireTaskBase):
                 fw_env['scratch_root'])
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
-
+	print 'max errors allowed is %s' %(c.max_errors)
         output = c.run()
 
         return FWAction(stored_data=output)
