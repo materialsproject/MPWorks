@@ -391,7 +391,7 @@ class CreateSurfaceWorkflow(object):
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
                                                  min_vacuum_size=self.vsize,
-                                                 ucell=self.unit_cells_dict[key]['conv_unit_cell']))
+                                                 original_ucell_dict=self.unit_cells_dict[key]))
 
                 fw = Firework(tasks, name=folderbulk)
 
