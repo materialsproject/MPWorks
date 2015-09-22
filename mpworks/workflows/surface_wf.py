@@ -86,9 +86,9 @@ class SurfaceWorkflowManager(object):
         compounds = [key for key in indices_dict.keys()] \
             if indices_dict else elements_and_mpids
 
-        # For loop will eneumerate through all the compositional
+        # For loop will enumerate through all the compositional
         # formulas in list_of_elements or indices_dict to get a
-        # list of relaxed conventional unit cells froom MP. These
+        # list of relaxed conventional unit cells from MP. These
         # will be used to generate all oriented unit cells and slabs.
 
         for el in compounds:
@@ -169,7 +169,7 @@ class SurfaceWorkflowManager(object):
                 for hkl in list_of_indices:
                     if abs(min(hkl)) == max_index or abs(max(hkl)) == max_index:
                         max_miller.append(hkl)
-                miller_dict[el] = max_only
+                miller_dict[el] = max_miller
             else:
                 miller_dict[el] = list_of_indices
 
