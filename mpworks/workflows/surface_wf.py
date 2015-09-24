@@ -27,12 +27,6 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 from matgendb import QueryEngine
 
-# import socket
-# hostname = socket.gethostname()
-# if hostname[:3] != 'cvr' or hostname[:6] != 'hopper' or hostname[:6] != 'edison':
-#     from pymatgen.analysis.wulff_dual import wulff_3d
-# else:
-#     print "working on nersc, turning off wulff_dual"
 
 class SurfaceWorkflowManager(object):
 
@@ -108,10 +102,10 @@ class SurfaceWorkflowManager(object):
                 for i, entry in enumerate(entries):
                     if min(e_per_atom) == entry.energy_per_atom:
                         prim_unit_cell = entry.structure
-                        spacegroup = mprest.get_data(el, prop='spacegroup')[i]
+                        mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
             else:
                 prim_unit_cell = entries[0].structure
-                spacegroup = mprest.get_data(el, prop='spacegroup')[0]
+                mpid = el
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
@@ -119,7 +113,7 @@ class SurfaceWorkflowManager(object):
             print conv_unit_cell
             unit_cells_dict[el] = {'conv_unit_cell': conv_unit_cell,
                                    'e_per_atom': min(e_per_atom),
-                                   'spacegroup': spacegroup}
+                                   'mpid': mpid}
             print el
 
 
