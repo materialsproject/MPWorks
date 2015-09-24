@@ -1,6 +1,11 @@
 
 ## for Surface Energy Calculation
 from __future__ import division, unicode_literals
+
+"""
+#TODO: Write module doc.
+"""
+
 __author__ = "Richard Tran"
 __version__ = "0.1"
 __email__ = "rit634989@gmail.com"
@@ -85,6 +90,7 @@ class SurfaceWorkflowManager(object):
         # list of relaxed conventional unit cells from MP. These
         # will be used to generate all oriented unit cells and slabs.
 
+        new_indices_dict = {}
         for el in compounds:
 
             """
@@ -103,17 +109,18 @@ class SurfaceWorkflowManager(object):
                     if min(e_per_atom) == entry.energy_per_atom:
                         prim_unit_cell = entry.structure
                         mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
+                        new_indices_dict[mpid] = indices_dict[el]
             else:
                 prim_unit_cell = entries[0].structure
                 mpid = el
+                new_indices_dict[mpid] = indices_dict[mpid]
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[el] = {'conv_unit_cell': conv_unit_cell,
-                                   'e_per_atom': min(e_per_atom),
-                                   'mpid': mpid}
+            unit_cells_dict[mpid] = {'conv_unit_cell': conv_unit_cell,
+                                   'e_per_atom': min(e_per_atom)}
             print el
 
 
@@ -122,8 +129,7 @@ class SurfaceWorkflowManager(object):
         self.symprec = symprec
         self.angle_tolerance = angle_tolerance
         self.unit_cells_dict = unit_cells_dict
-        self.indices_dict = indices_dict
-        self.elements = compounds
+        self.indices_dict = new_indices_dict
         self.ssize = slab_size
         self.vsize = vac_size
         self.reset = reset
@@ -148,24 +154,24 @@ class SurfaceWorkflowManager(object):
         """
 
         miller_dict = {}
-        for el in self.elements:
+        for mpid in self.unit_cells_dict.keys():
             max_miller = []
             # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[el]['conv_unit_cell'],
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['conv_unit_cell'],
                                                           max_index)
 
-            print 'surface ', el
+            print 'surface ', mpid
 
-            print '# ', el
+            print '# ', mpid
 
             if max_only:
                 for hkl in list_of_indices:
                     if abs(min(hkl)) == max_index or abs(max(hkl)) == max_index:
                         max_miller.append(hkl)
-                miller_dict[el] = max_miller
+                miller_dict[mpid] = max_miller
             else:
-                miller_dict[el] = list_of_indices
+                miller_dict[mpid] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params, ssize=self.ssize,
@@ -190,15 +196,16 @@ class SurfaceWorkflowManager(object):
         """
 
         miller_dict = {}
-        for el in self.elements:
-            miller_dict[el] = list_of_indices
+        for mpid in self.unit_cells_dict.keys():
+            miller_dict[mpid] = list_of_indices
 
         return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                      self.vaspdbinsert_params,
                                      ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search,
                                      terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset, get_bulk_e=get_bulk_e)
+                                     fail_safe=self.fail_safe, reset=self.reset,
+                                     get_bulk_e=get_bulk_e)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False, get_bulk_e=True):
@@ -215,7 +222,8 @@ class SurfaceWorkflowManager(object):
                                      ssize=self.ssize, vsize=self.vsize,
                                      max_normal_search=max_normal_search,
                                      terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset, get_bulk_e=get_bulk_e)
+                                     fail_safe=self.fail_safe, reset=self.reset,
+                                     get_bulk_e=get_bulk_e)
 
 
 class CreateSurfaceWorkflow(object):
@@ -227,8 +235,9 @@ class CreateSurfaceWorkflow(object):
         SurfaceWorkflowManager to create an object of this class.
     """
 
-    def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params, ssize, vsize,
-                 terminations=False, max_normal_search=True, fail_safe=True, reset=False, get_bulk_e=True):
+    def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
+                 ssize, vsize, terminations=False, max_normal_search=True,
+                 fail_safe=True, reset=False, get_bulk_e=True):
 
         """
             Args:
@@ -316,11 +325,11 @@ class CreateSurfaceWorkflow(object):
                                           # instead of just being one job
 
         fws=[]
-        for key in self.miller_dict.keys():
+        for mpid in self.miller_dict.keys():
             # Enumerate through all compounds in the dictionary,
             # the key is the compositional formula of the compound
-            print key
-            for miller_index in self.miller_dict[key]:
+            print mpid
+            for miller_index in self.miller_dict[mpid]:
                 # Enumerates through all miller indices we
                 # want to create slabs of that compound from
 
@@ -331,7 +340,7 @@ class CreateSurfaceWorkflow(object):
                 # max_normal_search algorithm from surface.py
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
-                slab = SlabGenerator(self.unit_cells_dict[key]['conv_unit_cell'], miller_index,
+                slab = SlabGenerator(self.unit_cells_dict[mpid]['conv_unit_cell'], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
 
@@ -361,8 +370,7 @@ class CreateSurfaceWorkflow(object):
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index,
-                                                      original_ucell_dict=self.unit_cells_dict[key],
-                                                      **self.vaspdbinsert_params)])
+                                                      mpid=mpid, **self.vaspdbinsert_params)])
 
                     # Slab will inherit average final magnetic moment
                     # of the bulk from outcar, will have to generalize
@@ -384,8 +392,7 @@ class CreateSurfaceWorkflow(object):
                                                  k_product=k_product,
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
-                                                 min_vacuum_size=self.vsize,
-                                                 original_ucell_dict=self.unit_cells_dict[key]))
+                                                 min_vacuum_size=self.vsize, mpid=mpid))
 
                 fw = Firework(tasks, name=folderbulk)
 
