@@ -109,11 +109,13 @@ class SurfaceWorkflowManager(object):
                     if min(e_per_atom) == entry.energy_per_atom:
                         prim_unit_cell = entry.structure
                         mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
-                        new_indices_dict[mpid] = indices_dict[el]
+                        if indices_dict:
+                            new_indices_dict[mpid] = indices_dict[el]
             else:
                 prim_unit_cell = entries[0].structure
                 mpid = el
-                new_indices_dict[mpid] = indices_dict[mpid]
+                if indices_dict:
+                    new_indices_dict[mpid] = indices_dict[mpid]
 
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
