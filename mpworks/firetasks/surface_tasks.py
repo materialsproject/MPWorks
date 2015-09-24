@@ -37,7 +37,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
     required_params = ["host", "port", "user", "password",
                        "database", "collection", "struct_type", "loc",
-                       "cwd", "miller_index"]
+                       "cwd", "miller_index", "original_ucell_dict"]
     optional_params = ["surface_area", "shift", "vsize", "ssize"]
 
     def run_task(self, fw_spec):
@@ -76,6 +76,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         vsize = dec.process_decoded(self.get("vsize", None))
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
+        original_ucell_dict = dec.process_decoded(self.get("original_ucell_dict"))
 
         # Sets default for DB parameters
         if not self["host"]:
@@ -90,12 +91,16 @@ class VaspSlabDBInsertTask(FireTaskBase):
         if not self["collection"]:
             self["collection"] = "tasks"
 
+        mpid = original_ucell_dict['spacegroup']['material_id']
+        spacegroup = original_ucell_dict['spacegroup']
         # Addtional info relating to slabs
         additional_fields={"author": os.environ.get("USER"),
                            "structure_type": struct_type,
                            "miller_index": miller_index,
                            "surface_area": surface_area, "shift": shift,
-                           "vac_size": vsize, "slab_size": ssize}
+                           "vac_size": vsize, "slab_size": ssize,
+                           "material_id": mpid,
+                           "conventional_ucell_spacegroup": spacegroup}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
@@ -218,7 +223,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "cwd", "custodian_params",
-                       "vaspdbinsert_parameters", "miller_index"]
+                       "vaspdbinsert_parameters", "miller_index",
+                       "original_ucell_dict"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "angle_tolerance", "user_incar_settings",
                        "k_product","potcar_functional", "symprec",
@@ -272,6 +278,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
+        original_ucell_dict = dec.process_decoded(self.get("original_ucell_dict"))
+
 
         print 'about to make mplb'
 
@@ -416,6 +424,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                         vsize=slabs.min_vac_size,
                                                         ssize=slabs.min_slab_size,
                                                         miller_index=miller_index,
+                                                        original_ucell_dict=original_ucell_dict,
                                                         **vaspdbinsert_parameters)],
                                   name=new_folder)
                     FWs.append(fw)
