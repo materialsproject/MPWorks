@@ -19,9 +19,11 @@ GARDEN = '/project/projectdirs/matgen/garden'
 
 RUN_LOCS = [GARDEN, GARDEN+'/dev',
             '/project/projectdirs/matgen/garden/control_blocks',
-            '/global/scratch/sd/matcomp/',
+            '/project/projectdirs/matgen/scratch',
+            '/global/scratch/sd/matcomp/', '/global/homes/m/matcomp',
             '/scratch/scratchdirs/matcomp/', '/scratch2/scratchdirs/matcomp/',
             '/global/scratch/sd/matcomp/aj_tests/',
             '/global/scratch/sd/matcomp/wc_tests/',
             '/global/scratch/sd/matcomp/aj_prod/',
-            '/global/scratch2/sd/matcomp/mp_prod']
+            '/global/scratch2/sd/matcomp/mp_prod/',
+            '/global/scratch2/sd/matcomp/mp_prod_hopper/']
