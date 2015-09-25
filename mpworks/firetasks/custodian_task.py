@@ -148,7 +148,7 @@ def get_custodian_task(spec):
                 MeshSymmetryErrorHandler(), NonConvergingErrorHandler(), PositiveEnergyErrorHandler()]
 
     if 'optimize structure (2x)' in task_type:
-        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+        jobs = VaspJob.double_relaxation_run(v_exe)
     elif 'static' in task_type:
         jobs = [VaspJob(v_exe)]
     else:
