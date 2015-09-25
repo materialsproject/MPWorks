@@ -13,7 +13,7 @@ QA_DB = {'nnodes': 1, 'walltime': '2:00:00',
 QA_CONTROL = {'nnodes': 1, 'walltime': '00:30:00'}
 
 MOVE_TO_GARDEN_DEV = True
-MOVE_TO_GARDEN_PROD = False
+MOVE_TO_GARDEN_PROD = True
 
 GARDEN = '/project/projectdirs/matgen/garden'
 
