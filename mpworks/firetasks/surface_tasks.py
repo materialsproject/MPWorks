@@ -120,8 +120,8 @@ class WriteUCVaspInputs(FireTaskBase):
     """
 
     required_params = ["oriented_ucell", "folder", "cwd"]
-    optional_params = ["angle_tolerance", "user_incar_settings",
-                       "k_product", "potcar_functional", "symprec"]
+    optional_params = ["user_incar_settings",
+                       "k_product", "potcar_functional"]
 
     def run_task(self, fw_spec):
 
@@ -144,8 +144,6 @@ class WriteUCVaspInputs(FireTaskBase):
         oriented_ucell = dec.process_decoded(self.get("oriented_ucell"))
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
-        symprec = dec.process_decoded(self.get("symprec", 0.001))
-        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
 
         user_incar_settings = \
             dec.process_decoded(self.get("user_incar_settings",
@@ -223,8 +221,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters", "miller_index",
                        "mpid"]
     optional_params = ["min_slab_size", "min_vacuum_size",
-                       "angle_tolerance", "user_incar_settings",
-                       "k_product","potcar_functional", "symprec",
+                       "user_incar_settings",
+                       "k_product","potcar_functional",
                        "terminations"]
 
     def run_task(self, fw_spec):
@@ -258,8 +256,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         dec = MontyDecoder()
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
-        symprec = dec.process_decoded(self.get("symprec", 0.001))
-        angle_tolerance = dec.process_decoded(self.get("angle_tolerance", 5))
         terminations = dec.process_decoded(self.get("terminations", False))
         custodian_params = dec.process_decoded(self.get("custodian_params"))
         vaspdbinsert_parameters = \
@@ -460,7 +456,6 @@ class RunCustodianTask(FireTaskBase):
         handlers = dec.process_decoded(self.get('handlers', []))
         jobs = dec.process_decoded(self['jobs'])
         max_errors = dec.process_decoded(self['max_errors'])
-	#print "number of errors allowed is %s" %(max_errors)
         fw_env = fw_spec.get("_fw_env", {})
         cust_params = self.get("custodian_params", {})
 
@@ -470,7 +465,6 @@ class RunCustodianTask(FireTaskBase):
                 fw_env['scratch_root'])
 
         c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
-	print 'max errors allowed is %s' %(c.max_errors)
         output = c.run()
 
         return FWAction(stored_data=output)

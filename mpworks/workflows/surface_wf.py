@@ -355,11 +355,10 @@ class CreateSurfaceWorkflow(object):
                 handler = []
                 tasks = []
 
-                folderbulk = '/%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
-                                                   'bulk', k_product, self.ssize, self.vsize,
-                                                   str(miller_index[0]),
-                                                   str(miller_index[1]),
-                                                   str(miller_index[2]))
+                folderbulk = '/%s_%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
+                                                             mpid,'bulk', k_product, self.ssize,
+                                                             self.vsize, str(miller_index[0]),
+                                                             str(miller_index[1]), str(miller_index[2]))
                 cwd = os.getcwd()
                 if self.get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
@@ -374,15 +373,6 @@ class CreateSurfaceWorkflow(object):
                                                       miller_index=miller_index,
                                                       mpid=mpid, **self.vaspdbinsert_params)])
 
-                    # Slab will inherit average final magnetic moment
-                    # of the bulk from outcar, will have to generalize
-                    # this for systems with different elements later
-                    # element = oriented_uc.species[0]
-                    # out = Outcar(cwd+folderbulk)
-                    # out_mag = out.magnetization
-                    # tot_mag = [mag['tot'] for mag in out_mag]
-                    # magmom = np.mean(tot_mag)
-                    # user_incar_settings['MAGMOM'] = {element: magmom}
 
                 tasks.append(WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                  user_incar_settings=user_incar_settings,
