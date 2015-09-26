@@ -121,7 +121,7 @@ class SurfaceWorkflowManager(object):
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[mpid] = {'conv_unit_cell': conv_unit_cell}
+            unit_cells_dict[mpid] = conv_unit_cell
             print el
 
 
@@ -159,7 +159,7 @@ class SurfaceWorkflowManager(object):
             max_miller = []
             # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['conv_unit_cell'],
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid],
                                                           max_index)
 
             print 'surface ', mpid
@@ -341,7 +341,7 @@ class CreateSurfaceWorkflow(object):
                 # max_normal_search algorithm from surface.py
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
-                slab = SlabGenerator(self.unit_cells_dict[mpid]['conv_unit_cell'], miller_index,
+                slab = SlabGenerator(self.unit_cells_dict[mpid], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
 
