@@ -121,8 +121,7 @@ class SurfaceWorkflowManager(object):
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[mpid] = {'conv_unit_cell': conv_unit_cell,
-                                   'e_per_atom': min(e_per_atom)}
+            unit_cells_dict[mpid] = {'conv_unit_cell': conv_unit_cell}
             print el
 
 
