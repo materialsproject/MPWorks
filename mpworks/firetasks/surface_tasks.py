@@ -308,121 +308,85 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
         print 'query bulk entry for job completion'
-        bulk_entry =  qe.get_entries({'chemsys': relax_orient_uc.composition.reduced_formula,
-                                     'structure_type': 'oriented_unit_cell', 'miller_index': miller_index},
-                                     optional_data=optional_data)
+        entry =  qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
+                                      'miller_index': miller_index}, optional_data=optional_data)[0]
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
-        print 'fomular data type is ', type(relax_orient_uc.composition.reduced_formula)
+        print 'mpid', mpid
         print 'checking job completion'
-        print bulk_entry
-        for entry in bulk_entry:
-            print 'for loop'
+
+        print entry.data['state']
+        if entry.data['state'] != 'successful':
+            print "%s bulk calculations were incomplete, cancelling FW" \
+                  %(relax_orient_uc.composition.reduced_formula)
+            return FWAction()
+        else:
+
             print entry.data['state']
-            if entry.data['state'] != 'successful':
-                print "%s bulk calculations were incomplete, cancelling FW" \
-                      %(relax_orient_uc.composition.reduced_formula)
-                return FWAction()
-            else:
 
-                print entry.data['state']
+            FWs = []
+            for slab in slab_list:
 
-                FWs = []
-                for slab in slab_list:
+                print slab
 
-                    print slab
+                new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
+                                                            %(slab.shift)
 
-                    new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
-                                                                %(slab.shift)
+                # Will continue an incomplete job from a previous contcar file if it exists
+                print 'cwd is %s' %(os.getcwd())
+                print 'the folder is %s' %(new_folder)
+                path = cwd + new_folder
 
-                    # Will continue an incomplete job from a previous contcar file if it exists
-                    print 'cwd is %s' %(os.getcwd())
-                    print 'the folder is %s' %(new_folder)
-                    path = cwd + new_folder
+                # path = os.path.join(os.getcwd(), folder)
+                newfolder = path + new_folder + '_prev_run'
 
-                    # path = os.path.join(os.getcwd(), folder)
-                    newfolder = path + new_folder + '_prev_run'
+                # print 'check if conditions for continuing calculations have been satisfied'
+                # print 'check for the following path: %s' %(path)
+                # print os.path.exists(path)
+                # print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
+                # print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
+                print newfolder
 
-                    # print 'check if conditions for continuing calculations have been satisfied'
-                    # print 'check for the following path: %s' %(path)
-                    # print os.path.exists(path)
-                    # print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
-                    # print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
-  		    print newfolder
-                    def continue_vasp(contcar):
-                        print folder, 'already exists, will now continue calculation'
-                        print 'making prev_run folder'
-                        os.system('mkdir %s' %(newfolder))
-                        print 'moving outputs to prev_run'
-                        os.system('mv %s/* %s' %(path, newfolder))
-                        print 'moving outputs as inputs for next calculation'
-                        os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
-                                  %(newfolder, contcar, newfolder, newfolder, newfolder, path))
-                        print 'unzipping new inputs'
-                        os.system('gunzip %s/*' %(path))
-                        print 'copying contcar as new poscar'
-                        if contcar == 'CONTCAR.relax1.gz':
-                            os.system('mv %s/CONTCAR.relax1 %s/POSCAR' %(path , path))
-                        else:
-                            os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
-                        print 'moving previous outputs out of run folder'
-                        os.system('mv %s ../' %(newfolder))
+                mplb.write_input(slab, cwd+new_folder)
 
+                # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
+                # Only change in parameters between slab and bulk should be MAGMOM and ISIF
 
-                    if os.path.exists(path) and \
-                            os.path.exists(os.path.join(path, 'CONTCAR')) and \
-                                    os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
-                        continue_vasp('CONTCAR')
-                    elif os.path.exists(path) and \
-                            os.path.exists(os.path.join(path, 'CONTCAR.gz')) \
-                            and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
-                        continue_vasp('CONTCAR.gz')
-                    elif os.path.exists(path) and \
-                            os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and \
-                                    os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
-                        continue_vasp('CONTCAR.relax1.gz')
+                if os.path.exists("%s/INCAR.relax2.gz" %(cwd+folder)):
+                    incar = Incar.from_file(cwd+folder +'/INCAR.relax2.gz')
+                else:
+                    incar = Incar.from_file(cwd+folder +'/INCAR.relax2')
+                if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
+                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
+                else:
+                    out = Outcar(cwd+folder+'/OUTCAR.relax2')
 
-                    else:
-                        mplb.write_input(slab, cwd+new_folder)
+                out_mag = out.magnetization
+                tot_mag = [mag['tot'] for mag in out_mag]
+                magmom = np.mean(tot_mag)
+                mag= [magmom for i in slab]
+                incar.__setitem__('MAGMOM', mag)
+                incar.__setitem__('ISIF', 2)
+                incar.__setitem__('AMIN', 0.01)
+                incar.__setitem__('AMIX', 0.2)
+                incar.__setitem__('BMIX', 0.001)
+                incar.__setitem__('ISTART', 0)
+                incar.__setitem__('NELMIN', 8)
+                incar.write_file(cwd+new_folder+'/INCAR')
 
-                        # Writes new INCAR file based on changes made by custodian on the bulk's INCAR.
-                        # Only change in parameters between slab and bulk should be MAGMOM and ISIF
+                fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
+                                                **custodian_params),
+                               VaspSlabDBInsertTask(struct_type="slab_cell",
+                                                    loc=new_folder, cwd=cwd, shift=slab.shift,
+                                                    surface_area=slab.surface_area,
+                                                    vsize=slabs.min_vac_size,
+                                                    ssize=slabs.min_slab_size,
+                                                    miller_index=miller_index,
+                                                    mpid=mpid,
+                                                    **vaspdbinsert_parameters)],
+                              name=new_folder)
+                FWs.append(fw)
 
-                        if os.path.exists("%s/INCAR.relax2.gz" %(cwd+folder)):
-                            incar = Incar.from_file(cwd+folder +'/INCAR.relax2.gz')
-                        else:
-                            incar = Incar.from_file(cwd+folder +'/INCAR.relax2')
-                        if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
-                            out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
-                        else:
-                            out = Outcar(cwd+folder+'/OUTCAR.relax2')
-
-                        out_mag = out.magnetization
-                        tot_mag = [mag['tot'] for mag in out_mag]
-                        magmom = np.mean(tot_mag)
-                        mag= [magmom for i in slab]
-                        incar.__setitem__('MAGMOM', mag)
-                        incar.__setitem__('ISIF', 2)
-                        incar.__setitem__('AMIN', 0.01)
-                        incar.__setitem__('AMIX', 0.2)
-                        incar.__setitem__('BMIX', 0.001)
-                        incar.__setitem__('ISTART', 0)
-                        incar.__setitem__('NELMIN', 8)
-                        incar.write_file(cwd+new_folder+'/INCAR')
-
-                    fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
-                                                    **custodian_params),
-                                   VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                        loc=new_folder, cwd=cwd, shift=slab.shift,
-                                                        surface_area=slab.surface_area,
-                                                        vsize=slabs.min_vac_size,
-                                                        ssize=slabs.min_slab_size,
-                                                        miller_index=miller_index,
-                                                        mpid=mpid,
-                                                        **vaspdbinsert_parameters)],
-                                  name=new_folder)
-                    FWs.append(fw)
-
-                return FWAction(additions=FWs)
+            return FWAction(additions=FWs)
 
 
 @explicit_serialize
