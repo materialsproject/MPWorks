@@ -121,7 +121,8 @@ class SurfaceWorkflowManager(object):
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            unit_cells_dict[mpid] = conv_unit_cell
+            spacegroup = mprest.get_data(mpid, prop='spacegroup')[0]['spacegroup']['symbol']
+            unit_cells_dict[mpid] = {'ucell': conv_unit_cell, 'spacegroup': spacegroup}
             print el
 
 
@@ -159,7 +160,7 @@ class SurfaceWorkflowManager(object):
             max_miller = []
             # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid],
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['ucell'],
                                                           max_index)
 
             print 'surface ', mpid
@@ -341,7 +342,7 @@ class CreateSurfaceWorkflow(object):
                 # max_normal_search algorithm from surface.py
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
-                slab = SlabGenerator(self.unit_cells_dict[mpid], miller_index,
+                slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm)
                 oriented_uc = slab.oriented_unit_cell
 
@@ -369,8 +370,9 @@ class CreateSurfaceWorkflow(object):
                                                   **cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
-                                                      miller_index=miller_index,
-                                                      mpid=mpid, **self.vaspdbinsert_params)])
+                                                      miller_index=miller_index, mpid=mpid,
+                                                      spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
+                                                      **self.vaspdbinsert_params)])
 
 
                 tasks.append(WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
@@ -383,7 +385,8 @@ class CreateSurfaceWorkflow(object):
                                                  k_product=k_product,
                                                  miller_index=miller_index,
                                                  min_slab_size=self.ssize,
-                                                 min_vacuum_size=self.vsize, mpid=mpid))
+                                                 min_vacuum_size=self.vsize, mpid=mpid,
+                                                 spacegroup=self.unit_cells_dict[mpid]['spacegroup']))
 
                 fw = Firework(tasks, name=folderbulk)
 

@@ -37,7 +37,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
     required_params = ["host", "port", "user", "password",
                        "database", "collection", "struct_type", "loc",
-                       "cwd", "miller_index", "mpid"]
+                       "cwd", "miller_index", "mpid", "spacegroup"]
     optional_params = ["surface_area", "shift", "vsize", "ssize"]
 
     def run_task(self, fw_spec):
@@ -77,6 +77,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
+        spacegroup = dec.process_decoded(self.get("spacegroup"))
 
         # Sets default for DB parameters
         if not self["host"]:
@@ -97,7 +98,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
                            "miller_index": miller_index,
                            "surface_area": surface_area, "shift": shift,
                            "vac_size": vsize, "slab_size": ssize,
-                           "material_id": mpid}
+                           "material_id": mpid,
+                           "spacegroup": spacegroup}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
@@ -107,10 +109,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   additional_fields=additional_fields,
                                   collection=self["collection"])
         drone.assimilate(cwd+loc)
-        # print loc
-        # print self["collection"]
-        # print additional_fields['vsize']
-        # print additional_fields['miller_index']
 
 
 @explicit_serialize
@@ -153,60 +151,12 @@ class WriteUCVaspInputs(FireTaskBase):
         potcar_functional = \
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
-        # Will continue an incomplete job from a previous contcar file if it exists
-        print 'cwd is %s' %(os.getcwd())
-        print 'the folder is %s' %(folder)
-        print os.path.join(os.getcwd(), folder)
-        print cwd+'/'+folder
-        path = cwd+'/'+folder
 
-        # path = os.path.join(os.getcwd(), folder)
-        newfolder = os.path.join(path, 'prev_run')
-
-        # print 'check if conditions for continuing calculations have been satisfied'
-        # print 'check for the following path: %s' %(path)
-        # print os.path.exists(path)
-        # print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
-        # print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
-
-        def continue_vasp(contcar):
-            print folder, 'already exists, will now continue calculation'
-            print 'making prev_run folder'
-            os.system('mkdir %s' %(newfolder))
-            print 'moving outputs to prev_run'
-            os.system('mv %s/* %s/prev_run' %(path, path))
-            print 'moving outputs as inputs for next calculation'
-            os.system('cp %s/%s %s/INCAR %s/POTCAR %s/KPOINTS %s'
-                      %(newfolder, contcar, newfolder, newfolder, newfolder, path))
-            print 'unzipping new inputs'
-            os.system('gunzip %s/*' %(path))
-            print 'copying contcar as new poscar'
-            if contcar == 'CONTCAR.relax1.gz':
-                os.system('mv %s/CONTCAR.relax1 %s/POSCAR' %(path , path))
-            else:
-                os.system('mv %s/CONTCAR %s/POSCAR' %(path , path))
-
-
-        if os.path.exists(path) and \
-                os.path.exists(os.path.join(path, 'CONTCAR')) and \
-                        os.stat(os.path.join(path, 'CONTCAR')).st_size !=0:
-            continue_vasp('CONTCAR')
-        elif os.path.exists(path) and \
-                os.path.exists(os.path.join(path, 'CONTCAR.gz')) \
-                and os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0:
-            continue_vasp('CONTCAR.gz')
-        elif os.path.exists(path) and \
-                os.path.exists(os.path.join(path, 'CONTCAR.relax1.gz')) and \
-                        os.stat(os.path.join(path, 'CONTCAR.relax1.gz')).st_size !=0:
-            continue_vasp('CONTCAR.relax1.gz')
-
-        else:
-
-            mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=True,
-                                      potcar_functional=potcar_functional,
-                                      ediff_per_atom=False)
-            mplb.write_input(oriented_ucell, cwd+folder)
+        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                  k_product=k_product, bulk=True,
+                                  potcar_functional=potcar_functional,
+                                  ediff_per_atom=False)
+        mplb.write_input(oriented_ucell, cwd+folder)
 
 
 @explicit_serialize
@@ -219,7 +169,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     """
     required_params = ["folder", "cwd", "custodian_params",
                        "vaspdbinsert_parameters", "miller_index",
-                       "mpid"]
+                       "mpid", "spacegroup"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings",
                        "k_product","potcar_functional",
@@ -272,6 +222,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
+        spacegroup = dec.process_decoded(self.get("spacegroup"))
 
 
         print 'about to make mplb'
@@ -308,8 +259,9 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
         print 'query bulk entry for job completion'
-        entry =  qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
-                                      'miller_index': miller_index}, optional_data=optional_data)[0]
+        entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
+                                'miller_index': miller_index}, optional_data=optional_data)[0]
+        
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
         print 'checking job completion'
@@ -330,21 +282,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                             %(slab.shift)
-
-                # Will continue an incomplete job from a previous contcar file if it exists
-                print 'cwd is %s' %(os.getcwd())
-                print 'the folder is %s' %(new_folder)
-                path = cwd + new_folder
-
-                # path = os.path.join(os.getcwd(), folder)
-                newfolder = path + new_folder + '_prev_run'
-
-                # print 'check if conditions for continuing calculations have been satisfied'
-                # print 'check for the following path: %s' %(path)
-                # print os.path.exists(path)
-                # print os.path.exists(os.path.join(path, 'CONTCAR.gz'))
-                # print os.stat(os.path.join(path, 'CONTCAR.gz')).st_size !=0
-                print newfolder
 
                 mplb.write_input(slab, cwd+new_folder)
 
@@ -381,7 +318,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                     vsize=slabs.min_vac_size,
                                                     ssize=slabs.min_slab_size,
                                                     miller_index=miller_index,
-                                                    mpid=mpid,
+                                                    mpid=mpid, spacegroup=spacegroup,
                                                     **vaspdbinsert_parameters)],
                               name=new_folder)
                 FWs.append(fw)
