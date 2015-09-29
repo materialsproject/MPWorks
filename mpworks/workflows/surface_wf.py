@@ -270,7 +270,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
                         user_incar_settings=None, potcar_functional='PBE',
-                        additional_handlers=[]):
+                        additional_handlers=[], scratch_dir=None):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -316,9 +316,12 @@ class CreateSurfaceWorkflow(object):
         if additional_handlers:
             handlers.extend(additional_handlers)
 
+        scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
+
+
         cust_params = {"custodian_params":
                            {"scratch_dir":
-                                os.path.join("/global/scratch2/sd/",
+                                os.path.join(scratch_dir,
                                              os.environ["USER"])},
                        "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                          auto_npar=False),

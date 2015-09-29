@@ -261,7 +261,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         print 'query bulk entry for job completion'
         entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
                                 'miller_index': miller_index}, optional_data=optional_data)[0]
-        
+
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
         print 'checking job completion'
