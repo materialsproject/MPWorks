@@ -16,14 +16,14 @@ import os
 import uuid
 
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
-    VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs
+    VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
+    MoveDirectoryTask
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
-from pymatgen.core.surface import generate_all_slabs, SlabGenerator, \
+from pymatgen.core.surface import SlabGenerator, \
     get_symmetrically_distinct_miller_indices
-from pymatgen.core.surface import SlabGenerator, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 from pymatgen.io.vasp.outputs import Outcar
@@ -158,7 +158,6 @@ class SurfaceWorkflowManager(object):
         miller_dict = {}
         for mpid in self.unit_cells_dict.keys():
             max_miller = []
-            # generate_all_slabs() is very slow, especially for Mn
             list_of_indices = \
                 get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['ucell'],
                                                           max_index)
@@ -270,7 +269,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
                         user_incar_settings=None, potcar_functional='PBE',
-                        additional_handlers=[], scratch_dir=None):
+                        additional_handlers=[], scratch_dir=None, final_directory="."):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -378,18 +377,21 @@ class CreateSurfaceWorkflow(object):
                                                       **self.vaspdbinsert_params)])
 
 
-                tasks.append(WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
-                                                 user_incar_settings=user_incar_settings,
-                                                 terminations=self.terminations,
-                                                 custodian_params=cust_params,
-                                                 vaspdbinsert_parameters=
-                                                 self.vaspdbinsert_params,
-                                                 potcar_functional=potcar_functional,
-                                                 k_product=k_product,
-                                                 miller_index=miller_index,
-                                                 min_slab_size=self.ssize,
-                                                 min_vacuum_size=self.vsize, mpid=mpid,
-                                                 spacegroup=self.unit_cells_dict[mpid]['spacegroup']))
+                tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
+                                                  user_incar_settings=user_incar_settings,
+                                                  terminations=self.terminations,
+                                                  custodian_params=cust_params,
+                                                  vaspdbinsert_parameters=
+                                                  self.vaspdbinsert_params,
+                                                  potcar_functional=potcar_functional,
+                                                  k_product=k_product,
+                                                  miller_index=miller_index,
+                                                  min_slab_size=self.ssize,
+                                                  min_vacuum_size=self.vsize, mpid=mpid,
+                                                  spacegroup=self.unit_cells_dict[mpid]['spacegroup']),
+                              MoveDirectoryTask(cwd=cwd, formula=oriented_uc.composition.reduced_formula,
+                                                miller_index=miller_index, mpid=mpid,
+                                                final_directory=final_directory)])
 
                 fw = Firework(tasks, name=folderbulk)
 

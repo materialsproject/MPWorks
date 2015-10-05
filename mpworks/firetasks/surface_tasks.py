@@ -249,7 +249,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         slabs = SlabGenerator(relax_orient_uc, (0,0,1),
                               min_slab_size=min_slab_size,
                               min_vacuum_size=min_vacuum_size,
-                              max_normal_search=max(miller_index))
+                              max_normal_search=max(miller_index),
+                              primitive=True)
 
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
@@ -369,3 +370,41 @@ class RunCustodianTask(FireTaskBase):
         output = c.run()
 
         return FWAction(stored_data=output)
+
+@explicit_serialize
+class MoveDirectoryTask(FireTaskBase):
+    """
+    Basic task to create new directories to move
+    and organize completed directories. This will
+    prevent the home directory from being filled up.
+    """
+
+    required_params = ["cwd", "formula", "miller_index", "mpid", "final_directory"]
+
+    def run_task(self, fw_spec):
+
+        """
+
+        """
+
+        dec = MontyDecoder()
+        final_directory = dec.process_decoded(self['final_directory'])
+        cwd = dec.process_decoded(self['cwd'])
+        os.chdir(cwd)
+        miller_index = dec.process_decoded(self['miller_index'])
+        mpid = dec.process_decoded(self['mpid'])
+        formula = dec.process_decoded(self['formula'])
+
+        subdir = formula + "_" + mpid
+
+        final_subdirs = [d for d in os.listdir(final_directory) if os.path.isdir(d)]
+
+        if subdir not in final_subdirs:
+            os.system('mkdir %s' %(final_directory + '/' + subdir))
+
+        directories = [d for d in os.listdir(cwd) if os.path.isdir(d)]
+
+        hkl = str(miller_index[0]) + str(miller_index[1]) + str(miller_index[2])
+        for directory in directories:
+            if hkl in directory and mpid in directory:
+                os.system('mv %s %s' %(directory, final_directory + '/' + subdir))
