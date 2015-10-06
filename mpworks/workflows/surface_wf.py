@@ -345,7 +345,8 @@ class CreateSurfaceWorkflow(object):
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
                 slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
-                                     self.ssize, self.vsize, max_normal_search=max_norm, primitive=True)
+                                     self.ssize, self.vsize, max_normal_search=max_norm,
+                                     primitive=True)
                 oriented_uc = slab.oriented_unit_cell
 
                 if self.fail_safe and len(oriented_uc)> 199:
@@ -375,7 +376,6 @@ class CreateSurfaceWorkflow(object):
                                                       miller_index=miller_index, mpid=mpid,
                                                       spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                       **self.vaspdbinsert_params)])
-
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                   user_incar_settings=user_incar_settings,
