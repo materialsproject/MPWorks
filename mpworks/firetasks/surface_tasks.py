@@ -253,6 +253,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                               primitive=True)
 
         print "primitive is set to ", slabs.primitive
+        print "ssize: ", slabs.min_slab_size
+        print "vsize: ", slabs.min_vac_size
+        print "max_normal_search: ", max(miller_index)
 
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
