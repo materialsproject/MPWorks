@@ -257,7 +257,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
         print 'deciding terminations'
-        slab_list = slabs.get_slabs(tol=0.2) if terminations else [slabs.get_slab(tol=0.2)]
+        slab_list = slabs.get_slabs(tol=0.25) if terminations else [slabs.get_slab(tol=0.25)]
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
