@@ -345,7 +345,7 @@ class CreateSurfaceWorkflow(object):
                 print 'true or false max norm is ', max_norm, self.max_normal_search
 
                 slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
-                                     self.ssize, self.vsize, max_normal_search=max_norm)
+                                     self.ssize, self.vsize, max_normal_search=max_norm, primitve=True)
                 oriented_uc = slab.oriented_unit_cell
 
                 if self.fail_safe and len(oriented_uc)> 199:
