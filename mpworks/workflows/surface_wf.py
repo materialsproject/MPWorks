@@ -346,7 +346,7 @@ class CreateSurfaceWorkflow(object):
 
                 slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
                                      self.ssize, self.vsize, max_normal_search=max_norm,
-                                     primitive=True)
+                                     primitive=False)
                 oriented_uc = slab.oriented_unit_cell
 
                 if self.fail_safe and len(oriented_uc)> 199:
