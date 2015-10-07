@@ -4,6 +4,7 @@ from __future__ import division, unicode_literals
 
 """
 #TODO: Write module doc.
+       Clean up
 """
 
 __author__ = "Richard Tran"
@@ -397,5 +398,6 @@ class CreateSurfaceWorkflow(object):
                 fw = Firework(tasks, name=folderbulk)
 
                 fws.append(fw)
+                print self.unit_cells_dict[mpid]['spacegroup']
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
