@@ -122,6 +122,7 @@ class SurfaceWorkflowManager(object):
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
             spacegroup = mprest.get_data(mpid, prop='spacegroup')[0]['spacegroup']['symbol']
+            print spacegroup
             unit_cells_dict[mpid] = {'ucell': conv_unit_cell, 'spacegroup': spacegroup}
             print el
 
