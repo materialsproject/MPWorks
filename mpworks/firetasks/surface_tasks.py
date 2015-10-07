@@ -242,6 +242,16 @@ class WriteSlabVaspInputs(FireTaskBase):
         else:
             contcar = Poscar.from_file("%s/CONTCAR.relax2" %(cwd+folder))
         relax_orient_uc = contcar.structure
+
+        qe = QueryEngine(**vaspdbinsert_parameters)
+        optional_data = ["state"]
+        print 'query bulk entry for job completion'
+        entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
+                                'miller_index': miller_index}, inc_structure=True,
+                               optional_data=optional_data)[0]
+
+        relax_orient_uc = entry.structure
+
         print 'made relaxed oriented structure'
         print relax_orient_uc
         print 'making slab'
@@ -258,12 +268,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         # based on different slab terminations
         print 'deciding terminations'
         slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
-
-        qe = QueryEngine(**vaspdbinsert_parameters)
-        optional_data = ["state"]
-        print 'query bulk entry for job completion'
-        entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
-                                'miller_index': miller_index}, optional_data=optional_data)[0]
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
