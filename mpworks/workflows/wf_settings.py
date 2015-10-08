@@ -12,8 +12,8 @@ QA_DB = {'nnodes': 1, 'walltime': '2:00:00',
          'pre_rocket': '#PBS -V\nulimit -v hard\nmodule load python/2.7.3\nsource $VENV_LOC'}
 QA_CONTROL = {'nnodes': 1, 'walltime': '00:30:00'}
 
-MOVE_TO_GARDEN_DEV = True
-MOVE_TO_GARDEN_PROD = True
+MOVE_TO_GARDEN_DEV = False
+MOVE_TO_GARDEN_PROD = False
 
 GARDEN = '/project/projectdirs/matgen/garden'
 
