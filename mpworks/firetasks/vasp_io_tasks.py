@@ -23,7 +23,7 @@ from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
+from pymatgen.io.vasp.inputs import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'

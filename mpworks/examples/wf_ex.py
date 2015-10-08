@@ -9,7 +9,7 @@ from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspCopyTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask
 from pymatgen import Composition, Lattice
 from pymatgen.core.structure import Structure
-from pymatgen.io.vaspio_set import MPGGAVaspInputSet
+from pymatgen.io.vasp.sets import MPGGAVaspInputSet
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'

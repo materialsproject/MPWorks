@@ -13,7 +13,7 @@ import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.workflows.wf_utils import j_decorate
-from pymatgen.io.vaspio.vasp_input import Incar
+from pymatgen.io.vasp.inputs import Incar
 from pymatgen.serializers.json_coders import MontyDecoder
 
 __author__ = 'Anubhav Jain'

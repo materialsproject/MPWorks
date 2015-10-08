@@ -1,5 +1,5 @@
 from monty.os.path import zpath
-from pymatgen.io.vaspio import Outcar
+from pymatgen.io.vasp import Outcar
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
