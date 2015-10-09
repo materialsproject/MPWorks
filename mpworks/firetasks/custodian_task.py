@@ -62,7 +62,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters):
         self.update(parameters)
-        self.jobs = map(VaspJob.from_dict, self['jobs'])
+        self.jobs = self['jobs']
         dec = MontyDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
