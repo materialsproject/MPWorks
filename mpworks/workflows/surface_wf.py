@@ -319,7 +319,6 @@ class CreateSurfaceWorkflow(object):
 
         scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
 
-
         cust_params = {"custodian_params":
                            {"scratch_dir":
                                 os.path.join(scratch_dir,
@@ -327,8 +326,8 @@ class CreateSurfaceWorkflow(object):
                        "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                          auto_npar=False),
                        "handlers": handlers,
-                       "max_errors": 100} # will return a list of jobs
-                                          # instead of just being one job
+                       "max_errors": 100}  # will return a list of jobs
+                                           # instead of just being one job
 
         fws=[]
         for mpid in self.miller_dict.keys():
@@ -357,7 +356,6 @@ class CreateSurfaceWorkflow(object):
                 # slabs are created in the WriteSlabVaspInputs task.
                 # WriteSlabVaspInputs will create the slabs from
                 # the contcar of the oriented unit cell calculation
-                handler = []
                 tasks = []
 
                 folderbulk = '/%s_%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
@@ -376,7 +374,7 @@ class CreateSurfaceWorkflow(object):
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index, mpid=mpid,
-                                                      spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
+                                                      conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                       **self.vaspdbinsert_params)])
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
@@ -390,7 +388,7 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize, mpid=mpid,
-                                                  spacegroup=self.unit_cells_dict[mpid]['spacegroup']),
+                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup']),
                               MoveDirectoryTask(cwd=cwd, formula=oriented_uc.composition.reduced_formula,
                                                 miller_index=miller_index, mpid=mpid,
                                                 final_directory=final_directory)])
