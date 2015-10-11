@@ -42,10 +42,10 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
     _fw_name = "Vasp Writer Task"
 
     def run_task(self, fw_spec):
-        Incar.from_dict(fw_spec['vasp']['incar']).write_file('INCAR')
-        Poscar.from_dict(fw_spec['vasp']['poscar']).write_file('POSCAR')
-        Potcar.from_dict(fw_spec['vasp']['potcar']).write_file('POTCAR')
-        Kpoints.from_dict(fw_spec['vasp']['kpoints']).write_file('KPOINTS')
+        fw_spec['vasp']['incar'].write_file('INCAR')
+        fw_spec['vasp']['poscar'].write_file('POSCAR')
+        fw_spec['vasp']['potcar'].write_file('POTCAR')
+        fw_spec['vasp']['kpoints'].write_file('KPOINTS')
 
 
 class VaspCopyTask(FireTaskBase, FWSerializable):
