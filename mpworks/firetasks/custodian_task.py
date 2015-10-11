@@ -135,7 +135,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def _write_formula_file(self, fw_spec):
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula + '--'
             + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
