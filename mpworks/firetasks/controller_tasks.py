@@ -55,7 +55,7 @@ class AddEStructureTask(FireTaskBase, FWSerializable):
 
         type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
 
-        snl = StructureNL.from_dict(fw_spec['mpsnl'])
+        snl = fw_spec['mpsnl']
         f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
         fws = []
@@ -154,7 +154,7 @@ class AddEStructureTask_old(FireTaskBase, FWSerializable):
             print 'Adding more runs...'
             type_name = 'GGA+U' if 'GGA+U' in fw_spec['prev_task_type'] else 'GGA'
 
-            snl = StructureNL.from_dict(fw_spec['mpsnl'])
+            snl = fw_spec['mpsnl']
             f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
             fws = []

@@ -62,7 +62,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters):
         self.update(parameters)
-        self.jobs = map(VaspJob.from_dict, self['jobs'])
+        self.jobs = self['jobs']
         dec = MontyDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
@@ -135,7 +135,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def _write_formula_file(self, fw_spec):
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula + '--'
             + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')

@@ -132,7 +132,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
         bs = vr.get_band_structure(kpoints_filename=kpoints_loc)
         """
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula + '--'
             + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
