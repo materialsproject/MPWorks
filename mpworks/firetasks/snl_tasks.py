@@ -21,7 +21,7 @@ class AddSNLTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         sma = SNLMongoAdapter.auto_load()
-        snl = StructureNL.from_dict(fw_spec['snl'])
+        snl = fw_spec['snl']
         mpsnl, snlgroup_id, spec_group = sma.add_snl(snl)
         mod_spec = [{"_push": {"run_tags": "species_group={}".format(spec_group)}}] if spec_group else None
 

@@ -3,9 +3,9 @@ from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
-from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
-from pymatgen.io.vaspio.vasp_input import VaspInput, Incar, Poscar, Kpoints, Potcar
-from pymatgen.io.vaspio_set import MPVaspInputSet, MPStaticVaspInputSet, \
+from pymatgen.io.vasp.outputs import Vasprun, Outcar
+from pymatgen.io.vasp.inputs import VaspInput, Incar, Poscar, Kpoints, Potcar
+from pymatgen.io.vasp.sets import MPVaspInputSet, MPStaticVaspInputSet, \
     MPNonSCFVaspInputSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 
