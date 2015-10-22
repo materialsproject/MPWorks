@@ -27,7 +27,6 @@ from pymatgen.core.surface import SlabGenerator, \
     get_symmetrically_distinct_miller_indices
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
-from pymatgen.io.vasp.outputs import Outcar
 
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
@@ -100,8 +99,6 @@ class SurfaceWorkflowManager(object):
             api_key: to get access to MP DB
             """
 
-            #Returns a list of MPIDs with the compositional formula, the
-            # first MPID IS NOT the lowest energy per atom
             entries = mprest.get_entries(el, inc_structure="final")
 
             if el[:2] != 'mp':
@@ -138,10 +135,11 @@ class SurfaceWorkflowManager(object):
         self.vsize = vac_size
         self.reset = reset
         self.fail_safe = fail_safe
+        self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
 
 
     def from_max_index(self, max_index, max_normal_search=True,
-                       terminations=False, get_bulk_e=True, max_only=False):
+                       terminations=False, max_only=False):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -176,17 +174,12 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params, ssize=self.ssize,
-                                     vsize=self.vsize,
-                                     max_normal_search=max_normal_search,
-                                     terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset,
-                                     get_bulk_e=get_bulk_e)
+        self.CreateSurfaceWorkflow(miller_dict, terminations=terminations,
+                                   max_normal_search=max_normal_search)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
-                             terminations=False, get_bulk_e = True):
+                             terminations=False):
 
         """
             Class method to create a surface workflow with a
@@ -202,16 +195,11 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             miller_dict[mpid] = list_of_indices
 
-        return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params,
-                                     ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search,
-                                     terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset,
-                                     get_bulk_e=get_bulk_e)
+        self.CreateSurfaceWorkflow(miller_dict, terminations=terminations,
+                                   max_normal_search=max_normal_search)
 
 
-    def from_indices_dict(self, max_normal_search=True, terminations=False, get_bulk_e=True):
+    def from_indices_dict(self, max_normal_search=True, terminations=False):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -220,14 +208,52 @@ class SurfaceWorkflowManager(object):
             eg. indices_dict={'Fe': [[1,1,0]], 'LiFePO4': [[1,1,1], [2,2,1]]}
         """
 
-        return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
-                                     self.vaspdbinsert_params,
-                                     ssize=self.ssize, vsize=self.vsize,
-                                     max_normal_search=max_normal_search,
-                                     terminations=terminations,
-                                     fail_safe=self.fail_safe, reset=self.reset,
-                                     get_bulk_e=get_bulk_e)
+        self.check_existing_entries(self.indices_dict, terminations=terminations,
+                                    max_normal_search=max_normal_search)
 
+
+    def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=False):
+
+        # Checks if a calculation is already in the DB to avoid
+        # calculations that are already finish and creates workflows
+        # with structures that have not been calculated yet.
+
+        criteria = {'state': 'successful'}
+
+        calculate_with_bulk = {}
+        calculate_with_slab_only = {}
+
+        for mpid in miller_dict.keys():
+            for hkl in miller_dict[mpid]:
+                criteria['struct_type'] = 'oriented_unit_cell'
+                criteria['material_id'] = mpid
+                criteria['miller_index'] = hkl
+
+                if self.surface_query_engine.get_entries(criteria):
+                    criteria['struct_type'] = 'slab_cell'
+                    if self.surface_query_engine.get_entries(criteria):
+                        continue
+                    else:
+                        if mpid not in calculate_with_slab_only.keys():
+                            calculate_with_slab_only[mpid] = []
+                        calculate_with_slab_only[mpid].append(hkl)
+                else:
+                    if mpid not in calculate_with_bulk.keys():
+                        calculate_with_bulk[mpid] = []
+                    calculate_with_bulk[mpid].append(hkl)
+
+        wf_kwargs = {'unit_cells_dict': self.unit_cells_dict,
+                     'vaspdbinsert_params': self.vaspdbinsert_params,
+                     'ssize': self.ssize, 'vsize': self.vsize,
+                     'max_normal_search': max_normal_search,
+                     'terminations': terminations,
+                     'fail_safe': self.fail_safe, 'reset': self.reset}
+
+        CreateSurfaceWorkflow(calculate_with_bulk,
+                              get_bulk_e=True, **wf_kwargs)
+
+        CreateSurfaceWorkflow(calculate_with_slab_only,
+                              get_bulk_e=False, **wf_kwargs)
 
 class CreateSurfaceWorkflow(object):
 
@@ -257,6 +283,9 @@ class CreateSurfaceWorkflow(object):
                                               'password': password, 'database': database}
         """
 
+        surface_query_engine = QueryEngine(**vaspdbinsert_params)
+
+        self.surface_query_engine = surface_query_engine
         self.miller_dict = miller_dict
         self.unit_cells_dict = unit_cells_dict
         self.vaspdbinsert_params = vaspdbinsert_params
@@ -267,7 +296,6 @@ class CreateSurfaceWorkflow(object):
         self.reset = reset
         self.fail_safe = fail_safe
         self.get_bulk_e = get_bulk_e
-
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
                         user_incar_settings=None, potcar_functional='PBE',
@@ -331,12 +359,25 @@ class CreateSurfaceWorkflow(object):
 
         fws=[]
         for mpid in self.miller_dict.keys():
+
             # Enumerate through all compounds in the dictionary,
             # the key is the compositional formula of the compound
+
             print mpid
             for miller_index in self.miller_dict[mpid]:
                 # Enumerates through all miller indices we
                 # want to create slabs of that compound from
+
+                check_slab_exist = {'material_id': mpid, 'miller_index': miller_index,
+                                    'structure_type': 'slab_cell'}
+                check_ucell_exist = check_slab_exist.copy()
+                check_ucell_exist['structure_type'] = 'oriented_unit_cell'
+
+                does_slab_exist = self.surface_query_engine.get_entries(check_slab_exist)
+                does_ucell_exist = self.surface_query_engine.get_entries(check_ucell_exist)
+                if does_slab_exist and does_ucell_exist:
+                    print "Slab calculations for %s %s are already completed" %(mpid, miller_index)
+                    continue
 
                 print str(miller_index)
 

@@ -9,9 +9,9 @@ __date__ = "6/2/15"
 import os
 import numpy as np
 
-from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
+from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
-from pymatgen.io.vasp.outputs import Vasprun, Poscar, Incar, Outcar
+from pymatgen.io.vasp.outputs import Incar, Outcar
 from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 from matgendb.creator import VaspToDbTaskDrone
@@ -92,13 +92,18 @@ class VaspSlabDBInsertTask(FireTaskBase):
         if not self["collection"]:
             self["collection"] = "tasks"
 
+        warnings = []
+        warnings.append("SE<0")
+        warnings.append("%REL>%s")
+
         # Addtional info relating to slabs
         additional_fields = {"author": os.environ.get("USER"),
                              "structure_type": struct_type,
                              "miller_index": miller_index,
                              "surface_area": surface_area, "shift": shift,
                              "vac_size": vsize, "slab_size": ssize,
-                             "material_id": mpid, "conventional_spacegroup": spacegroup}
+                             "material_id": mpid, "conventional_spacegroup": spacegroup,
+                             "warnings": warnings}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
