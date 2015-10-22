@@ -416,7 +416,7 @@
                                             "Mo": "Mo_pv"
                                         }
                                     }, 
-                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@module": "pymatgen.io.vasp.sets", 
                                     "@class": "DictVaspInputSet"
                                 }, 
                                 "gamma_vasp_cmd": null, 
@@ -701,7 +701,7 @@
                                             "Mo": "Mo_pv"
                                         }
                                     }, 
-                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@module": "pymatgen.io.vasp.sets", 
                                     "@class": "DictVaspInputSet"
                                 }, 
                                 "gamma_vasp_cmd": null, 
@@ -793,7 +793,7 @@
                         ], 
                         "NELM": 100, 
                         "ENCUT": 520, 
-                        "@module": "pymatgen.io.vaspio.vasp_input", 
+                        "@module": "pymatgen.io.vasp.inputs", 
                         "PREC": "Accurate", 
                         "ISIF": 3, 
                         "ICHARG": 1, 
@@ -824,7 +824,7 @@
                                 8
                             ]
                         ], 
-                        "@module": "pymatgen.io.vaspio.vasp_input", 
+                        "@module": "pymatgen.io.vasp.inputs", 
                         "nkpoints": 0, 
                         "generation_style": "Monkhorst", 
                         "@class": "Kpoints"
@@ -833,7 +833,7 @@
                         "comment": "Fe1 O1", 
                         "selective_dynamics": null, 
                         "velocities": null, 
-                        "@module": "pymatgen.io.vaspio.vasp_input", 
+                        "@module": "pymatgen.io.vasp.inputs", 
                         "@class": "Poscar", 
                         "predictor_corrector": null, 
                         "structure": {
@@ -917,7 +917,7 @@
                         ], 
                         "functional": "PBE", 
                         "@class": "Potcar", 
-                        "@module": "pymatgen.io.vaspio.vasp_input"
+                        "@module": "pymatgen.io.vasp.inputs"
                     }
                 }
             }, 
@@ -1248,7 +1248,7 @@
                                             "Mo": "Mo_pv"
                                         }
                                     }, 
-                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@module": "pymatgen.io.vasp.sets", 
                                     "@class": "DictVaspInputSet"
                                 }, 
                                 "gamma_vasp_cmd": null, 
@@ -1533,7 +1533,7 @@
                                             "Mo": "Mo_pv"
                                         }
                                     }, 
-                                    "@module": "pymatgen.io.vaspio_set", 
+                                    "@module": "pymatgen.io.vasp.sets", 
                                     "@class": "DictVaspInputSet"
                                 }, 
                                 "gamma_vasp_cmd": null, 
