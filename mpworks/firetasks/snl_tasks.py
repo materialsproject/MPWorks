@@ -25,4 +25,4 @@ class AddSNLTask(FireTaskBase, FWSerializable):
         mpsnl, snlgroup_id, spec_group = sma.add_snl(snl)
         mod_spec = [{"_push": {"run_tags": "species_group={}".format(spec_group)}}] if spec_group else None
 
-        return FWAction(update_spec={'mpsnl': mpsnl.to_dict, 'snlgroup_id': snlgroup_id}, mod_spec=mod_spec)
+        return FWAction(update_spec={'mpsnl': mpsnl.as_dict(), 'snlgroup_id': snlgroup_id}, mod_spec=mod_spec)

@@ -14,7 +14,7 @@ from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
 
 from fireworks.utilities.fw_serializers import FWSerializable
-from fireworks.core.firework import FireTaskBase, FWAction, FireWork, Workflow
+from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
@@ -23,7 +23,7 @@ from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
+from pymatgen.io.vasp.inputs import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -123,19 +123,19 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.additional_fields = self.get('additional_fields', {})
-        self.update_duplicates = self.get('update_duplicates', False)
+        self.update_duplicates = self.get('update_duplicates', False)  # off so DOS/BS doesn't get entered twice
 
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
             prev_dir = get_loc(fw_spec['_fizzled_parents'][0]['launches'][0]['launch_dir'])
-            update_spec = {}
+            update_spec = {}  # add this later when creating new FW
             fizzled_parent = True
             parse_dos = False
         else:
             prev_dir = get_loc(fw_spec['prev_vasp_dir'])
             update_spec = {'prev_vasp_dir': prev_dir,
                            'prev_task_type': fw_spec['prev_task_type'],
-                           'run_tags': fw_spec['run_tags']}
+                           'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
             fizzled_parent = False
             parse_dos = 'Uniform' in fw_spec['prev_task_type']
         if 'run_tags' in fw_spec:
@@ -205,6 +205,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         'mpsnl': mpsnl, 'snlgroup_id': snlgroup_id,
                         'task_type': fw_spec['prev_task_type'],
                         'run_tags': list(fw_spec['run_tags']),
+                        'parameters': fw_spec.get('parameters'),
                         '_dupefinder': DupeFinderVasp().to_dict(),
                         '_priority': fw_spec['_priority']}
 
@@ -215,10 +216,10 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 fws = []
                 connections = {}
 
-                f = Composition.from_formula(
+                f = Composition(
                     snl.structure.composition.reduced_formula).alphabetical_formula
 
-                fws.append(FireWork(
+                fws.append(Firework(
                     [VaspCopyTask({'files': ['INCAR', 'KPOINTS', 'POSCAR', 'POTCAR', 'CONTCAR'],
                                    'use_CONTCAR': False}), SetupUnconvergedHandlerTask(),
                      get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
@@ -229,7 +230,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         'run_tags': list(fw_spec['run_tags'])}
                 spec['run_tags'].append(unconverged_tag)
                 fws.append(
-                    FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+                    Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                              fw_id=-1))
                 connections[-2] = -1
 
@@ -238,4 +239,4 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 return FWAction(detours=wf)
 
         # not successful and not due to convergence problem - FIZZLE
-        raise ValueError("DB insertion successful, but don't know how to fix this FireWork! Can't continue with workflow...")
+        raise ValueError("DB insertion successful, but don't know how to fix this Firework! Can't continue with workflow...")

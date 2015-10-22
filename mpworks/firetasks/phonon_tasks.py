@@ -5,6 +5,7 @@ __author__ = 'weichen'
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
+from pymatgen.io.vasp.inputs import Incar, Poscar
 from pymatgen.phonons.strain import DeformedStructureSet
 from fireworks.core.firework import FireWork, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
@@ -17,7 +18,6 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
-#from pymatgen.io.vaspio_set import MPVaspInputSet
 from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
 
 def update_spec_force_convergence(spec, user_vasp_settings=None):
@@ -35,7 +35,6 @@ def update_spec_force_convergence(spec, user_vasp_settings=None):
     fw_spec['vasp']['kpoints'] = k.to_dict
     return fw_spec
 
-'''
 class SetupFConvergenceTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Force Convergence Task"
 
@@ -58,7 +57,7 @@ class SetupElastConstTask(FireTaskBase, FWSerializable):
         incar.update({"ISIF": 2})
         incar.write_file("INCAR")
         return FWAction()
-'''
+
 class SetupDeformedStructTask(FireTaskBase, FWSerializable):
     _fw_name = "Setup Deformed Struct Task"
 
@@ -66,34 +65,32 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
         # Read structure from previous relaxation
         relaxed_struct = Structure.from_dict(fw_spec['output']['crystal'])
         # Generate deformed structures
-        d_struct_set = DeformedStructureSet(relaxed_struct, ns=0.06).as_strain_dict()
+        d_struct_set = DeformedStructureSet(relaxed_struct, 
+                                            ns=0.06).as_strain_dict()
         wf=[]
-
         for i, d_struct in d_struct_set.def_structs:
             fws=[]
             connections={}
             f = Composition.from_formula(d_struct.formula).alphabetical_formula
-            snl = StructureNL(d_struct, 'Joseph Montoya <montoyjh@lbl.gov>', projects=["Elasticity"])
-
+            snl = StructureNL(d_struct, 'Joseph Montoya <montoyjh@lbl.gov>', 
+                              projects=["Elasticity"])
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
-            spec = {'task_type': 'Add Deformed Struct to SNL database', 'snl': snl.to_dict,
-                    '_queueadapter': QA_DB, '_priority': snl_priority}
+            spec = {'task_type': 'Add Deformed Struct to SNL database', 
+                    'snl': snl.to_dict, 
+                    '_queueadapter': QA_DB, 
+                    '_priority': snl_priority}
             if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
-                spec['force_mpsnl'] = snl.to_dict
+                spec['force_mpsnl'] = snl.as_dict()
                 spec['force_snlgroup_id'] = fw_spec['snlgroup_id']
                 del spec['snl']
-            fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-1000+i*10))
+            fws.append(Firework(tasks, spec, 
+                                name=get_slug(f + '--' + spec['task_type']), 
+                                fw_id=-1000+i*10))
             connections[-1000+i*10] = [-999+i*10]
-
-            spec = snl_to_wf._snl_to_spec(snl, parameters={'exact_structure':True})
-            incar=fw_spec['vasp']['incar']
-            incar.update({"ISIF":2})
-            spec['vasp']['incar']=incar
-            kpoints=fw_spec['vasp']['kpoints']
-            if "actual_points" in kpoints:
-                kpoints.pop('actual_points')
-            spec['vasp']['kpoints']= kpoints
+            spec = snl_to_wf._snl_to_spec(snl, 
+                                          parameters={'exact_structure':True})
+            spec = update_spec_force_convergence(spec)
             spec['deformation_matrix'] = d_struct_set.deformations[i]
             spec['original_task_id']=fw_spec["task_id"]
             spec['_priority'] = fw_spec['_priority']*2
@@ -102,14 +99,29 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 
             spec['task_type'] = "Calculate deformed structure static optimize"
             fws.append(FireWork([VaspWriterTask(), get_custodian_task(spec)],
-                                spec, name=get_slug(f + '--' + fw_spec['task_type']), fw_id=-999+i*10))
-
+                                spec, 
+                                name=get_slug(f + '--' + fw_spec['task_type']), 
+                                fw_id=-999+i*10))
+            spec['task_type'] = "Calculate deformed structure"
+            fws.append(Firework([VaspWriterTask(), SetupElastConstTask(),
+                                 get_custodian_task(spec)], 
+                                spec, 
+                                name=get_slug(f + '--' + fw_spec['task_type']), 
+                                fw_id=-999+i*10))
+            
             priority = fw_spec['_priority']*3
-            spec = {'task_type': 'VASP db insertion', '_priority': priority,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'elastic_constant':"deformed_structure", 'clean_task_doc':True,
-            'deformation_matrix':d_struct_set.deformations[i].tolist(), 'original_task_id':fw_spec["task_id"]}
-            fws.append(FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-998+i*10))
+            spec = {'task_type': 'VASP db insertion', 
+                    '_priority': priority,
+                    '_allow_fizzled_parents': True, 
+                    '_queueadapter': QA_DB, 
+                    'elastic_constant':"deformed_structure", 
+                    'clean_task_doc':True,
+                    'deformation_matrix':d_struct_set.deformations[i].tolist(), 
+                    'original_task_id':fw_spec["task_id"]}
+            fws.append(FireWork([VaspToDBTask()], 
+                                spec, 
+                                name=get_slug(f + '--' + spec['task_type']), 
+                                fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
-
             wf.append(Workflow(fws, connections))
         return FWAction(additions=wf)

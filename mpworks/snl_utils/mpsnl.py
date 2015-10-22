@@ -1,5 +1,5 @@
 import datetime
-from pymatgen import Structure, PMGJSONDecoder, Molecule, Composition
+from pymatgen import Structure, MontyDecoder, Molecule, Composition
 from pymatgen.analysis.structure_matcher import StructureMatcher, ElementComparator, SpeciesComparator
 from pymatgen.matproj.snl import StructureNL
 
@@ -58,18 +58,17 @@ class MPStructureNL(StructureNL):
     def snlgroup_key(self):
         return self.snl_autometa['reduced_cell_formula_abc'] + "--" + str(self.sg_num)
 
-    @property
-    def to_dict(self):
-        m_dict = super(MPStructureNL, self).to_dict
+    def as_dict(self):
+        m_dict = super(MPStructureNL, self).as_dict()
         m_dict.update(self.snl_autometa)
         m_dict['snl_id'] = self.snl_id
         m_dict['snlgroup_key'] = self.snlgroup_key
         return m_dict
 
-    @staticmethod
-    def from_dict(d):
+    @classmethod
+    def from_dict(cls, d):
         a = d["about"]
-        dec = PMGJSONDecoder()
+        dec = MontyDecoder()
 
         created_at = dec.process_decoded(a["created_at"]) if "created_at" in a \
             else None
@@ -89,7 +88,7 @@ class MPStructureNL(StructureNL):
     @staticmethod
     def from_snl(snl, snl_id, sg_num, sg_symbol, hall, xtal_system, lattice_type, pointgroup):
         # make a copy of SNL
-        snl2 = StructureNL.from_dict(snl.to_dict)
+        snl2 = StructureNL.from_dict(snl.as_dict())
         if '_materialsproject' not in snl2.data:
             snl2.data['_materialsproject'] = {}
 
@@ -103,7 +102,7 @@ class MPStructureNL(StructureNL):
         sg['hall'] = hall
         sg['lattice_type'] = lattice_type
 
-        return MPStructureNL.from_dict(snl2.to_dict)
+        return MPStructureNL.from_dict(snl2.as_dict())
 
 
 class SNLGroup():
@@ -134,22 +133,21 @@ class SNLGroup():
         self.canonical_structure = canonical_snl.structure
         self.snl_autometa = get_meta_from_structure(self.canonical_structure)
 
-    @property
-    def to_dict(self):
+    def as_dict(self):
         d = self.snl_autometa
         d['created_at'] = self.created_at
         d['updated_at'] = self.updated_at
         d['snlgroup_id'] = self.snlgroup_id
-        d['canonical_snl'] = self.canonical_snl.to_dict
+        d['canonical_snl'] = self.canonical_snl.as_dict()
         d['all_snl_ids'] = self.all_snl_ids
         d['num_snl'] = len(self.all_snl_ids)
-        d['species_snl'] = [s.to_dict for s in self.species_snl]
+        d['species_snl'] = [s.as_dict() for s in self.species_snl]
         d['species_groups'] = dict([(str(k), v) for k, v in self.species_groups.iteritems()])
         d['snlgroup_key'] = self.canonical_snl.snlgroup_key
         return d
 
-    @staticmethod
-    def from_dict(d):
+    @classmethod
+    def from_dict(cls, d):
         sp_snl = [MPStructureNL.from_dict(s) for s in d['species_snl']] if 'species_snl' in d else None
         # to account for no int keys in Mongo dicts
         species_groups = dict([(int(k), v) for k, v in d['species_groups'].iteritems()]) if 'species_groups' in d else None

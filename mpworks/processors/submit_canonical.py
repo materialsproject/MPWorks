@@ -1,5 +1,6 @@
 import json
 import os
+import warnings
 from pymongo import MongoClient
 from fireworks.core.launchpad import LaunchPad
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
@@ -16,6 +17,9 @@ __date__ = 'May 06, 2013'
 
 def clear_env():
     sma = SubmissionMongoAdapter.auto_load()
+    if 'prod' in sma.db:
+        warnings.warn("Not clearing production db for safety reasons.")
+        return
 
     lp = LaunchPad.auto_load()
 
@@ -34,6 +38,7 @@ def clear_env():
     db = conn[db_creds['database']]
     db.authenticate(db_creds['admin_user'], db_creds['admin_password'])
     db.tasks.remove()
+    db.boltztrap.remove()
     db.counter.remove()
     db['dos_fs.chunks'].remove()
     db['dos_fs.files'].remove()
@@ -41,7 +46,7 @@ def clear_env():
     db['band_structure_fs.files'].remove()
 
 
-def submit_tests(names=None):
+def submit_tests(names=None, params=None):
     sma = SubmissionMongoAdapter.auto_load()
 
     # note: TiO2 is duplicated twice purposely, duplicate check should catch this
@@ -53,22 +58,25 @@ def submit_tests(names=None):
                  "AgCl": 22922, "AgCl (2)": 570858, "SiO2 (2)": 555211, "Mg2SiO4": 2895, "CO2": 20066,
                  "PbSO4": 22298, "SrTiO3": 5532, "FeAl": 2658, "AlFeCo2": 10884, "NaCoO2": 554427,
                  "ReO3": 547271, "LaH2": 24153, "SiH3I": 28538, "LiBH4": 30209, "H8S5N2": 28143,
-                 "LiOH": 23856, "LiO2": 546422, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
+                 "LiOH": 23856, "SrO2": 2697, "Mn": 35, "Hg4Pt": 2312,
                  "PdF4": 13868, "Gd2WO6": 651333, 'MnO2': 19395, 'VO2': 504800}
 
     mpr = MPRester()
 
     for name, sid in compounds.iteritems():
         if not names or name in names:
-            s = mpr.get_structure_by_material_id("mp-{}".format(sid), final=False)
+            sid = mpr.get_materials_id_from_task_id("mp-{}".format(sid))
+            s = mpr.get_structure_by_material_id(sid, final=False)
 
             snl = StructureNL(s, 'Anubhav Jain <anubhavster@gmail.com>')
 
-            parameters = {'priority': 10} if name == 'Si' else None
+            parameters = {'priority': 10} if name == 'Si' else {}
+            if params:
+                parameters.update(params)
             sma.submit_snl(snl, 'anubhavster@gmail.com', parameters=parameters)
 
 
-def clear_and_submit(clear=False, names=None):
+def clear_and_submit(clear=False, names=None, params=None):
     if clear:
         clear_env()
-    submit_tests(names=names)
+    submit_tests(names=names, params=params)

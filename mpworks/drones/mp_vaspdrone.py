@@ -16,7 +16,10 @@ from mpworks.drones.signals import VASPInputsExistSignal, \
     SignalDetectorList, Relax2ExistsSignal
 from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from mpworks.workflows.wf_utils import get_block_part
+from pymatgen import Composition, MontyEncoder
 from pymatgen.core.structure import Structure
+from pymatgen.entries.compatibility import MaterialsProjectCompatibility
+from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.matproj.snl import StructureNL
 from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
 from pymatgen.analysis.structure_analyzer import oxide_type
@@ -54,7 +57,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             purposes. Else, only the task_id of the inserted doc is returned.
         """
 
-        d = self.get_task_doc(path, self.parse_dos)
+        d = self.get_task_doc(path)
         if self.additional_fields:
             d.update(self.additional_fields)  # always add additional fields, even for failed jobs
 
@@ -87,7 +90,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 if self.parse_dos and "calculations" in d:
                     for calc in d["calculations"]:
                         if "dos" in calc:
-                            dos = json.dumps(calc["dos"])
+                            dos = json.dumps(calc["dos"], cls=MontyEncoder)
                             fs = gridfs.GridFS(db, "dos_fs")
                             dosid = fs.put(dos)
                             calc["dos_fs_id"] = dosid
@@ -111,12 +114,13 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                 self.process_fw(path, d)
 
-                #Add oxide_type
-                struct=Structure.from_dict(d["output"]["crystal"])
                 try:
+                    #Add oxide_type
+                    struct=Structure.from_dict(d["output"]["crystal"])
                     d["oxide_type"]=oxide_type(struct)
                 except:
                     logger.error("can't get oxide_type for {}".format(d["task_id"]))
+                    d["oxide_type"] = None
 
                 #Override incorrect outcar subdocs for two step relaxations
                 if "optimize structure" in d['task_type'] and \
@@ -127,7 +131,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             o_path = os.path.join(path,"relax"+str(i),"OUTCAR")
                             o_path = o_path if os.path.exists(o_path) else o_path+".gz"
                             outcar = Outcar(o_path)
-                            d["calculations"][i-1]["output"]["outcar"] = outcar.to_dict
+                            d["calculations"][i-1]["output"]["outcar"] = outcar.as_dict()
                             run_stats["relax"+str(i)] = outcar.run_stats
                     except:
                         logger.error("Bad OUTCAR for {}.".format(path))
@@ -143,6 +147,28 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         logger.error("Bad run stats for {}.".format(path))
 
                     d["run_stats"] = run_stats
+
+                # add is_compatible
+                mpc = MaterialsProjectCompatibility("Advanced")
+
+                try:
+                    func = d["pseudo_potential"]["functional"]
+                    labels = d["pseudo_potential"]["labels"]
+                    symbols = ["{} {}".format(func, label) for label in labels]
+                    parameters = {"run_type": d["run_type"],
+                              "is_hubbard": d["is_hubbard"],
+                              "hubbards": d["hubbards"],
+                              "potcar_symbols": symbols}
+                    entry = ComputedEntry(Composition(d["unit_cell_formula"]),
+                                          0.0, 0.0, parameters=parameters,
+                                          entry_id=d["task_id"])
+
+                    d['is_compatible'] = bool(mpc.process_entry(entry))
+                except:
+                    traceback.print_exc()
+                    print 'ERROR in getting compatibility'
+                    d['is_compatible'] = None
+
 
                 #task_type dependent processing
                 if 'static' in d['task_type']:
@@ -176,10 +202,18 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     else:
                         bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
                                                        line_mode=False)
-                    bs_json = json.dumps(bs.to_dict)
+                    bs_json = json.dumps(bs.as_dict(), cls=MontyEncoder)
                     fs = gridfs.GridFS(db, "band_structure_fs")
                     bs_id = fs.put(bs_json)
                     d['calculations'][0]["band_structure_fs_id"] = bs_id
+
+                    # also override band gap in task doc
+                    gap = bs.get_band_gap()
+                    vbm = bs.get_vbm()
+                    cbm = bs.get_cbm()
+                    update_doc = {'bandgap': gap['energy'], 'vbm': vbm['energy'], 'cbm': cbm['energy'], 'is_gap_direct': gap['direct']}
+                    d['analysis'].update(update_doc)
+                    d['calculations'][0]['output'].update(update_doc)
 
                 coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
 
@@ -234,7 +268,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
                     # add snl
                     mpsnl, snlgroup_id, spec_group = sma.add_snl(new_snl, snlgroup_guess=d['snlgroup_id'])
-                    d['snl_final'] = mpsnl.to_dict
+                    d['snl_final'] = mpsnl.as_dict()
                     d['snlgroup_id_final'] = snlgroup_id
                     d['snlgroup_changed'] = (d['snlgroup_id'] !=
                                              d['snlgroup_id_final'])
@@ -251,7 +285,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                            "VASP_HASNT_STARTED", "VASP_HASNT_COMPLETED",
                            "CHARGE_UNCONVERGED", "NETWORK_QUIESCED",
                            "HARD_KILLED", "WALLTIME_EXCEEDED",
-                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2"]
+                           "ATOMS_TOO_CLOSE", "DISK_SPACE_EXCEEDED", "NO_RELAX2", "POSITIVE_ENERGY"]
 
         last_relax_dir = dir_name
 
@@ -296,6 +330,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
         if not new_style:
             root_dir = os.path.dirname(dir_name)  # one level above dir_name
             signals = signals.union(DiskSpaceExceededSignal().detect(root_dir))
+
+        if d.get('output',{}).get('final_energy', None) > 0:
+            signals.add('POSITIVE_ENERGY')
 
         signals = list(signals)
 

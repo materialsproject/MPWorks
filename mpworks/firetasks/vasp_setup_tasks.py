@@ -27,19 +27,29 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
     _fw_name = "Setup Static Task"
 
+    def __init__(self, parameters=None):
+        """
+
+        :param parameters:
+        """
+        parameters = parameters if parameters else {}
+        self.update(parameters)
+        self.kpoints_density = parameters.get('kpoints_density', 90)
+        self.user_incar_settings = parameters.get('user_incar_settings', {})
+
     def run_task(self, fw_spec):
-        user_incar_settings = {"NPAR": 2}
+        self.user_incar_settings.update({"NPAR": 2})
 
         MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
-                                                    user_incar_settings=user_incar_settings)
+                                                    user_incar_settings=self.user_incar_settings, kpoints_density=self.kpoints_density)
         structure = MPStaticVaspInputSet.get_structure(Vasprun(zpath("vasprun.xml")), Outcar(zpath("OUTCAR")),
                                                        initial_structure=False,
                                                        additional_info=True)
 
-        return FWAction(stored_data={'refined_structure': structure[1][0].to_dict,
-                                     'conventional_standard_structure': structure[1][1].to_dict,
+        return FWAction(stored_data={'refined_structure': structure[1][0].as_dict(),
+                                     'conventional_standard_structure': structure[1][1].as_dict(),
                                      'symmetry_dataset': structure[1][2],
-                                     'symmetry_operations': [x.to_dict for x in structure[1][3]]})
+                                     'symmetry_operations': [x.as_dict() for x in structure[1][3]]})
 
 
 class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
@@ -71,20 +81,20 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
         parameters = parameters if parameters else {}
         self.update(parameters)
         self.line = parameters.get('mode', 'line').lower() == 'line'
+        self.kpoints_density = parameters.get('kpoints_density', 1000)
+        self.kpoints_line_density = parameters.get('kpoints_line_density', 20)
 
     def run_task(self, fw_spec):
         user_incar_settings= {"NPAR": 2}
         if self.line:
-            kpath = HighSymmKpath(structure)
             MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Line", copy_chgcar=False,
-                                                        user_incar_settings=user_incar_settings,)
-        else:
-            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
-                                 user_incar_settings=user_incar_settings)
-        if self.line:
+                                                        user_incar_settings=user_incar_settings, kpoints_line_density=self.kpoints_line_density)
+            kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure)
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
         else:
+            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
+                                 user_incar_settings=user_incar_settings, kpoints_density=self.kpoints_density)
             return FWAction()
 
 
@@ -99,21 +109,28 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
         chgcar_start = False
         # read the VaspInput from the previous run
 
-        p = Poscar.from_file(zpath('POSCAR'))
-        i = Incar.from_file(zpath('INCAR'))
+        poscar = Poscar.from_file(zpath('POSCAR'))
+        incar = Incar.from_file(zpath('INCAR'))
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use
         mpvis = MPVaspInputSet()
-        incar = mpvis.get_incar(p.structure).to_dict
-        incar_updates = {k: incar[k] for k in incar.keys() if 'LDAU' in k}
-        i.update(incar_updates)  # override the +U keys
+        ggau_incar = mpvis.get_incar(poscar.structure).as_dict()
+        incar_updates = {k: ggau_incar[k] for k in ggau_incar.keys() if 'LDAU' in k}
+
+        for k in ggau_incar:
+            # update any parameters not set explicitly in previous INCAR
+            if k not in incar and k in ggau_incar:
+                incar_updates[k] = ggau_incar[k]
+
+        incar.update(incar_updates)  # override the +U keys
+
 
         # start from the CHGCAR of previous run
         if os.path.exists('CHGCAR'):
-            i['ICHARG'] = 1
+            incar['ICHARG'] = 1
             chgcar_start = True
 
         # write back the new INCAR to the current directory
-        i.write_file('INCAR')
+        incar.write_file('INCAR')
         return FWAction(stored_data={'chgcar_start': chgcar_start})

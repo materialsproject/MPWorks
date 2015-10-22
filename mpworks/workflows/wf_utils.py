@@ -4,7 +4,7 @@ import shutil
 import time
 import traceback
 from monty.os.path import zpath
-from mpworks.workflows.wf_settings import RUN_LOCS
+from mpworks.workflows.wf_settings import RUN_LOCS, GARDEN
 
 
 __author__ = 'Anubhav Jain'
@@ -29,7 +29,7 @@ def last_relax(filename):
     m_file = os.path.basename(filename)
 
     if os.path.exists(zpath(os.path.join(m_dir, 'relax2', m_file))):
-        return zpath(m_dir, 'relax2', m_file)
+        return zpath(os.path.join(m_dir, 'relax2', m_file))
 
     elif os.path.exists(zpath(filename)):
         return zpath(filename)
@@ -74,10 +74,7 @@ def get_loc(m_dir):
 
 def move_to_garden(m_dir, prod=False):
     block_part = get_block_part(m_dir)
-    if prod:
-        garden_part = '/project/projectdirs/matgen/garden/'
-    else:
-        garden_part = '/project/projectdirs/matgen/garden/dev'
+    garden_part = GARDEN if prod else GARDEN+'/dev'
     f_dir = os.path.join(garden_part, block_part)
     if os.path.exists(m_dir) and not os.path.exists(f_dir) and m_dir != f_dir:
         try:

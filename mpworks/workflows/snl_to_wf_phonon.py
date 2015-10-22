@@ -3,7 +3,7 @@ from mpworks.firetasks.phonon_tasks import SetupDeformedStructTask
 
 __author__ = 'weichen'
 
-from fireworks.core.firework import FireWork, Workflow
+from fireworks.core.firework import Firework, Workflow
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.snl_tasks import AddSNLTask
@@ -26,16 +26,16 @@ def snl_to_wf_phonon(snl, parameters):
     snl_priority = parameters.get('priority', 1)
     priority = snl_priority * 2  # once we start a job, keep going!
 
-    f = Composition.from_formula(snl.structure.composition.reduced_formula).alphabetical_formula
+    f = Composition(snl.structure.composition.reduced_formula).alphabetical_formula
 
     # add the SNL to the SNL DB and figure out duplicate group
     tasks = [AddSNLTask()]
-    spec = {'task_type': 'Add to SNL database', 'snl': snl.to_dict, '_queueadapter': QA_DB, '_priority': snl_priority}
+    spec = {'task_type': 'Add to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
     if 'snlgroup_id' in parameters and isinstance(snl, MPStructureNL):
-        spec['force_mpsnl'] = snl.to_dict
+        spec['force_mpsnl'] = snl.as_dict()
         spec['force_snlgroup_id'] = parameters['snlgroup_id']
         del spec['snl']
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
     connections[0] = [1]
 
     parameters["exact_structure"] = True
@@ -49,20 +49,20 @@ def snl_to_wf_phonon(snl, parameters):
     del spec['_dupefinder']
     spec['task_type'] = "Vasp force convergence optimize structure (2x)"
     tasks = [VaspWriterTask(), get_custodian_task(spec)]
-    fws.append(FireWork(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
+    fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=1))
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority,
             '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 'clean_task_doc':True,
             'elastic_constant':"force_convergence"}
     fws.append(
-        FireWork([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+        Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
     connections[1] = [2]
 
     spec= {'task_type': 'Setup Deformed Struct Task', '_priority': priority,
                 '_queueadapter': QA_CONTROL}
     fws.append(
-            FireWork([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
+            Firework([SetupDeformedStructTask()], spec, name=get_slug(f + '--' + spec['task_type']),
                      fw_id=3))
     connections[2] = [3]
 
@@ -72,5 +72,5 @@ def snl_to_wf_phonon(snl, parameters):
     if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
 
-    return Workflow(fws, connections, name=Composition.from_formula(
+    return Workflow(fws, connections, name=Composition(
         snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)

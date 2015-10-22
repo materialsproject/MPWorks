@@ -2,6 +2,7 @@ import json
 import os
 import shlex
 import socket
+from monty.os.path import which
 from custodian import Custodian
 from custodian.vasp.jobs import VaspJob
 from fireworks.core.firework import FireTaskBase, FWAction
@@ -9,7 +10,7 @@ from fireworks.core.launchpad import LaunchPad
 from fireworks.utilities.fw_serializers import FWSerializable
 from matgendb.creator import VaspToDbTaskDrone
 from mpworks.drones.mp_vaspdrone import MPVaspDrone
-from pymatgen import PMGJSONDecoder
+from pymatgen import MontyDecoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -24,24 +25,29 @@ class VaspCustodianTaskEx(FireTaskBase, FWSerializable):
     def __init__(self, parameters):
         parameters = parameters if parameters else {}
         self.update(parameters)
-        # get VaspJob objects from 'jobs' parameter in FireWork
+        # get VaspJob objects from 'jobs' parameter in Firework
         self.jobs = map(VaspJob.from_dict, parameters['jobs'])
-        # get VaspHandler objects from 'handlers' parameter in FireWork
-        self.handlers = map(PMGJSONDecoder().process_decoded, parameters['handlers'])
+        # get VaspHandler objects from 'handlers' parameter in Firework
+        self.handlers = map(MontyDecoder().process_decoded, parameters['handlers'])
         self.max_errors = parameters['max_errors']
 
     def run_task(self, fw_spec):
-        # Figure out the appropriate Vasp Executable based on run machine
-        if 'nid' in socket.gethostname():  # hopper compute nodes
-            v_exe = shlex.split('aprun -n 48 vasp')
-            gv_exe = shlex.split('aprun -n 48 gvasp')
-            print 'running on HOPPER'
-        elif 'c' in socket.gethostname():  # mendel compute nodes
-            v_exe = shlex.split('mpirun -n 32 vasp')
-            gv_exe = shlex.split('mpirun -n 32 gvasp')
-            print 'running on MENDEL'
+
+        fw_env = fw_spec.get("_fw_env", {})
+
+        if "mpi_cmd" in fw_env:
+            mpi_cmd = fw_spec["_fw_env"]["mpi_cmd"]
+        elif which("mpirun"):
+            mpi_cmd = "mpirun"
+        elif which("aprun"):
+            mpi_cmd = "aprun"
         else:
-            raise ValueError('Unrecognized host!')
+            raise ValueError("No MPI command found!")
+
+        nproc = os.environ['PBS_NP']
+
+        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
+        gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
 
         # override vasp executable in custodian jobs
         for job in self.jobs:

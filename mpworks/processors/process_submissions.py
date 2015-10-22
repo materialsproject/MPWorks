@@ -31,7 +31,7 @@ class SubmissionProcessor():
         while True:
             self.submit_all_new_workflows()
             print "Updating existing workflows..."
-            self.update_existing_workflows()
+            self.update_existing_workflows()  # for updating the display
             if not infinite:
                 break
             print 'sleeping', sleep_time
@@ -92,7 +92,9 @@ class SubmissionProcessor():
 
     def update_existing_workflows(self):
         # updates the state of existing workflows by querying the FireWorks database
-        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED']}},
+        # this is an optional step that updates the submissions db with jobs info
+        # it is useful for the frontend display but not needed for workflow execution
+        for submission in self.jobs.find({'state': {'$nin': ['COMPLETED', 'ERROR', 'REJECTED', 'CANCELLED']}},
                                          {'submission_id': 1}):
             submission_id = submission['submission_id']
             try:
