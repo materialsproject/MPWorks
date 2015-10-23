@@ -11,15 +11,20 @@ import numpy as np
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
-from pymatgen.io.vasp.outputs import Incar, Outcar
+
 from custodian.custodian import Custodian
 from custodian.vasp.jobs import VaspJob
-from matgendb.creator import VaspToDbTaskDrone
 
-from pymatgen.core.surface import SlabGenerator
-from monty.json import MontyDecoder
-from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
+from matgendb.creator import VaspToDbTaskDrone
 from matgendb import QueryEngine
+
+from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
+from pymatgen.io.vasp.outputs import Incar, Outcar
+from pymatgen.core.surface import SlabGenerator
+from pymatgen.core.structure import Structure, Lattice
+
+from monty.json import MontyDecoder
+
 
 """
 Firework tasks
@@ -114,6 +119,42 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   collection=self["collection"])
         drone.assimilate(cwd+loc)
 
+@explicit_serialize
+class WriteAtomVaspInputs(FireTaskBase):
+    """
+        Writes VASP inputs for an oriented unit cell
+    """
+
+    required_params = ["atom", "folder", "cwd"]
+    optional_params = ["user_incar_settings", "potcar_functional",
+                       "latt_a", "kpoints", ]
+
+    def run_task(self, fw_spec):
+
+        dec = MontyDecoder()
+        latt_a = dec.process_decoded(self.get("latt_a", 16))
+        folder = dec.process_decoded(self.get("folder"))
+        cwd = dec.process_decoded(self.get("cwd"))
+        atom = dec.process_decoded(self.get("atom"))
+
+        user_incar_settings = \
+            dec.process_decoded(self.get("user_incar_settings",
+                                         MPSlabVaspInputSet().incar_settings))
+        kpoints0 = \
+            dec.process_decoded(self.get("kpoints0", 1))
+        potcar_functional = \
+            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+
+
+        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+                                  kpoints0=[kpoints0]*3, bulk=False,
+                                  potcar_functional=potcar_functional,
+                                  ediff_per_atom=False)
+
+        lattice = Lattice.cubic(latt_a)
+        atom_in_a_box = Structure(lattice, [atom], [0.5, 0.5, 0.5])
+
+        mplb.write_input(atom_in_a_box, cwd+folder)
 
 @explicit_serialize
 class WriteUCVaspInputs(FireTaskBase):

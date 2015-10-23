@@ -18,7 +18,7 @@ import uuid
 
 from mpworks.firetasks.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
-    MoveDirectoryTask
+    MoveDirectoryTask, WriteAtomVaspInputs
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
@@ -230,16 +230,24 @@ class SurfaceWorkflowManager(object):
                 criteria['miller_index'] = hkl
 
                 if self.surface_query_engine.get_entries(criteria):
+                    print '%s %s oriented unit cell already calculated, ' \
+                          'now checking for existing slab' %(mpid, hkl)
                     criteria['struct_type'] = 'slab_cell'
                     if self.surface_query_engine.get_entries(criteria):
+                        print '%s %s slab cell already calculated, ' \
+                              'skipping...' %(mpid, hkl)
                         continue
                     else:
                         if mpid not in calculate_with_slab_only.keys():
                             calculate_with_slab_only[mpid] = []
+                        print '%s %s slab cell not in DB, ' \
+                              'will insert calculation into WF' %(mpid, hkl)
                         calculate_with_slab_only[mpid].append(hkl)
                 else:
                     if mpid not in calculate_with_bulk.keys():
                         calculate_with_bulk[mpid] = []
+                    print '%s %s oriented unit  cell not in DB, ' \
+                          'will insert calculation into WF' %(mpid, hkl)
                     calculate_with_bulk[mpid].append(hkl)
 
         wf_kwargs = {'unit_cells_dict': self.unit_cells_dict,
@@ -440,3 +448,80 @@ class CreateSurfaceWorkflow(object):
                 print self.unit_cells_dict[mpid]['spacegroup']
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
+
+class AtomicEnergyWorkflow(object):
+
+    """
+        A simple workflow for calculating a single isolated atom in a box
+        and inserting it into the surface database. Values are useful for
+        things like getting cohesive energies in bulk structures. Kind of
+        a one trick pony since there's only a handful of elements, but whatever.
+    """
+
+    def __init__(self, host=None, port=None, user=None, password=None, database=None,
+                 collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
+                 job=None, additional_handlers=[], launchpad_dir="",):
+
+        """
+            Args:
+        """
+
+        vaspdbinsert_params = {'host': host,
+                               'port': port, 'user': user,
+                               'password': password,
+                               'database': database,
+                               'collection': collection}
+
+        elements = QueryEngine(**vaspdbinsert_params).collection.distinct("pretty_formula")
+
+        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
+                                                     launchpad_dir,
+                                                     "my_launchpad.yaml"))
+        launchpad.reset('', require_password=False)
+
+        if not job:
+            job = VaspJob(["mpirun", "-n", "64", "vasp"],
+                          auto_npar=False, copy_magmom=True)
+
+        handlers = [VaspErrorHandler(),
+                    NonConvergingErrorHandler(),
+                    UnconvergedErrorHandler(),
+                    PotimErrorHandler(),
+                    PositiveEnergyErrorHandler(),
+                    FrozenJobErrorHandler(timeout=3600)]
+        if additional_handlers:
+            handlers.extend(additional_handlers)
+
+        scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
+
+        cust_params = {"custodian_params":
+                           {"scratch_dir":
+                                os.path.join(scratch_dir,
+                                             os.environ["USER"])},
+                       "jobs": job.double_relaxation_run(job.vasp_cmd,
+                                                         auto_npar=False),
+                       "handlers": handlers,
+                       "max_errors": 100}  # will return a list of jobs
+                                           # instead of just being one job
+
+        fws = []
+        for el in elements:
+            folder_atom = '/%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
+            cwd = os.getcwd()
+
+            tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
+                                         latt_a=latt_a, kpoints=kpoints),
+                     RunCustodianTask(dir=folder_atom, cwd=cwd,
+                                                  **cust_params),
+                     VaspSlabDBInsertTask(struct_type="isolated_atom",
+                                          loc=folder_atom, cwd=cwd,
+                                          miller_index=None, mpid=None,
+                                          conventional_spacegroup=None,
+                                          **self.vaspdbinsert_params)]
+
+            fws.append(Firework(tasks, name=folder_atom))
+
+        wf = Workflow(fws, name='Surface Calculations')
+        launchpad.add_wf(wf)
+
+
