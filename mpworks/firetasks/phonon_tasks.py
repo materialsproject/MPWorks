@@ -18,7 +18,7 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL
-from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints
+from pymatgen.io.vasp.inputs import Poscar, Kpoints
 
 def update_spec_force_convergence(spec, user_vasp_settings=None):
     fw_spec = spec
@@ -32,7 +32,7 @@ def update_spec_force_convergence(spec, user_vasp_settings=None):
     else:
         kpoints_density = 7000
     k=Kpoints.automatic_density(old_struct, kpoints_density)
-    fw_spec['vasp']['kpoints'] = k.to_dict
+    fw_spec['vasp']['kpoints'] = k.as_dict
     return fw_spec
 
 class SetupFConvergenceTask(FireTaskBase, FWSerializable):
@@ -77,7 +77,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             tasks = [AddSNLTask()]
             snl_priority = fw_spec.get('priority', 1)
             spec = {'task_type': 'Add Deformed Struct to SNL database', 
-                    'snl': snl.to_dict, 
+                    'snl': snl.as_dict, 
                     '_queueadapter': QA_DB, 
                     '_priority': snl_priority}
             if 'snlgroup_id' in fw_spec and isinstance(snl, MPStructureNL):
