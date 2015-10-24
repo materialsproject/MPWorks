@@ -152,7 +152,7 @@ class WriteAtomVaspInputs(FireTaskBase):
                                   ediff_per_atom=False)
 
         lattice = Lattice.cubic(latt_a)
-        atom_in_a_box = Structure(lattice, [atom], [0.5, 0.5, 0.5])
+        atom_in_a_box = Structure(lattice, [atom], [[0.5, 0.5, 0.5]])
 
         mplb.write_input(atom_in_a_box, cwd+folder)
 
