@@ -43,7 +43,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
     required_params = ["host", "port", "user", "password",
                        "database", "collection", "struct_type", "loc",
                        "cwd", "miller_index", "mpid", "conventional_spacegroup"]
-    optional_params = ["surface_area", "shift", "vsize", "ssize"]
+    optional_params = ["surface_area", "shift", "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
 
@@ -83,6 +83,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
+        isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
 
         # Sets default for DB parameters
         if not self["host"]:
@@ -108,7 +109,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              "surface_area": surface_area, "shift": shift,
                              "vac_size": vsize, "slab_size": ssize,
                              "material_id": mpid, "conventional_spacegroup": spacegroup,
-                             "warnings": warnings}
+                             "warnings": warnings,
+                             "isolated_atom": isolated_atom}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
