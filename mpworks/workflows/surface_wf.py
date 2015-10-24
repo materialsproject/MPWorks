@@ -449,79 +449,76 @@ class CreateSurfaceWorkflow(object):
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
 
-class AtomicEnergyWorkflow(object):
+
+def atomic_energy_workflow (self, host=None, port=None, user=None, password=None, database=None,
+             collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
+             job=None, additional_handlers=[], launchpad_dir=""):
 
     """
-        A simple workflow for calculating a single isolated atom in a box
-        and inserting it into the surface database. Values are useful for
-        things like getting cohesive energies in bulk structures. Kind of
-        a one trick pony since there's only a handful of elements, but whatever.
+    A simple workflow for calculating a single isolated atom in a box
+    and inserting it into the surface database. Values are useful for
+    things like getting cohesive energies in bulk structures. Kind of
+    a one trick pony since there's only a handful of elements, but whatever.
+
+        Args:
     """
 
-    def __init__(self, host=None, port=None, user=None, password=None, database=None,
-                 collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
-                 job=None, additional_handlers=[], launchpad_dir="",):
+    vaspdbinsert_params = {'host': host,
+                           'port': port, 'user': user,
+                           'password': password,
+                           'database': database,
+                           'collection': collection}
 
-        """
-            Args:
-        """
+    elements = QueryEngine(**vaspdbinsert_params).collection.distinct("pretty_formula")
 
-        vaspdbinsert_params = {'host': host,
-                               'port': port, 'user': user,
-                               'password': password,
-                               'database': database,
-                               'collection': collection}
+    launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
+                                                 launchpad_dir,
+                                                 "my_launchpad.yaml"))
+    launchpad.reset('', require_password=False)
 
-        elements = QueryEngine(**vaspdbinsert_params).collection.distinct("pretty_formula")
+    if not job:
+        job = VaspJob(["mpirun", "-n", "64", "vasp"],
+                      auto_npar=False, copy_magmom=True)
 
-        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-                                                     launchpad_dir,
-                                                     "my_launchpad.yaml"))
-        launchpad.reset('', require_password=False)
+    handlers = [VaspErrorHandler(),
+                NonConvergingErrorHandler(),
+                UnconvergedErrorHandler(),
+                PotimErrorHandler(),
+                PositiveEnergyErrorHandler(),
+                FrozenJobErrorHandler(timeout=3600)]
+    if additional_handlers:
+        handlers.extend(additional_handlers)
 
-        if not job:
-            job = VaspJob(["mpirun", "-n", "64", "vasp"],
-                          auto_npar=False, copy_magmom=True)
+    scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
 
-        handlers = [VaspErrorHandler(),
-                    NonConvergingErrorHandler(),
-                    UnconvergedErrorHandler(),
-                    PotimErrorHandler(),
-                    PositiveEnergyErrorHandler(),
-                    FrozenJobErrorHandler(timeout=3600)]
-        if additional_handlers:
-            handlers.extend(additional_handlers)
+    cust_params = {"custodian_params":
+                       {"scratch_dir":
+                            os.path.join(scratch_dir,
+                                         os.environ["USER"])},
+                   "jobs": job.double_relaxation_run(job.vasp_cmd,
+                                                     auto_npar=False),
+                   "handlers": handlers,
+                   "max_errors": 100}  # will return a list of jobs
+                                       # instead of just being one job
 
-        scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
+    fws = []
+    for el in elements:
+        folder_atom = '/%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
+        cwd = os.getcwd()
 
-        cust_params = {"custodian_params":
-                           {"scratch_dir":
-                                os.path.join(scratch_dir,
-                                             os.environ["USER"])},
-                       "jobs": job.double_relaxation_run(job.vasp_cmd,
-                                                         auto_npar=False),
-                       "handlers": handlers,
-                       "max_errors": 100}  # will return a list of jobs
-                                           # instead of just being one job
+        tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
+                                     latt_a=latt_a, kpoints=kpoints),
+                 RunCustodianTask(dir=folder_atom, cwd=cwd,
+                                              **cust_params),
+                 VaspSlabDBInsertTask(struct_type="isolated_atom",
+                                      loc=folder_atom, cwd=cwd,
+                                      miller_index=None, mpid=None,
+                                      conventional_spacegroup=None,
+                                      **self.vaspdbinsert_params)]
 
-        fws = []
-        for el in elements:
-            folder_atom = '/%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
-            cwd = os.getcwd()
+        fws.append(Firework(tasks, name=folder_atom))
 
-            tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
-                                         latt_a=latt_a, kpoints=kpoints),
-                     RunCustodianTask(dir=folder_atom, cwd=cwd,
-                                                  **cust_params),
-                     VaspSlabDBInsertTask(struct_type="isolated_atom",
-                                          loc=folder_atom, cwd=cwd,
-                                          miller_index=None, mpid=None,
-                                          conventional_spacegroup=None,
-                                          **self.vaspdbinsert_params)]
-
-            fws.append(Firework(tasks, name=folder_atom))
-
-        wf = Workflow(fws, name='Surface Calculations')
-        launchpad.add_wf(wf)
+    wf = Workflow(fws, name='Surface Calculations')
+    launchpad.add_wf(wf)
 
 
