@@ -450,9 +450,9 @@ class CreateSurfaceWorkflow(object):
         launchpad.add_wf(wf)
 
 
-def atomic_energy_workflow (self, host=None, port=None, user=None, password=None, database=None,
-             collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
-             job=None, additional_handlers=[], launchpad_dir=""):
+def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
+                           collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
+                           job=None, additional_handlers=[], launchpad_dir=""):
 
     """
     A simple workflow for calculating a single isolated atom in a box
