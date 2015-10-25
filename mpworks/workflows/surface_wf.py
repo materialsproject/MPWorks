@@ -452,7 +452,7 @@ class CreateSurfaceWorkflow(object):
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
                            collection="Surface_Collection", latt_a=16, kpoints=1, scratch_dir=None,
-                           job=None, additional_handlers=[], launchpad_dir=""):
+                           job=None, additional_handlers=[], launchpad_dir="", elements=[]):
 
     """
     A simple workflow for calculating a single isolated atom in a box
@@ -468,8 +468,8 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                            'password': password,
                            'database': database,
                            'collection': collection}
-
-    elements = QueryEngine(**vaspdbinsert_params).collection.distinct("pretty_formula")
+    if not elements:
+        elements = QueryEngine(**vaspdbinsert_params).collection.distinct("pretty_formula")
 
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  launchpad_dir,
