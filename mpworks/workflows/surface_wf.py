@@ -137,7 +137,6 @@ class SurfaceWorkflowManager(object):
         self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
 
-
     def from_max_index(self, max_index, max_normal_search=True,
                        terminations=False, max_only=False):
 
@@ -177,7 +176,6 @@ class SurfaceWorkflowManager(object):
         return self.check_existing_entries(miller_dict, terminations=terminations,
                                            max_normal_search=max_normal_search)
 
-
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
                              terminations=False):
 
@@ -198,7 +196,6 @@ class SurfaceWorkflowManager(object):
         return self.check_existing_entries(miller_dict, terminations=terminations,
                                            max_normal_search=max_normal_search)
 
-
     def from_indices_dict(self, max_normal_search=True, terminations=False):
 
         """
@@ -211,7 +208,6 @@ class SurfaceWorkflowManager(object):
         return self.check_existing_entries(self.indices_dict, terminations=terminations,
                                            max_normal_search=max_normal_search)
 
-
     def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=False):
 
         # Checks if a calculation is already in the DB to avoid
@@ -222,8 +218,11 @@ class SurfaceWorkflowManager(object):
 
         calculate_with_bulk = {}
         calculate_with_slab_only = {}
-
+        total_calculations = 0
+        total_calcs_with_bulk = 0
+        total_calcs_with_nobulk = 0
         for mpid in miller_dict.keys():
+            total_calculations += len(miller_dict[mpid])
             for hkl in miller_dict[mpid]:
                 criteria['struct_type'] = 'oriented_unit_cell'
                 criteria['material_id'] = mpid
@@ -243,12 +242,14 @@ class SurfaceWorkflowManager(object):
                         print '%s %s slab cell not in DB, ' \
                               'will insert calculation into WF' %(mpid, hkl)
                         calculate_with_slab_only[mpid].append(hkl)
+                        total_calcs_with_nobulk +=1
                 else:
                     if mpid not in calculate_with_bulk.keys():
                         calculate_with_bulk[mpid] = []
                     print '%s %s oriented unit  cell not in DB, ' \
                           'will insert calculation into WF' %(mpid, hkl)
                     calculate_with_bulk[mpid].append(hkl)
+                    total_calcs_with_bulk +=1
 
         wf_kwargs = {'unit_cells_dict': self.unit_cells_dict,
                      'vaspdbinsert_params': self.vaspdbinsert_params,
@@ -263,7 +264,12 @@ class SurfaceWorkflowManager(object):
         with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only,
                                                get_bulk_e=False, **wf_kwargs)
 
+        print "total number of calculations possible: ", total_calculations
+        print "total number of calculations with no bulk: ", total_calcs_with_nobulk
+        print "total number of calculations with bulk: ", total_calcs_with_bulk
+
         return [with_bulk, with_slab_only]
+
 
 class CreateSurfaceWorkflow(object):
 
