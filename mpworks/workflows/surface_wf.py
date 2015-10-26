@@ -174,8 +174,8 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        self.CreateSurfaceWorkflow(miller_dict, terminations=terminations,
-                                   max_normal_search=max_normal_search)
+        self.check_existing_entries(miller_dict, terminations=terminations,
+                                    max_normal_search=max_normal_search)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
@@ -195,8 +195,8 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             miller_dict[mpid] = list_of_indices
 
-        self.CreateSurfaceWorkflow(miller_dict, terminations=terminations,
-                                   max_normal_search=max_normal_search)
+        self.check_existing_entries(miller_dict, terminations=terminations,
+                                    max_normal_search=max_normal_search)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False):
