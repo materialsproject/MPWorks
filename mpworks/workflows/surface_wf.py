@@ -219,22 +219,25 @@ class SurfaceWorkflowManager(object):
         calculate_with_bulk = {}
         calculate_with_slab_only = {}
         total_calculations = 0
+        total_calcs_finished = 0
         total_calcs_with_bulk = 0
         total_calcs_with_nobulk = 0
+
         for mpid in miller_dict.keys():
             total_calculations += len(miller_dict[mpid])
             for hkl in miller_dict[mpid]:
-                criteria['struct_type'] = 'oriented_unit_cell'
+                criteria['structure_type'] = 'oriented_unit_cell'
                 criteria['material_id'] = mpid
                 criteria['miller_index'] = hkl
 
                 if self.surface_query_engine.get_entries(criteria):
                     print '%s %s oriented unit cell already calculated, ' \
                           'now checking for existing slab' %(mpid, hkl)
-                    criteria['struct_type'] = 'slab_cell'
+                    criteria['structure_type'] = 'slab_cell'
                     if self.surface_query_engine.get_entries(criteria):
                         print '%s %s slab cell already calculated, ' \
                               'skipping...' %(mpid, hkl)
+                        total_calcs_finished += 1
                         continue
                     else:
                         if mpid not in calculate_with_slab_only.keys():
@@ -267,6 +270,7 @@ class SurfaceWorkflowManager(object):
         print "total number of calculations possible: ", total_calculations
         print "total number of calculations with no bulk: ", total_calcs_with_nobulk
         print "total number of calculations with bulk: ", total_calcs_with_bulk
+        print "total number of calculations already finished: ", total_calcs_finished
 
         return [with_bulk, with_slab_only]
 
@@ -373,7 +377,7 @@ class CreateSurfaceWorkflow(object):
                        "max_errors": 100}  # will return a list of jobs
                                            # instead of just being one job
 
-        fws=[]
+        fws = []
         for mpid in self.miller_dict.keys():
 
             # Enumerate through all compounds in the dictionary,
@@ -383,17 +387,6 @@ class CreateSurfaceWorkflow(object):
             for miller_index in self.miller_dict[mpid]:
                 # Enumerates through all miller indices we
                 # want to create slabs of that compound from
-
-                check_slab_exist = {'material_id': mpid, 'miller_index': miller_index,
-                                    'structure_type': 'slab_cell'}
-                check_ucell_exist = check_slab_exist.copy()
-                check_ucell_exist['structure_type'] = 'oriented_unit_cell'
-
-                does_slab_exist = self.surface_query_engine.get_entries(check_slab_exist)
-                does_ucell_exist = self.surface_query_engine.get_entries(check_ucell_exist)
-                if does_slab_exist and does_ucell_exist:
-                    print "Slab calculations for %s %s are already completed" %(mpid, miller_index)
-                    continue
 
                 print str(miller_index)
 
