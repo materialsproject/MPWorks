@@ -98,7 +98,7 @@ class SurfaceWorkflowManager(object):
             miller_index: hkl, e.g. [1, 1, 0]
             api_key: to get access to MP DB
             """
-            print 'searching for nonetype element str: ', el
+
             entries = mprest.get_entries(el, inc_structure="final")
 
             if el[:2] != 'mp':
