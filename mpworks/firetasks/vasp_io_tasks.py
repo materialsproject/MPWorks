@@ -40,8 +40,8 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
     """
 
     _fw_name = "Vasp Writer Task"
-
     def run_task(self, fw_spec):
+        import pdb; pdb.set_trace()
         fw_spec['vasp']['incar'].write_file('INCAR')
         fw_spec['vasp']['poscar'].write_file('POSCAR')
         fw_spec['vasp']['potcar'].write_file('POTCAR')
@@ -161,12 +161,12 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         logger.addHandler(sh)
 
         #Use drone_ec for elastic constant calculations
-        global MPVaspDrone
+        '''global MPVaspDrone
         if fw_spec.get("elastic_constant"):
             from mpworks.drones.mp_vaspdrone_ec import MPVaspDrone_ec as MPVaspDrone
             MPVaspDrone._parse_type=fw_spec.get("elastic_constant")
             MPVaspDrone._clean_task_doc=fw_spec.get("clean_task_doc")
-
+        '''
         with open(db_path) as f:
             db_creds = json.load(f)
             drone = MPVaspDrone(

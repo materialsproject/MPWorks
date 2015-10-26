@@ -245,7 +245,10 @@ class MPVaspDrone(VaspToDbTaskDrone):
             d['snlgroup_id'] = fw_dict['spec']['snlgroup_id']
             d['vaspinputset_name'] = fw_dict['spec'].get('vaspinputset_name')
             d['task_type'] = fw_dict['spec']['task_type']
-
+            # Process data for deformed structures
+            if 'deformed' in d['task_type']:
+                d['deformation_matrix'] = fw_dict['spec']['deformation_matrix']
+                d['original_task_id'] = fw_dict['spec']['original_task_id']
             if not self.update_duplicates:
                 if 'optimize structure' in d['task_type'] and 'output' in d:
                     # create a new SNL based on optimized structure
