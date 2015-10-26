@@ -174,8 +174,8 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        self.check_existing_entries(miller_dict, terminations=terminations,
-                                    max_normal_search=max_normal_search)
+        return self.check_existing_entries(miller_dict, terminations=terminations,
+                                           max_normal_search=max_normal_search)
 
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=True,
@@ -195,8 +195,8 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             miller_dict[mpid] = list_of_indices
 
-        self.check_existing_entries(miller_dict, terminations=terminations,
-                                    max_normal_search=max_normal_search)
+        return self.check_existing_entries(miller_dict, terminations=terminations,
+                                           max_normal_search=max_normal_search)
 
 
     def from_indices_dict(self, max_normal_search=True, terminations=False):
@@ -208,8 +208,8 @@ class SurfaceWorkflowManager(object):
             eg. indices_dict={'Fe': [[1,1,0]], 'LiFePO4': [[1,1,1], [2,2,1]]}
         """
 
-        self.check_existing_entries(self.indices_dict, terminations=terminations,
-                                    max_normal_search=max_normal_search)
+        return self.check_existing_entries(self.indices_dict, terminations=terminations,
+                                           max_normal_search=max_normal_search)
 
 
     def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=False):
@@ -257,11 +257,13 @@ class SurfaceWorkflowManager(object):
                      'terminations': terminations,
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
-        CreateSurfaceWorkflow(calculate_with_bulk,
-                              get_bulk_e=True, **wf_kwargs)
+        with_bulk = CreateSurfaceWorkflow(calculate_with_bulk,
+                                          get_bulk_e=True, **wf_kwargs)
 
-        CreateSurfaceWorkflow(calculate_with_slab_only,
-                              get_bulk_e=False, **wf_kwargs)
+        with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only,
+                                               get_bulk_e=False, **wf_kwargs)
+
+        return [with_bulk, with_slab_only]
 
 class CreateSurfaceWorkflow(object):
 
