@@ -23,8 +23,7 @@ from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
-from pymatgen.core.surface import SlabGenerator, \
-    get_symmetrically_distinct_miller_indices
+from pymatgen.core.surface import SlabGenerator, GetMillerIndices
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 
@@ -124,7 +123,6 @@ class SurfaceWorkflowManager(object):
             unit_cells_dict[mpid] = {'ucell': conv_unit_cell, 'spacegroup': spacegroup}
             print el
 
-
         self.apikey = apikey
         self.vaspdbinsert_params = vaspdbinsert_params
         self.symprec = symprec
@@ -158,8 +156,8 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             max_miller = []
             list_of_indices = \
-                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['ucell'],
-                                                          max_index)
+                GetMillerIndices(self.unit_cells_dict[mpid]['ucell'],
+                                 max_index).get_symmetrically_distinct_miller_indices()
 
             print 'surface ', mpid
 
