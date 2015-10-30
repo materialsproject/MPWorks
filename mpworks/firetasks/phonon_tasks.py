@@ -95,7 +95,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             spec['_priority'] = fw_spec['_priority']*2
             #Turn off dupefinder for deformed structure
             del spec['_dupefinder']
-            spec['task_type'] = "Calculate deformed structure"
+            spec['task_type'] = "Calculate deformed structure static optimize"
             #import pdb;pdb.set_trace()
             fws.append(Firework([VaspWriterTask(), SetupElastConstTask(),
                                  get_custodian_task(spec)], 
