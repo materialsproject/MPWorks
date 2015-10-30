@@ -24,8 +24,6 @@ from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, M
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
 from pymatgen.io.vasp.inputs import Incar, Poscar, Potcar, Kpoints
-#TODO: get rid of this when the issue below is fixed
-from pymatgen.io.vasp.inputs import PotcarSingle
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -42,16 +40,10 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
     """
 
     _fw_name = "Vasp Writer Task"
+
     def run_task(self, fw_spec):
-        # TODO: this is temporary fix for dealing with erroneously
-        #           deserialized incar/potcar
-        if isinstance(fw_spec['vasp']['incar'],dict):
-            Incar.from_dict(fw_spec['vasp']['incar']).write_file('INCAR')
-            psingles = [PotcarSingle(p) for p in fw_spec['vasp']['potcar']]
-            Potcar([pot.symbol for pot in psingles]).write_file('POTCAR')
-        else:
-            fw_spec['vasp']['incar'].write_file('INCAR')
-            fw_spec['vasp']['potcar'].write_file('POTCAR')
+        fw_spec['vasp']['incar'].write_file('INCAR')
+        fw_spec['vasp']['potcar'].write_file('POTCAR')
         fw_spec['vasp']['poscar'].write_file('POSCAR')
         fw_spec['vasp']['kpoints'].write_file('KPOINTS')
 
