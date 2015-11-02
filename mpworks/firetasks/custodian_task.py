@@ -26,6 +26,12 @@ __date__ = 'Mar 15, 2013'
 def check_incar(task_type):
     errors = []
     incar = Incar.from_file("INCAR")
+    
+    if 'deformed' in task_type:
+        if incar['ISIF'] != 2:
+            errors.append("Deformed optimization requires ISIF = 2")
+        # TODO: temporary fix, delete this line eventually
+        return errors
 
     if 'static' in task_type or 'Uniform' in task_type or 'band structure' in task_type:
         if incar["IBRION"] != -1:
@@ -54,6 +60,7 @@ def check_incar(task_type):
         if not sum(incar["LDAUU"]) > 0:
             errors.append("GGA+U requires sum(LDAUU)>0")
 
+            
     return errors
 
 
@@ -149,7 +156,7 @@ def get_custodian_task(spec):
 
     if 'optimize structure (2x)' in task_type:
         jobs = VaspJob.double_relaxation_run(v_exe)
-    elif 'static' in task_type:
+    elif 'static' in task_type or 'deformed' in task_type:
         jobs = [VaspJob(v_exe)]
     else:
         # non-SCF runs
