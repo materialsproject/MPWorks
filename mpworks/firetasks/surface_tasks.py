@@ -8,6 +8,7 @@ __date__ = "6/2/15"
 
 import os
 import numpy as np
+import warnings
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
@@ -344,11 +345,16 @@ class WriteSlabVaspInputs(FireTaskBase):
                     out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
                 else:
                     out = Outcar(cwd+folder+'/OUTCAR.relax2')
+                if not out:
+                    warnings.warn("Magnetization not found in OUTCAR.relax2,gz, "
+                                  "may be incomplete, will obtain magmom from "
+                                  "OUTCAR.relax1.gz")
+                    out = Outcar(cwd+folder+'/OUTCAR.relax1.gz')
 
                 out_mag = out.magnetization
                 tot_mag = [mag['tot'] for mag in out_mag]
                 magmom = np.mean(tot_mag)
-                mag= [magmom for i in slab]
+                mag= [magmom]*len(slab)
                 incar.__setitem__('MAGMOM', mag)
                 incar.__setitem__('ISIF', 2)
                 incar.__setitem__('AMIN', 0.01)
