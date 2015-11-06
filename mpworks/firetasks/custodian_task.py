@@ -13,7 +13,7 @@ import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.workflows.wf_utils import j_decorate
-from pymatgen.io.vaspio.vasp_input import Incar
+from pymatgen.io.vasp.inputs import Incar
 from pymatgen.serializers.json_coders import MontyDecoder
 
 __author__ = 'Anubhav Jain'
@@ -62,7 +62,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def __init__(self, parameters):
         self.update(parameters)
-        self.jobs = map(VaspJob.from_dict, self['jobs'])
+        self.jobs = self['jobs']
         dec = MontyDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
@@ -85,7 +85,13 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         else:
             raise ValueError("No MPI command found!")
 
-        nproc = os.environ['PBS_NP']
+        # TODO: last two env vars, i.e. SGE and LoadLeveler, are untested
+        env_vars = ['PBS_NP', 'SLURM_NTASKS', 'NSLOTS', 'LOADL_TOTAL_TASKS']
+        for env_var in env_vars:
+            nproc = os.environ.get(env_var, None)
+            if nproc is not None: break
+        if nproc is None:
+            raise ValueError("None of the env vars {} found to set nproc!".format(env_vars))
 
         v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
         gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
@@ -129,7 +135,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
     def _write_formula_file(self, fw_spec):
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl']['reduced_cell_formula_abc'] + '--'
+            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula + '--'
             + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
@@ -142,7 +148,7 @@ def get_custodian_task(spec):
                 MeshSymmetryErrorHandler(), NonConvergingErrorHandler(), PositiveEnergyErrorHandler()]
 
     if 'optimize structure (2x)' in task_type:
-        jobs = VaspJob.double_relaxation_run(v_exe, gzipped=False)
+        jobs = VaspJob.double_relaxation_run(v_exe)
     elif 'static' in task_type:
         jobs = [VaspJob(v_exe)]
     else:

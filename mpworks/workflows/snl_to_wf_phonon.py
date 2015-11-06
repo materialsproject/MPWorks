@@ -1,4 +1,4 @@
-from pymatgen.io.vaspio import Poscar
+from pymatgen.io.vasp import Poscar
 from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenceTask, SetupDeformedStructTask
 
 __author__ = 'weichen'
