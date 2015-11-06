@@ -16,13 +16,14 @@ __date__ = "6/24/15"
 import os
 import uuid
 
-from mpworks.firetasks.surface_tasks import RunCustodianTask, \
+from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
     MoveDirectoryTask, WriteAtomVaspInputs
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
+
 from pymatgen.core.surface import SlabGenerator, GetMillerIndices
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
@@ -481,7 +482,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                       auto_npar=False, copy_magmom=True)
 
     handlers = [VaspErrorHandler(),
-                NonConvergingErrorHandler(nionic_steps=4),
+                NonConvergingErrorHandler(nionic_steps=4, change_algo=True),
                 UnconvergedErrorHandler(),
                 PotimErrorHandler(),
                 PositiveEnergyErrorHandler(),
