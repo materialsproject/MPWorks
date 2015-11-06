@@ -354,7 +354,7 @@ class CreateSurfaceWorkflow(object):
             job = VaspJob(["mpirun", "-n", "64", "vasp"],
                           auto_npar=False, copy_magmom=True)
 
-        handlers = [NonConvergingErrorHandler(),
+        handlers = [NonConvergingErrorHandler(nionic_steps=5),
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
