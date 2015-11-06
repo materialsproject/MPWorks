@@ -21,7 +21,7 @@ from pymatgen.core.structure import Structure
 from pymatgen.entries.compatibility import MaterialsProjectCompatibility
 from pymatgen.entries.computed_entries import ComputedEntry
 from pymatgen.matproj.snl import StructureNL
-from pymatgen.io.vaspio.vasp_output import Vasprun, Outcar
+from pymatgen.io.vasp.outputs import Vasprun, Outcar
 from pymatgen.analysis.structure_analyzer import oxide_type
 
 

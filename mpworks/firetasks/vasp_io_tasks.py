@@ -23,7 +23,7 @@ from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Potcar, Kpoints
+from pymatgen.io.vasp.inputs import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -42,10 +42,10 @@ class VaspWriterTask(FireTaskBase, FWSerializable):
     _fw_name = "Vasp Writer Task"
 
     def run_task(self, fw_spec):
-        Incar.from_dict(fw_spec['vasp']['incar']).write_file('INCAR')
-        Poscar.from_dict(fw_spec['vasp']['poscar']).write_file('POSCAR')
-        Potcar.from_dict(fw_spec['vasp']['potcar']).write_file('POTCAR')
-        Kpoints.from_dict(fw_spec['vasp']['kpoints']).write_file('KPOINTS')
+        fw_spec['vasp']['incar'].write_file('INCAR')
+        fw_spec['vasp']['poscar'].write_file('POSCAR')
+        fw_spec['vasp']['potcar'].write_file('POTCAR')
+        fw_spec['vasp']['kpoints'].write_file('KPOINTS')
 
 
 class VaspCopyTask(FireTaskBase, FWSerializable):
