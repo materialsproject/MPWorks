@@ -326,8 +326,9 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             FWs = []
             for slab in slab_list:
-
-                print slab
+                if len(slab) >= 20:
+                    warnings("This slab has way too many atoms in it, are you sure it is the most reduced structure?")
+                    print slab
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                             %(slab.shift)
