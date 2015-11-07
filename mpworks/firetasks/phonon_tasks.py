@@ -6,7 +6,7 @@ __author__ = 'weichen'
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vasp.inputs import Incar, Poscar
-from pymatgen.phonons.strain import DeformedStructureSet
+from pymatgen.analysis.elasticity.strain import DeformedStructureSet
 from fireworks.core.firework import Firework, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
