@@ -295,7 +295,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         relax_orient_uc = entry.structure
 
         print 'made relaxed oriented structure'
-        print relax_orient_uc
+        # print relax_orient_uc
         print 'making slab'
 
         slabs = SlabGenerator(relax_orient_uc, (0,0,1),
@@ -327,7 +327,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             FWs = []
             for slab in slab_list:
                 if len(slab) >= 20:
-                    warnings("This slab has way too many atoms in it, are you sure it is the most reduced structure?")
+                    warnings("This slab has way too many atoms in it, "
+                             "are you sure it is the most reduced structure?")
                     print slab
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
