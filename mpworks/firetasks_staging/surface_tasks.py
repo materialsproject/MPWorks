@@ -303,7 +303,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
         print 'deciding terminations'
-        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab(tol=0.25)]
+        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab(tol=0.5)]
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
