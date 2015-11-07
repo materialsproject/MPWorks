@@ -288,7 +288,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                 'miller_index': miller_index}, inc_structure=True,
                                optional_data=optional_data)[0]
 
-        relax_orient_uc = entry.structure
+        relax_orient_uc = entry.structure.get_primitive_structure()
 
         # print relax_orient_uc
 
