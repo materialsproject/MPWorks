@@ -272,9 +272,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
 
-
-        print 'about to make mplb'
-
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
                                   potcar_functional=potcar_functional,
@@ -287,16 +284,13 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
-        print 'query bulk entry for job completion'
         entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
                                 'miller_index': miller_index}, inc_structure=True,
                                optional_data=optional_data)[0]
 
         relax_orient_uc = entry.structure
 
-        print 'made relaxed oriented structure'
         # print relax_orient_uc
-        print 'making slab'
 
         slabs = SlabGenerator(relax_orient_uc, (0,0,1),
                               min_slab_size=min_slab_size,
@@ -313,7 +307,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
-        print 'checking job completion'
+        print "Miller Index: ", miller_index
 
         print entry.data['state']
         if entry.data['state'] != 'successful':
