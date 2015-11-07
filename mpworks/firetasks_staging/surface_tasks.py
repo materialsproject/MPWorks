@@ -288,7 +288,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                 'miller_index': miller_index}, inc_structure=True,
                                optional_data=optional_data)[0]
 
-        relax_orient_uc = entry.structure.get_primitive_structure()
+        relax_orient_uc = entry.structure
 
         # print relax_orient_uc
 
@@ -303,7 +303,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
         print 'deciding terminations'
-        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab(tol=0.5)]
+        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
@@ -323,8 +323,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if len(slab) >= 20:
                     warnings.warn("This slab has way too many atoms in it, "
                                   "are you sure it is the most reduced structure?")
-                print slab
-
+                    print slab
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                             %(slab.shift)
