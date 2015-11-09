@@ -330,8 +330,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             mprester = MPRester(apikey)
             prim_unit_cell = mprester.get_entries(mpid,
                                                   inc_structure=True)[0].structure
-            spa = SpacegroupAnalyzer(prim_unit_cell, symprec=self.symprec,
-                             angle_tolerance=self.angle_tolerance)
+            spa = SpacegroupAnalyzer(prim_unit_cell)
             conventional_ucell = spa.get_conventional_standard_structure()
 
             slabs = SlabGenerator(conventional_ucell, miller_index,
