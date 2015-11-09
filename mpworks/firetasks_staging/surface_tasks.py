@@ -23,6 +23,9 @@ from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
 from pymatgen.io.vasp.outputs import Incar, Outcar
 from pymatgen.core.surface import SlabGenerator
 from pymatgen.core.structure import Structure, Lattice
+from pymatgen.matproj.rest import MPRester
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+
 
 from monty.json import MontyDecoder
 
@@ -319,8 +322,28 @@ class WriteSlabVaspInputs(FireTaskBase):
             print entry.data['state']
 
             FWs = []
+
+            if "MAPI_KEY" not in os.environ:
+                apikey = raw_input('Enter your api key (str): ')
+            else:
+                apikey = os.environ["MAPI_KEY"]
+            mprester = MPRester(apikey)
+            prim_unit_cell = \
+                self.mprester.get_entries(mpid,
+                                          inc_structure=True)[0].structure
+            spa = SpacegroupAnalyzer(prim_unit_cell, symprec=self.symprec,
+                             angle_tolerance=self.angle_tolerance)
+            conventional_ucell = spa.get_conventional_standard_structure()
+
+            slabs = SlabGenerator(conventional_ucell, miller_index,
+                                  min_slab_size=min_slab_size,
+                                  min_vacuum_size=min_vacuum_size,
+                                  max_normal_search=max(miller_index),
+                                  primitive=True)
+
+
             for slab in slab_list:
-                if len(slab) >= 20:
+                if len(slab) != len(slabs.get_slab()):
                     warnings.warn("This slab has way too many atoms in it, "
                                   "are you sure it is the most reduced structure?")
                     print slab
@@ -341,7 +364,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                     out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
                 else:
                     out = Outcar(cwd+folder+'/OUTCAR.relax2')
-                if not out:
+                if not out.magnetization:
                     warnings.warn("Magnetization not found in OUTCAR.relax2,gz, "
                                   "may be incomplete, will obtain magmom from "
                                   "OUTCAR.relax1.gz")
