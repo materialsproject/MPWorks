@@ -90,7 +90,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
             spec = snl_to_wf._snl_to_spec(snl, 
                                           parameters={'exact_structure':True})
             spec = update_spec_force_convergence(spec)
-            spec['deformation_matrix'] = d_struct_set.deformations[i]
+            spec['deformation_matrix'] = d_struct_set.deformations[i].tolist()
             spec['original_task_id'] = fw_spec["task_id"]
             spec['_priority'] = fw_spec['_priority']*2
             #Turn off dupefinder for deformed structure
