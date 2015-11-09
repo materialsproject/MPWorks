@@ -17,6 +17,7 @@ from mpworks.workflows import snl_to_wf
 from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
 from collections import defaultdict
 
+
 def snl_to_wf_phonon(snl, parameters):
     # parameters["user_vasp_settings"] specifies user defined incar/kpoints parameters
     fws = []
@@ -45,7 +46,6 @@ def snl_to_wf_phonon(snl, parameters):
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     user_vasp_settings = parameters.get("user_vasp_settings")
     spec = update_spec_force_convergence(spec, user_vasp_settings)
-    #import pdb;pdb.set_trace()
     spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec['_queueadapter'] = QA_VASP
