@@ -328,9 +328,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             else:
                 apikey = os.environ["MAPI_KEY"]
             mprester = MPRester(apikey)
-            prim_unit_cell = \
-                self.mprester.get_entries(mpid,
-                                          inc_structure=True)[0].structure
+            prim_unit_cell = mprester.get_entries(mpid,
+                                                  inc_structure=True)[0].structure
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=self.symprec,
                              angle_tolerance=self.angle_tolerance)
             conventional_ucell = spa.get_conventional_standard_structure()
