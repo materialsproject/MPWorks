@@ -342,10 +342,13 @@ class WriteSlabVaspInputs(FireTaskBase):
                                   primitive=True)
             prim_sites = len(slabs.get_slab())
 
+
             for slab in slab_list:
                 if len(slab) != prim_sites:
                     getmillerindices = GetMillerIndices(conventional_ucell,1)
                     eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
+                    warnings.warn("This slab has way too many atoms in it, will attempt "
+                                  "to construct slab from relaxed conventional ucell")
 
                     rel_ucell = None
                     for c_index in eq_mills:
@@ -381,7 +384,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax2.gz')
                 elif os.path.exists("%s/INCAR.relax2" %(cwd+folder)):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax2')
-                if os.path.exists("%s/INCAR.relax1.gz" %(cwd+folder)):
+                elif os.path.exists("%s/INCAR.relax1.gz" %(cwd+folder)):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax1.gz')
                 elif os.path.exists("%s/INCAR.relax1" %(cwd+folder)):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax1')
@@ -398,9 +401,10 @@ class WriteSlabVaspInputs(FireTaskBase):
                     warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
                                   "may be incomplete, will obtain magmom from "
                                   "OUTCAR.relax1.gz")
-                    out_mag = Outcar(cwd+folder+'/OUTCAR.relax1.gz').magnetization
-                else:
-                    out_mag = None
+                    if os.path.exists("%s/OUTCAR.relax1.gz" %(cwd+folder)):
+                        out_mag = Outcar(cwd+folder+'/OUTCAR.relax1.gz').magnetization
+                    else:
+                        out_mag = None
                 if not out_mag or out_mag <= 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax1.gz, "
                                   "may be incomplete, will set default magmom")
