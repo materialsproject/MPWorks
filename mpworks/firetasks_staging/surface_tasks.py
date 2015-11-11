@@ -275,6 +275,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
 
+        is_primitive = True
+
         mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
                                   k_product=k_product,
                                   potcar_functional=potcar_functional,
@@ -367,10 +369,11 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                   max_normal_search=max(miller_index),
                                                   primitive=True)
                             slab = slabs.get_slab()
-                        if len(slab) != prim_sites:
-                            warnings.warn("This slab has way too many atoms in it, "
-                                          "are you sure it is the most reduced structure?")
-                            print slab
+                    if len(slab) != prim_sites:
+                        warnings.warn("This slab has way too many atoms in it, "
+                                      "are you sure it is the most reduced structure?")
+                        print slab
+                        is_primitive = False
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                             %(slab.shift)
@@ -437,9 +440,11 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                     mpid=mpid, conventional_spacegroup=spacegroup,
                                                     **vaspdbinsert_parameters)],
                               name=new_folder)
+
                 FWs.append(fw)
 
-            return FWAction(additions=FWs)
+            if is_primitive:
+                return FWAction(additions=FWs)
 
 
 @explicit_serialize
