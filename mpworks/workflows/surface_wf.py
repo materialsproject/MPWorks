@@ -483,7 +483,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                       auto_npar=False, copy_magmom=True)
 
     handlers = [VaspErrorHandler(),
-                NonConvergingErrorHandler(nionic_steps=1, change_algo=True),
+                NonConvergingErrorHandler(nionic_steps=2, change_algo=True),
                 UnconvergedErrorHandler(),
                 PotimErrorHandler(),
                 PositiveEnergyErrorHandler(),
