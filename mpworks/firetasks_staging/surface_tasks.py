@@ -353,7 +353,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                 'miller_index': c_index},
                                                 inc_structure=True,
                                                 optional_data=optional_data)
-                        if entry[0]:
+                        if entry:
                             rel_ucell = entry[0].structure
 
                         slabs = SlabGenerator(rel_ucell, miller_index,
@@ -388,13 +388,17 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
                     out_mag = Outcar(cwd+folder+'/OUTCAR.relax2.gz').magnetization
-                else:
+                elif os.path.exists("%s/OUTCAR.relax2" %(cwd+folder)):
                     out_mag = Outcar(cwd+folder+'/OUTCAR.relax2').magnetization
+                else:
+                    out_mag = None
                 if not out_mag or out_mag <= 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
                                   "may be incomplete, will obtain magmom from "
                                   "OUTCAR.relax1.gz")
                     out_mag = Outcar(cwd+folder+'/OUTCAR.relax1.gz').magnetization
+                else:
+                    out_mag = None
                 if not out_mag or out_mag <= 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax1.gz, "
                                   "may be incomplete, will set default magmom")
