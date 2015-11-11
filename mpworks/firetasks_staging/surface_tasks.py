@@ -347,6 +347,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                     getmillerindices = GetMillerIndices(conventional_ucell,1)
                     eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
 
+                    rel_ucell = None
                     for c_index in eq_mills:
                         entry = qe.get_entries({'material_id': mpid,
                                                 'structure_type': 'oriented_unit_cell',
@@ -356,12 +357,13 @@ class WriteSlabVaspInputs(FireTaskBase):
                         if entry:
                             rel_ucell = entry[0].structure
 
-                        slabs = SlabGenerator(rel_ucell, miller_index,
-                                              min_slab_size=min_slab_size,
-                                              min_vacuum_size=min_vacuum_size,
-                                              max_normal_search=max(miller_index),
-                                              primitive=True)
-                        slab = slabs.get_slab()
+                        if rel_ucell:
+                            slabs = SlabGenerator(rel_ucell, miller_index,
+                                                  min_slab_size=min_slab_size,
+                                                  min_vacuum_size=min_vacuum_size,
+                                                  max_normal_search=max(miller_index),
+                                                  primitive=True)
+                            slab = slabs.get_slab()
                         if len(slab) != prim_sites:
                             warnings.warn("This slab has way too many atoms in it, "
                                           "are you sure it is the most reduced structure?")
