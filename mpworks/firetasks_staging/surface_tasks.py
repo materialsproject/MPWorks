@@ -21,7 +21,7 @@ from matgendb import QueryEngine
 
 from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
 from pymatgen.io.vasp.outputs import Incar, Outcar
-from pymatgen.core.surface import SlabGenerator
+from pymatgen.core.surface import SlabGenerator, GetMillerIndices
 from pymatgen.core.structure import Structure, Lattice
 from pymatgen.matproj.rest import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -323,6 +323,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             FWs = []
 
+            # Make a slab from scratch to double check
+            # if we're using the most reduced structure
             if "MAPI_KEY" not in os.environ:
                 apikey = raw_input('Enter your api key (str): ')
             else:
@@ -338,14 +340,32 @@ class WriteSlabVaspInputs(FireTaskBase):
                                   min_vacuum_size=min_vacuum_size,
                                   max_normal_search=max(miller_index),
                                   primitive=True)
-
+            prim_sites = len(slabs.get_slab())
 
             for slab in slab_list:
-                if len(slab) != len(slabs.get_slab()):
-                    warnings.warn("This slab has way too many atoms in it, "
-                                  "are you sure it is the most reduced structure?")
-                    print slab
-                    print slabs.get_slab()
+                if len(slab) != prim_sites:
+                    getmillerindices = GetMillerIndices(conventional_ucell,1)
+                    eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
+
+                    for c_index in eq_mills:
+                        entry = qe.get_entries({'material_id': mpid,
+                                                'structure_type': 'oriented_unit_cell',
+                                                'miller_index': c_index},
+                                                inc_structure=True,
+                                                optional_data=optional_data)
+                        if entry[0]:
+                            rel_ucell = entry[0].structure
+
+                        slabs = SlabGenerator(rel_ucell, miller_index,
+                                              min_slab_size=min_slab_size,
+                                              min_vacuum_size=min_vacuum_size,
+                                              max_normal_search=max(miller_index),
+                                              primitive=True)
+                        slab = slabs.get_slab()
+                        if len(slab) != prim_sites:
+                            warnings.warn("This slab has way too many atoms in it, "
+                                          "are you sure it is the most reduced structure?")
+                            print slab
 
                 new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                             %(slab.shift)
@@ -357,19 +377,33 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 if os.path.exists("%s/INCAR.relax2.gz" %(cwd+folder)):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax2.gz')
-                else:
+                elif os.path.exists("%s/INCAR.relax2" %(cwd+folder)):
                     incar = Incar.from_file(cwd+folder +'/INCAR.relax2')
-                if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
-                    out = Outcar(cwd+folder+'/OUTCAR.relax2.gz')
+                if os.path.exists("%s/INCAR.relax1.gz" %(cwd+folder)):
+                    incar = Incar.from_file(cwd+folder +'/INCAR.relax1.gz')
+                elif os.path.exists("%s/INCAR.relax1" %(cwd+folder)):
+                    incar = Incar.from_file(cwd+folder +'/INCAR.relax1')
                 else:
-                    out = Outcar(cwd+folder+'/OUTCAR.relax2')
-                if not out.magnetization:
-                    warnings.warn("Magnetization not found in OUTCAR.relax2,gz, "
+                    incar = Incar.from_file(cwd+folder +'/INCAR')
+
+                if os.path.exists("%s/OUTCAR.relax2.gz" %(cwd+folder)):
+                    out_mag = Outcar(cwd+folder+'/OUTCAR.relax2.gz').magnetization
+                else:
+                    out_mag = Outcar(cwd+folder+'/OUTCAR.relax2').magnetization
+                if not out_mag or out_mag <= 0:
+                    warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
                                   "may be incomplete, will obtain magmom from "
                                   "OUTCAR.relax1.gz")
-                    out = Outcar(cwd+folder+'/OUTCAR.relax1.gz')
+                    out_mag = Outcar(cwd+folder+'/OUTCAR.relax1.gz').magnetization
+                if not out_mag or out_mag <= 0:
+                    warnings.warn("Magnetization not found in OUTCAR.relax1.gz, "
+                                  "may be incomplete, will set default magmom")
+                    if slab.composition.reduced_formula in ["Fe", "Co", "Ni"]:
+                        out_mag = [{'tot': 5}]
+                    else:
+                        out_mag = [{'tot': 0.6}]
 
-                out_mag = out.magnetization
+
                 tot_mag = [mag['tot'] for mag in out_mag]
                 magmom = np.mean(tot_mag)
                 mag= [magmom]*len(slab)
