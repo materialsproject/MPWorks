@@ -57,7 +57,7 @@ def check_incar(task_type):
 
         if not sum(incar["LDAUU"]) > 0:
             errors.append("GGA+U requires sum(LDAUU)>0")
-            
+
     return errors
 
 
