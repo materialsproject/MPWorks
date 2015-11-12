@@ -159,23 +159,14 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setLevel(getattr(logging, 'INFO'))
         logger.addHandler(sh)
-
-        #Use drone_ec for elastic constant calculations
-        '''global MPVaspDrone
-        if fw_spec.get("elastic_constant"):
-            from mpworks.drones.mp_vaspdrone_ec import MPVaspDrone_ec as MPVaspDrone
-            MPVaspDrone._parse_type=fw_spec.get("elastic_constant")
-            MPVaspDrone._clean_task_doc=fw_spec.get("clean_task_doc")
-        '''
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MPVaspDrone(
-                    host=db_creds['host'], port=db_creds['port'],
-                    database=db_creds['database'], user=db_creds['admin_user'],
-                    password=db_creds['admin_password'],
-                    collection=db_creds['collection'], parse_dos=parse_dos,
-                    additional_fields=self.additional_fields,
-                    update_duplicates=self.update_duplicates)
+            drone = MPVaspDrone(host=db_creds['host'], port=db_creds['port'],
+                                database=db_creds['database'], user=db_creds['admin_user'],
+                                password=db_creds['admin_password'],
+                                collection=db_creds['collection'], parse_dos=parse_dos,
+                                additional_fields=self.additional_fields,
+                                update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
 
         mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
