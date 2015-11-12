@@ -22,7 +22,9 @@ from pymatgen.io.vasp.inputs import Poscar, Kpoints
 
 def update_spec_force_convergence(spec, user_vasp_settings=None):
     fw_spec = spec
-    update_set = {"ENCUT": 700, "EDIFF": 0.000001, "ALGO":"N", "NPAR":2}
+    update_set = {"ENCUT": 700, "EDIFF": 0.000001, "ALGO":"N", "NPAR":2,
+                  # temporary line to check parity with Maarten and Wei
+                  "SIGMA":0.2}
     if user_vasp_settings and user_vasp_settings.get("incar"):
             update_set.update(user_vasp_settings["incar"])
     fw_spec['vasp']['incar'].update(update_set)

@@ -30,8 +30,6 @@ def check_incar(task_type):
     if 'deformed' in task_type:
         if incar['ISIF'] != 2:
             errors.append("Deformed optimization requires ISIF = 2")
-        # TODO: temporary fix, delete this line eventually
-        return errors
 
     if 'static' in task_type or 'Uniform' in task_type or 'band structure' in task_type:
         if incar["IBRION"] != -1:
@@ -59,7 +57,6 @@ def check_incar(task_type):
 
         if not sum(incar["LDAUU"]) > 0:
             errors.append("GGA+U requires sum(LDAUU)>0")
-
             
     return errors
 
@@ -73,7 +70,7 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
         dec = MontyDecoder()
         self.handlers = map(dec.process_decoded, self['handlers'])
         self.max_errors = self.get('max_errors', 1)
-        self.gzip_output = self.get('gzip_output', False)
+        self.gzip_output = self.get('gzip_output', True)
 
     def run_task(self, fw_spec):
 
