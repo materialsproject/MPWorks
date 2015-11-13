@@ -159,16 +159,14 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setLevel(getattr(logging, 'INFO'))
         logger.addHandler(sh)
-
         with open(db_path) as f:
             db_creds = json.load(f)
-            drone = MPVaspDrone(
-                host=db_creds['host'], port=db_creds['port'],
-                database=db_creds['database'], user=db_creds['admin_user'],
-                password=db_creds['admin_password'],
-                collection=db_creds['collection'], parse_dos=parse_dos,
-                additional_fields=self.additional_fields,
-                update_duplicates=self.update_duplicates)
+            drone = MPVaspDrone(host=db_creds['host'], port=db_creds['port'],
+                                database=db_creds['database'], user=db_creds['admin_user'],
+                                password=db_creds['admin_password'],
+                                collection=db_creds['collection'], parse_dos=parse_dos,
+                                additional_fields=self.additional_fields,
+                                update_duplicates=self.update_duplicates)
             t_id, d = drone.assimilate(prev_dir, launches_coll=LaunchPad.auto_load().launches)
 
         mpsnl = d['snl_final'] if 'snl_final' in d else d['snl']
@@ -180,6 +178,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         if d['state'] == 'successful':
             update_spec['analysis'] = d['analysis']
             update_spec['output'] = d['output']
+            update_spec['vasp']={'incar':d['calculations'][-1]['input']['incar'],
+                                 'kpoints':d['calculations'][-1]['input']['kpoints']}
+            update_spec["task_id"]=t_id
             return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
@@ -198,7 +199,10 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         'parameters': fw_spec.get('parameters'),
                         '_dupefinder': DupeFinderVasp().to_dict(),
                         '_priority': fw_spec['_priority']}
-
+                # Pass elastic tensor spec
+                if 'deformed' in fw_spec['task_type']:
+                    spec['deformation_matrix'] = fw_spec['deformation_matrix']
+                    spec['original_task_id'] = fw_spec['original_task_id']
                 snl = StructureNL.from_dict(spec['mpsnl'])
                 spec['run_tags'].append(unconverged_tag)
                 spec['_queueadapter'] = QA_VASP
