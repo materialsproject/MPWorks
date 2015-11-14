@@ -423,6 +423,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 incar.__setitem__('BMIX', 0.001)
                 incar.__setitem__('ISTART', 0)
                 incar.__setitem__('NELMIN', 8)
+                if "NBANDS" in incar.keys():
+                    incar.pop("NBANDS")
                 incar.write_file(cwd+new_folder+'/INCAR')
 
                 fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
