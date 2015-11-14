@@ -344,7 +344,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                                   primitive=True)
             prim_sites = len(slabs.get_slab())
 
-
             for slab in slab_list:
                 if len(slab) != prim_sites:
                     getmillerindices = GetMillerIndices(conventional_ucell,1)
@@ -400,21 +399,18 @@ class WriteSlabVaspInputs(FireTaskBase):
                     out_mag = Outcar(cwd+folder+'/OUTCAR.relax2').magnetization
                 else:
                     out_mag = None
-                if not out_mag or out_mag <= 0:
+                if not out_mag or out_mag[0]['tot'] <= 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
-                                  "may be incomplete, will obtain magmom from "
-                                  "OUTCAR.relax1.gz")
-                    if os.path.exists("%s/OUTCAR.relax1.gz" %(cwd+folder)):
-                        out_mag = Outcar(cwd+folder+'/OUTCAR.relax1.gz').magnetization
-                    else:
-                        out_mag = None
-                if not out_mag or out_mag <= 0:
-                    warnings.warn("Magnetization not found in OUTCAR.relax1.gz, "
                                   "may be incomplete, will set default magmom")
                     if slab.composition.reduced_formula in ["Fe", "Co", "Ni"]:
                         out_mag = [{'tot': 5}]
                     else:
                         out_mag = [{'tot': 0.6}]
+                if out_mag[0]['tot'] == 0:
+                    warnings.warn("Magnetization is 0, "
+                                  "changing magnetization to non-zero")
+                    out_mag = [{'tot': 1E-5}]
+
 
 
                 tot_mag = [mag['tot'] for mag in out_mag]
