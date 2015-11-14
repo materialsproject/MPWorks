@@ -18,7 +18,7 @@ import uuid
 
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
-    MoveDirectoryTask, WriteAtomVaspInputs
+    WriteAtomVaspInputs
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
@@ -438,10 +438,7 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize, mpid=mpid,
-                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup']),
-                              MoveDirectoryTask(cwd=cwd, formula=oriented_uc.composition.reduced_formula,
-                                                miller_index=miller_index, mpid=mpid,
-                                                final_directory=final_directory)])
+                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'])])
 
                 fw = Firework(tasks, name=folderbulk)
 
