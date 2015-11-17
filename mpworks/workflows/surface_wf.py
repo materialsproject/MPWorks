@@ -101,17 +101,25 @@ class SurfaceWorkflowManager(object):
 
             entries = mprest.get_entries(el, inc_structure="final")
 
+            # First, let's get the order of energy values of,
+            # polymorphs so we can rank them by stability
+            formula = entries[0].structure.composition.reduced_formula
+            all_entries = mprest.get_entries(formula, inc_structure="final")
+            e_per_atom = [entry.energy_per_atom for entry in all_entries]
+            sorted(e_per_atom)
             if el[:2] != 'mp':
-                e_per_atom = [entry.energy_per_atom for entry in entries]
                 for i, entry in enumerate(entries):
                     if min(e_per_atom) == entry.energy_per_atom:
                         prim_unit_cell = entry.structure
                         mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
+                        polymorph_order = e_per_atom.index(entry.energy_per_atom)
                         if indices_dict:
                             new_indices_dict[mpid] = indices_dict[el]
             else:
                 prim_unit_cell = entries[0].structure
                 mpid = el
+                polymorph_order = e_per_atom.index(entries[0].energy_per_atom)
+
                 if indices_dict:
                     new_indices_dict[mpid] = indices_dict[mpid]
 
@@ -119,9 +127,10 @@ class SurfaceWorkflowManager(object):
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
-            spacegroup = mprest.get_data(mpid, prop='spacegroup')[0]['spacegroup']['symbol']
+            spacegroup = mprest.get_data(mpid, prop="spacegroup")[0]["spacegroup"]["symbol"]
             print spacegroup
-            unit_cells_dict[mpid] = {'ucell': conv_unit_cell, 'spacegroup': spacegroup}
+            unit_cells_dict[mpid] = {"ucell": conv_unit_cell, "spacegroup": spacegroup,
+                                     "polymorph": polymorph_order}
             print el
 
         self.apikey = apikey
@@ -425,6 +434,7 @@ class CreateSurfaceWorkflow(object):
                                                       loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index, mpid=mpid,
                                                       conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
+                                                      polymorph=self.unit_cells_dict[mpid]["polymorph"],
                                                       **self.vaspdbinsert_params)])
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
@@ -438,7 +448,8 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize, mpid=mpid,
-                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'])])
+                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
+                                                  polymorph=self.unit_cells_dict[mpid]["polymorph"])])
 
                 fw = Firework(tasks, name=folderbulk)
 
