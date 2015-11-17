@@ -45,8 +45,9 @@ class VaspSlabDBInsertTask(FireTaskBase):
     """
 
     required_params = ["host", "port", "user", "password",
-                       "database", "collection", "struct_type", "loc",
-                       "cwd", "miller_index", "mpid", "conventional_spacegroup"]
+                       "database", "collection", "mpid",
+                       "struct_type", "loc","miller_index",
+                       "cwd", "conventional_spacegroup", "polymorph"]
     optional_params = ["surface_area", "shift", "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
@@ -86,6 +87,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
+        polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
 
@@ -114,7 +116,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              "vac_size": vsize, "slab_size": ssize,
                              "material_id": mpid, "conventional_spacegroup": spacegroup,
                              "warnings": warnings,
-                             "isolated_atom": isolated_atom}
+                             "isolated_atom": isolated_atom,
+                             "polymorph": polymorph}
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
                                   user=self["user"],
@@ -220,7 +223,7 @@ class WriteSlabVaspInputs(FireTaskBase):
     """
     required_params = ["folder", "cwd", "custodian_params",
                        "vaspdbinsert_parameters", "miller_index",
-                       "mpid", "conventional_spacegroup"]
+                       "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings",
                        "k_product","potcar_functional",
@@ -273,6 +276,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
+        polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
 
         is_primitive = True
@@ -436,6 +440,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                     ssize=slabs.min_slab_size,
                                                     miller_index=miller_index,
                                                     mpid=mpid, conventional_spacegroup=spacegroup,
+                                                    polymorph=polymorph,
                                                     **vaspdbinsert_parameters)],
                               name=new_folder)
 
