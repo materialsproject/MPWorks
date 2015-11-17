@@ -526,6 +526,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                                       miller_index=None, mpid=None,
                                       conventional_spacegroup=None,
                                       isolated_atom=el,
+                                      polymorph=None,
                                       **vaspdbinsert_params)]
 
         fws.append(Firework(tasks, name=folder_atom))
