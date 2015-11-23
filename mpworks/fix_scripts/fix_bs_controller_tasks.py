@@ -20,16 +20,26 @@ def append_wf(fw_id, parent_fw_id=None):
             child_fw = lpdb.fireworks.find_one({'fw_id': child_fw_id}, {'spec.task_type':1, 'state':1})
             if child_fw['spec']['task_type'] == 'Controller: add Electronic Structure v2':
                 if child_fw['state'] == 'DEFUSED':
-                    #lpdb.reignite_fw(child_fw_id)
+                    lpdb.reignite_fw(child_fw_id)
                     print 'AddEStructureTask v2', child_fw_id , 'reignited for', fw_id
+                elif child_fw['state'] == 'FIZZLED':
+                    lpdb.rerun_fw(child_fw_id)
+                    print 'AddEStructureTask v2', child_fw_id , 'marked for rerun for', fw_id
+                elif child_fw['state'] == 'COMPLETED':
+                    print 'AddEStructureTask v2 already successfully run for', fw_id
+                    sec_child_fw_id = wf['links'][str(child_fw_id)][0]
+		    sec_child_fw = lpdb.fireworks.find_one({'fw_id': sec_child_fw_id}, {'spec.task_type':1, 'state':1})
+		    if sec_child_fw['state'] == 'FIZZLED':
+                        lpdb.rerun_fw(sec_child_fw_id)
+		        print 'FIZZLED -> marked for rerun:', sec_child_fw_id, sec_child_fw['spec']['task_type']
                 else:
-                    print 'AddEStructureTask v2 already added for', fw_id
+                    print 'AddEStructureTask v2 added but neither DEFUSED, FIZZLED, or COMPLETED for', fw_id
                 return
         f = lpdb.get_wf_summary_dict(fw_id)['name'].replace(' ', '_')
         name = get_slug(f + '--' + spec['task_type'])
         fw = Firework([AddEStructureTask()], spec, name=name)
-        print fw_id, name, parent_fw_id
-        #lpdb.append_wf(Workflow([fw]), [parent_fw_id])
+        lpdb.append_wf(Workflow([fw]), [parent_fw_id])
+        print name, 'added for', fw_id
     except ValueError:
         raise ValueError('could not append controller task to wf', wf['name'])
 
@@ -46,7 +56,7 @@ if __name__ == "__main__":
     #        lpdb.defuse_fw(doc['fw_id'])
     #        nfws += 1
     for doc in lpdb.fireworks.find(
-        {'spec.task_type': 'Controller: add Electronic Structure', 'state': 'COMPLETED', 'spec.analysis': {'$exists':1}},
+        {'spec.task_type': 'Controller: add Electronic Structure', 'state': 'COMPLETED', 'spec.analysis': {'$exists':1}, 'fw_id': {'$gte': 155067}}, # new controllers added -> fizzled GGA static reruns
         {'fw_id': 1, 'spec.analysis.bandgap': 1}
     ):
         fw_id, bandgap = doc['fw_id'], doc['spec']['analysis']['bandgap'] 
@@ -57,7 +67,7 @@ if __name__ == "__main__":
             except ValueError:
                 continue
             nfws += 1
-            if nfws > 5: break
+            #if nfws > 10: break
     print 'nfws =', nfws
 
 # TODO set priorities for child FWs after Controller task has completed
