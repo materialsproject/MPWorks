@@ -100,7 +100,7 @@ class SurfaceWorkflowManager(object):
             """
 
             entries = mprest.get_entries(el, inc_structure="final")
-            print "# of entries: ", len(entries)
+            print "# of entries for %s: " %(el), len(entries)
 
             # First, let's get the order of energy values of,
             # polymorphs so we can rank them by stability
