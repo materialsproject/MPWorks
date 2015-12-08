@@ -260,7 +260,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         dec = MontyDecoder()
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
-        terminations = dec.process_decoded(self.get("terminations", False))
+        terminations = dec.process_decoded(self.get("terminations", True))
         custodian_params = dec.process_decoded(self.get("custodian_params"))
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))
@@ -293,11 +293,11 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state"]
-        entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
+        ucell_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
                                 'miller_index': miller_index}, inc_structure=True,
                                optional_data=optional_data)[0]
 
-        relax_orient_uc = entry.structure
+        relax_orient_uc = ucell_entry.structure
 
         # print relax_orient_uc
 
@@ -312,20 +312,28 @@ class WriteSlabVaspInputs(FireTaskBase):
         # Whether or not to create a list of Fireworks
         # based on different slab terminations
         print 'deciding terminations'
-        slab_list = slabs.get_slabs() if terminations else [slabs.get_slab()]
+        if terminations:
+            slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
+                                           'miller_index': miller_index}, inc_structure=True,
+                                          optional_data=optional_data)
+            slab_list = slabs.get_slabs()
+            if len(slab_entries) == 1:
+                shifts = [slab.shift for slab in slab_list]
+                slab_list.remove(shifts.index(min(shifts)))
+        else:
+            slab_list = [slabs.get_slab()]
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
         print "Miller Index: ", miller_index
 
-        print entry.data['state']
-        if entry.data['state'] != 'successful':
+        print ucell_entry.data['state']
+        if ucell_entry.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
                   %(relax_orient_uc.composition.reduced_formula)
             return FWAction()
         else:
-
-            print entry.data['state']
+            print ucell_entry.data['state']
 
             FWs = []
 
