@@ -247,9 +247,8 @@ class SurfaceWorkflowManager(object):
                     slab_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
                     if slab_entries:
                         if terminations:
-                            if len(slab_entries) == len(SlabGenerator(ucell_entries[0].structure,
-                                                                      (0,0,1), 10, 10,
-                                                                      max_normal_search=max(hkl))):
+                            if len(slab_entries) != len(SlabGenerator(ucell_entries[0].structure, (0,0,1), 10, 10,
+                                                                      max_normal_search=max(hkl)).get_slabs()):
                                 if mpid not in calculate_with_slab_only.keys():
                                     calculate_with_slab_only[mpid] = []
                                 print '%s %s slab cell terminations incomplete, ' \
