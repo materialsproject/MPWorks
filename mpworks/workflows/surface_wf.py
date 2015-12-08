@@ -146,7 +146,7 @@ class SurfaceWorkflowManager(object):
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
 
     def from_max_index(self, max_index, max_normal_search=True,
-                       terminations=False, max_only=False):
+                       terminations=True, max_only=False):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -204,7 +204,7 @@ class SurfaceWorkflowManager(object):
         return self.check_existing_entries(miller_dict, terminations=terminations,
                                            max_normal_search=max_normal_search)
 
-    def from_indices_dict(self, max_normal_search=True, terminations=False):
+    def from_indices_dict(self, max_normal_search=True, terminations=True):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -216,7 +216,7 @@ class SurfaceWorkflowManager(object):
         return self.check_existing_entries(self.indices_dict, terminations=terminations,
                                            max_normal_search=max_normal_search)
 
-    def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=False):
+    def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=True):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -238,15 +238,34 @@ class SurfaceWorkflowManager(object):
                 criteria['material_id'] = mpid
                 criteria['miller_index'] = hkl
 
-                if self.surface_query_engine.get_entries(criteria):
+                ucell_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
+
+                if ucell_entries:
                     print '%s %s oriented unit cell already calculated, ' \
                           'now checking for existing slab' %(mpid, hkl)
                     criteria['structure_type'] = 'slab_cell'
-                    if self.surface_query_engine.get_entries(criteria):
-                        print '%s %s slab cell already calculated, ' \
-                              'skipping...' %(mpid, hkl)
-                        total_calcs_finished += 1
-                        continue
+                    slab_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
+                    if slab_entries:
+                        if terminations:
+                            if len(slab_entries) == len(SlabGenerator(ucell_entries.structure,
+                                                                      (0,0,1), 10, 10,
+                                                                      max_normal_search=max(hkl))):
+                                if mpid not in calculate_with_slab_only.keys():
+                                    calculate_with_slab_only[mpid] = []
+                                print '%s %s slab cell terminations incomplete, ' \
+                                      'will insert calculation into WF' %(mpid, hkl)
+                                calculate_with_slab_only[mpid].append(hkl)
+                                total_calcs_with_nobulk +=1
+                            else:
+                                print '%s %s slab cell terminations completed, ' \
+                                      'skipping...' %(mpid, hkl)
+                                total_calcs_finished += 1
+                                continue
+                        else:
+                            print '%s %s slab cell already calculated, ' \
+                                  'skipping...' %(mpid, hkl)
+                            total_calcs_finished += 1
+                            continue
                     else:
                         if mpid not in calculate_with_slab_only.keys():
                             calculate_with_slab_only[mpid] = []
@@ -293,7 +312,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
-                 ssize, vsize, terminations=False, max_normal_search=True,
+                 ssize, vsize, terminations=True, max_normal_search=True,
                  fail_safe=True, reset=False, get_bulk_e=True):
 
         """
