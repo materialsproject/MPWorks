@@ -317,9 +317,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                                            'miller_index': miller_index}, inc_structure=True,
                                           optional_data=optional_data)
             slab_list = slabs.get_slabs()
-            if len(slab_entries) == 1:
+            if len(slab_list) == 1:
                 shifts = [slab.shift for slab in slab_list]
-                slab_list.remove(shifts.index(min(shifts)))
+                slab_list.pop(shifts.index(min(shifts)))
         else:
             slab_list = [slabs.get_slab()]
 
