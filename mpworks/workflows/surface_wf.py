@@ -146,8 +146,7 @@ class SurfaceWorkflowManager(object):
         self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
 
-    def from_max_index(self, max_index, max_normal_search=True,
-                       terminations=True, max_only=False):
+    def from_max_index(self, max_index, max_normal_search=True, max_only=False):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -157,10 +156,6 @@ class SurfaceWorkflowManager(object):
                     max_index (int): The maximum miller index to create slabs from
                     max_normal_search (bool): Whether or not to orthogonalize slabs
                         and oriented unit cells along the c direction.
-                    terminations (bool): Whether or not to consider the different
-                        possible terminations in a slab. If set to false, only one
-                        slab is calculated per miller index with the shift value
-                        set to 0.
         """
 
         miller_dict = {}
@@ -182,11 +177,9 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        return self.check_existing_entries(miller_dict, terminations=terminations,
-                                           max_normal_search=max_normal_search)
+        return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
 
-    def from_list_of_indices(self, list_of_indices, max_normal_search=True,
-                             terminations=False):
+    def from_list_of_indices(self, list_of_indices, max_normal_search=True):
 
         """
             Class method to create a surface workflow with a
@@ -202,10 +195,9 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             miller_dict[mpid] = list_of_indices
 
-        return self.check_existing_entries(miller_dict, terminations=terminations,
-                                           max_normal_search=max_normal_search)
+        return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
 
-    def from_indices_dict(self, max_normal_search=True, terminations=True):
+    def from_indices_dict(self, max_normal_search=True):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -214,10 +206,9 @@ class SurfaceWorkflowManager(object):
             eg. indices_dict={'Fe': [[1,1,0]], 'LiFePO4': [[1,1,1], [2,2,1]]}
         """
 
-        return self.check_existing_entries(self.indices_dict, terminations=terminations,
-                                           max_normal_search=max_normal_search)
+        return self.check_existing_entries(self.indices_dict, max_normal_search=max_normal_search)
 
-    def check_existing_entries(self, miller_dict, max_normal_search=True, terminations=True):
+    def check_existing_entries(self, miller_dict, max_normal_search=True):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -225,6 +216,8 @@ class SurfaceWorkflowManager(object):
 
         criteria = {'state': 'successful'}
 
+        # To keep track of which calculations
+        # are done and can be skipped
         calculate_with_bulk = {}
         calculate_with_slab_only = {}
         total_calculations = 0
@@ -239,41 +232,56 @@ class SurfaceWorkflowManager(object):
                 criteria['material_id'] = mpid
                 criteria['miller_index'] = hkl
 
+                # Check if the oriented unit cell
+                # has already been calculated
+
                 ucell_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
 
                 if ucell_entries:
                     print '%s %s oriented unit cell already calculated, ' \
                           'now checking for existing slab' %(mpid, hkl)
+
+                    # Check if slab calculations are complete if the
+                    # oriented unit cell has already been calculated
+
                     criteria['structure_type'] = 'slab_cell'
                     slab_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
+
+                    num_of_terms = len(SlabGenerator(ucell_entries[0].structure, (0,0,1), 10, 10,
+                                                     max_normal_search=max(hkl)).get_slabs())
+
                     if slab_entries:
-                        if terminations:
-                            if len(slab_entries) != len(SlabGenerator(ucell_entries[0].structure, (0,0,1), 10, 10,
-                                                                      max_normal_search=max(hkl)).get_slabs()):
-                                if mpid not in calculate_with_slab_only.keys():
-                                    calculate_with_slab_only[mpid] = []
-                                print '%s %s slab cell terminations incomplete, ' \
-                                      'will insert calculation into WF' %(mpid, hkl)
-                                calculate_with_slab_only[mpid].append(hkl)
-                                total_calcs_with_nobulk +=1
-                            else:
-                                print '%s %s slab cell terminations completed, ' \
-                                      'skipping...' %(mpid, hkl)
-                                total_calcs_finished += 1
-                                continue
+
+                        # See if all terminations for this slab calculation is completed
+
+                        if len(slab_entries) != num_of_terms:
+                            # Inserts slab calculation if all terminations aren't complete
+                            if mpid not in calculate_with_slab_only.keys():
+                                calculate_with_slab_only[mpid] = []
+                            print '%s %s slab cell terminations incomplete, ' \
+                                  'will insert calculation into WF' %(mpid, hkl)
+                            calculate_with_slab_only[mpid].append(hkl)
+                            total_calcs_with_nobulk += (num_of_terms - len(slab_entries))
+
                         else:
-                            print '%s %s slab cell already calculated, ' \
-                                  'skipping...' %(mpid, hkl)
-                            total_calcs_finished += 1
+                            # Skip if all terminations have been calculated
+                            print 'All terminations for %s %s slab cell already ' \
+                                  'calculated, skipping...' %(mpid, hkl)
+                            total_calcs_finished += len(slab_entries)
                             continue
                     else:
+                        # No slab calculations found, insert slab calculations
                         if mpid not in calculate_with_slab_only.keys():
                             calculate_with_slab_only[mpid] = []
                         print '%s %s slab cell not in DB, ' \
                               'will insert calculation into WF' %(mpid, hkl)
                         calculate_with_slab_only[mpid].append(hkl)
-                        total_calcs_with_nobulk +=1
+                        total_calcs_with_nobulk += num_of_terms
                 else:
+
+                    # Insert complete calculation for oriented ucell and
+                    # slabs if no oriented ucell calculation has been found
+
                     if mpid not in calculate_with_bulk.keys():
                         calculate_with_bulk[mpid] = []
                     print '%s %s oriented unit  cell not in DB, ' \
@@ -281,11 +289,13 @@ class SurfaceWorkflowManager(object):
                     calculate_with_bulk[mpid].append(hkl)
                     total_calcs_with_bulk +=1
 
+        # Get the parameters for CreateSurfaceWorkflow. Will create two separate WFs,
+        # one that calculates slabs only and one that calculates slabs and oriented ucells
+
         wf_kwargs = {'unit_cells_dict': self.unit_cells_dict,
                      'vaspdbinsert_params': self.vaspdbinsert_params,
                      'ssize': self.ssize, 'vsize': self.vsize,
                      'max_normal_search': max_normal_search,
-                     'terminations': terminations,
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
         with_bulk = CreateSurfaceWorkflow(calculate_with_bulk,
@@ -337,7 +347,6 @@ class CreateSurfaceWorkflow(object):
         self.unit_cells_dict = unit_cells_dict
         self.vaspdbinsert_params = vaspdbinsert_params
         self.max_normal_search = max_normal_search
-        self.terminations = terminations
         self.ssize = ssize
         self.vsize = vsize
         self.reset = reset
@@ -352,8 +361,8 @@ class CreateSurfaceWorkflow(object):
             Creates a list of Fireworks. Each Firework represents calculations
             that will be done on a slab system of a compound in a specific
             orientation. Each Firework contains a oriented unit cell relaxation job
-            and a WriteSlabVaspInputs which creates os. Firework(s) depending
-            on whether or not Termination=True. Vasp outputs from all slab and
+            and a WriteSlabVaspInputs which creates Firework and additionals depending
+            on whether or not Termination=True. VASP outputs from all slab and
             oriented unit cell calculations will then be inserted into a database.
             Args:
                 launchpad_dir (str path): The path to my_launchpad.yaml. Defaults to
@@ -458,7 +467,6 @@ class CreateSurfaceWorkflow(object):
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                   user_incar_settings=user_incar_settings,
-                                                  terminations=self.terminations,
                                                   custodian_params=cust_params,
                                                   vaspdbinsert_parameters=
                                                   self.vaspdbinsert_params,
