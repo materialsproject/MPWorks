@@ -7,6 +7,7 @@ from mpworks.snl_utils.snl_mongo import SNLMongoAdapter
 from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
+from fnmatch import fnmatch
 
 # DONE manually: "mp-987" -> fw_id: 119629
 
@@ -136,7 +137,6 @@ if __name__ == "__main__":
     print '#mp_ids =', len(mp_ids)
 
     counter = Counter()
-    urls_new, urls_old = set(), set()
     for material in materials.find({'task_id': {'$in': mp_ids}}, {'task_id': 1, '_id': 0, 'snlgroup_id_final': 1, 'has_bandstructure': 1}):
         mp_id, snlgroup_id = material['task_id'], material['snlgroup_id_final']
         print '========', mp_id, snlgroup_id, '============='
@@ -149,47 +149,48 @@ if __name__ == "__main__":
             for fw in fw_list:
                 if fw['spec']['task_type'] == 'GGA static v2':
                     has_gga_static = True
-                    counter['FW_GGA_STATICS'] += 1
                     if fw['state'] == 'FIZZLED':
                         lpdb.rerun_fw(fw['fw_id'])
-                        counter['FW_RERUNS'] += 1
+                        counter[fw['spec']['task_type']] += 1
                         print '--'.join([fw['name'], str(fw['fw_id'])]), fw['state']
                         print '    |===> marked for RERUN with alternative brmix strategy'
                     else:
                         workflow = lpdb.workflows.find_one({'nodes': fw['fw_id']}, {'state': 1, '_id': 0, 'fw_states': 1, 'nodes': 1, 'updated_on': 1})
-                        counter['WF_'+workflow['state']] += 1
-                        print 'http://fireworks.dash.materialsproject.org/wf/'+str(fw['fw_id']), workflow['state']
+                        url = 'https://materialsproject.org/materials/' + mp_id
+                        is_new = bool(datetime(2016, 1, 1) < workflow['updated_on'])
                         if workflow['state'] == 'FIZZLED':
                             for fw_id_fizzled, fw_state in workflow['fw_states'].iteritems():
                                 if fw_state == 'FIZZLED':
                                     fw_fizzled = lpdb.fireworks.find_one({'fw_id': int(fw_id_fizzled)}, {'_id': 0, 'name': 1, 'fw_id': 1, 'spec.task_type': 1})
+                                    if fnmatch(fw_fizzled['spec']['task_type'], '*Boltztrap*'):
+                                        print url, is_new, material['has_bandstructure']
+                                        print '      |====> ignore fizzled boltztrap!'
+                                        continue
+                                    print 'http://fireworks.dash.materialsproject.org/wf/'+str(fw['fw_id']), workflow['state']
                                     print '      |==>', '--'.join([fw_fizzled['name'], fw_id_fizzled])
+                                    counter[fw_fizzled['spec']['task_type']] += 1
                                     if fw_fizzled['spec']['task_type'] == 'GGA band structure v2' or fw_fizzled['spec']['task_type'] == 'VASP db insertion' \
                                        or fw_fizzled['spec']['task_type'] == 'GGA Uniform v2':
                                         print '           |===> marked for RERUN (trial & error)'
-                                        lpdb.rerun_fw(fw_fizzled['fw_id'])
-                                        #sys.exit(0)
+                                        #lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                    break
                         elif workflow['state'] == 'COMPLETED':
-                            url = 'https://materialsproject.org/materials/' + mp_id
-                            is_new = bool(datetime(2016, 1, 1) < workflow['updated_on'])
                             print url, is_new, material['has_bandstructure']
                             if not is_new and not material['has_bandstructure']:
-                                lpdb.rerun_fw(fw['fw_id'])
+                                #lpdb.rerun_fw(fw['fw_id'])
                                 print '    |===> marked for RERUN with alternative brmix strategy (WF completed but BS missing)'
                                 counter['FW_RERUNS'] += 1
-                            if is_new:
-                                urls_new.add(url)
                             else:
-                                urls_old.add(url)
+                                counter['COMPLETED'] += 1
             if not has_gga_static:
                 print 'ERROR: no GGA static run found!'
                 print '\n'.join([
                     '--'.join([fw['name'], str(fw['fw_id']), fw['state']]) for fw in fw_list
                 ])
+                counter['NO_GGA_STATIC'] += 1
                 #break
         else:
             print 'ERROR: no fireworks found!'
+            counter['NO_FWS'] += 1
             #break
     print counter
-    print '#new = ', len(urls_new)
-    print '#old = ', len(urls_old)
