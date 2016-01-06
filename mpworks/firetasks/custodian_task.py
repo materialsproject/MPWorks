@@ -14,7 +14,7 @@ import os
 from fireworks.utilities.fw_utilities import get_slug
 from mpworks.workflows.wf_utils import j_decorate
 from pymatgen.io.vasp.inputs import Incar
-from pymatgen.serializers.json_coders import MontyDecoder
+from monty.json import MontyDecoder
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
