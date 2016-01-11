@@ -119,6 +119,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
         # warnings.append("SE<0")
         # warnings.append("%REL>%s")
 
+        name = loc.replace("/", "")
+
         # Addtional info relating to slabs
         additional_fields = {
                              "author": os.environ.get("USER"),
@@ -135,10 +137,12 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              # Final incar parameters after custodian fixes have been applied.
                              # Useful for creating the slab incar parameters based on the
                              # parameters set for the oriented unit cell
-                             "final_magnetizaion": Outcar("./OUTCAR.relax2.gz").magnetization
+                             "final_magnetization": Outcar("./OUTCAR.relax2.gz").magnetization,
                              # The final magnetization acquired from the outcar.
                              # Useful for slab magmom inheriting the magnetization
                              # calculated from the oriented ucell.
+                            "calculation_name":  name,
+                            "warnings": warnings
                             }
 
         drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
@@ -259,6 +263,7 @@ class WriteUCVaspInputs(FireTaskBase):
         mplb.write_input(oriented_ucell, cwd+folder)
 
 
+
 @explicit_serialize
 class WriteSlabVaspInputs(FireTaskBase):
     """
@@ -346,8 +351,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                               max_normal_search=max(miller_index),
                               primitive=True)
 
-        print "primitive is set to ", slabs.primitive
-
         # Find out if an entry for this slab already exists.
         # If so, see if the slab at shift=0 has been calculated,
         # then calculate all other terminations besides c=0
@@ -422,8 +425,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 # Check if the slab is reduced
                 if len(slab) > prim_sites:
-                    getmillerindices = GetMillerIndices(conventional_ucell,1)
-                    eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
                     warnings.warn("This slab has way too many atoms in it, will attempt "
                                   "to construct slab from relaxed conventional ucell")
 
@@ -431,7 +432,15 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                     # If the slab constructed from the oriented ucell is not reduced,
                     # attempt to make a reduced slab from the relaxed conventional ucell
+
                     rel_ucell = None
+                    getmillerindices = GetMillerIndices(conventional_ucell,1)
+                    eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
+                    conventional_ucell_calculated = False
+
+                    # Need to find the miller index of an
+                    # existing calculated conventional ucell first
+
                     for c_index in eq_mills:
                         entry = qe.get_entries({'material_id': mpid,
                                                 'structure_type': 'oriented_unit_cell',
@@ -448,11 +457,20 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                   max_normal_search=max(miller_index),
                                                   primitive=True)
                             slab = slabs.get_slab(shift=shift)
+                            conventional_ucell_calculated = True
+
 
                     # If slab is still not reduced, do not add the additional FW
+
                     if len(slab) > prim_sites:
-                        warnings.warn("This slab has way too many atoms in it, "
-                                      "are you sure it is the most reduced structure?")
+                        if not conventional_ucell_calculated:
+                            warnings.warn("The relaxed conventional unit cell has "
+                                          "not been calculated yet, cannot attempt "
+                                          "to create reduced structure")
+                        if conventional_ucell_calculated:
+                            warnings.warn("The relaxed conventional unit cell has "
+                                          "been calculated. We are still unable to "
+                                          "create the reduced structure, skipping...")
                         print slab
                         is_primitive = False
 
@@ -528,6 +546,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 FWs.append(fw)
 
+            # Skip this calculation if the slab is not fully
+            # reduced or the surfaces aren't symmetric
             if is_primitive and is_symmetric:
                 return FWAction(additions=FWs)
 
@@ -571,10 +591,12 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors, gzipped_output=True, **cust_params)
+        c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors,
+                      gzipped_output=True, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
+
 
 @explicit_serialize
 class MoveDirectoryTask(FireTaskBase):
@@ -584,7 +606,8 @@ class MoveDirectoryTask(FireTaskBase):
     prevent the home directory from being filled up.
     """
 
-    required_params = ["cwd", "formula", "miller_index", "mpid", "final_directory"]
+    required_params = ["cwd", "formula", "miller_index",
+                       "mpid", "final_directory"]
 
     def run_task(self, fw_spec):
 
