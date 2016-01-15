@@ -536,13 +536,16 @@ class WriteSlabVaspInputs(FireTaskBase):
                 slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
                 new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
                 new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
+                completed_term_shifts.pop(completed_term_shifts.index(0))
 
-            for shift in completed_term_shifts:
+            if completed_term_shifts:
 
-                # Now remove calculations that have already
-                # been completed for a particular termination
+                for shift in completed_term_shifts:
 
-                slab_list.pop(new_term_shifts.index(shift))
+                    # Now remove calculations that have already
+                    # been completed for a particular termination
+
+                    slab_list.pop(new_term_shifts.index(shift))
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
