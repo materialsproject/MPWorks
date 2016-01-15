@@ -688,8 +688,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                                        optional_data=optional_data)[0]
                 incar = [slab_entry.data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]]
 
-                print mag
-                incar.__setitem__('MAGMOM', mag)
+                print magmom
+                incar.__setitem__('MAGMOM', magmom)
 
                 # Set slab specific parameters not inherited from the ucell calculations
 
