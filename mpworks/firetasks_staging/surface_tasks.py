@@ -686,7 +686,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 slab_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
                                         'miller_index': miller_index}, inc_structure=True,
                                        optional_data=optional_data)[0]
-                incar = [slab_entry[0].data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]]
+                incar = [slab_entry.data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]]
 
                 incar.__setitem__('MAGMOM', mag)
 
