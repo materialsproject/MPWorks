@@ -44,10 +44,9 @@ class WarningAnalysisTask(FireTaskBase):
         warnings (strings) and inserts it into a VaspSlabDBInsertTask
     """
 
-    required_params = ["host", "port", "user", "password",
-                       "database", "collection", "mpid",
-                       "struct_type", "loc","miller_index", "vaspdbinsert_parameters",
-                       "cwd", "conventional_spacegroup", "polymorph", "conventional_unit_cell"]
+    required_params = ["mpid", "struct_type", "loc","miller_index",
+                       "vaspdbinsert_parameters", "cwd", "polymorph",
+                       "conventional_spacegroup", "conventional_unit_cell"]
     optional_params = ["surface_area", "shift", "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
@@ -89,7 +88,6 @@ class WarningAnalysisTask(FireTaskBase):
         """
 
         dec = MontyDecoder()
-        struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
         cwd = dec.process_decoded(self.get("cwd"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
@@ -100,19 +98,9 @@ class WarningAnalysisTask(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
-        isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
         vaspdbinsert_parameters = dec.process_decoded(self.get("vaspdbinsert_parameters"))
 
-        # Sets default for DB parameters
-        if not self["host"]:
-            self["host"] = "127.0.0.1"
-        if not self["port"]:
-            self["port"] = 27017
-        if not self["database"]:
-            self["database"] = "vasp"
-        if not self["collection"]:
-            self["collection"] = "tasks"
 
         initial = Poscar.from_file(cwd+loc+'/POSCAR')
         final = Poscar.from_file(cwd+loc+'/CONTCAR.relax2.gz')
@@ -688,7 +676,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                        optional_data=optional_data)[0]
                 incar = slab_entry.data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]
                 incar = Incar.from_dict(incar)
-                
+
                 incar.__setitem__('MAGMOM', mag)
 
                 # Set slab specific parameters not inherited from the ucell calculations
