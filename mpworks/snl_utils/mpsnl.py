@@ -32,7 +32,7 @@ def get_meta_from_structure(structure):
 
 def has_species_properties(structure):
     for site in structure:
-        for species in site:
+        for species in site.species_and_occu:
             if hasattr(species, 'spin'):
                 return True
 
