@@ -81,6 +81,11 @@ class SubmissionProcessor():
                         wf=snl_to_wf_phonon(snl, job['parameters'])
                     else:
                         wf = snl_to_wf(snl, job['parameters'])
+                    if "Electronic Response" in snl.projects:
+                        from mpworks.workflows.snl_to_wf_dielectrics import snl_to_wf_static_dielectrics
+                        wf=snl_to_wf_static_dielectrics(snl, job['parameters'])
+                    else:
+                        wf = snl_to_wf(snl, job['parameters'])
                     self.launchpad.add_wf(wf)
                     print 'ADDED WORKFLOW FOR {}'.format(snl.structure.formula)
             except:
@@ -102,12 +107,12 @@ class SubmissionProcessor():
             except:
                 print 'ERROR while processing s_id', submission_id
                 traceback.print_exc()
-        
+
 
     def update_wf_state(self, submission_id):
         # state of the workflow
         tasks = {}
-        
+
         wf = self.launchpad.workflows.find_one({'metadata.submission_id': submission_id},
                                                sort=[('updated_on', -1)])
         details = '(none)'
@@ -124,8 +129,8 @@ class SubmissionProcessor():
                         break
                     except:
                         pass
-        
-        self.sma.update_state(submission_id, wf['state'], details, tasks)    
+
+        self.sma.update_state(submission_id, wf['state'], details, tasks)
         return wf['state'], details, tasks
 
     @classmethod
