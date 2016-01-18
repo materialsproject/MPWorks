@@ -237,10 +237,11 @@ class VerifyRamanTask(FireTaskBase, FWSerializable):
         ae = abs(raman_results[max_mode_index][2] - activity)
         are = abs(raman_results[max_mode_index][2] - activity) / raman_results[max_mode_index][2]
         if ae < 3 or are < 0.1:
-            "Insert to database"
-            eigvals = passed_vars[0]
-            eigvals = passed_vars[1]
-            norms = passed_vars[2]
-            alpha = raman_results[0]
-            beta2 = raman_results[1]
-            activity = raman_results[2]
+            # Insert to database:
+            d = {}
+            d['eigvalues'] = passed_vars[0]
+            d['eigvectors'] = passed_vars[1]
+            d['norms'] = passed_vars[2]
+            d['alpha'] = raman_results[0]
+            d[]'beta2'] = raman_results[1]
+            d['activity'] = raman_results[2]
