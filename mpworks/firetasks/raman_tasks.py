@@ -16,8 +16,8 @@ from mpworks.firetasks.snl_tasks import AddSNLTask
 from mpworks.snl_utils.mpsnl import MPStructureNL
 from pymatgen.core.structure import Structure
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL, QA_CONTROL
-from pymatgen.io.vaspio.vasp_input import Poscar, Kpoints, Incar
-from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet
+from pymatgen.io.vasp.inputs import Poscar, Kpoints, Incar
+from pymatgen.io.vasp.sets import MPStaticDielectricDFPTVaspInputSet
 from raman_functions import get_modes_from_OUTCAR, get_mass_list, get_nat_type
 
 

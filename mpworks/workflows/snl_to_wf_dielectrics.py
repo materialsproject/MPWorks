@@ -13,8 +13,8 @@ from mpworks.firetasks.dielectrics_tasks import SetupDFPTDielectricsTask
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from pymatgen.core.structure import Structure
-from pymatgen.io.vaspio_set import MPStaticDielectricDFPTVaspInputSet, MPVaspInputSet
-from pymatgen.io.vaspio.vasp_input import Incar, Poscar, Kpoints
+from pymatgen.io.vasp.sets import MPStaticDielectricDFPTVaspInputSet, MPVaspInputSet
+from pymatgen.io.vasp.inputs import Incar, Poscar, Kpoints
 from fireworks.core.firework import Firework, Workflow
 from mpworks.workflows import snl_to_wf
 
