@@ -44,7 +44,8 @@ class SurfaceWorkflowManager(object):
     def __init__(self, elements_and_mpids=[], indices_dict=None,
                  slab_size=10, vac_size=10, host=None, port=None, user=None,
                  password=None, symprec=0.001, angle_tolerance=5, database=None,
-                 collection="Surface_Collection", fail_safe=True, reset=False):
+                 collection="Surface_Collection", fail_safe=True, reset=False,
+                 check_exists=True):
 
         """
             Args:
@@ -145,8 +146,9 @@ class SurfaceWorkflowManager(object):
         self.reset = reset
         self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
+        self.check_exists = check_exists
 
-    def from_max_index(self, max_index, max_normal_search=True, max_only=False):
+    def from_max_index(self, max_index, max_normal_search=True, max_only=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -177,9 +179,16 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
+        if self.check_exists:
+            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
+        else:
+            return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
+                                         self.vaspdbinsert_params,
+                                         self.ssize, self.vsize,
+                                         max_normal_search=max_normal_search,
+                                         get_bulk_e=get_bulk_e)
 
-    def from_list_of_indices(self, list_of_indices, max_normal_search=True):
+    def from_list_of_indices(self, list_of_indices, max_normal_search=True, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a
@@ -195,9 +204,17 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             miller_dict[mpid] = list_of_indices
 
-        return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
+        if self.check_exists:
+            return self.check_existing_entries(miller_dict,
+                                               max_normal_search=max_normal_search)
+        else:
+            return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
+                                         self.vaspdbinsert_params,
+                                         self.ssize, self.vsize,
+                                         max_normal_search=max_normal_search,
+                                         get_bulk_e=get_bulk_e)
 
-    def from_indices_dict(self, max_normal_search=True):
+    def from_indices_dict(self, max_normal_search=True, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -206,7 +223,16 @@ class SurfaceWorkflowManager(object):
             eg. indices_dict={'Fe': [[1,1,0]], 'LiFePO4': [[1,1,1], [2,2,1]]}
         """
 
-        return self.check_existing_entries(self.indices_dict, max_normal_search=max_normal_search)
+        if self.check_exists:
+            return self.check_existing_entries(self.indices_dict,
+                                               max_normal_search=max_normal_search)
+        else:
+            return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
+                                         self.vaspdbinsert_params,
+                                         self.ssize, self.vsize,
+                                         max_normal_search=max_normal_search,
+                                         get_bulk_e=get_bulk_e)
+
 
     def check_existing_entries(self, miller_dict, max_normal_search=True):
 
@@ -322,7 +348,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
-                 ssize, vsize, terminations=True, max_normal_search=True,
+                 ssize, vsize, max_normal_search=True,
                  fail_safe=True, reset=False, get_bulk_e=True):
 
         """
