@@ -243,5 +243,5 @@ class VerifyRamanTask(FireTaskBase, FWSerializable):
             d['eigvectors'] = passed_vars[1]
             d['norms'] = passed_vars[2]
             d['alpha'] = raman_results[0]
-            d[]'beta2'] = raman_results[1]
+            d['beta2'] = raman_results[1]
             d['activity'] = raman_results[2]
