@@ -648,6 +648,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 # from the outcar of the ucell calculation.
 
                 out_mag = ucell_entry.data["final_magnetization"]
+                print "Raw MAGMOM is: %s" %(out_mag)
                 if not out_mag or out_mag[0]['tot'] <= 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
                                   "may be incomplete, will set default magmom")
