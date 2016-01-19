@@ -648,8 +648,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 # from the outcar of the ucell calculation.
 
                 out_mag = ucell_entry.data["final_magnetization"]
-                print "Raw MAGMOM is: %s" %(out_mag)
-                if not out_mag or out_mag[0]['tot'] <= 0:
+                if not out_mag or out_mag[0]['tot'] < 0:
                     warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
                                   "may be incomplete, will set default magmom")
                     if slab.composition.reduced_formula in ["Fe", "Co", "Ni"]:
@@ -664,7 +663,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                 tot_mag = [mag['tot'] for mag in out_mag]
                 magmom = np.mean(tot_mag)
                 mag = [magmom]*len(slab)
-                print "Initial MAGMOM is: %s" %(mag)
 
                 # Tries to build an incar from a previously calculated slab with a
                 # different termination. Otherwise writes new INCAR file based on
