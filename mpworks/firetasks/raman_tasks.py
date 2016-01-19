@@ -91,6 +91,7 @@ class SetupRamanVerificationTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         from math import pi
+        from numpy import linalg
 
         passed_vars = fw_spec['passed_vars'][0]
 
@@ -110,7 +111,7 @@ class SetupRamanVerificationTask(FireTaskBase, FWSerializable):
         for mode in range(num_of_eigvals):
             eigenval = passed_vars[0][mode]
             eigenvec = passed_vars[1][mode]
-            norm = passed_vars[2][mode]
+            norm = linalg.norm(passed_vars[2][mode])
             ra = [[0.0 for x in range(3)] for y in range(3)]
             for coeff in [-0.5, 0.5]:
                 parent_index = -4*num_of_eigvals - 2*ii
@@ -167,14 +168,14 @@ class SetupRamanVerificationTask(FireTaskBase, FWSerializable):
             connections[1000+raman_count+1] = -10
             raman_count += 2
 
-        passed_vars = [eigvals, eigvecs, raman_results, max_mode_index]
+        passed_vars = [eigvals, eigvecs, norms, raman_results, max_mode_index]
 
-        spec= {'task_type': 'Verify Raman Task', '_priority': priority, "_pass_job_info": True, '_allow_fizzled_parents': False, '_queueadapter': QA_CONTROL}
+        spec= {'task_type': 'VASP db insertion - Verify Raman', '_priority': priority, "_pass_job_info": True, '_allow_fizzled_parents': False, '_queueadapter': QA_DB}
         spec['passed_vars'] = []
-        fws.append(Firework([VerifyRamanTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-10))
+        fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=-10))
 
         wf.append(Workflow(fws, connections))
-        return FWAction(additions=wf, stored_data={'passed_vars': passed_vars}, mod_spec=[{'_push': {'passed_vars': passed_vars}}])
+        return FWAction(additions=wf, stored_data={'passed_vars': new_passed_vars}, mod_spec=[{'_push': {'passed_vars': passed_vars}}])
 
 
 class VerifyRamanTask(FireTaskBase, FWSerializable):
@@ -237,7 +238,6 @@ class VerifyRamanTask(FireTaskBase, FWSerializable):
         ae = abs(raman_results[max_mode_index][2] - activity)
         are = abs(raman_results[max_mode_index][2] - activity) / raman_results[max_mode_index][2]
         if ae < 3 or are < 0.1:
-            # Insert to database:
             d = {}
             d['eigvalues'] = passed_vars[0]
             d['eigvectors'] = passed_vars[1]

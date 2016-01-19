@@ -20,6 +20,7 @@ from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
+from mpworks.firetasks.raman_functions import verify_raman
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
@@ -203,6 +204,8 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 if 'deformed' in fw_spec['task_type']:
                     spec['deformation_matrix'] = fw_spec['deformation_matrix']
                     spec['original_task_id'] = fw_spec['original_task_id']
+                if 'Verify Raman' in fw_spec['task_type']:
+                    spec['raman'] = verify_raman(fw_spec)
                 snl = StructureNL.from_dict(spec['mpsnl'])
                 spec['run_tags'].append(unconverged_tag)
                 spec['_queueadapter'] = QA_VASP

@@ -87,7 +87,8 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
         fws.append(Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=12))
         connections[11] = [12]
 
-        spec= {'task_type': 'Setup Raman Task', '_priority': priority, "_pass_job_info": True, '_allow_fizzled_parents': False, '_queueadapter': QA_CONTROL}
+        spec = {'task_type': 'Setup Raman Task', '_priority': priority, "_pass_job_info": True, '_allow_fizzled_parents': False, '_queueadapter': QA_CONTROL}
+        spec['passed_vars'] = []
         fws.append(Firework([SetupRamanTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=13))
         connections[12] = [13]
 
