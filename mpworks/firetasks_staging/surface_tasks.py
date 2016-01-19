@@ -658,7 +658,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if out_mag[0]['tot'] == 0:
                     warnings.warn("Magnetization is 0, "
                                   "changing magnetization to non-zero")
-                    out_mag = [{'tot': 1E-5}]
+                    out_mag = [{'tot': 1E-15}]
 
                 tot_mag = [mag['tot'] for mag in out_mag]
                 magmom = np.mean(tot_mag)
