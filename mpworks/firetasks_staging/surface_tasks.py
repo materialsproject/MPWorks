@@ -486,8 +486,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state", "shift", "final_incar", "final_magnetization"]
         ucell_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
-                                'miller_index': miller_index}, inc_structure=True,
-                               optional_data=optional_data)[0]
+                                      'miller_index': miller_index}, inc_structure=True,
+                                      optional_data=optional_data)[0]
 
         relax_orient_uc = ucell_entry.structure
 
@@ -663,6 +663,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 tot_mag = [mag['tot'] for mag in out_mag]
                 magmom = np.mean(tot_mag)
                 mag = [magmom]*len(slab)
+                print "Initial MAGMOM is: %s" %(mag)
 
                 # Tries to build an incar from a previously calculated slab with a
                 # different termination. Otherwise writes new INCAR file based on
