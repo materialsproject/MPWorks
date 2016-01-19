@@ -75,7 +75,7 @@ class SetupDFPTDielectricsTask(FireTaskBase, FWSerializable):
         #spec['original_task_id']=fw_spec["task_id"]
 
         # spec['_priority'] = fw_spec['_priority']*2
-        # del spec['_dupefinder']
+        del spec['_dupefinder']
         spec['task_type'] = "Static Dielectrics"
         spec["_pass_job_info"] = True
         spec['_allow_fizzled_parents'] = False

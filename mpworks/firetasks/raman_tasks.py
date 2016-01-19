@@ -64,6 +64,7 @@ class SetupRamanTask(FireTaskBase, FWSerializable):
                 kpoints_density = 3000
                 k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
                 spec['vasp']['kpoints'] = k.as_dict()
+                del spec['_dupefinder']
                 spec['task_type'] = "Raman_"+str(mode+1)+"."+str(disp)
                 spec["_pass_job_info"] = True
                 spec['_allow_fizzled_parents'] = False
@@ -156,7 +157,8 @@ class SetupRamanVerificationTask(FireTaskBase, FWSerializable):
             kpoints_density = 3000
             k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
             spec['vasp']['kpoints'] = k.as_dict()
-            spec['task_type'] = "Raman_"+str(mode+1)+"."+str(disp)
+            del spec['_dupefinder']
+            spec['task_type'] = "Raman_max."+str(disp)
             spec["_pass_job_info"] = True
             spec['_allow_fizzled_parents'] = False
             spec['_queueadapter'] = QA_VASP

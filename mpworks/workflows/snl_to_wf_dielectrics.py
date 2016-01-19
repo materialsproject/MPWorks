@@ -96,7 +96,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
 
         incar.update({"EDIFFG":'-0.05'})
         spec['vasp']['incar'] = incar.as_dict()
-        # del spec['_dupefinder']
+        del spec['_dupefinder']
         # spec['run_tags'].append("origin")
         spec['_priority'] = priority
         spec["_pass_job_info"] = True
@@ -141,7 +141,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     kpoints_density = 3000
     k=Kpoints.automatic_density(snl.structure, kpoints_density, force_gamma=True)
     spec['vasp']['kpoints'] = k.as_dict()
-    # del spec['_dupefinder']
+    del spec['_dupefinder']
     # spec['run_tags'].append("origin")
     spec['_priority'] = priority
     spec["_pass_job_info"] = True
