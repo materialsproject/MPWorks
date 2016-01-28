@@ -15,7 +15,7 @@ __date__ = "6/24/15"
 
 import os
 import uuid
-
+from gridfs import GridFS
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
     WriteAtomVaspInputs
@@ -23,6 +23,9 @@ from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
+from custodian.vasp.surface_handlers import SurfaceFrozenJobErrorHandler, \
+    SurfacePositiveEnergyErrorHandler, SurfacePotimErrorHandler, \
+    SurfaceVaspErrorHandler
 
 from pymatgen.core.surface import SlabGenerator, GetMillerIndices
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -330,7 +333,7 @@ class SurfaceWorkflowManager(object):
         with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only,
                                                get_bulk_e=False, **wf_kwargs)
 
-        print "total number of calculations possible: ", total_calculations
+        print "total number of Indices: ", total_calculations
         print "total number of calculations with no bulk: ", total_calcs_with_nobulk
         print "total number of calculations with bulk: ", total_calcs_with_bulk
         print "total number of calculations already finished: ", total_calcs_finished
@@ -424,7 +427,14 @@ class CreateSurfaceWorkflow(object):
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
                     FrozenJobErrorHandler(timeout=3600),
-                    VaspErrorHandler()]
+                    VaspErrorHandler(),
+                    # If none of the usual custodian handlers work, use the
+                    # altered surface specific handlers as a last resort
+                    SurfacePositiveEnergyErrorHandler(),
+                    SurfacePotimErrorHandler(),
+                    SurfaceFrozenJobErrorHandler(timeout=3600),
+                    SurfaceVaspErrorHandler()]
+
         if additional_handlers:
             handlers.extend(additional_handlers)
 
@@ -437,7 +447,7 @@ class CreateSurfaceWorkflow(object):
                        "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                          auto_npar=False),
                        "handlers": handlers,
-                       "max_errors": 100}  # will return a list of jobs
+                       "max_errors": 10}  # will return a list of jobs
                                            # instead of just being one job
 
         fws = []
@@ -489,7 +499,7 @@ class CreateSurfaceWorkflow(object):
                                                       miller_index=miller_index, mpid=mpid,
                                                       conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                       polymorph=self.unit_cells_dict[mpid]["polymorph"],
-                                                      **self.vaspdbinsert_params)])
+                                                      vaspdbinsert_params=self.vaspdbinsert_params)])
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                   user_incar_settings=user_incar_settings,
@@ -544,11 +554,11 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                       auto_npar=False, copy_magmom=True)
 
     handlers = [VaspErrorHandler(),
-                NonConvergingErrorHandler(nionic_steps=2, change_algo=True),
+                NonConvergingErrorHandler(nionic_steps=4, change_algo=True),
                 UnconvergedErrorHandler(),
                 PotimErrorHandler(),
                 PositiveEnergyErrorHandler(),
-                FrozenJobErrorHandler(timeout=3600)]
+                FrozenJobErrorHandler(timeout=7200)]
     if additional_handlers:
         handlers.extend(additional_handlers)
 
@@ -561,8 +571,8 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                    "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                      auto_npar=False),
                    "handlers": handlers,
-                   "max_errors": 100}  # will return a list of jobs
-                                       # instead of just being one job
+                   "max_errors": 10,
+                   "skip_over_errors": True}  # will return a list of jobs instead of just being one job
 
     fws = []
     for el in elements:

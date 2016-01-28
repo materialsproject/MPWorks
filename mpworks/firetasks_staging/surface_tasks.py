@@ -1,9 +1,9 @@
 ## for Surface Energy Calculation
 from __future__ import division, unicode_literals
 
-__author__ = "Zihan XU"
+__author__ = "Richard Tran, Zihan Xu"
 __version__ = "0.1"
-__email__ = "vivid0036@gmail.com"
+__email__ = "rit634989@gmail.com"
 __date__ = "6/2/15"
 
 import os
@@ -37,159 +37,6 @@ Firework tasks
 
 
 @explicit_serialize
-class WarningAnalysisTask(FireTaskBase):
-
-    """
-        Checks for red flags in the slab calculations, creates a list of
-        warnings (strings) and inserts it into a VaspSlabDBInsertTask
-    """
-
-    required_params = ["mpid", "struct_type", "loc","miller_index",
-                       "vaspdbinsert_parameters", "cwd", "polymorph",
-                       "conventional_spacegroup", "conventional_unit_cell"]
-    optional_params = ["surface_area", "shift", "vsize", "ssize", "isolated_atom"]
-
-    def run_task(self, fw_spec):
-
-        """
-            Required Parameters:
-                host (str): See SurfaceWorkflowManager in surface_wf.py
-                port (int): See SurfaceWorkflowManager in surface_wf.py
-                user (str): See SurfaceWorkflowManager in surface_wf.py
-                password (str): See SurfaceWorkflowManager in surface_wf.py
-                database (str): See SurfaceWorkflowManager in surface_wf.py
-                collection (str): See SurfaceWorkflowManager in surface_wf.py
-                mpid (str): The Materials Project ID associated with the
-                    initial structure used to build the slab from
-                struct_type (str): either oriented_unit_cell or slab_cell
-                miller_index (list): Miller Index of the oriented
-                    unit cell or slab
-                loc (str path): Location of the outputs of
-                    the vasp calculations
-                cwd (str): Current working directory
-                conventional_spacegroup (str): The spacegroup of the structure
-                    asscociated with the MPID input
-                polymorph (str): The rank of the  polymorph of the structure
-                    associated with the MPID input, 0 being the ground state
-                    polymorph.
-            Optional Parameters:
-                surface_area (float): surface area of the slab, obtained
-                    from slab object before relaxation
-                shift (float): A shift value in Angstrom that determines how
-                    much a slab should be shifted. For determining number of
-                    terminations, obtained from slab object before relaxation
-                vsize (float): Size of vacuum layer of slab in Angstroms,
-                    obtained from slab object before relaxation
-                ssize (float): Size of slab layer of slab in Angstroms,
-                    obtained from slab object before relaxation
-                isolated_atom (str): Specie of the structure used to
-                    calculate the energy of an isolated atom (for cohesive
-                    energy calculations)
-        """
-
-        dec = MontyDecoder()
-        loc = dec.process_decoded(self.get("loc"))
-        cwd = dec.process_decoded(self.get("cwd"))
-        surface_area = dec.process_decoded(self.get("surface_area", None))
-        shift = dec.process_decoded(self.get("shift", None))
-        vsize = dec.process_decoded(self.get("vsize", None))
-        ssize = dec.process_decoded(self.get("ssize", None))
-        miller_index = dec.process_decoded(self.get("miller_index"))
-        mpid = dec.process_decoded(self.get("mpid"))
-        polymorph = dec.process_decoded(self.get("polymorph"))
-        spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
-        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
-        vaspdbinsert_parameters = dec.process_decoded(self.get("vaspdbinsert_parameters"))
-
-
-        initial = Poscar.from_file(cwd+loc+'/POSCAR')
-        final = Poscar.from_file(cwd+loc+'/CONTCAR.relax2.gz')
-
-        warnings = []
-
-        # Check if the spacegroup queried from MP API consistent
-        # with the one calculated from the queried structure
-        queried_sg = spacegroup
-        spa = SpacegroupAnalyzer(conventional_unit_cell,
-                                 symprec=0.001, angle_tolerance=5)
-        calculated_sg = spa.get_spacegroup_symbol()
-        if str(calculated_sg) != queried_sg:
-            warnings.append("api_mp_spacegroup_inconsistent")
-
-        qe = QueryEngine(**vaspdbinsert_parameters)
-        ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
-                                      'structure_type': 'oriented_unit_cell'})[0]
-
-        init_bulk = Structure.from_dict(ucell_entry.data["initial_structure"])
-        fin_bulk = Structure.from_dict(ucell_entry.data["final_structure"])
-
-        # Analyze bulk relaxations for possible
-        # warning signs, too much volume relaxation
-        relaxation = RelaxationAnalyzer(init_bulk, fin_bulk)
-        if abs(relaxation.get_percentage_volume_change()*100) > 1:
-            warnings.append("|bulk_vol_rel|>1%")
-
-        # Analyze slab site relaxations for possible
-        # warning signs, too much site relaxation
-        total_percent = []
-        percent_dict = {}
-
-        # Determine the max bond length to determine
-        # relaxation based on the conventional unit cell
-        connections = VoronoiConnectivity(conventional_unit_cell).get_connections()
-        all_dist = []
-        for connection in connections:
-            all_dist.append(connection[2])
-
-        relaxation_analyzer = RelaxationAnalyzer(initial, final)
-        rel_dict = relaxation_analyzer.get_percentage_bond_dist_changes(max_radius=max(all_dist)+0.1)
-        for i in rel_dict.keys():
-            site_per = []
-
-            for ii in rel_dict[i].keys():
-                site_per.append(abs(rel_dict[i][ii]))
-                total_percent.append(abs(rel_dict[i][ii]))
-            percent_dict[i]=100*np.mean(site_per)
-
-        # Create a warning if any bonds in
-        # the structure is greater than 5-10%
-        if any(10 < i for i in percent_dict.values()):
-            warnings.append("|slab_site_rel|>10%")
-        elif any(5 < i < 10 for i in percent_dict.values()):
-            warnings.append("|slab_site_rel|>5%")
-
-        # Check the symmetry of surfaces (unrelaxed)
-        sg = SpacegroupAnalyzer(initial, symprec=1E-3)
-        pg = sg.get_point_group()
-        laue = ["-1", "2/m", "mmm", "4/m", "4/mmm",
-                "-3", "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
-        if str(pg) not in laue:
-            warnings.append("unequivalent_surfaces")
-
-        # For Check negative surface energy
-        e_per_atom = ucell_entry.energy_per_atom
-        # Find out if an entry for this slab already exists.
-        # If so, see if the slab at shift=0 has been calculated,
-        # then calculate all other terminations besides c=0
-        final_energy = Oszicar(cwd+loc+'/OSZICAR.relax2.gz').final_energy
-        surface_e = final_energy - e_per_atom*len(initial)
-        if surface_e < 0:
-            warnings.append("negative_surface_energy")
-
-        fw = Firework([VaspSlabDBInsertTask(struct_type="slab_cell",
-                                            loc=loc, cwd=cwd, shift=shift,
-                                            surface_area=surface_area,
-                                            vsize=vsize,
-                                            ssize=ssize,
-                                            miller_index=miller_index,
-                                            mpid=mpid, polymorph=polymorph,
-                                            conventional_spacegroup=spacegroup,
-                                            warnings=warnings, **vaspdbinsert_parameters)])
-
-        FW = [fw]
-        return FWAction(additions=FW)
-
-@explicit_serialize
 class VaspSlabDBInsertTask(FireTaskBase):
 
     """
@@ -198,11 +45,10 @@ class VaspSlabDBInsertTask(FireTaskBase):
         to slabs and oriented unit cells.
     """
 
-    required_params = ["host", "port", "user", "password",
-                       "database", "collection", "mpid",
+    required_params = ["vaspdbinsert_parameters", "mpid",
                        "struct_type", "loc","miller_index",
                        "cwd", "conventional_spacegroup", "polymorph"]
-    optional_params = ["warnings", "surface_area", "shift",
+    optional_params = ["surface_area", "shift", "conventional_unit_cell",
                        "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
@@ -243,6 +89,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
                     energy calculations)
         """
 
+        # Get all the optional/required parameters
         dec = MontyDecoder()
         struct_type = dec.process_decoded(self.get("struct_type"))
         loc = dec.process_decoded(self.get("loc"))
@@ -255,18 +102,86 @@ class VaspSlabDBInsertTask(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
+        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell", None))
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
-        warnings = dec.process_decoded(self.get("warnings", None))
+        vaspdbinsert_parameters = \
+            dec.process_decoded(self.get("vaspdbinsert_parameters"))
 
-        # Sets default for DB parameters
-        if not self["host"]:
-            self["host"] = "127.0.0.1"
-        if not self["port"]:
-            self["port"] = 27017
-        if not self["database"]:
-            self["database"] = "vasp"
-        if not self["collection"]:
-            self["collection"] = "tasks"
+        if struct_type == "slab_cell":
+
+            initial = Poscar.from_file(cwd+loc+'/POSCAR')
+            final = Poscar.from_file(cwd+loc+'/CONTCAR.relax2.gz')
+
+            warnings = []
+
+            # Check if the spacegroup queried from MP API consistent
+            # with the one calculated from the queried structure
+            queried_sg = spacegroup
+            spa = SpacegroupAnalyzer(conventional_unit_cell,
+                                     symprec=0.001, angle_tolerance=5)
+            calculated_sg = spa.get_spacegroup_symbol()
+            if str(calculated_sg) != queried_sg:
+                warnings.append("api_mp_spacegroup_inconsistent")
+
+            qe = QueryEngine(**vaspdbinsert_parameters)
+            ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
+                                          'structure_type': 'oriented_unit_cell'})[0]
+
+            init_bulk = Structure.from_dict(ucell_entry.data["initial_structure"])
+            fin_bulk = Structure.from_dict(ucell_entry.data["final_structure"])
+
+            # Analyze bulk relaxations for possible
+            # warning signs, too much volume relaxation
+            relaxation = RelaxationAnalyzer(init_bulk, fin_bulk)
+            if abs(relaxation.get_percentage_volume_change()*100) > 1:
+                warnings.append("|bulk_vol_rel|>1%")
+
+            # Analyze slab site relaxations for possible
+            # warning signs, too much site relaxation
+            total_percent = []
+            percent_dict = {}
+
+            # Determine the max bond length to determine
+            # relaxation based on the conventional unit cell
+            connections = VoronoiConnectivity(conventional_unit_cell).get_connections()
+            all_dist = []
+            for connection in connections:
+                all_dist.append(connection[2])
+
+            relaxation_analyzer = RelaxationAnalyzer(initial, final)
+            rel_dict = relaxation_analyzer.get_percentage_bond_dist_changes(max_radius=max(all_dist)+0.1)
+            for i in rel_dict.keys():
+                site_per = []
+
+                for ii in rel_dict[i].keys():
+                    site_per.append(abs(rel_dict[i][ii]))
+                    total_percent.append(abs(rel_dict[i][ii]))
+                percent_dict[i]=100*np.mean(site_per)
+
+            # Create a warning if any bonds in
+            # the structure is greater than 5-10%
+            if any(10 < i for i in percent_dict.values()):
+                warnings.append("|slab_site_rel|>10%")
+            elif any(5 < i < 10 for i in percent_dict.values()):
+                warnings.append("|slab_site_rel|>5%")
+
+            # Check the symmetry of surfaces (unrelaxed)
+            sg = SpacegroupAnalyzer(initial, symprec=1E-3)
+            pg = sg.get_point_group()
+            laue = ["-1", "2/m", "mmm", "4/m", "4/mmm",
+                    "-3", "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
+            if str(pg) not in laue:
+                warnings.append("unequivalent_surfaces")
+
+            # For Check negative surface energy
+            e_per_atom = ucell_entry.energy_per_atom
+            # Find out if an entry for this slab already exists.
+            # If so, see if the slab at shift=0 has been calculated,
+            # then calculate all other terminations besides c=0
+            final_energy = Oszicar(cwd+loc+'/OSZICAR.relax2.gz').final_energy
+            surface_e = final_energy - e_per_atom*len(initial)
+            if surface_e < 0:
+                warnings.append("negative_surface_energy")
 
         name = loc.replace("/", "")
 
@@ -293,13 +208,9 @@ class VaspSlabDBInsertTask(FireTaskBase):
                             "warnings": warnings
                            }
 
-        drone = VaspToDbTaskDrone(host=self["host"], port=self["port"],
-                                  user=self["user"],
-                                  password=self["password"],
-                                  database=self["database"],
-                                  use_full_uri=False,
+        drone = VaspToDbTaskDrone(use_full_uri=False,
                                   additional_fields=additional_fields,
-                                  collection=self["collection"])
+                                  **vaspdbinsert_parameters)
         drone.assimilate(cwd+loc)
 
 
@@ -572,57 +483,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             for slab in slab_list:
 
-                # # Check if the slab is reduced
-                # if len(slab) > prim_sites:
-                #     warnings.warn("This slab has way too many atoms in it, will attempt "
-                #                   "to construct slab from relaxed conventional ucell")
-                #
-                #     shift = slab.shift
-                #
-                #     # If the slab constructed from the oriented ucell is not reduced,
-                #     # attempt to make a reduced slab from the relaxed conventional ucell
-                #
-                #     rel_ucell = None
-                #     getmillerindices = GetMillerIndices(conventional_ucell,1)
-                #     eq_mills = getmillerindices.get_symmetrically_equivalent_miller_indices((0,0,1))
-                #     conventional_ucell_calculated = False
-                #
-                #     # Need to find the miller index of an
-                #     # existing calculated conventional ucell first
-                #
-                #     for c_index in eq_mills:
-                #         entry = qe.get_entries({'material_id': mpid,
-                #                                 'structure_type': 'oriented_unit_cell',
-                #                                 'miller_index': c_index},
-                #                                 inc_structure=True,
-                #                                 optional_data=optional_data)
-                #         if entry:
-                #             rel_ucell = entry[0].structure
-                #
-                #         if rel_ucell:
-                #             slabs = SlabGenerator(rel_ucell, miller_index,
-                #                                   min_slab_size=min_slab_size,
-                #                                   min_vacuum_size=min_vacuum_size,
-                #                                   max_normal_search=max(miller_index),
-                #                                   primitive=True)
-                #             slab = slabs.get_slab(shift=shift)
-                #             conventional_ucell_calculated = True
-                #
-                #     # If slab is still not reduced, do not add the additional FW
-                #
-                #     if len(slab) > prim_sites:
-                #         if not conventional_ucell_calculated:
-                #             warnings.warn("The relaxed conventional unit cell has "
-                #                           "not been calculated yet, cannot attempt "
-                #                           "to create reduced structure")
-                #         if conventional_ucell_calculated:
-                #             warnings.warn("The relaxed conventional unit cell has "
-                #                           "been calculated. We are still unable to "
-                #                           "create the reduced structure, skipping...")
-                #         print slab
-                #         is_primitive = False
-
-                # Now check if the two surfaces in the slab are equivalent
                 is_symmetric = False
                 sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                 pg = sg.get_point_group()
@@ -694,16 +554,16 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                                 **custodian_params),
-                               WarningAnalysisTask(struct_type="slab_cell",
-                                                   loc=new_folder, cwd=cwd, shift=slab.shift,
-                                                   surface_area=slab.surface_area,
-                                                   vsize=slabs.min_vac_size,
-                                                   ssize=slabs.min_slab_size,
-                                                   miller_index=miller_index,
-                                                   mpid=mpid, conventional_spacegroup=spacegroup,
-                                                   polymorph=polymorph,
-                                                   conventional_unit_cell=conventional_ucell,
-                                                   vaspdbinsert_parameters=vaspdbinsert_parameters)],
+                               VaspSlabDBInsertTask(struct_type="slab_cell",
+                                                    loc=new_folder, cwd=cwd, shift=slab.shift,
+                                                    surface_area=slab.surface_area,
+                                                    vsize=slabs.min_vac_size,
+                                                    ssize=slabs.min_slab_size,
+                                                    miller_index=miller_index,
+                                                    mpid=mpid, conventional_spacegroup=spacegroup,
+                                                    polymorph=polymorph,
+                                                    conventional_unit_cell=conventional_ucell,
+                                                    vaspdbinsert_parameters=vaspdbinsert_parameters)],
                               name=new_folder)
 
                 FWs.append(fw)
@@ -752,8 +612,7 @@ class RunCustodianTask(FireTaskBase):
             cust_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        c = Custodian(handlers=handlers, jobs=jobs, max_errors=max_errors,
-                      gzipped_output=True, **cust_params)
+        c = Custodian(gzipped_output=True, **cust_params)
         output = c.run()
 
         return FWAction(stored_data=output)
