@@ -27,7 +27,6 @@ from pymatgen.matproj.rest import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_analyzer import RelaxationAnalyzer, VoronoiConnectivity
 
-
 from monty.json import MontyDecoder
 
 
@@ -579,8 +578,7 @@ class RunCustodianTask(FireTaskBase):
         Runs Custodian.
     """
 
-    required_params = ["dir", "jobs", "cwd"]
-    optional_params = ["custodian_params", "handlers", "max_errors"]
+    required_params = ["dir", "jobs", "cwd", "custodian_params"]
 
     def run_task(self, fw_spec):
 
@@ -601,18 +599,15 @@ class RunCustodianTask(FireTaskBase):
         # Change to the directory with the vasp inputs to run custodian
         os.chdir(cwd+dir)
 
-        handlers = dec.process_decoded(self.get('handlers', []))
-        jobs = dec.process_decoded(self['jobs'])
-        max_errors = dec.process_decoded(self['max_errors'])
         fw_env = fw_spec.get("_fw_env", {})
-        cust_params = self.get("custodian_params", {})
+        custodian_params = self.get("custodian_params", {})
 
         # Get the scratch directory
         if fw_env.get('scratch_root'):
-            cust_params['scratch_dir'] = os.path.expandvars(
+            custodian_params['scratch_dir'] = os.path.expandvars(
                 fw_env['scratch_root'])
 
-        c = Custodian(gzipped_output=True, **cust_params)
+        c = Custodian(gzipped_output=True, **custodian_params)
         output = c.run()
 
         return FWAction(stored_data=output)

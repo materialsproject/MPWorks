@@ -440,10 +440,7 @@ class CreateSurfaceWorkflow(object):
 
         scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
 
-        cust_params = {"custodian_params":
-                           {"scratch_dir":
-                                os.path.join(scratch_dir,
-                                             os.environ["USER"])},
+        cust_params = {"scratch_dir": os.path.join(scratch_dir, os.environ["USER"]),
                        "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                          auto_npar=False),
                        "handlers": handlers,
