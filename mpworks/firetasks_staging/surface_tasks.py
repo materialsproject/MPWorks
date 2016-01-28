@@ -552,7 +552,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 incar.write_file(cwd+new_folder+'/INCAR')
 
                 fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
-                                                **custodian_params),
+                                                custodian_params=custodian_params),
                                VaspSlabDBInsertTask(struct_type="slab_cell",
                                                     loc=new_folder, cwd=cwd, shift=slab.shift,
                                                     surface_area=slab.surface_area,
