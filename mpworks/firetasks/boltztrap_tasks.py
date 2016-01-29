@@ -104,7 +104,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
                                     max_val = val
                                     max_temp = float(t)
                                     max_dope = d['doping'][te_type][didx]
-                                    max_mu = d['mu_doping'][te_type][t][didx]
+                                    max_mu = d['mu_doping'][te_type][str(t)][didx]
 
                                 isotropic = evs['isotropic']
                 data[te_type] = {'value': max_val, 'temperature': max_temp, 'doping': max_dope, 'mu': max_mu, 'isotropic': isotropic}
