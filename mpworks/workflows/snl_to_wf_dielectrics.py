@@ -94,12 +94,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
         mpvis = MPVaspInputSet()
         incar = mpvis.get_incar(snl.structure)
 
-<<<<<<< HEAD
         incar.update({"EDIFFG":'-0.05', "NPAR":"2"})
-=======
-        incar.update({"EDIFFG":'-0.05'})
-        incar.update({"NPAR":'2'})
->>>>>>> 817e03aa2a5bf6dcc842b66caa1bd9aee3510dc0
         spec['vasp']['incar'] = incar.as_dict()
         del spec['_dupefinder']
         # spec['run_tags'].append("origin")
