@@ -578,7 +578,7 @@ class RunCustodianTask(FireTaskBase):
         Runs Custodian.
     """
 
-    required_params = ["dir", "jobs", "cwd", "custodian_params"]
+    required_params = ["dir", "cwd", "custodian_params"]
 
     def run_task(self, fw_spec):
 
