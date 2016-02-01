@@ -132,13 +132,19 @@ if __name__ == "__main__":
         "mp-865183", "mp-510268", "mp-862694", "mp-8013", "mp-867271", "mp-578618",
         "mp-865713", "mp-865167", "mp-29009", "mp-865128", "mp-32497", "mp-864684",
         "mp-862473", "mp-865280", "mp-3020", "mp-27193", "mp-861937", "mp-867896",
-        "mp-862374", "mp-28872", "mp-23425", "mp-10417" 
+        "mp-862374", "mp-28872", "mp-23425", "mp-10417",
+        "mp-127", "mp-135", "mp-70", "mp-1" 
     ]
     print '#mp_ids =', len(mp_ids)
 
     counter = Counter()
-    for material in materials.find({'task_id': {'$in': mp_ids}}, {'task_id': 1, '_id': 0, 'snlgroup_id_final': 1, 'has_bandstructure': 1}):
+    materials_wBS = []
+    for material in materials.find({'task_id': {'$in': mp_ids}}, {'task_id': 1, '_id': 0, 'snlgroup_id_final': 1, 'has_bandstructure': 1, 'pretty_formula': 1}):
         mp_id, snlgroup_id = material['task_id'], material['snlgroup_id_final']
+	url = 'https://materialsproject.org/materials/' + mp_id
+        if material['has_bandstructure']:
+            materials_wBS.append((mp_id, material['pretty_formula']))
+            counter['has_bandstructure'] += 1
         print '========', mp_id, snlgroup_id, '============='
         fw_list = list(lpdb.fireworks.find(
             {'spec.snlgroup_id': snlgroup_id},
@@ -150,32 +156,48 @@ if __name__ == "__main__":
                 if fw['spec']['task_type'] == 'GGA static v2':
                     has_gga_static = True
                     if fw['state'] == 'FIZZLED':
-                        lpdb.rerun_fw(fw['fw_id'])
+                        #lpdb.rerun_fw(fw['fw_id'])
                         counter[fw['spec']['task_type']] += 1
                         print '--'.join([fw['name'], str(fw['fw_id'])]), fw['state']
                         print '    |===> marked for RERUN with alternative brmix strategy'
+                        #sys.exit(0)
                     else:
-                        workflow = lpdb.workflows.find_one({'nodes': fw['fw_id']}, {'state': 1, '_id': 0, 'fw_states': 1, 'nodes': 1, 'updated_on': 1})
-                        url = 'https://materialsproject.org/materials/' + mp_id
+                        workflow = lpdb.workflows.find_one(
+                            {'nodes': fw['fw_id']},
+                            {'state': 1, '_id': 0, 'fw_states': 1, 'nodes': 1, 'updated_on': 1, 'parent_links': 1}
+                        )
                         is_new = bool(datetime(2016, 1, 1) < workflow['updated_on'])
                         if workflow['state'] == 'FIZZLED':
                             for fw_id_fizzled, fw_state in workflow['fw_states'].iteritems():
                                 if fw_state == 'FIZZLED':
                                     fw_fizzled = lpdb.fireworks.find_one({'fw_id': int(fw_id_fizzled)}, {'_id': 0, 'name': 1, 'fw_id': 1, 'spec.task_type': 1})
-                                    if fnmatch(fw_fizzled['spec']['task_type'], '*Boltztrap*'):
-                                        print url, is_new, material['has_bandstructure']
-                                        print '      |====> ignore fizzled boltztrap!'
-                                        continue
+                                    counter[fw_fizzled['spec']['task_type']] += 1
+                                    print url, is_new, material['has_bandstructure'], fw_id_fizzled
                                     print 'http://fireworks.dash.materialsproject.org/wf/'+str(fw['fw_id']), workflow['state']
                                     print '      |==>', '--'.join([fw_fizzled['name'], fw_id_fizzled])
-                                    counter[fw_fizzled['spec']['task_type']] += 1
-                                    if fw_fizzled['spec']['task_type'] == 'GGA band structure v2' or fw_fizzled['spec']['task_type'] == 'VASP db insertion' \
-                                       or fw_fizzled['spec']['task_type'] == 'GGA Uniform v2':
+                                    if fnmatch(fw_fizzled['spec']['task_type'], '*Boltztrap*'):
+                                        print '      |====> marked for RERUN (Boltztrap, physical constants from scipy, missing libmkl_lapack.so, BoltzTrap_TE -> pymatgen)'
+                                        lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        continue
+                                    elif fw_fizzled['spec']['task_type'] == 'GGA Uniform v2':
+                                        fw_id_rerun = str(fw_fizzled['fw_id'])
+                                        while 1:
+                                            fw_id_rerun = str(workflow['parent_links'][fw_id_rerun][-1])
+                                            fw_rerun = lpdb.fireworks.find_one({'fw_id': int(fw_id_rerun)}, {'_id': 0, 'spec.task_type': 1})
+                                            if fw_rerun['spec']['task_type'] != 'VASP db insertion':
+                                                print 'http://fireworks.dash.materialsproject.org/wf/'+fw_id_rerun
+                                                break
+                                        #lpdb.rerun_fw(int(fw_id_rerun))
+                                        print '      |====> marked for RERUN (could not get valid results from prev_vasp_dir, GGAstatic vasprun.xml validation error)'
+                                    elif fw_fizzled['spec']['task_type'] == 'GGA band structure v2':
                                         print '           |===> marked for RERUN (trial & error)'
                                         #lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                    elif fw_fizzled['spec']['task_type'] == 'VASP db insertion':
+                                        print '           |===> TODO'
+                                        #sys.exit(0)
                                     break
                         elif workflow['state'] == 'COMPLETED':
-                            print url, is_new, material['has_bandstructure']
+                            print url, is_new, material['has_bandstructure'], workflow['nodes'][0]
                             if not is_new and not material['has_bandstructure']:
                                 #lpdb.rerun_fw(fw['fw_id'])
                                 print '    |===> marked for RERUN with alternative brmix strategy (WF completed but BS missing)'
@@ -193,4 +215,6 @@ if __name__ == "__main__":
             print 'ERROR: no fireworks found!'
             counter['NO_FWS'] += 1
             #break
+    print '#mp_ids =', len(mp_ids)
     print counter
+    #print materials_wBS
