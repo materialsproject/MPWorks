@@ -135,7 +135,7 @@ def snl_to_wf_static_dielectrics(snl, parameters=None):
     spec = snl_to_wf._snl_to_spec(snl, parameters=parameters)
     mpvis = MPStaticDielectricDFPTVaspInputSet()
     incar = mpvis.get_incar(snl.structure)
-    incar.update({"EDIFF":"1.0E-6", "ENCUT":"600", "NPAR":"2", "NWRITE":"3"})
+    incar.update({"EDIFF":"1.0E-6", "ENCUT":"600", "NWRITE":"3"})
     # incar.update({"ALGO":"Normal"})
     spec['vasp']['incar'] = incar.as_dict()
     kpoints_density = 3000
