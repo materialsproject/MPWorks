@@ -1,4 +1,4 @@
-import time, yaml, sys
+import time, yaml, sys, os
 from fireworks.core.launchpad import LaunchPad
 from fireworks.core.firework import Firework, Workflow
 from mpworks.firetasks.controller_tasks import AddEStructureTask
@@ -8,6 +8,9 @@ from pymongo import MongoClient
 from collections import Counter
 from datetime import datetime
 from fnmatch import fnmatch
+from custodian.vasp.handlers import VaspErrorHandler
+
+cwd = os.getcwd()
 
 # DONE manually: "mp-987" -> fw_id: 119629
 
@@ -132,23 +135,24 @@ if __name__ == "__main__":
         "mp-865183", "mp-510268", "mp-862694", "mp-8013", "mp-867271", "mp-578618",
         "mp-865713", "mp-865167", "mp-29009", "mp-865128", "mp-32497", "mp-864684",
         "mp-862473", "mp-865280", "mp-3020", "mp-27193", "mp-861937", "mp-867896",
-        "mp-862374", "mp-28872", "mp-23425", "mp-10417",
-        "mp-127", "mp-135", "mp-70", "mp-1" 
+        "mp-862374", "mp-28872", "mp-23425", "mp-10417"
     ]
+    mp_ids = [ "mp-134", "mp-127", "mp-58", "mp-135", "mp-70", "mp-1" ]
+    mp_ids = [doc['task_id'] for doc in materials.find({'has_bandstructure': False}, {'task_id':1}).skip(400)]
     print '#mp_ids =', len(mp_ids)
 
     counter = Counter()
     materials_wBS = []
-    for material in materials.find({'task_id': {'$in': mp_ids}}, {'task_id': 1, '_id': 0, 'snlgroup_id_final': 1, 'has_bandstructure': 1, 'pretty_formula': 1}):
+    for matidx, material in enumerate(materials.find({'task_id': {'$in': mp_ids}}, {'task_id': 1, '_id': 0, 'snlgroup_id_final': 1, 'has_bandstructure': 1, 'pretty_formula': 1})):
         mp_id, snlgroup_id = material['task_id'], material['snlgroup_id_final']
 	url = 'https://materialsproject.org/materials/' + mp_id
         if material['has_bandstructure']:
             materials_wBS.append((mp_id, material['pretty_formula']))
             counter['has_bandstructure'] += 1
-        print '========', mp_id, snlgroup_id, '============='
+        print matidx, '========', mp_id, snlgroup_id, '============='
         fw_list = list(lpdb.fireworks.find(
             {'spec.snlgroup_id': snlgroup_id},
-            {'_id': 0, 'state': 1, 'name': 1, 'fw_id': 1, 'spec.snlgroup_id': 1, 'spec.task_type': 1}
+            {'_id': 0, 'state': 1, 'name': 1, 'fw_id': 1, 'spec.snlgroup_id': 1, 'spec.task_type': 1, 'launches': 1}
         ))
         if len(fw_list) > 0:
             has_gga_static = False
@@ -156,16 +160,59 @@ if __name__ == "__main__":
                 if fw['spec']['task_type'] == 'GGA static v2':
                     has_gga_static = True
                     if fw['state'] == 'FIZZLED':
-                        #lpdb.rerun_fw(fw['fw_id'])
-                        counter[fw['spec']['task_type']] += 1
+                        #counter[fw['spec']['task_type']] += 1
                         print '--'.join([fw['name'], str(fw['fw_id'])]), fw['state']
-                        print '    |===> marked for RERUN with alternative brmix strategy'
-                        #sys.exit(0)
+                        launch_dir = lpdb.launches.find_one({'launch_id': fw['launches'][0]}, {'launch_dir':1})['launch_dir']
+                        launch_subdir = '/'.join(launch_dir.split('/')[-2:])
+                        if 'oasis' in launch_dir:
+                            launch_dir = os.path.join('/global/projecta/projectdirs/matgen/scratch/mp_prod', launch_subdir)
+                        if 'scratch2/sd' in launch_dir:
+                            launch_dir = os.path.join('/global/projecta/projectdirs/matgen/scratch/mp_prod', launch_subdir)
+                        try:
+                            os.chdir(launch_dir)
+                        except:
+                            launch_dir = launch_dir.replace('scratch/mp_prod', 'garden/dev')
+                            try:
+                                os.chdir(launch_dir)
+                            except:
+                                launch_dir = launch_dir.replace('garden/dev', 'garden')
+                                try:
+                                    os.chdir(launch_dir)
+                                except:
+                                    print '    |===> could not find launch directory in usual locations'
+                                    lpdb.rerun_fw(fw['fw_id'])
+                                    print '    |===> marked for RERUN'
+                                    counter['LOCATION_NOT_FOUND'] += 1
+                                    continue
+                        print '    |===>', launch_dir
+                        vaspout = os.path.join(launch_dir, "vasp.out")
+                        if not os.path.exists(vaspout):
+                            vaspout = os.path.join(launch_dir, "vasp.out.gz")
+                        h = VaspErrorHandler(vaspout)
+                        try:
+                            h.check()
+                        except:
+                            counter['GGA_static_handler_check_error'] += 1
+                        d = h.correct()
+                        if d['errors']:
+                            for err in d['errors']:
+                                counter['GGA_static_' + err] += 1
+                            if 'brmix' in d['errors']:
+                                lpdb.rerun_fw(fw['fw_id'])
+                                print '    |===> BRMIX error -> marked for RERUN with alternative strategy'
+                        else:
+                            print '    |===> no vasp error indicated -> TODO'
+                            counter['GGA_STATIC_NO_VASP_ERROR'] += 1
+                        os.chdir(cwd)
                     else:
                         workflow = lpdb.workflows.find_one(
                             {'nodes': fw['fw_id']},
                             {'state': 1, '_id': 0, 'fw_states': 1, 'nodes': 1, 'updated_on': 1, 'parent_links': 1}
                         )
+                        if workflow is None:
+                            print '      |==> workflow not found', fw['fw_id']
+                            counter['WF_NOT_FOUND'] += 1
+                            continue
                         is_new = bool(datetime(2016, 1, 1) < workflow['updated_on'])
                         if workflow['state'] == 'FIZZLED':
                             for fw_id_fizzled, fw_state in workflow['fw_states'].iteritems():
@@ -177,7 +224,7 @@ if __name__ == "__main__":
                                     print '      |==>', '--'.join([fw_fizzled['name'], fw_id_fizzled])
                                     if fnmatch(fw_fizzled['spec']['task_type'], '*Boltztrap*'):
                                         print '      |====> marked for RERUN (Boltztrap, physical constants from scipy, missing libmkl_lapack.so, BoltzTrap_TE -> pymatgen)'
-                                        lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        #lpdb.rerun_fw(fw_fizzled['fw_id'])
                                         continue
                                     elif fw_fizzled['spec']['task_type'] == 'GGA Uniform v2':
                                         fw_id_rerun = str(fw_fizzled['fw_id'])
@@ -187,13 +234,18 @@ if __name__ == "__main__":
                                             if fw_rerun['spec']['task_type'] != 'VASP db insertion':
                                                 print 'http://fireworks.dash.materialsproject.org/wf/'+fw_id_rerun
                                                 break
-                                        #lpdb.rerun_fw(int(fw_id_rerun))
+                                        lpdb.rerun_fw(int(fw_id_rerun))
                                         print '      |====> marked for RERUN (could not get valid results from prev_vasp_dir, GGAstatic vasprun.xml validation error)'
                                     elif fw_fizzled['spec']['task_type'] == 'GGA band structure v2':
                                         print '           |===> marked for RERUN (trial & error)'
-                                        #lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        try:
+                                            lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        except:
+                                            print '           |===> could not rerun firework'
+                                            counter['WF_LOCKED'] += 1
                                     elif fw_fizzled['spec']['task_type'] == 'VASP db insertion':
-                                        print '           |===> TODO'
+                                        print '           |===> marked for RERUN (trial & error)'
+                                        lpdb.rerun_fw(fw_fizzled['fw_id'])
                                         #sys.exit(0)
                                     break
                         elif workflow['state'] == 'COMPLETED':
@@ -201,7 +253,8 @@ if __name__ == "__main__":
                             if not is_new and not material['has_bandstructure']:
                                 #lpdb.rerun_fw(fw['fw_id'])
                                 print '    |===> marked for RERUN with alternative brmix strategy (WF completed but BS missing)'
-                                counter['FW_RERUNS'] += 1
+                                counter['WF_COMPLETED_MISSING_BS'] += 1
+                                #sys.exit(0)
                             else:
                                 counter['COMPLETED'] += 1
             if not has_gga_static:
