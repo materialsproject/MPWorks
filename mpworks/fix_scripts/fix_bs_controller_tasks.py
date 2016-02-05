@@ -24,6 +24,7 @@ db = client[creds['db']]
 db.authenticate(creds['username'], creds['password'])
 materials = db['materials']
 tasks = db['tasks']
+print materials.count()
 
 def append_wf(fw_id, parent_fw_id=None):
     wf = lpdb.workflows.find_one({'nodes':fw_id}, {'parent_links':1,'links':1,'name':1})
@@ -138,7 +139,7 @@ if __name__ == "__main__":
         "mp-862374", "mp-28872", "mp-23425", "mp-10417"
     ]
     mp_ids = [ "mp-134", "mp-127", "mp-58", "mp-135", "mp-70", "mp-1" ]
-    mp_ids = [doc['task_id'] for doc in materials.find({'has_bandstructure': False}, {'task_id':1}).skip(400)]
+    mp_ids = [doc['task_id'] for doc in materials.find({'has_bandstructure': False}, {'task_id':1})]
     print '#mp_ids =', len(mp_ids)
 
     counter = Counter()
@@ -188,17 +189,17 @@ if __name__ == "__main__":
                         vaspout = os.path.join(launch_dir, "vasp.out")
                         if not os.path.exists(vaspout):
                             vaspout = os.path.join(launch_dir, "vasp.out.gz")
-                        h = VaspErrorHandler(vaspout)
                         try:
+                            h = VaspErrorHandler(vaspout)
                             h.check()
+                            d = h.correct()
                         except:
-                            counter['GGA_static_handler_check_error'] += 1
-                        d = h.correct()
+                            counter['GGA_static_Handler_Error'] += 1
                         if d['errors']:
                             for err in d['errors']:
                                 counter['GGA_static_' + err] += 1
                             if 'brmix' in d['errors']:
-                                lpdb.rerun_fw(fw['fw_id'])
+                                #lpdb.rerun_fw(fw['fw_id'])
                                 print '    |===> BRMIX error -> marked for RERUN with alternative strategy'
                         else:
                             print '    |===> no vasp error indicated -> TODO'
@@ -234,18 +235,18 @@ if __name__ == "__main__":
                                             if fw_rerun['spec']['task_type'] != 'VASP db insertion':
                                                 print 'http://fireworks.dash.materialsproject.org/wf/'+fw_id_rerun
                                                 break
-                                        lpdb.rerun_fw(int(fw_id_rerun))
+                                        #lpdb.rerun_fw(int(fw_id_rerun))
                                         print '      |====> marked for RERUN (could not get valid results from prev_vasp_dir, GGAstatic vasprun.xml validation error)'
                                     elif fw_fizzled['spec']['task_type'] == 'GGA band structure v2':
                                         print '           |===> marked for RERUN (trial & error)'
-                                        try:
-                                            lpdb.rerun_fw(fw_fizzled['fw_id'])
-                                        except:
-                                            print '           |===> could not rerun firework'
-                                            counter['WF_LOCKED'] += 1
+                                        #try:
+                                        #    lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        #except:
+                                        #    print '           |===> could not rerun firework'
+                                        #    counter['WF_LOCKED'] += 1
                                     elif fw_fizzled['spec']['task_type'] == 'VASP db insertion':
                                         print '           |===> marked for RERUN (trial & error)'
-                                        lpdb.rerun_fw(fw_fizzled['fw_id'])
+                                        #lpdb.rerun_fw(fw_fizzled['fw_id'])
                                         #sys.exit(0)
                                     break
                         elif workflow['state'] == 'COMPLETED':
