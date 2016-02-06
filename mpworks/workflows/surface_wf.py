@@ -16,6 +16,9 @@ __date__ = "6/24/15"
 import os
 import uuid
 from gridfs import GridFS
+from pymongo import MongoClient
+db = MongoClient().data
+
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
     WriteAtomVaspInputs

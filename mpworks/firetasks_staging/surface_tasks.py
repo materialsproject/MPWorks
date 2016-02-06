@@ -123,8 +123,10 @@ class VaspSlabDBInsertTask(FireTaskBase):
                 warnings.append("api_mp_spacegroup_inconsistent")
 
             qe = QueryEngine(**vaspdbinsert_parameters)
+            optional_data = ["final_structure", "initial_structure"]
             ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
-                                          'structure_type': 'oriented_unit_cell'})[0]
+                                          'structure_type': 'oriented_unit_cell'},
+                                         optional_data=optional_data)[0]
 
             init_bulk = Structure.from_dict(ucell_entry.data["initial_structure"])
             fin_bulk = Structure.from_dict(ucell_entry.data["final_structure"])
