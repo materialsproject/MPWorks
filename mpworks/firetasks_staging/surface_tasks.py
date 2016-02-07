@@ -108,8 +108,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
         if struct_type == "slab_cell":
 
-            initial = Poscar.from_file(cwd+loc+'/POSCAR')
-            final = Poscar.from_file(cwd+loc+'/CONTCAR.relax2.gz')
+            initial = Structure.from_file(cwd+loc+'/POSCAR')
+            final = Structure.from_file(cwd+loc+'/CONTCAR.relax2.gz')
 
             warnings = []
 
