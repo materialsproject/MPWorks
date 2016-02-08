@@ -19,6 +19,7 @@ from mpworks.workflows.wf_settings import QA_VASP, QA_DB, QA_VASP_SMALL, QA_CONT
 from pymatgen.io.vasp.inputs import Poscar, Kpoints, Incar
 from pymatgen.io.vasp.sets import MPStaticDielectricDFPTVaspInputSet
 from raman_functions import get_modes_from_OUTCAR, get_mass_list, get_nat_type
+import os
 
 
 class SetupRamanTask(FireTaskBase, FWSerializable):
