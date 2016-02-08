@@ -429,14 +429,14 @@ class CreateSurfaceWorkflow(object):
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
-                    FrozenJobErrorHandler(timeout=3600),
                     VaspErrorHandler(),
+                    FrozenJobErrorHandler(timeout=3600),
                     # If none of the usual custodian handlers work, use the
                     # altered surface specific handlers as a last resort
                     SurfacePositiveEnergyErrorHandler(),
                     SurfacePotimErrorHandler(),
-                    SurfaceFrozenJobErrorHandler(timeout=3600),
-                    SurfaceVaspErrorHandler()]
+                    SurfaceVaspErrorHandler(),
+                    SurfaceFrozenJobErrorHandler()]
 
         if additional_handlers:
             handlers.extend(additional_handlers)
