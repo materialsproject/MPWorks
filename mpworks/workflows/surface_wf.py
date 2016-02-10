@@ -430,13 +430,13 @@ class CreateSurfaceWorkflow(object):
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
                     VaspErrorHandler(),
-                    FrozenJobErrorHandler(timeout=3600),
+                    FrozenJobErrorHandler(output_filename="OSZICAR", timeout=3600),
                     # If none of the usual custodian handlers work, use the
                     # altered surface specific handlers as a last resort
                     SurfacePositiveEnergyErrorHandler(),
                     SurfacePotimErrorHandler(),
                     SurfaceVaspErrorHandler(),
-                    SurfaceFrozenJobErrorHandler()]
+                    SurfaceFrozenJobErrorHandler(output_filename="OSZICAR")]
 
         if additional_handlers:
             handlers.extend(additional_handlers)
@@ -558,7 +558,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                 UnconvergedErrorHandler(),
                 PotimErrorHandler(),
                 PositiveEnergyErrorHandler(),
-                FrozenJobErrorHandler(timeout=7200)]
+                FrozenJobErrorHandler(output_filename="OSZICAR", timeout=7200)]
     if additional_handlers:
         handlers.extend(additional_handlers)
 
