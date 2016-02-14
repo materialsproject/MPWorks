@@ -457,34 +457,46 @@ class WriteSlabVaspInputs(FireTaskBase):
             print "%s bulk calculations were incomplete, cancelling FW" \
                   %(relax_orient_uc.composition.reduced_formula)
             return FWAction()
+
+        print ucell_entry.data['state']
+
+        FWs = []
+
+        # Make a slab from scratch to double check
+        # if we're using the most reduced structure
+
+        if "MAPI_KEY" not in os.environ:
+            apikey = raw_input('Enter your api key (str): ')
         else:
-            print ucell_entry.data['state']
+            apikey = os.environ["MAPI_KEY"]
+        mprester = MPRester(apikey)
+        prim_unit_cell = mprester.get_entries(mpid,
+                                              inc_structure=True)[0].structure
+        spa = SpacegroupAnalyzer(prim_unit_cell)
+        conventional_ucell = spa.get_conventional_standard_structure()
 
-            FWs = []
+        # Now create the slab(s) and ensure the surfaces are
+        # symmeric and the ssize is at least that of min_slab_size
 
-            # Make a slab from scratch to double check
-            # if we're using the most reduced structure
+        is_symmetric = False # Checks if slab is symmetrize
+        ssize_multiple = 0 # Increments of 5 A to increase ssize
+        ssize_check = False # Checks if ssize is at least
+                            # that of the initial min_slab_size
+        new_min_slab_size = min_slab_size
+        break_loop = False
 
-            if "MAPI_KEY" not in os.environ:
-                apikey = raw_input('Enter your api key (str): ')
-            else:
-                apikey = os.environ["MAPI_KEY"]
-            mprester = MPRester(apikey)
-            prim_unit_cell = mprester.get_entries(mpid,
-                                                  inc_structure=True)[0].structure
-            spa = SpacegroupAnalyzer(prim_unit_cell)
-            conventional_ucell = spa.get_conventional_standard_structure()
+        while (is_symmetric and ssize_check) is False or break_loop:
 
+            new_min_slab_size += 5*ssize_multiple
             slabs = SlabGenerator(conventional_ucell, miller_index,
-                                  min_slab_size=min_slab_size,
+                                  min_slab_size=new_min_slab_size,
                                   min_vacuum_size=min_vacuum_size,
                                   max_normal_search=max(miller_index),
                                   primitive=True)
-            # prim_sites = len(slabs.get_slab())
-
+            new_slab_list = []
             for slab in slab_list:
 
-                is_symmetric = False
+                # First, check the symmetry of the slabs
                 sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                 pg = sg.get_point_group()
                 Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
@@ -492,6 +504,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if str(pg) in Laue_groups:
                     is_symmetric = True
                 else:
+                    is_symmetric = False
                     slab = symmetrize_slab(slab)
                     sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                     pg = sg.get_point_group()
@@ -499,79 +512,106 @@ class WriteSlabVaspInputs(FireTaskBase):
                         is_symmetric = True
                         # Just skip the calculation if false,
                         # further investigation will be required...
-
-                new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
-                                                            %(slab.shift)
-
-                mplb.write_input(slab, cwd+new_folder)
-
-                # Inherit the final magnetization of a slab
-                # from the outcar of the ucell calculation.
-
-                out_mag = ucell_entry.data["final_magnetization"]
-                if not out_mag or out_mag[0]['tot'] < 0:
-                    warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
-                                  "may be incomplete, will set default magmom")
-                    if slab.composition.reduced_formula in ["Fe", "Co", "Ni"]:
-                        out_mag = [{'tot': 5}]
                     else:
-                        out_mag = [{'tot': 0.6}]
-                if out_mag[0]['tot'] == 0:
-                    warnings.warn("Magnetization is 0, "
-                                  "changing magnetization to non-zero")
-                    out_mag = [{'tot': 1E-15}]
+                        break_loop = True
 
-                tot_mag = [mag['tot'] for mag in out_mag]
-                magmom = np.mean(tot_mag)
-                mag = [magmom]*len(slab)
+                new_slab_list.append(slab)
 
-                # Tries to build an incar from a previously calculated slab with a
-                # different termination. Otherwise writes new INCAR file based on
-                # changes made by custodian on the bulk's INCAR. Some parameters
-                # may not be inherited from bulk, ie. IBRION is always initially
-                # 2, NBANDS is turned off in slab calculations to avoid band
-                # related errors, ISIF = 2 to prevent lattice relaxation in the slab.
 
-                slab_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
-                                        'miller_index': miller_index}, inc_structure=True,
-                                       optional_data=optional_data)
-                incar = slab_entry[0].data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]
-                incar = Incar.from_dict(incar)
+                # Check if the ssize newly symmetrized slab is still
+                # at least the size of ssize, otherwise, recreate the
+                # slabs again using SlabGenerator and compensate for
+                # the smaller size due to symmetrization
+                c_coord = [site.coords[2] for site in new_slab_list[0]]
+                max_coord = 0 if max(c_coord) == 1 else max(c_coord)
+                if max_coord - min(c_coord) < min_slab_size:
+                    ssize_check = False
+                    min_slab_size += 5
+                    slabs = SlabGenerator(conventional_ucell, miller_index,
+                                          min_slab_size=min_slab_size,
+                                          min_vacuum_size=min_vacuum_size,
+                                          max_normal_search=max(miller_index),
+                                          primitive=True)
+                else:
+                    ssize_check = True
 
-                incar.__setitem__('MAGMOM', mag)
+            slab_list = slabs.get_slabs()
+            break_loop = True
 
-                # Set slab specific parameters not inherited from the ucell calculations
+        for slab in new_slab_list:
 
-                incar.__setitem__('ISIF', 2)
-                incar.__setitem__('AMIN', 0.01)
-                incar.__setitem__('AMIX', 0.2)
-                incar.__setitem__('BMIX', 0.001)
-                incar.__setitem__('ISTART', 0)
-                incar.__setitem__('NELMIN', 8)
-                incar.__setitem__('IBRION', 2)
-                if "NBANDS" in incar.keys():
-                    incar.pop("NBANDS")
-                incar.write_file(cwd+new_folder+'/INCAR')
+            new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
+                                                        %(slab.shift)
 
-                fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
-                                                custodian_params=custodian_params),
-                               VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                    loc=new_folder, cwd=cwd, shift=slab.shift,
-                                                    surface_area=slab.surface_area,
-                                                    vsize=slabs.min_vac_size,
-                                                    ssize=slabs.min_slab_size,
-                                                    miller_index=miller_index,
-                                                    mpid=mpid, conventional_spacegroup=spacegroup,
-                                                    polymorph=polymorph,
-                                                    conventional_unit_cell=conventional_ucell,
-                                                    vaspdbinsert_parameters=vaspdbinsert_parameters)],
-                              name=new_folder)
+            mplb.write_input(slab, cwd+new_folder)
 
-                FWs.append(fw)
+            # Inherit the final magnetization of a slab
+            # from the outcar of the ucell calculation.
 
-            # Skip this calculation if the surfaces aren't symmetric
-            if is_symmetric:
-                return FWAction(additions=FWs)
+            out_mag = ucell_entry.data["final_magnetization"]
+            if not out_mag or out_mag[0]['tot'] < 0:
+                warnings.warn("Magnetization not found in OUTCAR.relax2.gz, "
+                              "may be incomplete, will set default magmom")
+                if slab.composition.reduced_formula in ["Fe", "Co", "Ni"]:
+                    out_mag = [{'tot': 5}]
+                else:
+                    out_mag = [{'tot': 0.6}]
+            if out_mag[0]['tot'] == 0:
+                warnings.warn("Magnetization is 0, "
+                              "changing magnetization to non-zero")
+                out_mag = [{'tot': 1E-15}]
+
+            tot_mag = [mag['tot'] for mag in out_mag]
+            magmom = np.mean(tot_mag)
+            mag = [magmom]*len(slab)
+
+            # Tries to build an incar from a previously calculated slab with a
+            # different termination. Otherwise writes new INCAR file based on
+            # changes made by custodian on the bulk's INCAR. Some parameters
+            # may not be inherited from bulk, ie. IBRION is always initially
+            # 2, NBANDS is turned off in slab calculations to avoid band
+            # related errors, ISIF = 2 to prevent lattice relaxation in the slab.
+
+            slab_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
+                                    'miller_index': miller_index}, inc_structure=True,
+                                   optional_data=optional_data)
+            incar = slab_entry[0].data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]
+            incar = Incar.from_dict(incar)
+
+            incar.__setitem__('MAGMOM', mag)
+
+            # Set slab specific parameters not inherited from the ucell calculations
+
+            incar.__setitem__('ISIF', 2)
+            incar.__setitem__('AMIN', 0.01)
+            incar.__setitem__('AMIX', 0.2)
+            incar.__setitem__('BMIX', 0.001)
+            incar.__setitem__('ISTART', 0)
+            incar.__setitem__('NELMIN', 8)
+            incar.__setitem__('IBRION', 2)
+            if "NBANDS" in incar.keys():
+                incar.pop("NBANDS")
+            incar.write_file(cwd+new_folder+'/INCAR')
+
+            fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
+                                            custodian_params=custodian_params),
+                           VaspSlabDBInsertTask(struct_type="slab_cell",
+                                                loc=new_folder, cwd=cwd, shift=slab.shift,
+                                                surface_area=slab.surface_area,
+                                                vsize=slabs.min_vac_size,
+                                                ssize=slabs.min_slab_size,
+                                                miller_index=miller_index,
+                                                mpid=mpid, conventional_spacegroup=spacegroup,
+                                                polymorph=polymorph,
+                                                conventional_unit_cell=conventional_ucell,
+                                                vaspdbinsert_parameters=vaspdbinsert_parameters)],
+                          name=new_folder)
+
+            FWs.append(fw)
+
+        # Skip this calculation if the surfaces aren't symmetric
+        if is_symmetric:
+            return FWAction(additions=FWs)
 
 
 @explicit_serialize
