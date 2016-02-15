@@ -419,7 +419,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         slab_list = slabs.get_slabs()
         new_term_shifts = [slab.shift for slab in slab_list]
 
-        if len(slab_entries) > 0 and len(slab_entries) != len(slab_list):
+        if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) != len(slab_list):
 
             # Check if any and if all terminations for this slab have been
             # completed. If a termination has been calculated, check
