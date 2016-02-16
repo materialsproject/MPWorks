@@ -510,6 +510,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         break_loop = True
                 new_slab_list.append(slab)
                 new_num_sites = len(slab)
+                new_c = slab.lattice.c
 
                 # Check if we still have at least 85% of the original atoms
                 # in the structure after removing sites to obtain symmetry,
@@ -528,8 +529,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 else:
                     ssize_check = True
                 print new_num_sites, original_num_sites
-                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s" \
-                      %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop)
+                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s, new c: %s" \
+                      %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
 
 
         for slab in new_slab_list:
