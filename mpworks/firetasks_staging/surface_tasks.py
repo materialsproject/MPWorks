@@ -484,7 +484,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         new_min_slab_size = min_slab_size
         break_loop = False
         original_num_sites = len(slab_list[0])
-
+        force_break = 0
         while ((is_symmetric and ssize_check) or break_loop) is False:
 
             new_slab_list = []
@@ -498,10 +498,16 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if str(pg) in Laue_groups:
                     is_symmetric = True
                 else:
+                    if force_break == 3:
+                        print "Too many loops, breaking out..."
+                        break_loop = True
+                        break
+                    print len(slab)
                     is_symmetric = False
                     slab = symmetrize_slab(slab)
                     sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                     pg = sg.get_point_group()
+                    print len(slab)
                     if str(pg) in Laue_groups:
                         is_symmetric = True
                         # Just skip the calculation if false,
@@ -531,7 +537,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 print new_num_sites, original_num_sites
                 print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s, new c: %s" \
                       %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
-
+                force_break += 1
 
         for slab in new_slab_list:
 
