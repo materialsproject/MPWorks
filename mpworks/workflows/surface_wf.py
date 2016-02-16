@@ -164,6 +164,8 @@ class SurfaceWorkflowManager(object):
                     max_index (int): The maximum miller index to create slabs from
                     max_normal_search (bool): Whether or not to orthogonalize slabs
                         and oriented unit cells along the c direction.
+                    max_only (bool): Will retrieve workflows for Miller indices
+                        containing the max index only
         """
 
         miller_dict = {}
