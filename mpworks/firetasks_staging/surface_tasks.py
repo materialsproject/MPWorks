@@ -485,35 +485,26 @@ class WriteSlabVaspInputs(FireTaskBase):
         break_loop = False
         original_num_sites = len(slab_list[0])
         force_break = 0
-        while ((is_symmetric and ssize_check) or break_loop) is False:
+
+        while (ssize_check or break_loop) is False:
 
             new_slab_list = []
             for slab in slab_list:
 
                 # First, check the symmetry of the slabs
-                sg = SpacegroupAnalyzer(slab, symprec=1E-3)
-                pg = sg.get_point_group()
                 Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
                                "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
-                if str(pg) in Laue_groups:
-                    is_symmetric = True
-                else:
-                    if force_break == 3:
-                        print "Too many loops, breaking out..."
-                        break_loop = True
-                        break
-                    print len(slab)
-                    is_symmetric = False
-                    slab = symmetrize_slab(slab)
-                    sg = SpacegroupAnalyzer(slab, symprec=1E-3)
-                    pg = sg.get_point_group()
-                    print len(slab)
-                    if str(pg) in Laue_groups:
-                        is_symmetric = True
-                        # Just skip the calculation if false,
-                        # further investigation will be required...
-                    else:
-                        break_loop = True
+
+                print len(slab)
+                slab = symmetrize_slab(slab)
+                sg = SpacegroupAnalyzer(slab, symprec=1E-3)
+                pg = sg.get_point_group()
+                print len(slab)
+
+                is_symmetric = True if str(pg) in Laue_groups else False
+                # Just skip the calculation if false,
+                # further investigation will be required...
+
                 new_slab_list.append(slab)
                 new_num_sites = len(slab)
                 new_c = slab.lattice.c
@@ -526,18 +517,36 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if 100 * (new_num_sites/original_num_sites) < 85:
                     ssize_check = False
                     new_min_slab_size += 5
-                    slabs = SlabGenerator(relax_orient_uc, miller_index,
-                                          min_slab_size=new_min_slab_size,
-                                          min_vacuum_size=min_vacuum_size,
-                                          max_normal_search=max(miller_index),
-                                          primitive=True)
-                    slab_list = slabs.get_slabs()
                 else:
                     ssize_check = True
+
                 print new_num_sites, original_num_sites
                 print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s, new c: %s" \
                       %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
-                force_break += 1
+
+            force_break += 1
+
+            if not ssize_check:
+                slabs = SlabGenerator(relax_orient_uc, miller_index,
+                                      min_slab_size=new_min_slab_size,
+                                      min_vacuum_size=min_vacuum_size,
+                                      max_normal_search=max(miller_index),
+                                      primitive=True)
+                slab_list = slabs.get_slabs()
+
+            if force_break == 3:
+                warnings.warn("Too many attempts at symmetrizing/increasing "
+                              "ssize, breaking out of while loop")
+                is_symmetric = False
+
+                slabs = SlabGenerator(relax_orient_uc, miller_index,
+                                      min_slab_size=min_slab_size,
+                                      min_vacuum_size=min_vacuum_size,
+                                      max_normal_search=max(miller_index),
+                                      primitive=True)
+                new_slab_list = slabs.get_slabs()
+
+                break
 
         for slab in new_slab_list:
 
