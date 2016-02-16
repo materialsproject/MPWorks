@@ -484,7 +484,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                             # that of the initial min_slab_size
         new_min_slab_size = min_slab_size
         break_loop = False
-
+        loop_count = 0
         while ((is_symmetric and ssize_check) or break_loop) is False:
 
             new_min_slab_size += 5*ssize_multiple
@@ -542,6 +542,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 else:
                     ssize_check = True
 
+            loop_count += 1
+            print loop_count
             slab_list = slabs.get_slabs()
 
         for slab in new_slab_list:
