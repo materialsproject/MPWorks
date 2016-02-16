@@ -523,8 +523,15 @@ class WriteSlabVaspInputs(FireTaskBase):
                 # slabs again using SlabGenerator and compensate for
                 # the smaller size due to symmetrization
                 c_coord = [site.coords[2] for site in new_slab_list[0]]
-                max_coord = 0 if max(c_coord) == 1 else max(c_coord)
-                if max_coord - min(c_coord) < min_slab_size:
+                if max(c_coord) == 1:
+                    min_coord = 0
+                    c_coord.remove(max(c_coord))
+                    max_coord = max(c_coord)
+                else:
+                    max_coord = max(c_coord)
+                    min_coord = min(c_coord)
+
+                if max_coord - min_coord < min_slab_size:
                     ssize_check = False
                     min_slab_size += 5
                     slabs = SlabGenerator(conventional_ucell, miller_index,
