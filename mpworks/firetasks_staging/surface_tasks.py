@@ -479,20 +479,21 @@ class WriteSlabVaspInputs(FireTaskBase):
         # symmeric and the ssize is at least that of min_slab_size
 
         is_symmetric = False # Checks if slab is symmetrize
-        ssize_multiple = 0 # Increments of 5 A to increase ssize
         ssize_check = False # Checks if ssize is at least
                             # that of the initial min_slab_size
         new_min_slab_size = min_slab_size
         break_loop = False
         loop_count = 0
+
+        slabs = SlabGenerator(conventional_ucell, miller_index,
+                              min_slab_size=min_slab_size,
+                              min_vacuum_size=min_vacuum_size,
+                              max_normal_search=max(miller_index),
+                              primitive=True)
+        slab_list = slabs.get_slabs()
+
         while ((is_symmetric and ssize_check) or break_loop) is False:
 
-            new_min_slab_size += 5*ssize_multiple
-            slabs = SlabGenerator(conventional_ucell, miller_index,
-                                  min_slab_size=new_min_slab_size,
-                                  min_vacuum_size=min_vacuum_size,
-                                  max_normal_search=max(miller_index),
-                                  primitive=True)
             new_slab_list = []
             for slab in slab_list:
 
@@ -533,9 +534,9 @@ class WriteSlabVaspInputs(FireTaskBase):
 
                 if max_coord - min_coord < min_slab_size:
                     ssize_check = False
-                    min_slab_size += 5
+                    new_min_slab_size += 5
                     slabs = SlabGenerator(conventional_ucell, miller_index,
-                                          min_slab_size=min_slab_size,
+                                          min_slab_size=new_min_slab_size,
                                           min_vacuum_size=min_vacuum_size,
                                           max_normal_search=max(miller_index),
                                           primitive=True)
