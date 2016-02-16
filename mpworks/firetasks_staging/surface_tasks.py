@@ -543,7 +543,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                     ssize_check = True
 
             slab_list = slabs.get_slabs()
-            break_loop = True
 
         for slab in new_slab_list:
 
