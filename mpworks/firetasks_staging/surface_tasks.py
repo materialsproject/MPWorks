@@ -516,7 +516,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 # otherwise, recreate the slabs again using SlabGenerator
                 # and compensate for the smaller number of sites
 
-                if 100*(new_num_sites/original_num_sites) < 85:
+                if 100 * (new_num_sites/original_num_sites) < 85:
                     ssize_check = False
                     new_min_slab_size += 5
                     slabs = SlabGenerator(relax_orient_uc, miller_index,
@@ -527,6 +527,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                     slab_list = slabs.get_slabs()
                 else:
                     ssize_check = True
+
+                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s" %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites)
+
 
         for slab in new_slab_list:
 
