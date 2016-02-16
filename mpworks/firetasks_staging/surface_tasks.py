@@ -485,13 +485,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         break_loop = False
         loop_count = 0
 
-        slabs = SlabGenerator(conventional_ucell, miller_index,
-                              min_slab_size=min_slab_size,
-                              min_vacuum_size=min_vacuum_size,
-                              max_normal_search=max(miller_index),
-                              primitive=True)
-        slab_list = slabs.get_slabs()
-
         while ((is_symmetric and ssize_check) or break_loop) is False:
 
             new_slab_list = []
