@@ -489,7 +489,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             new_slab_list = []
             for slab in slab_list:
-                print slab.lattice.a, slab.lattice.b
+                print "at beggining ", slab.lattice.a, slab.lattice.b
                 # First, check the symmetry of the slabs
                 sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                 pg = sg.get_point_group()
@@ -508,7 +508,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                         # further investigation will be required...
                     else:
                         break_loop = True
-
+                print "after symmetrizing ", slab.lattice.a, slab.lattice.b
                 new_slab_list.append(slab)
 
 
@@ -528,7 +528,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if max_coord - min_coord < min_slab_size:
                     ssize_check = False
                     new_min_slab_size += 5
-                    slabs = SlabGenerator(conventional_ucell, miller_index,
+                    slabs = SlabGenerator(relax_orient_uc, miller_index,
                                           min_slab_size=new_min_slab_size,
                                           min_vacuum_size=min_vacuum_size,
                                           max_normal_search=max(miller_index),
