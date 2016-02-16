@@ -484,7 +484,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         new_min_slab_size = min_slab_size
         break_loop = False
         original_num_sites = len(slab_list[0])
-        force_break = 0
 
         while (ssize_check or break_loop) is False:
 
@@ -524,8 +523,6 @@ class WriteSlabVaspInputs(FireTaskBase):
                 print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s, new c: %s" \
                       %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
 
-            force_break += 1
-
             if not ssize_check:
                 slabs = SlabGenerator(relax_orient_uc, miller_index,
                                       min_slab_size=new_min_slab_size,
@@ -534,7 +531,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                       primitive=True)
                 slab_list = slabs.get_slabs()
 
-            if force_break == 3:
+            if new_min_slab_size > 20:
                 warnings.warn("Too many attempts at symmetrizing/increasing "
                               "ssize, breaking out of while loop")
                 is_symmetric = False
