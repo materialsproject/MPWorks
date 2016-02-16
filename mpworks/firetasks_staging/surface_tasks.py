@@ -528,7 +528,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 else:
                     ssize_check = True
 
-                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s" %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites)
+                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s" \
+                      %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric)
 
 
         for slab in new_slab_list:
