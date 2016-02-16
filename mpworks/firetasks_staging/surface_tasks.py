@@ -543,7 +543,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                     ssize_check = True
 
             loop_count += 1
-            print loop_count
+            print loop_count, "is symmetric?: %s, ssize: %s, min_slab_size: %s" %(is_symmetric,
+                                                                                  max_coord - min_coord,
+                                                                                  min_slab_size)
             slab_list = slabs.get_slabs()
 
         for slab in new_slab_list:
