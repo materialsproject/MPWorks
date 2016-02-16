@@ -489,7 +489,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             new_slab_list = []
             for slab in slab_list:
-
+                print slab.lattice.a, slab.lattice.b
                 # First, check the symmetry of the slabs
                 sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                 pg = sg.get_point_group()
