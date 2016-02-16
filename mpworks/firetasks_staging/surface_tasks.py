@@ -483,13 +483,13 @@ class WriteSlabVaspInputs(FireTaskBase):
                             # that of the initial min_slab_size
         new_min_slab_size = min_slab_size
         break_loop = False
-        loop_count = 0
+        original_num_sites = len(slab_list[0])
 
         while ((is_symmetric and ssize_check) or break_loop) is False:
 
             new_slab_list = []
             for slab in slab_list:
-                print "at beggining ", slab.lattice.a, slab.lattice.b
+
                 # First, check the symmetry of the slabs
                 sg = SpacegroupAnalyzer(slab, symprec=1E-3)
                 pg = sg.get_point_group()
@@ -508,24 +508,15 @@ class WriteSlabVaspInputs(FireTaskBase):
                         # further investigation will be required...
                     else:
                         break_loop = True
-                print "after symmetrizing ", slab.lattice.a, slab.lattice.b
                 new_slab_list.append(slab)
+                new_num_sites = len(slab)
 
+                # Check if we still have at least 85% of the original atoms
+                # in the structure after removing sites to obtain symmetry,
+                # otherwise, recreate the slabs again using SlabGenerator
+                # and compensate for the smaller number of sites
 
-                # Check if the ssize newly symmetrized slab is still
-                # at least the size of ssize, otherwise, recreate the
-                # slabs again using SlabGenerator and compensate for
-                # the smaller size due to symmetrization
-                c_coord = [site.coords[2] for site in new_slab_list[0]]
-                if max(c_coord) == 1:
-                    min_coord = 0
-                    c_coord.remove(max(c_coord))
-                    max_coord = max(c_coord)
-                else:
-                    max_coord = max(c_coord)
-                    min_coord = min(c_coord)
-
-                if max_coord - min_coord < min_slab_size:
+                if 100*(new_num_sites/original_num_sites) < 85:
                     ssize_check = False
                     new_min_slab_size += 5
                     slabs = SlabGenerator(relax_orient_uc, miller_index,
@@ -533,14 +524,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                                           min_vacuum_size=min_vacuum_size,
                                           max_normal_search=max(miller_index),
                                           primitive=True)
+                    slab_list = slabs.get_slabs()
                 else:
                     ssize_check = True
-
-            loop_count += 1
-            print loop_count, "is symmetric?: %s, ssize: %s, min_slab_size: %s" %(is_symmetric,
-                                                                                  max_coord - min_coord,
-                                                                                  min_slab_size)
-            slab_list = slabs.get_slabs()
 
         for slab in new_slab_list:
 
