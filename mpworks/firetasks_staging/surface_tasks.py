@@ -485,7 +485,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         new_min_slab_size = min_slab_size
         break_loop = False
 
-        while (is_symmetric and ssize_check) is False or break_loop:
+        while ((is_symmetric and ssize_check) or break_loop) is False:
 
             new_min_slab_size += 5*ssize_multiple
             slabs = SlabGenerator(conventional_ucell, miller_index,
