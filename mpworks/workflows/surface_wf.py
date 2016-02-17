@@ -285,24 +285,25 @@ class SurfaceWorkflowManager(object):
                                                      max_normal_search=max(hkl)).get_slabs())
 
                     if slab_entries:
-
-                        # See if all terminations for this slab calculation is completed
-
-                        if len(slab_entries) != num_of_terms:
-                            # Inserts slab calculation if all terminations aren't complete
-                            if mpid not in calculate_with_slab_only.keys():
-                                calculate_with_slab_only[mpid] = []
-                            print '%s %s slab cell terminations incomplete, ' \
-                                  'will insert calculation into WF' %(mpid, hkl)
-                            calculate_with_slab_only[mpid].append(hkl)
-                            total_calcs_with_nobulk += (num_of_terms - len(slab_entries))
-
-                        else:
-                            # Skip if all terminations have been calculated
-                            print 'All terminations for %s %s slab cell already ' \
-                                  'calculated, skipping...' %(mpid, hkl)
-                            total_calcs_finished += len(slab_entries)
-                            continue
+                    #
+                        continue
+                    #     # See if all terminations for this slab calculation is completed
+                    #
+                    #     if len(slab_entries) != num_of_terms:
+                    #         # Inserts slab calculation if all terminations aren't complete
+                    #         if mpid not in calculate_with_slab_only.keys():
+                    #             calculate_with_slab_only[mpid] = []
+                    #         print '%s %s slab cell terminations incomplete, ' \
+                    #               'will insert calculation into WF' %(mpid, hkl)
+                    #         calculate_with_slab_only[mpid].append(hkl)
+                    #         total_calcs_with_nobulk += (num_of_terms - len(slab_entries))
+                    #
+                    #     else:
+                    #         # Skip if all terminations have been calculated
+                    #         print 'All terminations for %s %s slab cell already ' \
+                    #               'calculated, skipping...' %(mpid, hkl)
+                    #         total_calcs_finished += len(slab_entries)
+                    #         continue
                     else:
                         # No slab calculations found, insert slab calculations
                         if mpid not in calculate_with_slab_only.keys():
