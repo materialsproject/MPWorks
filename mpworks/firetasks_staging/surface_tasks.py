@@ -524,6 +524,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                       %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
 
             if not ssize_check:
+                print "making new slabs because ssize too small"
                 slabs = SlabGenerator(relax_orient_uc, miller_index,
                                       min_slab_size=new_min_slab_size,
                                       min_vacuum_size=min_vacuum_size,
@@ -546,6 +547,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 new_slab_list = slabs.get_slabs()
 
                 break
+
+            print "reached end of while loop"
 
         for slab in new_slab_list:
 
