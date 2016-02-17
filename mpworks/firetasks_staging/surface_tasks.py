@@ -413,11 +413,11 @@ class WriteSlabVaspInputs(FireTaskBase):
         # If so, see if the slab at shift=0 has been calculated,
         # then calculate all other terminations besides c=0
 
-        slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
-                                       'miller_index': miller_index}, inc_structure=True,
-                                      optional_data=optional_data)
+        # slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
+        #                                'miller_index': miller_index}, inc_structure=True,
+        #                               optional_data=optional_data)
         slab_list = slabs.get_slabs()
-        new_term_shifts = [slab.shift for slab in slab_list]
+        # new_term_shifts = [slab.shift for slab in slab_list]
 
         # if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) != len(slab_list):
         #
@@ -485,14 +485,14 @@ class WriteSlabVaspInputs(FireTaskBase):
         break_loop = False
         original_num_sites = len(slab_list[0])
 
+        # First, check the symmetry of the slabs
+        Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
+                       "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
+
         while (ssize_check or break_loop) is False:
 
             new_slab_list = []
             for slab in slab_list:
-
-                # First, check the symmetry of the slabs
-                Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
-                               "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
 
                 print len(slab)
                 slab = symmetrize_slab(slab)
@@ -530,6 +530,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                                       max_normal_search=max(miller_index),
                                       primitive=True)
                 slab_list = slabs.get_slabs()
+
+            print "is ssize too large?: %s" %(new_min_slab_size)
 
             if new_min_slab_size > 20:
                 warnings.warn("Too many attempts at symmetrizing/increasing "
