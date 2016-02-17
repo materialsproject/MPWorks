@@ -419,33 +419,33 @@ class WriteSlabVaspInputs(FireTaskBase):
         slab_list = slabs.get_slabs()
         new_term_shifts = [slab.shift for slab in slab_list]
 
-        if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) != len(slab_list):
-
-            # Check if any and if all terminations for this slab have been
-            # completed. If a termination has been calculated, check
-            # which one and skip the calculation for that termination.
-
-            completed_term_shifts = [entry.data["shift"] for entry in slab_entries]
-
-            if 0 in completed_term_shifts:
-
-                # Because the default shift use to be 0, remove the
-                # lowest shift in the new list of shifts for different
-                # terminations to avoid repeated calculations
-
-                slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
-                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-                completed_term_shifts.pop(completed_term_shifts.index(0))
-
-            if completed_term_shifts:
-
-                for shift in completed_term_shifts:
-
-                    # Now remove calculations that have already
-                    # been completed for a particular termination
-
-                    slab_list.pop(new_term_shifts.index(shift))
+        # if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) != len(slab_list):
+        #
+        #     # Check if any and if all terminations for this slab have been
+        #     # completed. If a termination has been calculated, check
+        #     # which one and skip the calculation for that termination.
+        #
+        #     completed_term_shifts = [entry.data["shift"] for entry in slab_entries]
+        #
+        #     if 0 in completed_term_shifts:
+        #
+        #         # Because the default shift use to be 0, remove the
+        #         # lowest shift in the new list of shifts for different
+        #         # terminations to avoid repeated calculations
+        #
+        #         slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
+        #         new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
+        #         new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
+        #         completed_term_shifts.pop(completed_term_shifts.index(0))
+        #
+        #     if completed_term_shifts:
+        #
+        #         for shift in completed_term_shifts:
+        #
+        #             # Now remove calculations that have already
+        #             # been completed for a particular termination
+        #
+        #             slab_list.pop(new_term_shifts.index(shift))
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
