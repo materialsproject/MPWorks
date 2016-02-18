@@ -200,7 +200,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                         '_dupefinder': DupeFinderVasp().to_dict(),
                         '_priority': fw_spec['_priority']}
                 # Pass elastic tensor spec
-                if 'deformed' in fw_spec['task_type']:
+                if 'deformation_matrix' in fw_spec.keys():
                     spec['deformation_matrix'] = fw_spec['deformation_matrix']
                     spec['original_task_id'] = fw_spec['original_task_id']
                 snl = StructureNL.from_dict(spec['mpsnl'])
@@ -222,6 +222,9 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 spec = {'task_type': 'VASP db insertion', '_allow_fizzled_parents': True,
                         '_priority': fw_spec['_priority'], '_queueadapter': QA_DB,
                         'run_tags': list(fw_spec['run_tags'])}
+                if 'deformation_matrix' in fw_spec.keys():
+                    spec['deformation_matrix'] = fw_spec['deformation_matrix']
+                    spec['original_task_id'] = fw_spec['original_task_id']
                 spec['run_tags'].append(unconverged_tag)
                 fws.append(
                     Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']),
