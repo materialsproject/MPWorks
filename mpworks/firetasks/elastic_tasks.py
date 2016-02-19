@@ -47,7 +47,8 @@ class SetupFConvergenceTask(FireTaskBase, FWSerializable):
         incar.update(update_set)
         #if fw_spec['double_kmesh']:
         kpoints = fw_spec['vasp']['kpoints']
-        k = [int(round(2.5*k)) if int(round(2.5*k))%2 else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
+        k = [int(round(2.5*k)) if int(round(2.5*k))%2 
+             else int(round(2.5*k))+1 for k in kpoints['kpoints'][0]]
         kpoints['kpoints'] = [k]
         return FWAction()
 
@@ -156,14 +157,15 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
                                  "state":1, "task_id":1}):
                 defo = k['deformation_matrix']
                 d_ind = np.nonzero(defo - np.eye(3))
+                delta = Decimal((defo - np.eye(e))[d_ind][0])
                 # Normal deformation
                 if d_ind[0] == d_ind[1]:
                     dtype = "_".join(["d", str(d_ind[0][0]), 
-                                      "{:.0e}".format(Decimal((defo - np.eye(e))[d_ind][0]))])
+                                      "{:.0e}".format(delta)])
                 # Shear deformation
                 else:
                     dtype = "_".join(["s", str(d_ind[0] + d_ind[1]),
-                                      "{:.0e}".format(Decimal((defo - np.eye(e))[d_ind][0]))])
+                                      "{:.0e}".format(delta)])
 
                 d["deformation_tasks"][dtype] = {"state" : k["state"],
                                                  "deformation_matrix" : defo,
@@ -171,8 +173,8 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
                                                  "task_id": k["task_id"]}
 
                 if k["state"] == "successful":
-                    st = Stress(k["calculations"][-1]["output"]\
-                                ["ionic_steps"][-1]["stress"]) 
+                    st = Stress(k["calculations"][-1]["output"] \
+                                ["ionic_steps"][-1]["stress"])
                     ss_dict[sm]=st
             d["snl"] = o["snl"]
             if "run_tags" in o.keys():
@@ -183,79 +185,130 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
                             d["input_mp_id"] = tag["input_id"]
             d["snl_final"] = o["snl_final"]
             d["pretty_formula"] = o["pretty_formula"]
+
             # Old input mp-id style
             if o["snl"]["about"].get("_mp_id"):
                 d["material_id"] = o["snl"]["about"]["_mp_id"]
+
+            # New style
             elif "input_mp_id" in d:
                 d["material_id"] = d["input_mp_id"]
             else:
                 d["material_id"] = None
             d["relaxation_task_id"] = i
 
-            calc_struct=Structure.from_dict(o["snl"])
-
-            try:
-                conventional = is_conventional(calc_struct)
-                if conventional:
-                    d["analysis"]["is_conventional"] = True
-                else:
-                    d["analysis"]["is_conventional"] = False
-            except:
-                print i+": get conventional cell error"
-                d["error"].append("Unable to analyze conventional cell")
+            calc_struct = Structure.from_dict(o["snl_final"])
+            conventional = is_conventional(calc_struct)
+            if conventional:
+                d["analysis"]["is_conventional"] = True
+            else:
+                d["analysis"]["is_conventional"] = False
 
             d["spacegroup"]=o.get("spacegroup", "Unknown")
 
+            # Perform Elastic tensor fitting and analysis
+            result = ElasticTensor.from_stress_dict(ss_dict)
+            d["elastic_tensor"] = result.tolist()
+            kg_average = result.kg_average
+            d.update({"K_Voigt":kg_average[0], "G_Voigt":kg_average[1], 
+                      "K_Reuss":kg_average[2], "G_Reuss":kg_average[3], 
+                      "K_Voigt_Reuss_Hill":kg_average[4], 
+                      "G_Voigt_Reuss_Hill":kg_average[5]})
+            d["universal_anisotropy"] = result.universal_anisotropy
+            d["homogeneous_poisson"] = result.homogeneous_poisson
+            if ndocs < 24:
+                d["warning"].append("less than 24 tasks completed")
+
+            # Perform filter checks
+            symm_t = result.symmetrized
+            d["symmetrized_tensor"] = symm_t.tolist()
+            d["analysis"]["not_rare_earth"] = True
+            for s in calc_struct.species:
+                if s.is_rare_earth_metal:
+                    d["analysis"]["not_rare_earth"] = False
+            eigvals = np.linalg.eigvals(symmetrized_tensor)
+            eig_positive = np.all((eigvals > 0) & np.isreal(eigvals))
+            d["analysis"]["eigval_positive"] = bool(eig_positive) 
+            c11 = symm_t[0][0]
+            c12 = symm_t[0][1]
+            c13 = symm_t[0][2]
+            c23 = symm_t[1][2]
+            d["analysis"]["c11_c12"]= not (abs((c11-c12)/c11) < 0.05
+                                           or c11 < c12)
+            d["analysis"]["c11_c13"]= not (abs((c11-c13)/c11) < 0.05 
+                                           or c11 < c13)
+            d["analysis"]["c11_c23"]= not (abs((c11-c23)/c11) < 0.1 
+                                           or c11 < c23)
+            d["analysis"]["K_R"] = not (d["K_Reuss"] < 2)
+            d["analysis"]["G_R"] = not (d["G_Reuss"] < 2)
+            d["analysis"]["K_V"] = not (d["K_Voigt"] < 2)
+            d["analysis"]["G_V"] = not (d["G_Voigt"] < 2)
+            filter_state = np.all(d["analysis"].values())
+            d["analysis"]["filter_pass"] = bool(filter_state)
+            d["analysis"]["eigval"] = list(eigvals)
+
+            # IEEE Conversion
             try:
-                e_above_hull = db2.tasks.find_one({"task_id":o["snl"]["about"]["_mp_id"]},
-                                              {"analysis.e_above_hull":1})["analysis"]["e_above_hull"]
-                    d["e_above_hull"] = e_above_hull
-                except:
-                    d["e_above_hull"] = "Unknown"
+                ieee_tensor = IEEE_conversion.get_ieee_tensor(struct_final, result)
+                d["elastic_tensor_IEEE"] = ieee_tensor[0].tolist()
+                d["analysis"]["IEEE"] = True
+            except Exception as e:
+                d["elastic_tensor_IEEE"] = None
+                d["analysis"]["IEEE"] = False
+                d["error"].append("Unable to get IEEE tensor: {}".format(e))
 
-                if ndocs>=20:
-                    try:
-                        result = ElasticTensor.from_stress_dict(ss_dict)
-                        d["elastic_tensor"] = result.tolist()
-                        kg_average = result.kg_average
-                        d.update({"K_Voigt":kg_average[0], "G_Voigt":kg_average[1], "K_Reuss":kg_average[2],
-                                  "G_Reuss":kg_average[3], "K_Voigt_Reuss_Hill":kg_average[4], "G_Voigt_Reuss_Hill":kg_average[5]})
-                        d["universal_anisotropy"] = result.universal_anisotropy
-                        d["homogeneous_poisson"] = result.homogeneous_poisson
-                        if ndocs == 24:
-                            pass
-                        else:
-                            d["warning"].append("less than 24 tasks completed")
-                    except:
-                        print i+": determine Cij error"
-                        d["error"].append("Unable to determine Cij")
-                        # import pdb; pdb.set_trace()
+            # Add thermal properties
+            nsites = calc_struct.num_sites
+            volume = calc_struct.volume
+            natoms = calc_struct.composition.num_atoms
+            weight = calc_struct.composition.weight
+            num_density = 1e30 * nsites / volume
+            mass_density = 1.6605e3 * nsites * volume * weight / \
+                           (natoms * volume)
+            tot_mass = sum([e.atomic_mass for e in relaxed_struct.species])
+            avg_mass =  1.6605e-27 * tot_mass / natoms
+            y_mod = 9e9 * result.k_vrh * result.g_vrh / \
+                    (3. * result.k_vrh * result.g_vrh)
+            trans_v = 1e9 * result.k_vrh / mass_density**0.5
+            long_v = 1e9 * result.k_vrh + \
+                     4./3. * result.g_vrh / mass_density**0.5
+            clarke = 0.87 * 1.3806e-23 * avg_mass**(-2./3.) * \
+                     mass_density**(1./6.) * y_mod**0.5
+            cahill = 1.3806e-23 / 2.48 * num_density**(2./3.) * long_v + \
+                     2 * trans_v
+            snyder_ac = 0.38483 * avg_mass * \
+                        (long_v + 2./3.*trans_v)**3. / \
+                        (300. * num_density**(-2./3.) * nsites**(1./3.))
+            snyder_opt = 1.66914e-23 * (long_v + 2./3.*trans_v) / \
+                         num_density**(-2./3.) * \
+                         (1 - nsites**(-1./3.))
+            snyder_total = snyder_ac + snyder_opt
+            debye = 2.489e-11 * avg_mass**(-1./3.) * \
+                    mass_density**(-1./6.) * y_mod**0.5
 
-                    #Add analysis field
-                    if d.get("elastic_tensor"):
-                        original_tensor = SQTensor(d["elastic_tensor"])
-                        symmetrized_tensor = original_tensor.symmetrized
-                        d["symmetrized_tensor"] = symmetrized_tensor.tolist()
-                        d["analysis"]["not_rare_earth"] = True
-                        for s in Structure.from_dict(o["snl"]).species:
-                            if s.is_rare_earth_metal:
-                                d["analysis"]["not_rare_earth"] = False
-                        try:
-                            d["elastic_tensor_IEEE"] = IEEE_conversion.get_ieee_tensor(Structure.from_dict(o["snl_final"]), d["elastic_tensor"])[0].tolist()
-                            d["analysis"]["IEEE"] = True
-                        except Exception as e:
-                            d["elastic_tensor_IEEE"] = None
-                            d["analysis"]["IEEE"] = False
-                            d["error"].append("Unable to get IEEE tensor")
-                            print e
-                        eigvals = np.linalg.eigvals(symmetrized_tensor)
-                        d["analysis"]["eigval"]=list(eigvals)
-                        try:
-                            eig_positive = eigvals > 0
-                            eig_real = np.isreal(eigvals)
-                            d["analysis"]["eigval_positive"] = bool(np.all(eig_positive & eig_real))
-                            d["analysis"]["c11_c12"]= not (abs((symmetrized_tensor[0][0]-symmetrized_tensor[0][1])/symmetrized_tensor[0][0])*100<5 or
-                                              symmetrized_tensor[0][0]< symmetrized_tensor[0][1])
-                            d["analysis"]["c11_c13"]= not (abs((symmetrized_tensor[0][0]-symmetrized_tensor[0][2])/symmetrized_tensor[0][0])*100<5 or
+            d["thermal"]={"num_density" : num_density,
+                          "mass_density" : mass_density,
+                          "avg_mass" : avg_mass,
+                          "num_atom_per_unit_formula" : natoms,
+                          "youngs_modulus" : y_mod,
+                          "trans_velocity" : trans_v,
+                          "long_velocity" : long_v,
+                          "clarke" : clarke,
+                          "cahill" : cahill,
+                          "snyder_acou_300K" : snyder_ac,
+                          "snyder_opt" : snyder_opt,
+                          "snyder_total" : snyder_total,
+                          "debye": debye
+                         }
+        
+            if o["snl"]["about"].get("_kpoint_density"):
+                d["kpoint_density"]= o["snl"]["about"].get("_kpoint_density")
 
-
+            if d["error"]:
+                raise ValueError("Elastic analysis failed: {}".format(d["error"]))
+            elif d["analysis"]["filter_pass"]:
+                d["state"] = "successful"
+            else:
+                d["state"] = "filter_failed"
+            db.elasticity.insert(d)
+            return FWAction()
