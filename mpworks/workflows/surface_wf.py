@@ -42,8 +42,8 @@ from matgendb import QueryEngine
 class SurfaceWorkflowManager(object):
 
     """
-        Initializes the workflow manager by taking in a list of compounds in their
-        compositional formula or a dictionary with the formula as the key referring
+        Initializes the workflow manager by taking in a list of
+        formulas/mpids or a dictionary with the formula as the key referring
         to a list of miller indices.
     """
 
@@ -70,12 +70,17 @@ class SurfaceWorkflowManager(object):
                 symprec (float): See SpaceGroupAnalyzer in analyzer.py
                 angle_tolerance (int): See SpaceGroupAnalyzer in analyzer.py
                 database (str): For database insertion
+                collection (str): For database insertion
+                fail_safe (bool): Check for slabs/bulk structures with
+                    more than 200 atoms (defaults to True)
+                reset (bool): Reset your launchpad (defaults to False)
+                check_exists (bool): Check if slab/bulk calculation
+                    has already been completed
         """
 
         unit_cells_dict = {}
 
         # This initializes the REST adaptor. Put your own API key in.
-
         if "MAPI_KEY" not in os.environ:
             apikey = raw_input('Enter your api key (str): ')
         else:
@@ -116,6 +121,8 @@ class SurfaceWorkflowManager(object):
             e_per_atom = [entry.energy_per_atom for entry in all_entries]
             sorted(e_per_atom)
             if el[:2] != 'mp':
+                # Retrieve the ground state structure if a
+                # formula is given instead of a material ID
                 for i, entry in enumerate(entries):
                     if min(e_per_atom) == entry.energy_per_atom:
                         prim_unit_cell = entry.structure
@@ -124,6 +131,7 @@ class SurfaceWorkflowManager(object):
                         if indices_dict:
                             new_indices_dict[mpid] = indices_dict[el]
             else:
+                # If we get a material ID instead, get its polymorph rank
                 prim_unit_cell = entries[0].structure
                 mpid = el
                 polymorph_order = e_per_atom.index(entries[0].energy_per_atom)
@@ -131,12 +139,15 @@ class SurfaceWorkflowManager(object):
                 if indices_dict:
                     new_indices_dict[mpid] = indices_dict[mpid]
 
+            # Get the spacegroup of the conventional unit cell
             spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                      angle_tolerance=angle_tolerance)
             conv_unit_cell = spa.get_conventional_standard_structure()
             print conv_unit_cell
             spacegroup = mprest.get_data(mpid, prop="spacegroup")[0]["spacegroup"]["symbol"]
             print spacegroup
+
+            # Get a dictionary of different properties for a particular material
             unit_cells_dict[mpid] = {"ucell": conv_unit_cell, "spacegroup": spacegroup,
                                      "polymorph": polymorph_order}
             print el
@@ -166,8 +177,12 @@ class SurfaceWorkflowManager(object):
                         and oriented unit cells along the c direction.
                     max_only (bool): Will retrieve workflows for Miller indices
                         containing the max index only
+                    get_bulk_e (bool): Whether or not to get the bulk
+                        calculations, obsolete if check_exist=True
         """
 
+        # All CreateSurfaceWorkflow objects take in a dictionary
+        # with a mpid key and list of indices as the item
         miller_dict = {}
         for mpid in self.unit_cells_dict.keys():
             max_miller = []
@@ -175,10 +190,10 @@ class SurfaceWorkflowManager(object):
                 GetMillerIndices(self.unit_cells_dict[mpid]['ucell'],
                                  max_index).get_symmetrically_distinct_miller_indices()
 
-            print 'surface ', mpid
-
             print '# ', mpid
 
+            # Will only return slabs whose indices
+            # contain the max index if max_only = True
             if max_only:
                 for hkl in list_of_indices:
                     if abs(min(hkl)) == max_index or abs(max(hkl)) == max_index:
@@ -316,7 +331,6 @@ class SurfaceWorkflowManager(object):
 
                     # Insert complete calculation for oriented ucell and
                     # slabs if no oriented ucell calculation has been found
-
                     if mpid not in calculate_with_bulk.keys():
                         calculate_with_bulk[mpid] = []
                     print '%s %s oriented unit  cell not in DB, ' \
@@ -428,7 +442,7 @@ class CreateSurfaceWorkflow(object):
             job = VaspJob(["mpirun", "-n", "64", "vasp"],
                           auto_npar=False, copy_magmom=True)
 
-        handlers = [NonConvergingErrorHandler(nionic_steps=1, change_algo=True),
+        handlers = [NonConvergingErrorHandler(change_algo=True),
                     UnconvergedErrorHandler(),
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
