@@ -126,86 +126,88 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
 class AddElasticDataToDB(FireTaskBase, FWSerializable):
     _fw_name = "Add Elastic Data to DB"
 
-    def run_task(self):
+    def run_task(self, fw_spec):
         db_dir = os.environ['DB_LOC']
         db_path = os.path.join(db_dir, 'tasks_db.json')
+        i = fw_spec['original_task_id']
 
         with open(db_path) as f:
             db_creds = json.load(f)
-            connection = MongoClient(creds['host'], creds['port'])
-            tdb = connection[creds['database']]
-            tdb.authenticate(creds['admin_use'], creds['admin_password'])
-            ndocs = tasks.find({"original_task_id": i, 
-                                "state":"successful"}).count()
-            existing_doc = elasticity.find_one({"relaxation_task_id" : i})
-            if existing_doc:
-                print "Updating: " + i
+        connection = MongoClient(db_creds['host'], db_creds['port'])
+        tdb = connection[db_creds['database']]
+        tdb.authenticate(db_creds['admin_use'], db_creds['admin_password'])
+        ndocs = tasks.find({"original_task_id": i, 
+                            "state":"successful"}).count()
+        existing_doc = tdb.elasticity.find_one({"relaxation_task_id" : i})
+        if existing_doc:
+            print "Updating: " + i
+        else:
+            print "New material: " + i
+        d["ndocs"] = ndocs
+        o = tasks.find_one({"task_id" : i},
+                           {"pretty_formula" : 1, "spacegroup" : 1,
+                            "snl" : 1, "snl_final" : 1, "run_tags" : 1})
+        if not o:
+            raise ValueError("Cannot find original task id")
+        # Get stress from deformed structure
+        d["deformation_tasks"] = {}
+        ss_dict = {}
+        for k in tasks.find({"original_task_id": i}, 
+                            {"deformation_matrix":1,
+                             "calculations.output":1,
+                             "state":1, "task_id":1}):
+            defo = k['deformation_matrix']
+            d_ind = np.nonzero(defo - np.eye(3))
+            delta = Decimal((defo - np.eye(e))[d_ind][0])
+            # Normal deformation
+            if d_ind[0] == d_ind[1]:
+                dtype = "_".join(["d", str(d_ind[0][0]), 
+                                  "{:.0e}".format(delta)])
+            # Shear deformation
             else:
-                print "New material: " + i
-            d["ndocs"] = ndocs
-            o = tasks.find_one({"task_id" : i},
-                               {"pretty_formula" : 1, "spacegroup" : 1,
-                                "snl" : 1, "snl_final" : 1, "run_tags" : 1})
-            if not o:
-                raise ValueError("Cannot find original task id")
-            # Get stress from deformed structure
-            d["deformation_tasks"] = {}
-            ss_dict = {}
-            for k in tasks.find({"original_task_id": i}, 
-                                {"deformation_matrix":1,
-                                 "calculations.output":1,
-                                 "state":1, "task_id":1}):
-                defo = k['deformation_matrix']
-                d_ind = np.nonzero(defo - np.eye(3))
-                delta = Decimal((defo - np.eye(e))[d_ind][0])
-                # Normal deformation
-                if d_ind[0] == d_ind[1]:
-                    dtype = "_".join(["d", str(d_ind[0][0]), 
-                                      "{:.0e}".format(delta)])
-                # Shear deformation
-                else:
-                    dtype = "_".join(["s", str(d_ind[0] + d_ind[1]),
-                                      "{:.0e}".format(delta)])
+                dtype = "_".join(["s", str(d_ind[0] + d_ind[1]),
+                                  "{:.0e}".format(delta)])
 
-                d["deformation_tasks"][dtype] = {"state" : k["state"],
-                                                 "deformation_matrix" : defo,
-                                                 "strain" : IndependentStrain(defo),
-                                                 "task_id": k["task_id"]}
+            d["deformation_tasks"][dtype] = {"state" : k["state"],
+                                             "deformation_matrix" : defo,
+                                             "strain" : IndependentStrain(defo),
+                                             "task_id": k["task_id"]}
 
-                if k["state"] == "successful":
-                    st = Stress(k["calculations"][-1]["output"] \
-                                ["ionic_steps"][-1]["stress"])
-                    ss_dict[sm]=st
-            d["snl"] = o["snl"]
-            if "run_tags" in o.keys():
-                d["run_tags"] = o["run_tags"]
-                for tag in o["run_tags"]:
-                    if isinstance(tag, dict):
-                        if "input_id" in tag.keys():
-                            d["input_mp_id"] = tag["input_id"]
-            d["snl_final"] = o["snl_final"]
-            d["pretty_formula"] = o["pretty_formula"]
+            if k["state"] == "successful":
+                st = Stress(k["calculations"][-1]["output"] \
+                            ["ionic_steps"][-1]["stress"])
+                ss_dict[sm]=st
+        d["snl"] = o["snl"]
+        if "run_tags" in o.keys():
+            d["run_tags"] = o["run_tags"]
+            for tag in o["run_tags"]:
+                if isinstance(tag, dict):
+                    if "input_id" in tag.keys():
+                        d["input_mp_id"] = tag["input_id"]
+        d["snl_final"] = o["snl_final"]
+        d["pretty_formula"] = o["pretty_formula"]
 
-            # Old input mp-id style
-            if o["snl"]["about"].get("_mp_id"):
-                d["material_id"] = o["snl"]["about"]["_mp_id"]
+        # Old input mp-id style
+        if o["snl"]["about"].get("_mp_id"):
+            d["material_id"] = o["snl"]["about"]["_mp_id"]
 
-            # New style
-            elif "input_mp_id" in d:
-                d["material_id"] = d["input_mp_id"]
-            else:
-                d["material_id"] = None
-            d["relaxation_task_id"] = i
+        # New style
+        elif "input_mp_id" in d:
+            d["material_id"] = d["input_mp_id"]
+        else:
+            d["material_id"] = None
+        d["relaxation_task_id"] = i
 
-            calc_struct = Structure.from_dict(o["snl_final"])
-            conventional = is_conventional(calc_struct)
-            if conventional:
-                d["analysis"]["is_conventional"] = True
-            else:
-                d["analysis"]["is_conventional"] = False
+        calc_struct = Structure.from_dict(o["snl_final"])
+        conventional = is_conventional(calc_struct)
+        if conventional:
+            d["analysis"]["is_conventional"] = True
+        else:
+            d["analysis"]["is_conventional"] = False
 
-            d["spacegroup"]=o.get("spacegroup", "Unknown")
-
+        d["spacegroup"]=o.get("spacegroup", "Unknown")
+        
+        if ndocs >= 20:
             # Perform Elastic tensor fitting and analysis
             result = ElasticTensor.from_stress_dict(ss_dict)
             d["elastic_tensor"] = result.tolist()
@@ -247,6 +249,10 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
             d["analysis"]["filter_pass"] = bool(filter_state)
             d["analysis"]["eigval"] = list(eigvals)
 
+            # JHM: eventually we can reintroduce the IEEE conversion
+            #       but as of now it's not being used, and it should
+            #       be in pymatgen
+            """
             # IEEE Conversion
             try:
                 ieee_tensor = IEEE_conversion.get_ieee_tensor(struct_final, result)
@@ -256,7 +262,7 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
                 d["elastic_tensor_IEEE"] = None
                 d["analysis"]["IEEE"] = False
                 d["error"].append("Unable to get IEEE tensor: {}".format(e))
-
+            """
             # Add thermal properties
             nsites = calc_struct.num_sites
             volume = calc_struct.volume
@@ -300,15 +306,18 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
                           "snyder_total" : snyder_total,
                           "debye": debye
                          }
-        
-            if o["snl"]["about"].get("_kpoint_density"):
-                d["kpoint_density"]= o["snl"]["about"].get("_kpoint_density")
-
-            if d["error"]:
-                raise ValueError("Elastic analysis failed: {}".format(d["error"]))
-            elif d["analysis"]["filter_pass"]:
-                d["state"] = "successful"
-            else:
-                d["state"] = "filter_failed"
-            db.elasticity.insert(d)
+        else:
+            d['state'] = "Fewer than 20 successful tasks completed"
             return FWAction()
+
+        if o["snl"]["about"].get("_kpoint_density"):
+            d["kpoint_density"]= o["snl"]["about"].get("_kpoint_density")
+
+        if d["error"]:
+            raise ValueError("Elastic analysis failed: {}".format(d["error"]))
+        elif d["analysis"]["filter_pass"]:
+            d["state"] = "successful"
+        else:
+            d["state"] = "filter_failed"
+        tdb.elasticity.insert(d)
+        return FWAction()

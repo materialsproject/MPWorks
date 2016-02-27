@@ -181,7 +181,17 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             update_spec['vasp']={'incar':d['calculations'][-1]['input']['incar'],
                                  'kpoints':d['calculations'][-1]['input']['kpoints']}
             update_spec["task_id"]=t_id
-            return FWAction(stored_data=stored_data, update_spec=update_spec)
+            # Add elasticity analysis firework
+            if 'ndoc' in d and d['ndoc'] >= 20:
+                spec = {'original_task_id' : d['original_task_id'],
+                        'task_type' : 'Add Elastic Data to DB'}
+                f = Composition(
+                    mpsnl.structure.composition.reduced_formula).alphabetical_formula
+                additions = Workflow([AddElasticDataToDB()], spec,
+                                     name = get_slug(f + '--' + spec['task_type']))
+
+            return FWAction(stored_data=stored_data, update_spec=update_spec,
+                            additions = wf)
 
         # not successful - first test to see if UnconvergedHandler is needed
         if not fizzled_parent:
