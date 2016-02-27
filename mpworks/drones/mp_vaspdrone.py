@@ -147,6 +147,11 @@ class MPVaspDrone(VaspToDbTaskDrone):
                         logger.error("Bad run stats for {}.".format(path))
 
                     d["run_stats"] = run_stats
+                    
+                # count ndocs for deformed structure
+                if "deformed" in d['task_type']:
+                    d['ndoc'] = 1
+                    d['ndoc'] += coll.find({'original_task_id': d['original_task_id']}).count()
 
                 # add is_compatible
                 mpc = MaterialsProjectCompatibility("Advanced")
@@ -248,10 +253,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
             # Process data for deformed structures
             if 'deformed' in d['task_type']:
                 d['deformation_matrix'] = fw_dict['spec']['deformation_matrix']
-                d['original_task_id'] = fw_dict['spec']['original_task_id']
-                # count ndocs for deformed structure
-                d['ndoc'] = 1
-                d['ndoc'] += coll.find({'original_task_id': d['original_task_id']}.count()
+                d['original_task_id'] = fw_dict['spec']['original_task_id'] 
             if not self.update_duplicates:
                 if 'optimize structure' in d['task_type'] and 'output' in d:
                     # create a new SNL based on optimized structure
