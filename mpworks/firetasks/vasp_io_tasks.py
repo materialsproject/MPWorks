@@ -20,7 +20,6 @@ from mpworks.drones.mp_vaspdrone import MPVaspDrone
 from mpworks.dupefinders.dupefinder_vasp import DupeFinderVasp
 from mpworks.firetasks.custodian_task import get_custodian_task
 from mpworks.firetasks.vasp_setup_tasks import SetupUnconvergedHandlerTask
-from mpworks.firetasks.elastic_tasks import AddElasticDataToDB
 from mpworks.workflows.wf_settings import QA_VASP, QA_DB, MOVE_TO_GARDEN_PROD, MOVE_TO_GARDEN_DEV
 from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition
@@ -190,7 +189,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
                 snl = StructureNL.from_dict(mpsnl)
                 f = Composition(
                         snl.structure.composition.reduced_formula).alphabetical_formula
-                additions += [Workflow([AddElasticDataToDB()], spec,
+                additions += [Firework([AddElasticDataToDB()], spec, fw_id = -1,
                                      name = get_slug(f + '--' + spec['task_type']))]
 
             return FWAction(stored_data=stored_data, update_spec=update_spec,
