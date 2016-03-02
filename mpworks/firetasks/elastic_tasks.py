@@ -1,4 +1,9 @@
 from monty.os.path import zpath
+import os
+import json
+from pymongo import MongoClient
+import numpy as np
+from decimal import Decimal
 
 __author__ = 'Wei Chen'
 __credits__ = 'Joseph Montoya'
@@ -7,7 +12,9 @@ __maintainer__ = 'Joseph Montoya <montoyjh@lbl.gov'
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vasp.inputs import Incar, Poscar
-from pymatgen.analysis.elasticity.strain import DeformedStructureSet
+from pymatgen.analysis.elasticity.strain import DeformedStructureSet, IndependentStrain
+from pymatgen.analysis.elasticity.stress import Stress
+from pymatgen.analysis.elasticity.elastic import ElasticTensor
 from fireworks.core.firework import Firework, Workflow
 from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspToDBTask
 from mpworks.firetasks.custodian_task import get_custodian_task
@@ -114,7 +121,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
                     'clean_task_doc':True,
                     'deformation_matrix':d_struct_set.deformations[i].tolist(), 
                     'original_task_id':fw_spec["task_id"]}
-            fws.append(Firework([VaspToDBTask(), AddElasticToDBTask()], spec,
+            fws.append(Firework([VaspToDBTask(), AddElasticDataToDBTask()], spec,
                                 name=get_slug(f + '--' + spec['task_type']),
                                 fw_id=-998+i*10))
             connections[-999+i*10] = [-998+i*10]
@@ -122,7 +129,7 @@ class SetupDeformedStructTask(FireTaskBase, FWSerializable):
         return FWAction(additions=wf)
 
 
-class AddElasticDataToDB(FireTaskBase, FWSerializable):
+class AddElasticDataToDBTask(FireTaskBase, FWSerializable):
     _fw_name = "Add Elastic Data to DB"
 
     def run_task(self, fw_spec):
@@ -139,12 +146,12 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
         elasticity = tdb['elasticity']
         ndocs = tasks.find({"original_task_id": i, 
                             "state":"successful"}).count()
-        existing_doc = tasks.elasticity.find_one({"relaxation_task_id" : i})
+        existing_doc = elasticity.find_one({"relaxation_task_id" : i})
         if existing_doc:
             print "Updating: " + i
         else:
             print "New material: " + i
-            d = {"analysis": {}, "error": [], "warning": []}
+        d = {"analysis": {}, "error": [], "warning": []}
         d["ndocs"] = ndocs
         o = tasks.find_one({"task_id" : i},
                            {"pretty_formula" : 1, "spacegroup" : 1,
@@ -172,7 +179,7 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
             sm = IndependentStrain(defo)
             d["deformation_tasks"][dtype] = {"state" : k["state"],
                                              "deformation_matrix" : defo,
-                                             "strain" : sm,
+                                             "strain" : sm.tolist(),
                                              "task_id": k["task_id"]}
             if k["state"] == "successful":
                 st = Stress(k["calculations"][-1]["output"] \
@@ -324,5 +331,6 @@ class AddElasticDataToDB(FireTaskBase, FWSerializable):
             d["state"] = "successful"
         else:
             d["state"] = "filter_failed"
-        tasks.elasticity.insert(d)
+        elasticity.update({"relaxation_task_id": d["relaxation_task_id"]}, 
+                           d, upsert=True)
         return FWAction()

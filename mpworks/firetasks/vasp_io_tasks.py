@@ -12,9 +12,6 @@ import sys
 from monty.os.path import zpath
 from custodian.vasp.handlers import UnconvergedErrorHandler
 from fireworks.core.launchpad import LaunchPad
-from pymongo import MongoClient
-import numpy as np
-from decimal import Decimal
 
 from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
@@ -28,9 +25,6 @@ from mpworks.workflows.wf_utils import last_relax, get_loc, move_to_garden
 from pymatgen import Composition, Structure
 from pymatgen.io.vasp.inputs import Incar, Poscar, Potcar, Kpoints
 from pymatgen.matproj.snl import StructureNL
-from pymatgen.analysis.elasticity.strain import IndependentStrain
-from pymatgen.analysis.elasticity.stress import Stress
-from pymatgen.analysis.elasticity.elastic import ElasticTensor
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -129,7 +123,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.additional_fields = self.get('additional_fields', {})
-        self.update_duplicates = self.get('update_duplicates', True)  # off so DOS/BS doesn't get entered twice
+        self.update_duplicates = self.get('update_duplicates', False)  # off so DOS/BS doesn't get entered twice
 
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
@@ -187,19 +181,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             update_spec['vasp']={'incar':d['calculations'][-1]['input']['incar'],
                                  'kpoints':d['calculations'][-1]['input']['kpoints']}
             update_spec["task_id"]=t_id
-            # Add elasticity analysis firework
-            additions = []
-            if 'ndoc' in d and d['ndoc'] >= 20:
-                spec = {'original_task_id' : d['original_task_id'],
-                        'task_type' : 'Add Elastic Data to DB'}
-                snl = StructureNL.from_dict(mpsnl)
-                f = Composition(
-                        snl.structure.composition.reduced_formula).alphabetical_formula
-                additions += [Firework([AddElasticDataToDB()], spec, fw_id = -1,
-                                     name = get_slug(f + '--' + spec['task_type']))]
-
-            return FWAction(stored_data=stored_data, update_spec=update_spec,
-                            additions = additions)
+            return FWAction(stored_data=stored_data, update_spec=update_spec)
 
         # not successful - first test to see if UnconvergedHandler is needed
         if not fizzled_parent:
