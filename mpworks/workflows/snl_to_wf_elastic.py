@@ -1,5 +1,5 @@
 from pymatgen.io.vasp import Poscar
-from mpworks.firetasks.phonon_tasks import SetupElastConstTask, SetupFConvergenceTask, SetupDeformedStructTask
+from mpworks.firetasks.elastic_tasks import SetupElastConstTask, SetupFConvergenceTask, SetupDeformedStructTask
 
 __author__ = 'weichen'
 
@@ -14,11 +14,11 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from mpworks.workflows import snl_to_wf
-from mpworks.firetasks.phonon_tasks import update_spec_force_convergence
+from mpworks.firetasks.elastic_tasks import update_spec_force_convergence
 from collections import defaultdict
 
 
-def snl_to_wf_phonon(snl, parameters):
+def snl_to_wf_elastic(snl, parameters):
     # parameters["user_vasp_settings"] specifies user defined incar/kpoints parameters
     fws = []
     connections = defaultdict(list)
