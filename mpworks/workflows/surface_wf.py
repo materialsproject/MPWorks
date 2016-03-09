@@ -516,7 +516,7 @@ class CreateSurfaceWorkflow(object):
                                                       miller_index=miller_index, mpid=mpid,
                                                       conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                       polymorph=self.unit_cells_dict[mpid]["polymorph"],
-                                                      vaspdbinsert_params=self.vaspdbinsert_params)])
+                                                      vaspdbinsert_parameters=self.vaspdbinsert_params)])
 
                 tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
                                                   user_incar_settings=user_incar_settings,
