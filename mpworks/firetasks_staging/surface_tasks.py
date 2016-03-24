@@ -489,6 +489,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
                        "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
 
+        new_shifts = [slab.shift for slab in slab_list]
         while (ssize_check or break_loop) is False:
 
             new_slab_list = []
@@ -523,7 +524,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                                       min_vacuum_size=min_vacuum_size,
                                       max_normal_search=max(miller_index),
                                       primitive=True)
-                slab_list = slabs.get_slabs()
+
+                new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
             print "is ssize too large?: %s" %(new_min_slab_size)
 
@@ -548,7 +550,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                       min_vacuum_size=min_vacuum_size,
                                       max_normal_search=max(miller_index),
                                       primitive=True)
-                new_slab_list = slabs.get_slabs()
+                new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
                 break
 
