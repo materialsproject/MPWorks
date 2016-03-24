@@ -413,39 +413,39 @@ class WriteSlabVaspInputs(FireTaskBase):
         # If so, see if the slab at shift=0 has been calculated,
         # then calculate all other terminations besides c=0
 
-        # slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
-        #                                'miller_index': miller_index}, inc_structure=True,
-        #                               optional_data=optional_data)
+        slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
+                                       'miller_index': miller_index}, inc_structure=True,
+                                      optional_data=optional_data)
         slab_list = slabs.get_slabs()
-        # new_term_shifts = [slab.shift for slab in slab_list]
+        new_term_shifts = [slab.shift for slab in slab_list]
 
-        # if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) != len(slab_list):
-        #
-        #     # Check if any and if all terminations for this slab have been
-        #     # completed. If a termination has been calculated, check
-        #     # which one and skip the calculation for that termination.
-        #
-        #     completed_term_shifts = [entry.data["shift"] for entry in slab_entries]
-        #
-        #     if 0 in completed_term_shifts:
-        #
-        #         # Because the default shift use to be 0, remove the
-        #         # lowest shift in the new list of shifts for different
-        #         # terminations to avoid repeated calculations
-        #
-        #         slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
-        #         new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-        #         new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-        #         completed_term_shifts.pop(completed_term_shifts.index(0))
-        #
-        #     if completed_term_shifts:
-        #
-        #         for shift in completed_term_shifts:
-        #
-        #             # Now remove calculations that have already
-        #             # been completed for a particular termination
-        #
-        #             slab_list.pop(new_term_shifts.index(shift))
+        if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) < len(slab_list):
+
+            # Check if any and if all terminations for this slab have been
+            # completed. If a termination has been calculated, check
+            # which one and skip the calculation for that termination.
+
+            completed_term_shifts = [entry.data["shift"] for entry in slab_entries]
+
+            if 0 in completed_term_shifts:
+
+                # Because the default shift use to be 0, remove the
+                # lowest shift in the new list of shifts for different
+                # terminations to avoid repeated calculations
+
+                slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
+                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
+                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
+                completed_term_shifts.pop(completed_term_shifts.index(0))
+
+            if completed_term_shifts:
+
+                for shift in completed_term_shifts:
+
+                    # Now remove calculations that have already
+                    # been completed for a particular termination
+
+                    slab_list.pop(new_term_shifts.index(shift))
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
@@ -509,8 +509,12 @@ class WriteSlabVaspInputs(FireTaskBase):
                 new_c = slab.lattice.c
 
                 print new_num_sites, original_num_sites
-                print "mpid: %s, miller_index: %s, new slab size: %s, percent atoms loss: %s, is it symmetric?: %s, enough_atoms?: %s, break loop?: %s, new c: %s" \
-                      %(mpid, miller_index, new_min_slab_size, new_num_sites/original_num_sites, is_symmetric, ssize_check, break_loop, new_c)
+                print "mpid: %s, miller_index: %s, new slab size: %s, " \
+                      "percent atoms loss: %s, is it symmetric?: %s, " \
+                      "enough_atoms?: %s, break loop?: %s, new c: %s" \
+                      %(mpid, miller_index, new_min_slab_size,
+                        new_num_sites/original_num_sites,
+                        is_symmetric, ssize_check, break_loop, new_c)
 
             if not ssize_check:
                 print "making new slabs because ssize too small"
@@ -705,3 +709,69 @@ class MoveDirectoryTask(FireTaskBase):
         for directory in directories:
             if hkl in directory and mpid in directory:
                 os.system('mv %s %s' %(directory, final_directory + '/' + subdir))
+
+
+# from pymacy.surface_adsorption.wulff_dual import wulff_3d
+#
+# @explicit_serialize
+# class PostProcessingTask(FireTaskBase):
+#     """
+#     Task used for obtaining values and content that can
+#     only be otained once an entire set of calculations
+#     for a material is complete, ie. Wulff shape,
+#     weighted average surface energy and anisotropy stdev
+#     """
+#
+#     required_params = ["formula", "mpid", "vaspdbinsert_parameters"]
+#
+#     def run_task(self, fw_spec):
+#
+#         dec = MontyDecoder()
+#         mpid = dec.process_decoded(self['mpid'])
+#         formula = dec.process_decoded(self['formula'])
+#         vaspdbinsert_parameters = dec.process_decoded(self['vaspdbinsert_parameters'])
+#
+#         qe = QueryEngine(**vaspdbinsert_parameters)
+#
+#         optional_data = ["material_id", "miller_index", "surface_area"]
+#         criteria = {'material_id': mpid, 'structure_type': 'oriented_unit_cell'}
+#         slab_criteria = criteria.copy()
+#         slab_criteria["structure_type"] = "slab_cell"
+#         ucell_entry = qe.get_entries(criteria, optional_data=optional_data)
+#
+#         # Generate a dictionary consisting of only the
+#         # lowest surface energy for a set of terminations
+#         # associated with a Miller index key
+#
+#         miller_energy_dict = {}
+#         for entry in ucell_entry:
+#
+#             miller_index = entry.data["miller_index"]
+#             bulk_per_atom = entry.energy_per_atom
+#             slab_criteria["miller_index"] = miller_index
+#             slab_entries = qe.get_entries(slab_criteria, optional_data=optional_data, inc_structure=True)
+#             slab = slab_entries[0].structure
+#             slab_e = min([slab_entry.energy for slab_entry in slab_entries])
+#
+#             # calculate the surface energy in eV/A^2
+#             miller_energy_dict[miller_index] = \
+#                 (slab_e - bulk_per_atom*len(slab))/(slab_entries[0].data["surface_area"])
+#
+#         # obtain the wulff shape by getting a list of milelr indices and surface energies
+#         miller_list = [hkl for hkl in miller_energy_dict.keys()]
+#         surf_e_list = [miller_energy_dict[hkl] for hkl in miller_list]
+#
+#         # get conventional ucell
+#
+#         if "MAPI_KEY" not in os.environ:
+#             apikey = raw_input('Enter your api key (str): ')
+#         else:
+#             apikey = os.environ["MAPI_KEY"]
+#         mprester = MPRester(apikey)
+#         prim_unit_cell = mprester.get_entries(mpid,
+#                                               inc_structure=True)[0].structure
+#         spa = SpacegroupAnalyzer(prim_unit_cell)
+#         conventional_ucell = spa.get_conventional_standard_structure()
+#
+#         # generate the wulff shape
+#         wulff = wulff_3d(conventional_ucell, miller_list, surf_e_list)
