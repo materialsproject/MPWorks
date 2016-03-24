@@ -121,7 +121,6 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         # import here to prevent import errors in bigger MPCollab
-        from mpcollab.thermoelectrics.boltztrap_TE import BoltzSPB
         # get the band structure and nelect from files
         """
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
@@ -234,7 +233,8 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             ted['kappa_best_dope19'] = self.get_extreme(ted, 'kappa_eigs', maximize=False, max_didx=4)
 
             try:
-                bzspb = BoltzSPB(te_analyzer)
+	        from mpcollab.thermoelectrics.boltztrap_TE import BoltzSPB
+                bzspb = BoltzSPB(ted)
                 maxpf_p = bzspb.get_maximum_power_factor('p', temperature=0, tau=1E-14, ZT=False, kappal=0.5,\
                     otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
                                                     'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
