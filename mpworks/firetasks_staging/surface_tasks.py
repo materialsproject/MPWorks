@@ -21,7 +21,7 @@ from matgendb import QueryEngine
 
 from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
 from pymatgen.io.vasp.outputs import Incar, Outcar, Poscar, Oszicar
-from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab
+from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab, check_termination_symmetry
 from pymatgen.core.structure import Structure, Lattice
 from pymatgen.matproj.rest import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -408,44 +408,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                               min_vacuum_size=min_vacuum_size,
                               max_normal_search=max(miller_index),
                               primitive=True)
-
-        # Find out if an entry for this slab already exists.
-        # If so, see if the slab at shift=0 has been calculated,
-        # then calculate all other terminations besides c=0
-
-        slab_entries = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
-                                       'miller_index': miller_index}, inc_structure=True,
-                                      optional_data=optional_data)
         slab_list = slabs.get_slabs()
-        new_term_shifts = [slab.shift for slab in slab_list]
-
-        if len(slab_entries) > 0 and len(slab_list) > 1 and len(slab_entries) < len(slab_list):
-
-            # Check if any and if all terminations for this slab have been
-            # completed. If a termination has been calculated, check
-            # which one and skip the calculation for that termination.
-
-            completed_term_shifts = [entry.data["shift"] for entry in slab_entries]
-
-            if 0 in completed_term_shifts:
-
-                # Because the default shift use to be 0, remove the
-                # lowest shift in the new list of shifts for different
-                # terminations to avoid repeated calculations
-
-                slab_list.pop(new_term_shifts.index(min(new_term_shifts)))
-                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-                new_term_shifts.pop(new_term_shifts.index(min(new_term_shifts)))
-                completed_term_shifts.pop(completed_term_shifts.index(0))
-
-            if completed_term_shifts:
-
-                for shift in completed_term_shifts:
-
-                    # Now remove calculations that have already
-                    # been completed for a particular termination
-
-                    slab_list.pop(new_term_shifts.index(shift))
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
@@ -477,84 +440,10 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         # Now create the slab(s) and ensure the surfaces are
         # symmeric and the ssize is at least that of min_slab_size
-
-        is_symmetric = False # Checks if slab is symmetrize
-        ssize_check = False # Checks if ssize is at least
-                            # that of the initial min_slab_size
-        new_min_slab_size = min_slab_size
-        break_loop = False
-        original_num_sites = len(slab_list[0])
-
-        # First, check the symmetry of the slabs
-        Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
-                       "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
-
-        new_shifts = [slab.shift for slab in slab_list]
-        while (ssize_check or break_loop) is False:
-
-            new_slab_list = []
-            for slab in slab_list:
-
-                print len(slab)
-                slab = symmetrize_slab(slab)
-                sg = SpacegroupAnalyzer(slab, symprec=1E-3)
-                pg = sg.get_point_group()
-                print len(slab)
-
-                is_symmetric = True if str(pg) in Laue_groups else False
-                # Just skip the calculation if false,
-                # further investigation will be required...
-
-                new_slab_list.append(slab)
-                new_num_sites = len(slab)
-                new_c = slab.lattice.c
-
-                print new_num_sites, original_num_sites
-                print "mpid: %s, miller_index: %s, new slab size: %s, " \
-                      "percent atoms loss: %s, is it symmetric?: %s, " \
-                      "enough_atoms?: %s, break loop?: %s, new c: %s" \
-                      %(mpid, miller_index, new_min_slab_size,
-                        new_num_sites/original_num_sites,
-                        is_symmetric, ssize_check, break_loop, new_c)
-
-            if not ssize_check:
-                print "making new slabs because ssize too small"
-                slabs = SlabGenerator(relax_orient_uc, (0,0,1),
-                                      min_slab_size=new_min_slab_size,
-                                      min_vacuum_size=min_vacuum_size,
-                                      max_normal_search=max(miller_index),
-                                      primitive=True)
-
-                new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
-
-            print "is ssize too large?: %s" %(new_min_slab_size)
-
-            # Check if we still have at least 85% of the original atoms
-            # in the structure after removing sites to obtain symmetry,
-            # otherwise, recreate the slabs again using SlabGenerator
-            # and compensate for the smaller number of sites
-
-            if 100 * (new_num_sites/original_num_sites) < 85:
-                ssize_check = False
-                new_min_slab_size += 5
-            else:
-                ssize_check = True
-
-            if new_min_slab_size > 20:
-                warnings.warn("Too many attempts at symmetrizing/increasing "
-                              "ssize, breaking out of while loop")
-                is_symmetric = False
-
-                slabs = SlabGenerator(relax_orient_uc, (0,0,1),
-                                      min_slab_size=min_slab_size,
-                                      min_vacuum_size=min_vacuum_size,
-                                      max_normal_search=max(miller_index),
-                                      primitive=True)
-                new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
-
-                break
-
-            print "reached end of while loop"
+        is_symmetric, new_slab_list = check_termination_symmetry(slab_list, miller_index,
+                                                                 min_slab_size,
+                                                                 min_vacuum_size,
+                                                                 relax_orient_uc)
 
         for slab in new_slab_list:
 
