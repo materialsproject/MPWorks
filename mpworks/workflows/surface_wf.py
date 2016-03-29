@@ -296,30 +296,9 @@ class SurfaceWorkflowManager(object):
                     criteria['structure_type'] = 'slab_cell'
                     slab_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
 
-                    # Predict the numbers of unique terminations for this slab for check
-                    num_of_terms = len(SlabGenerator(ucell_entries[0].structure, (0,0,1), 10, 10,
-                                                     max_normal_search=max(hkl)).get_slabs())
-
                     if slab_entries:
+                        continue
 
-                        # continue
-                        # See if all terminations for this slab calculation is completed
-
-                        if len(slab_entries) != num_of_terms:
-                            # Inserts slab calculation if all terminations aren't complete
-                            if mpid not in calculate_with_slab_only.keys():
-                                calculate_with_slab_only[mpid] = []
-                            print '%s %s slab cell terminations incomplete, ' \
-                                  'will insert calculation into WF' %(mpid, hkl)
-                            calculate_with_slab_only[mpid].append(hkl)
-                            total_calcs_with_nobulk += (num_of_terms - len(slab_entries))
-
-                        else:
-                            # Skip if all terminations have been calculated
-                            print 'All terminations for %s %s slab cell already ' \
-                                  'calculated, skipping...' %(mpid, hkl)
-                            total_calcs_finished += len(slab_entries)
-                            continue
                     else:
                         # No slab calculations found, insert slab calculations
                         if mpid not in calculate_with_slab_only.keys():
@@ -327,7 +306,7 @@ class SurfaceWorkflowManager(object):
                         print '%s %s slab cell not in DB, ' \
                               'will insert calculation into WF' %(mpid, hkl)
                         calculate_with_slab_only[mpid].append(hkl)
-                        total_calcs_with_nobulk += num_of_terms
+                        total_calcs_with_nobulk += 1
                 else:
 
                     # Insert complete calculation for oriented ucell and

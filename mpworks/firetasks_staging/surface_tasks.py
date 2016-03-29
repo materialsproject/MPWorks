@@ -21,7 +21,7 @@ from matgendb import QueryEngine
 
 from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
 from pymatgen.io.vasp.outputs import Incar, Outcar, Poscar, Oszicar
-from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab, check_termination_symmetry
+from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab
 from pymatgen.core.structure import Structure, Lattice
 from pymatgen.matproj.rest import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -666,3 +666,79 @@ class MoveDirectoryTask(FireTaskBase):
 #
 #         # generate the wulff shape
 #         wulff = wulff_3d(conventional_ucell, miller_list, surf_e_list)
+
+
+def check_termination_symmetry(slab_list, miller_index, min_slab_size,
+                               min_vacuum_size, relax_orient_uc):
+
+    # Function to symmetrize set of slabs with different
+    # terminations and prevent removal of too many atoms.
+
+    is_symmetric = False # Checks if slab is symmetrize
+    ssize_check = False # Checks if ssize is at least
+                        # that of the initial min_slab_size
+    new_min_slab_size = min_slab_size
+    original_num_sites = len(slab_list[0])
+
+    # First, check the symmetry of the slabs
+    Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
+                   "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
+
+    new_shifts = [slab.shift for slab in slab_list]
+    while ssize_check is False:
+
+        new_slab_list = []
+        # For loop will generate a list of symmetrized
+        # slabs of different terminations
+        for slab in slab_list:
+
+            # Get the symmetrize slab
+            slab = symmetrize_slab(slab)
+            sg = SpacegroupAnalyzer(slab, symprec=1E-3)
+            pg = sg.get_point_group()
+
+            is_symmetric = True if str(pg) in Laue_groups else False
+            # Just skip the calculation if false,
+            # further investigation will be required...
+
+            new_slab_list.append(slab)
+            new_num_sites = len(slab)
+            new_c = slab.lattice.c
+
+        # Check if we still have at least 85% of the original atoms
+        # in the structure after removing sites to obtain symmetry,
+        # otherwise, recreate the slabs again using SlabGenerator
+        # and compensate for the smaller number of sites
+
+        if 100 * (new_num_sites/original_num_sites) < 85:
+            ssize_check = False
+            new_min_slab_size += 5
+        else:
+            ssize_check = True
+
+        if new_min_slab_size > 20:
+            warnings.warn("Too many attempts at symmetrizing/increasing "
+                          "ssize, breaking out of while loop")
+            is_symmetric = False
+
+            slabs = SlabGenerator(relax_orient_uc, (0,0,1),
+                                  min_slab_size=min_slab_size,
+                                  min_vacuum_size=min_vacuum_size,
+                                  max_normal_search=max(miller_index),
+                                  primitive=True)
+            # Give up, new-slab_list will just contain the slabs as they are, unsymmetrized
+            new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
+
+            break
+
+        if not ssize_check:
+            print "making new slabs because ssize too small"
+            slabs = SlabGenerator(relax_orient_uc, (0,0,1),
+                                  min_slab_size=new_min_slab_size,
+                                  min_vacuum_size=min_vacuum_size,
+                                  max_normal_search=max(miller_index),
+                                  primitive=True)
+
+            new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
+
+    return [is_symmetric, new_slab_list]
