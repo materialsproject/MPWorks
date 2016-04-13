@@ -445,7 +445,18 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                                  min_vacuum_size,
                                                                  relax_orient_uc)
 
+        # Now check which symmetrized surface is polar
+        nonpolar_slab_list = []
         for slab in new_slab_list:
+            if slab.is_polar():
+                continue
+            nonpolar_slab_list.append(slab)
+        # If we can't find a nonpolar termination from the list,
+        # we'll have to run all terminations
+        if not nonpolar_slab_list:
+            nonpolar_slab_list.extend(new_slab_list)
+
+        for slab in nonpolar_slab_list:
 
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                         %(slab.shift)
@@ -601,73 +612,6 @@ class MoveDirectoryTask(FireTaskBase):
             if hkl in directory and mpid in directory:
                 os.system('mv %s %s' %(directory, final_directory + '/' + subdir))
 
-
-# from pymacy.surface_adsorption.wulff_dual import wulff_3d
-#
-# @explicit_serialize
-# class PostProcessingTask(FireTaskBase):
-#     """
-#     Task used for obtaining values and content that can
-#     only be otained once an entire set of calculations
-#     for a material is complete, ie. Wulff shape,
-#     weighted average surface energy and anisotropy stdev
-#     """
-#
-#     required_params = ["formula", "mpid", "vaspdbinsert_parameters"]
-#
-#     def run_task(self, fw_spec):
-#
-#         dec = MontyDecoder()
-#         mpid = dec.process_decoded(self['mpid'])
-#         formula = dec.process_decoded(self['formula'])
-#         vaspdbinsert_parameters = dec.process_decoded(self['vaspdbinsert_parameters'])
-#
-#         qe = QueryEngine(**vaspdbinsert_parameters)
-#
-#         optional_data = ["material_id", "miller_index", "surface_area"]
-#         criteria = {'material_id': mpid, 'structure_type': 'oriented_unit_cell'}
-#         slab_criteria = criteria.copy()
-#         slab_criteria["structure_type"] = "slab_cell"
-#         ucell_entry = qe.get_entries(criteria, optional_data=optional_data)
-#
-#         # Generate a dictionary consisting of only the
-#         # lowest surface energy for a set of terminations
-#         # associated with a Miller index key
-#
-#         miller_energy_dict = {}
-#         for entry in ucell_entry:
-#
-#             miller_index = entry.data["miller_index"]
-#             bulk_per_atom = entry.energy_per_atom
-#             slab_criteria["miller_index"] = miller_index
-#             slab_entries = qe.get_entries(slab_criteria, optional_data=optional_data, inc_structure=True)
-#             slab = slab_entries[0].structure
-#             slab_e = min([slab_entry.energy for slab_entry in slab_entries])
-#
-#             # calculate the surface energy in eV/A^2
-#             miller_energy_dict[miller_index] = \
-#                 (slab_e - bulk_per_atom*len(slab))/(slab_entries[0].data["surface_area"])
-#
-#         # obtain the wulff shape by getting a list of milelr indices and surface energies
-#         miller_list = [hkl for hkl in miller_energy_dict.keys()]
-#         surf_e_list = [miller_energy_dict[hkl] for hkl in miller_list]
-#
-#         # get conventional ucell
-#
-#         if "MAPI_KEY" not in os.environ:
-#             apikey = raw_input('Enter your api key (str): ')
-#         else:
-#             apikey = os.environ["MAPI_KEY"]
-#         mprester = MPRester(apikey)
-#         prim_unit_cell = mprester.get_entries(mpid,
-#                                               inc_structure=True)[0].structure
-#         spa = SpacegroupAnalyzer(prim_unit_cell)
-#         conventional_ucell = spa.get_conventional_standard_structure()
-#
-#         # generate the wulff shape
-#         wulff = wulff_3d(conventional_ucell, miller_list, surf_e_list)
-
-
 def check_termination_symmetry(slab_list, miller_index, min_slab_size,
                                min_vacuum_size, relax_orient_uc):
 
@@ -739,6 +683,13 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
                                   max_normal_search=max(miller_index),
                                   primitive=True)
 
+
+
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
+        # Check stoichiometry
+        for i, slab in new_slab_list:
+            if slab.composition.reduced_formula != slab_list[0].composition.reduced_formula:
+                print "STOICHIOMETRY HAS BEEN VIOLATED"
+                is_symmetric = False
     return [is_symmetric, new_slab_list]

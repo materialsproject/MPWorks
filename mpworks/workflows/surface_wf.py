@@ -14,6 +14,7 @@ __date__ = "6/24/15"
 
 
 import os
+import copy
 import uuid
 from gridfs import GridFS
 from pymongo import MongoClient
@@ -47,11 +48,11 @@ class SurfaceWorkflowManager(object):
         to a list of miller indices.
     """
 
-    def __init__(self, elements_and_mpids=[], indices_dict=None,
+    def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
                  slab_size=10, vac_size=10, host=None, port=None, user=None,
                  password=None, symprec=0.001, angle_tolerance=5, database=None,
                  collection="Surface_Collection", fail_safe=True, reset=False,
-                 check_exists=True):
+                 ucell_indices_dict={}, check_exists=True):
 
         """
             Args:
@@ -63,6 +64,12 @@ class SurfaceWorkflowManager(object):
                     miller indices corresponding to the composition formula
                     (key) to transform into a list of slabs. Either list_of_elements
                     or indices_dict has to be entered in.
+                ucell_dict ({some name or mpid: structure, ...}): A dictionary of
+                    conventional unit cells with custom names as keys. Will get a indices_
+                    dict using max index
+                ucell_indices_dict ({some name or mpid: {"ucell": structure, "hkl_list": [(), ...]} ...}):
+                    A dictionary of conventional unit cells and miller indices with custom
+                    names as keys. Behave similarly to indices_dict
                 host (str): For database insertion
                 port (int): For database insertion
                 user (str): For database insertion
@@ -94,8 +101,13 @@ class SurfaceWorkflowManager(object):
                                'database': database,
                                'collection': collection}
 
-        compounds = [key for key in indices_dict.keys()] \
-            if indices_dict else elements_and_mpids
+        if indices_dict:
+            compounds = [key for key in indices_dict.keys()]
+        elif ucell_dict:
+            compounds = [key for key in indices_dict.keys()]
+        else:
+            compounds = copy.copy(elements_and_mpids)
+
 
         # For loop will enumerate through all the compositional
         # formulas in list_of_elements or indices_dict to get a
@@ -111,41 +123,61 @@ class SurfaceWorkflowManager(object):
             api_key: to get access to MP DB
             """
 
-            entries = mprest.get_entries(el, inc_structure="final")
-            print "# of entries for %s: " %(el), len(entries)
+            if ucell_dict:
 
-            # First, let's get the order of energy values of,
-            # polymorphs so we can rank them by stability
-            formula = entries[0].structure.composition.reduced_formula
-            all_entries = mprest.get_entries(formula, inc_structure="final")
-            e_per_atom = [entry.energy_per_atom for entry in all_entries]
-            sorted(e_per_atom)
-            if el[:2] != 'mp':
-                # Retrieve the ground state structure if a
-                # formula is given instead of a material ID
-                for i, entry in enumerate(entries):
-                    if min(e_per_atom) == entry.energy_per_atom:
-                        prim_unit_cell = entry.structure
-                        mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
-                        polymorph_order = e_per_atom.index(entry.energy_per_atom)
-                        if indices_dict:
-                            new_indices_dict[mpid] = indices_dict[el]
+                conv_unit_cell = ucell_dict[el]
+                spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                                         angle_tolerance=angle_tolerance)
+                spacegroup = spa.get_spacegroup_symbol()
+                polymorph_order = float("nan")
+                mpid = copy.copy(el)
+
+            elif ucell_indices_dict:
+                conv_unit_cell = ucell_indices_dict[el]["ucell"]
+                spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                                         angle_tolerance=angle_tolerance)
+                spacegroup = spa.get_spacegroup_symbol()
+                polymorph_order = float("nan")
+                mpid = copy.copy(el)
+                new_indices_dict[mpid] = ucell_indices_dict[mpid]["hkl_list"]
+
+
             else:
-                # If we get a material ID instead, get its polymorph rank
-                prim_unit_cell = entries[0].structure
-                mpid = el
-                polymorph_order = e_per_atom.index(entries[0].energy_per_atom)
+                entries = mprest.get_entries(el, inc_structure="final")
+                print "# of entries for %s: " %(el), len(entries)
 
-                if indices_dict:
-                    new_indices_dict[mpid] = indices_dict[mpid]
+                # First, let's get the order of energy values of,
+                # polymorphs so we can rank them by stability
+                formula = entries[0].structure.composition.reduced_formula
+                all_entries = mprest.get_entries(formula, inc_structure="final")
+                e_per_atom = [entry.energy_per_atom for entry in all_entries]
+                sorted(e_per_atom)
+                if el[:2] != 'mp':
+                    # Retrieve the ground state structure if a
+                    # formula is given instead of a material ID
+                    for i, entry in enumerate(entries):
+                        if min(e_per_atom) == entry.energy_per_atom:
+                            prim_unit_cell = entry.structure
+                            mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
+                            polymorph_order = e_per_atom.index(entry.energy_per_atom)
+                            if indices_dict:
+                                new_indices_dict[mpid] = indices_dict[el]
+                else:
+                    # If we get a material ID instead, get its polymorph rank
+                    prim_unit_cell = entries[0].structure
+                    mpid = el
+                    polymorph_order = e_per_atom.index(entries[0].energy_per_atom)
 
-            # Get the spacegroup of the conventional unit cell
-            spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
-                                     angle_tolerance=angle_tolerance)
-            conv_unit_cell = spa.get_conventional_standard_structure()
-            print conv_unit_cell
-            spacegroup = mprest.get_data(mpid, prop="spacegroup")[0]["spacegroup"]["symbol"]
-            print spacegroup
+                    if indices_dict:
+                        new_indices_dict[mpid] = indices_dict[mpid]
+
+                # Get the spacegroup of the conventional unit cell
+                spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                                         angle_tolerance=angle_tolerance)
+                conv_unit_cell = spa.get_conventional_standard_structure()
+                print conv_unit_cell
+                spacegroup = mprest.get_data(mpid, prop="spacegroup")[0]["spacegroup"]["symbol"]
+                print spacegroup
 
             # Get a dictionary of different properties for a particular material
             unit_cells_dict[mpid] = {"ucell": conv_unit_cell, "spacegroup": spacegroup,
@@ -594,4 +626,42 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
     wf = Workflow(fws, name='Surface Calculations')
     launchpad.add_wf(wf)
 
+class SurfaceWorkflowManagerManuel(object):
+
+    """
+        Initializes the workflow manager by taking in a list of
+        formulas/mpids or a dictionary with the formula as the key referring
+        to a list of miller indices.
+    """
+
+    def __init__(self, elements_and_mpids=[], indices_dict=None,
+                 slab_size=10, vac_size=10, host=None, port=None, user=None,
+                 password=None, symprec=0.001, angle_tolerance=5, database=None,
+                 collection="Surface_Collection", fail_safe=True, reset=False,
+                 check_exists=True):
+
+        """
+            Args:
+                api_key (str): A String API key for accessing the MaterialsProject
+                list_of_elements ([str, ...]): A list of compounds or elements to create
+                    slabs from. Must be a string that can be searched for with MPRester.
+                    Either list_of_elements or indices_dict has to be entered in.
+                indices_dict ({element(str): [[h,k,l], ...]}): A dictionary of
+                    miller indices corresponding to the composition formula
+                    (key) to transform into a list of slabs. Either list_of_elements
+                    or indices_dict has to be entered in.
+                host (str): For database insertion
+                port (int): For database insertion
+                user (str): For database insertion
+                password (str): For database insertion
+                symprec (float): See SpaceGroupAnalyzer in analyzer.py
+                angle_tolerance (int): See SpaceGroupAnalyzer in analyzer.py
+                database (str): For database insertion
+                collection (str): For database insertion
+                fail_safe (bool): Check for slabs/bulk structures with
+                    more than 200 atoms (defaults to True)
+                reset (bool): Reset your launchpad (defaults to False)
+                check_exists (bool): Check if slab/bulk calculation
+                    has already been completed
+        """
 
