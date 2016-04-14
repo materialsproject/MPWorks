@@ -260,7 +260,7 @@ class WriteAtomVaspInputs(FireTaskBase):
         kpoints0 = \
             dec.process_decoded(self.get("kpoints0", 1))
         potcar_functional = \
-            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+            dec.process_decoded(self.get("potcar_functional", 'PBE'))
 
 
         mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
@@ -309,7 +309,7 @@ class WriteUCVaspInputs(FireTaskBase):
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
-            dec.process_decoded(self.get("potcar_fuctional"))
+            dec.process_decoded(self.get("potcar_functional"))
         oxides = \
             dec.process_decoded(self.get("oxides", False))
 
@@ -384,7 +384,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
-            dec.process_decoded(self.get("potcar_fuctional"))
+            dec.process_decoded(self.get("potcar_functional"))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
