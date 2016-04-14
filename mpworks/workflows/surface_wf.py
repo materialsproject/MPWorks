@@ -102,9 +102,11 @@ class SurfaceWorkflowManager(object):
                                'collection': collection}
 
         if indices_dict:
-            compounds = [key for key in indices_dict.keys()]
+            compounds = indices_dict.keys()
         elif ucell_dict:
-            compounds = [key for key in indices_dict.keys()]
+            compounds = ucell_dict.keys()
+        elif ucell_indices_dict:
+            compounds = ucell_indices_dict.keys()
         else:
             compounds = copy.copy(elements_and_mpids)
 
