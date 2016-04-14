@@ -415,7 +415,7 @@ class CreateSurfaceWorkflow(object):
         self.get_bulk_e = get_bulk_e
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
-                        user_incar_settings=None, potcar_functional='PBE',
+                        user_incar_settings=None, potcar_functional='PBE', oxides=False,
                         additional_handlers=[], scratch_dir=None, final_directory="."):
 
         """
@@ -520,7 +520,7 @@ class CreateSurfaceWorkflow(object):
                                                folder=folderbulk, cwd=cwd,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
-                                               k_product=k_product),
+                                               k_product=k_product, oxides=oxides),
                                  RunCustodianTask(dir=folderbulk, cwd=cwd,
                                                   custodian_params=cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
@@ -541,7 +541,8 @@ class CreateSurfaceWorkflow(object):
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize, mpid=mpid,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
-                                                  polymorph=self.unit_cells_dict[mpid]["polymorph"])])
+                                                  polymorph=self.unit_cells_dict[mpid]["polymorph"],
+                                                  oxides=oxides)])
 
                 fw = Firework(tasks, name=folderbulk)
 

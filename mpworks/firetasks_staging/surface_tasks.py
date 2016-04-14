@@ -19,7 +19,7 @@ from custodian.vasp.jobs import VaspJob
 from matgendb.creator import VaspToDbTaskDrone
 from matgendb import QueryEngine
 
-from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSet
+from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSetMetals, MPSlabVaspInputSetOxides
 from pymatgen.io.vasp.outputs import Incar, Outcar, Poscar, Oszicar
 from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab
 from pymatgen.core.structure import Structure, Lattice
@@ -256,14 +256,14 @@ class WriteAtomVaspInputs(FireTaskBase):
 
         user_incar_settings = \
             dec.process_decoded(self.get("user_incar_settings",
-                                         MPSlabVaspInputSet().incar_settings))
+                                         MPSlabVaspInputSetMetals().incar_settings))
         kpoints0 = \
             dec.process_decoded(self.get("kpoints0", 1))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
 
 
-        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
+        mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
                                   kpoints0=[kpoints0]*3, bulk=False,
                                   potcar_functional=potcar_functional,
                                   ediff_per_atom=False)
@@ -282,7 +282,7 @@ class WriteUCVaspInputs(FireTaskBase):
     """
 
     required_params = ["oriented_ucell", "folder", "cwd"]
-    optional_params = ["user_incar_settings",
+    optional_params = ["user_incar_settings", "oxides",
                        "k_product", "potcar_functional"]
 
     def run_task(self, fw_spec):
@@ -306,19 +306,31 @@ class WriteUCVaspInputs(FireTaskBase):
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
 
-        user_incar_settings = \
-            dec.process_decoded(self.get("user_incar_settings",
-                                         MPSlabVaspInputSet().incar_settings))
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+        oxides = \
+            dec.process_decoded(self.get("oxides", False))
+
+        if oxides:
+            user_incar_settings = \
+                dec.process_decoded(self.get("user_incar_settings",
+                                             MPSlabVaspInputSetOxides().incar_settings))
+            mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
+                                      k_product=k_product, bulk=True,
+                                      potcar_functional=potcar_functional,
+                                      ediff_per_atom=False)
+        else:
+            user_incar_settings = \
+                dec.process_decoded(self.get("user_incar_settings",
+                                             MPSlabVaspInputSetMetals().incar_settings))
+            mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
+                                      k_product=k_product, bulk=True,
+                                      potcar_functional=potcar_functional,
+                                      ediff_per_atom=False)
 
 
-        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                  k_product=k_product, bulk=True,
-                                  potcar_functional=potcar_functional,
-                                  ediff_per_atom=False)
         mplb.write_input(oriented_ucell, cwd+folder)
 
 
@@ -334,7 +346,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters", "miller_index",
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
-                       "user_incar_settings",
+                       "user_incar_settings", "oxides",
                        "k_product","potcar_functional"]
 
     def run_task(self, fw_spec):
@@ -369,9 +381,6 @@ class WriteSlabVaspInputs(FireTaskBase):
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))
 
-        user_incar_settings = \
-            dec.process_decoded(self.get("user_incar_settings",
-                                         MPSlabVaspInputSet().incar_settings))
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
@@ -382,13 +391,24 @@ class WriteSlabVaspInputs(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
+        oxides = dec.process_decoded(self.get("oxides", False))
 
-        #is_primitive = True
-
-        mplb = MPSlabVaspInputSet(user_incar_settings=user_incar_settings,
-                                  k_product=k_product,
-                                  potcar_functional=potcar_functional,
-                                  ediff_per_atom=False)
+        if oxides:
+            user_incar_settings = \
+                dec.process_decoded(self.get("user_incar_settings",
+                                             MPSlabVaspInputSetOxides().incar_settings))
+            mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
+                                      k_product=k_product,
+                                      potcar_functional=potcar_functional,
+                                      ediff_per_atom=False)
+        else:
+            user_incar_settings = \
+                dec.process_decoded(self.get("user_incar_settings",
+                                             MPSlabVaspInputSetMetals().incar_settings))
+            mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
+                                      k_product=k_product,
+                                      potcar_functional=potcar_functional,
+                                      ediff_per_atom=False)
 
         # Create slabs from the relaxed oriented unit cell. Since the unit
         # cell is already oriented with the miller index, entering (0,0,1)
