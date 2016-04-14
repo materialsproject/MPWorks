@@ -281,9 +281,9 @@ class WriteUCVaspInputs(FireTaskBase):
         Writes VASP inputs for an oriented unit cell
     """
 
-    required_params = ["oriented_ucell", "folder", "cwd"]
+    required_params = ["oriented_ucell", "folder", "cwd", "potcar_functional"]
     optional_params = ["user_incar_settings", "oxides",
-                       "k_product", "potcar_functional"]
+                       "k_product"]
 
     def run_task(self, fw_spec):
 
@@ -296,9 +296,9 @@ class WriteUCVaspInputs(FireTaskBase):
             Optional Parameters:
                 user_incar_settings (dict): See launch_workflow() method in
                     CreateSurfaceWorkflow class
-                k_product (dict): See launch_workflow() method in
+                k_product (int): See launch_workflow() method in
                     CreateSurfaceWorkflow class
-                potcar_functional (dict): See launch_workflow() method in
+                potcar_functional (str): See launch_workflow() method in
                     CreateSurfaceWorkflow class
         """
         dec = MontyDecoder()
@@ -309,7 +309,7 @@ class WriteUCVaspInputs(FireTaskBase):
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
-            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+            dec.process_decoded(self.get("potcar_fuctional"))
         oxides = \
             dec.process_decoded(self.get("oxides", False))
 
@@ -342,12 +342,12 @@ class WriteSlabVaspInputs(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "cwd", "custodian_params",
+    required_params = ["folder", "cwd", "custodian_params", "potcar_functional",
                        "vaspdbinsert_parameters", "miller_index",
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings", "oxides",
-                       "k_product","potcar_functional"]
+                       "k_product"]
 
     def run_task(self, fw_spec):
 
@@ -369,9 +369,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                 min_slab_size (float): Size of slab layer of slab in Angstroms
                 user_incar_settings (dict): See launch_workflow() method in
                     CreateSurfaceWorkflow class
-                k_product (dict): See launch_workflow() method in
+                k_product (int): See launch_workflow() method in
                     CreateSurfaceWorkflow class
-                potcar_functional (dict): See launch_workflow() method in
+                potcar_functional (str): See launch_workflow() method in
                     CreateSurfaceWorkflow class
         """
         dec = MontyDecoder()
@@ -384,7 +384,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
         potcar_functional = \
-            dec.process_decoded(self.get("potcar_fuctional", 'PBE'))
+            dec.process_decoded(self.get("potcar_fuctional"))
         min_slab_size = dec.process_decoded(self.get("min_slab_size", 10))
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
