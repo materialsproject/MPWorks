@@ -128,7 +128,7 @@ class SurfaceWorkflowManager(object):
             if ucell_dict:
 
                 conv_unit_cell = ucell_dict[el]
-                spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                spa = SpacegroupAnalyzer(conv_unit_cell, symprec=symprec,
                                          angle_tolerance=angle_tolerance)
                 spacegroup = spa.get_spacegroup_symbol()
                 polymorph_order = float("nan")
@@ -136,7 +136,7 @@ class SurfaceWorkflowManager(object):
 
             elif ucell_indices_dict:
                 conv_unit_cell = ucell_indices_dict[el]["ucell"]
-                spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                spa = SpacegroupAnalyzer(conv_unit_cell, symprec=symprec,
                                          angle_tolerance=angle_tolerance)
                 spacegroup = spa.get_spacegroup_symbol()
                 polymorph_order = float("nan")
