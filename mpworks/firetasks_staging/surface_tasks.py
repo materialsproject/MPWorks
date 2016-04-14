@@ -106,23 +106,21 @@ class VaspSlabDBInsertTask(FireTaskBase):
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))
 
-        if struct_type == "slab_cell":
+        qe = QueryEngine(**vaspdbinsert_parameters)
 
-            initial = Structure.from_file(cwd+loc+'/POSCAR')
-            final = Structure.from_file(cwd+loc+'/CONTCAR.relax2.gz')
+        warnings = []
 
-            warnings = []
+        # Check if the spacegroup queried from MP API consistent
+        # with the one calculated from the queried structure
+        queried_sg = spacegroup
+        spa = SpacegroupAnalyzer(conventional_unit_cell,
+                                 symprec=0.001, angle_tolerance=5)
+        calculated_sg = spa.get_spacegroup_symbol()
+        if str(calculated_sg) != queried_sg:
+            warnings.append("api_mp_spacegroup_inconsistent")
 
-            # Check if the spacegroup queried from MP API consistent
-            # with the one calculated from the queried structure
-            queried_sg = spacegroup
-            spa = SpacegroupAnalyzer(conventional_unit_cell,
-                                     symprec=0.001, angle_tolerance=5)
-            calculated_sg = spa.get_spacegroup_symbol()
-            if str(calculated_sg) != queried_sg:
-                warnings.append("api_mp_spacegroup_inconsistent")
+        if struct_type == "oriented_unit_cell":
 
-            qe = QueryEngine(**vaspdbinsert_parameters)
             optional_data = ["final_structure", "initial_structure"]
             ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
                                           'structure_type': 'oriented_unit_cell'},
@@ -136,6 +134,11 @@ class VaspSlabDBInsertTask(FireTaskBase):
             relaxation = RelaxationAnalyzer(init_bulk, fin_bulk)
             if abs(relaxation.get_percentage_volume_change()*100) > 1:
                 warnings.append("|bulk_vol_rel|>1%")
+
+        if struct_type == "slab_cell":
+
+            initial = Structure.from_file(cwd+loc+'/POSCAR')
+            final = Structure.from_file(cwd+loc+'/CONTCAR.relax2.gz')
 
             # Analyze slab site relaxations for possible
             # warning signs, too much site relaxation
