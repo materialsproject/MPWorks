@@ -286,7 +286,7 @@ class WriteUCVaspInputs(FireTaskBase):
 
     required_params = ["oriented_ucell", "folder", "cwd", "potcar_functional"]
     optional_params = ["user_incar_settings", "oxides",
-                       "k_product"]
+                       "k_product", "gpu"]
 
     def run_task(self, fw_spec):
 
@@ -308,6 +308,7 @@ class WriteUCVaspInputs(FireTaskBase):
         oriented_ucell = dec.process_decoded(self.get("oriented_ucell"))
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
+        gpu = dec.process_decoded(self.get("gpu", False))
 
         k_product = \
             dec.process_decoded(self.get("k_product", 50))
@@ -321,15 +322,15 @@ class WriteUCVaspInputs(FireTaskBase):
                 dec.process_decoded(self.get("user_incar_settings",
                                              MPSlabVaspInputSetOxides().incar_settings))
             mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=True,
-                                      potcar_functional=potcar_functional,
-                                      ediff_per_atom=False)
+                                            k_product=k_product, bulk=True,
+                                            ediff_per_atom=True, gpu=gpu,
+                                            potcar_functional=potcar_functional)
         else:
             user_incar_settings = \
                 dec.process_decoded(self.get("user_incar_settings",
                                              MPSlabVaspInputSetMetals().incar_settings))
             mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=True,
+                                      k_product=k_product, bulk=True, gpu=gpu,
                                       potcar_functional=potcar_functional,
                                       ediff_per_atom=False)
 
@@ -350,7 +351,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings", "oxides",
-                       "k_product"]
+                       "k_product", "gpu"]
 
     def run_task(self, fw_spec):
 
@@ -395,21 +396,22 @@ class WriteSlabVaspInputs(FireTaskBase):
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
         oxides = dec.process_decoded(self.get("oxides", False))
+        gpu = dec.process_decoded(self.get("gpu", False))
 
         if oxides:
             user_incar_settings = \
                 dec.process_decoded(self.get("user_incar_settings",
                                              MPSlabVaspInputSetOxides().incar_settings))
             mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
-                                      k_product=k_product,
+                                      k_product=k_product, gpu=gpu,
                                       potcar_functional=potcar_functional,
-                                      ediff_per_atom=False)
+                                      ediff_per_atom=True)
         else:
             user_incar_settings = \
                 dec.process_decoded(self.get("user_incar_settings",
                                              MPSlabVaspInputSetMetals().incar_settings))
             mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
-                                      k_product=k_product,
+                                      k_product=k_product, gpu=gpu,
                                       potcar_functional=potcar_functional,
                                       ediff_per_atom=False)
 

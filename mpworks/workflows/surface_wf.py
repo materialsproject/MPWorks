@@ -416,7 +416,7 @@ class CreateSurfaceWorkflow(object):
         self.fail_safe = fail_safe
         self.get_bulk_e = get_bulk_e
 
-    def launch_workflow(self, launchpad_dir="", k_product=50, job=None,
+    def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
                         additional_handlers=[], scratch_dir=None, final_directory="."):
 
@@ -519,7 +519,7 @@ class CreateSurfaceWorkflow(object):
                 cwd = os.getcwd()
                 if self.get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                               folder=folderbulk, cwd=cwd,
+                                               folder=folderbulk, cwd=cwd, gpu=gpu,
                                                user_incar_settings=user_incar_settings,
                                                potcar_functional=potcar_functional,
                                                k_product=k_product, oxides=oxides),
@@ -538,7 +538,7 @@ class CreateSurfaceWorkflow(object):
                                                   vaspdbinsert_parameters=
                                                   self.vaspdbinsert_params,
                                                   potcar_functional=potcar_functional,
-                                                  k_product=k_product,
+                                                  k_product=k_product, gpu=gpu,
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize, mpid=mpid,
