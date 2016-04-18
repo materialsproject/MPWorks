@@ -44,10 +44,10 @@ class VaspSlabDBInsertTask(FireTaskBase):
         to slabs and oriented unit cells.
     """
 
-    required_params = ["vaspdbinsert_parameters", "mpid",
+    required_params = ["vaspdbinsert_parameters", "mpid", "conventional_unit_cell",
                        "struct_type", "loc","miller_index",
                        "cwd", "conventional_spacegroup", "polymorph"]
-    optional_params = ["surface_area", "shift", "conventional_unit_cell",
+    optional_params = ["surface_area", "shift",
                        "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
@@ -101,7 +101,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         mpid = dec.process_decoded(self.get("mpid"))
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
-        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell", None))
+        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))

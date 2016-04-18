@@ -528,6 +528,7 @@ class CreateSurfaceWorkflow(object):
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
                                                       loc=folderbulk, cwd=cwd,
                                                       miller_index=miller_index, mpid=mpid,
+                                                      conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                       conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                       polymorph=self.unit_cells_dict[mpid]["polymorph"],
                                                       vaspdbinsert_parameters=self.vaspdbinsert_params)])
