@@ -542,6 +542,7 @@ class CreateSurfaceWorkflow(object):
                                                   k_product=k_product, gpu=gpu,
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
+                                                  conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   min_vacuum_size=self.vsize, mpid=mpid,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                   polymorph=self.unit_cells_dict[mpid]["polymorph"],
@@ -621,6 +622,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                                       loc=folder_atom, cwd=cwd,
                                       miller_index=None, mpid=None,
                                       conventional_spacegroup=None,
+                                      conventional_unit_cell=None,
                                       isolated_atom=el,
                                       polymorph=None,
                                       vaspdbinsert_parameters=vaspdbinsert_params)]

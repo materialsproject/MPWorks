@@ -347,7 +347,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "cwd", "custodian_params", "potcar_functional",
-                       "vaspdbinsert_parameters", "miller_index",
+                       "vaspdbinsert_parameters", "miller_index", "conventional_unit_cell",
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings", "oxides",
@@ -397,6 +397,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
         oxides = dec.process_decoded(self.get("oxides", False))
         gpu = dec.process_decoded(self.get("gpu", False))
+        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
 
         if oxides:
             user_incar_settings = \
@@ -452,16 +453,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         # Make a slab from scratch to double check
         # if we're using the most reduced structure
-
-        if "MAPI_KEY" not in os.environ:
-            apikey = raw_input('Enter your api key (str): ')
-        else:
-            apikey = os.environ["MAPI_KEY"]
-        mprester = MPRester(apikey)
-        prim_unit_cell = mprester.get_entries(mpid,
-                                              inc_structure=True)[0].structure
-        spa = SpacegroupAnalyzer(prim_unit_cell)
-        conventional_ucell = spa.get_conventional_standard_structure()
 
         # Now create the slab(s) and ensure the surfaces are
         # symmeric and the ssize is at least that of min_slab_size
@@ -546,7 +537,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                 miller_index=miller_index,
                                                 mpid=mpid, conventional_spacegroup=spacegroup,
                                                 polymorph=polymorph,
-                                                conventional_unit_cell=conventional_ucell,
+                                                conventional_unit_cell=conventional_unit_cell,
                                                 vaspdbinsert_parameters=vaspdbinsert_parameters)],
                           name=new_folder)
 
