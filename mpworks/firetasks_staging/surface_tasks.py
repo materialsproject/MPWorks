@@ -704,8 +704,9 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
         # Check stoichiometry
-        for i, slab in new_slab_list:
+        for slab in new_slab_list:
             if slab.composition.reduced_formula != slab_list[0].composition.reduced_formula:
                 print "STOICHIOMETRY HAS BEEN VIOLATED"
                 is_symmetric = False
+                
     return [is_symmetric, new_slab_list]
