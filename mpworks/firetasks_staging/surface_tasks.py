@@ -456,10 +456,15 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         # Now create the slab(s) and ensure the surfaces are
         # symmeric and the ssize is at least that of min_slab_size
-        is_symmetric, new_slab_list = check_termination_symmetry(slab_list, miller_index,
-                                                                 min_slab_size,
-                                                                 min_vacuum_size,
-                                                                 relax_orient_uc)
+        new_slab_list = check_termination_symmetry(slab_list, miller_index,
+                                                   min_slab_size,
+                                                   min_vacuum_size,
+                                                   relax_orient_uc)
+
+        # If no stoichiometric/symmetric slab can be
+        # generated, don't bother generating a fw
+        if not new_slab_list:
+            return
 
         # Now check which symmetrized surface is polar
         nonpolar_slab_list = []
@@ -507,10 +512,9 @@ class WriteSlabVaspInputs(FireTaskBase):
             # related errors, ISIF = 2 to prevent lattice relaxation in the slab.
 
             slab_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'slab_cell',
-                                    'miller_index': miller_index}, inc_structure=True,
-                                   optional_data=optional_data)
+                                         'miller_index': miller_index}, inc_structure=True,
+                                        optional_data=optional_data)
             incar = slab_entry[0].data["final_incar"] if slab_entry else ucell_entry.data["final_incar"]
-            print incar
             incar = Incar.from_dict(incar)
 
             incar.__setitem__('MAGMOM', mag)
@@ -545,8 +549,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             FWs.append(fw)
 
         # Skip this calculation if the surfaces aren't symmetric
-        if is_symmetric:
-            return FWAction(additions=FWs)
+        return FWAction(additions=FWs)
 
 
 @explicit_serialize
@@ -703,11 +706,13 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
 
 
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
+            stoichiometric_slabs = []
 
         # Check stoichiometry
         for slab in new_slab_list:
             if slab.composition.reduced_formula != relax_orient_uc.composition.reduced_formula:
                 print "STOICHIOMETRY HAS BEEN VIOLATED"
-                is_symmetric = False
+            else:
+                stoichiometric_slabs.append(slab)
 
-    return [is_symmetric, new_slab_list]
+    return stoichiometric_slabs
