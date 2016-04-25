@@ -506,6 +506,7 @@ class CreateSurfaceWorkflow(object):
                 oriented_uc = slab.oriented_unit_cell
 
                 if self.fail_safe and len(oriented_uc)> 199:
+                    print "UCELL EXCEEDED 199 ATOMS!!!"
                     break
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
