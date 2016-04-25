@@ -14,7 +14,7 @@ from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
 
 from custodian.custodian import Custodian
-from custodian.vasp.jobs import VaspJob
+from pymongo import MongoClient
 
 from matgendb.creator import VaspToDbTaskDrone
 from matgendb import QueryEngine
@@ -216,7 +216,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   additional_fields=additional_fields,
                                   **vaspdbinsert_parameters)
         drone.assimilate(cwd+loc)
-
 
 @explicit_serialize
 class WriteAtomVaspInputs(FireTaskBase):
@@ -528,6 +527,10 @@ class WriteSlabVaspInputs(FireTaskBase):
             incar.__setitem__('ISTART', 0)
             incar.__setitem__('NELMIN', 8)
             incar.__setitem__('IBRION', 2)
+            if gpu:
+                incar.__setitem__('KPAR', 1)
+                del incar["NPAR"]
+
             if "NBANDS" in incar.keys():
                 incar.pop("NBANDS")
             incar.write_file(cwd+new_folder+'/INCAR')

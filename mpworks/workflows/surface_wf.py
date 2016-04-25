@@ -51,7 +51,7 @@ class SurfaceWorkflowManager(object):
     def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
                  slab_size=10, vac_size=10, host=None, port=None, user=None,
                  password=None, symprec=0.001, angle_tolerance=5, database=None,
-                 collection="Surface_Collection", fail_safe=True, reset=False,
+                 collection="surface_tasks", fail_safe=True, reset=False,
                  ucell_indices_dict={}, check_exists=True):
 
         """
@@ -142,8 +142,6 @@ class SurfaceWorkflowManager(object):
                 polymorph_order = float("nan")
                 mpid = copy.copy(el)
                 new_indices_dict[mpid] = ucell_indices_dict[mpid]["hkl_list"]
-
-
             else:
                 entries = mprest.get_entries(el, inc_structure="final")
                 print "# of entries for %s: " %(el), len(entries)
@@ -151,27 +149,26 @@ class SurfaceWorkflowManager(object):
                 # First, let's get the order of energy values of,
                 # polymorphs so we can rank them by stability
                 formula = entries[0].structure.composition.reduced_formula
-                all_entries = mprest.get_entries(formula, inc_structure="final")
+                all_entries = mprest.get_entries(formula, inc_structure="final",
+                                                 property_data=["material_id"])
                 e_per_atom = [entry.energy_per_atom for entry in all_entries]
-                sorted(e_per_atom)
+                e_per_atom, all_entries = zip(*sorted(zip(e_per_atom, all_entries)))
+                mpids = [entry.data["material_id"] for entry in all_entries]
+
                 if el[:2] != 'mp':
                     # Retrieve the ground state structure if a
                     # formula is given instead of a material ID
-                    for i, entry in enumerate(entries):
-                        if min(e_per_atom) == entry.energy_per_atom:
-                            prim_unit_cell = entry.structure
-                            mpid = mprest.get_data(el, prop='material_id')[i]['material_id']
-                            polymorph_order = e_per_atom.index(entry.energy_per_atom)
-                            if indices_dict:
-                                new_indices_dict[mpid] = indices_dict[el]
+                    prim_unit_cell = all_entries[0].structure
+                    mpid = all_entries[0].data["material_id"]
+                    polymorph_order = 0
                 else:
                     # If we get a material ID instead, get its polymorph rank
                     prim_unit_cell = entries[0].structure
                     mpid = el
-                    polymorph_order = e_per_atom.index(entries[0].energy_per_atom)
+                    polymorph_order = mpids.index(mpid)
 
-                    if indices_dict:
-                        new_indices_dict[mpid] = indices_dict[mpid]
+                if indices_dict:
+                    new_indices_dict[mpid] = indices_dict[mpid]
 
                 # Get the spacegroup of the conventional unit cell
                 spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
@@ -418,7 +415,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
-                        additional_handlers=[], scratch_dir=None, final_directory="."):
+                        additional_handlers=[], scratch_dir=None):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -519,10 +516,10 @@ class CreateSurfaceWorkflow(object):
                 cwd = os.getcwd()
                 if self.get_bulk_e:
                     tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                               folder=folderbulk, cwd=cwd, gpu=gpu,
-                                               user_incar_settings=user_incar_settings,
-                                               potcar_functional=potcar_functional,
-                                               k_product=k_product, oxides=oxides),
+                                                    folder=folderbulk, cwd=cwd, gpu=gpu,
+                                                    user_incar_settings=user_incar_settings,
+                                                    potcar_functional=potcar_functional,
+                                                    k_product=k_product, oxides=oxides),
                                  RunCustodianTask(dir=folderbulk, cwd=cwd,
                                                   custodian_params=cust_params),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
