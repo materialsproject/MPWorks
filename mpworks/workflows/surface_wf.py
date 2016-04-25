@@ -365,9 +365,13 @@ class SurfaceWorkflowManager(object):
                                                get_bulk_e=False, **wf_kwargs)
 
         print "total number of Indices: ", total_calculations
-        print "total number of calculations with no bulk: ", total_calcs_with_nobulk
-        print "total number of calculations with bulk: ", total_calcs_with_bulk
+        print
+        print "total number of calculations with no bulk: ", total_calcs_with_nobulk, calculate_with_slab_only
+        print
+        print "total number of calculations with bulk: ", total_calcs_with_bulk, calculate_with_bulk
+        print
         print "total number of calculations already finished: ", total_calcs_finished
+        print
 
         return [with_bulk, with_slab_only]
 
