@@ -459,18 +459,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         if not new_slab_list:
             return
 
-        # Now check which symmetrized surface is polar
-        nonpolar_slab_list = []
         for slab in new_slab_list:
-            if slab.is_polar():
-                continue
-            nonpolar_slab_list.append(slab)
-        # If we can't find a nonpolar termination from the list,
-        # we'll have to run all terminations
-        if not nonpolar_slab_list:
-            nonpolar_slab_list.extend(new_slab_list)
-
-        for slab in nonpolar_slab_list:
 
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                         %(slab.shift)
@@ -707,12 +696,4 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
 
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
-        # Check stoichiometry
-        stoichiometric_slabs = []
-        for slab in new_slab_list:
-            if slab.composition.reduced_formula != relax_orient_uc.composition.reduced_formula:
-                print "STOICHIOMETRY HAS BEEN VIOLATED"
-            else:
-                stoichiometric_slabs.append(slab)
-
-    return stoichiometric_slabs
+    return new_slab_list
