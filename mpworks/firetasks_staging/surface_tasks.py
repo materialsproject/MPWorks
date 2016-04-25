@@ -119,21 +119,21 @@ class VaspSlabDBInsertTask(FireTaskBase):
         if str(calculated_sg) != queried_sg:
             warnings.append("api_mp_spacegroup_inconsistent")
 
-        optional_data = ["final_structure", "initial_structure"]
-        ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
-                                      'structure_type': 'oriented_unit_cell'},
-                                     optional_data=optional_data)[0]
-
-        init_bulk = Structure.from_dict(ucell_entry.data["initial_structure"])
-        fin_bulk = Structure.from_dict(ucell_entry.data["final_structure"])
-
-        # Analyze bulk relaxations for possible
-        # warning signs, too much volume relaxation
-        relaxation = RelaxationAnalyzer(init_bulk, fin_bulk)
-        if abs(relaxation.get_percentage_volume_change()*100) > 1:
-            warnings.append("|bulk_vol_rel|>1%")
-
         if struct_type == "slab_cell":
+
+            optional_data = ["final_structure", "initial_structure"]
+            ucell_entry = qe.get_entries({'material_id': mpid, 'miller_index': miller_index,
+                                          'structure_type': 'oriented_unit_cell'},
+                                         optional_data=optional_data)[0]
+
+            init_bulk = Structure.from_dict(ucell_entry.data["initial_structure"])
+            fin_bulk = Structure.from_dict(ucell_entry.data["final_structure"])
+
+            # Analyze bulk relaxations for possible
+            # warning signs, too much volume relaxation
+            relaxation = RelaxationAnalyzer(init_bulk, fin_bulk)
+            if abs(relaxation.get_percentage_volume_change()*100) > 1:
+                warnings.append("|bulk_vol_rel|>1%")
 
             initial = Structure.from_file(cwd+loc+'/POSCAR')
             final = Structure.from_file(cwd+loc+'/CONTCAR.relax2.gz')
