@@ -399,17 +399,13 @@ class WriteSlabVaspInputs(FireTaskBase):
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
 
         if oxides:
-            user_incar_settings = \
-                dec.process_decoded(self.get("user_incar_settings",
-                                             MPSlabVaspInputSetOxides().incar_settings))
+            user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
             mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
                                       k_product=k_product, gpu=gpu,
                                       potcar_functional=potcar_functional,
                                       ediff_per_atom=True)
         else:
-            user_incar_settings = \
-                dec.process_decoded(self.get("user_incar_settings",
-                                             MPSlabVaspInputSetMetals().incar_settings))
+            user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
             mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
                                       k_product=k_product, gpu=gpu,
                                       potcar_functional=potcar_functional,
@@ -528,8 +524,11 @@ class WriteSlabVaspInputs(FireTaskBase):
             incar.__setitem__('NELMIN', 8)
             incar.__setitem__('IBRION', 2)
             if gpu:
-                incar.__setitem__('KPAR', 1)
+                if not incar["KPAR"]:
+                    incar.__setitem__('KPAR', 1)
                 del incar["NPAR"]
+
+            incar.update(user_incar_settings)
 
             if "NBANDS" in incar.keys():
                 incar.pop("NBANDS")
