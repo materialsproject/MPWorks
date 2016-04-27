@@ -15,8 +15,6 @@ __date__ = "6/24/15"
 
 import os
 import copy
-import uuid
-from gridfs import GridFS
 from pymongo import MongoClient
 db = MongoClient().data
 
@@ -27,9 +25,9 @@ from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
-from custodian.vasp.surface_handlers import SurfaceFrozenJobErrorHandler, \
-    SurfacePositiveEnergyErrorHandler, SurfacePotimErrorHandler, \
-    SurfaceVaspErrorHandler
+# from custodian.vasp.surface_handlers import SurfaceFrozenJobErrorHandler, \
+#     SurfacePositiveEnergyErrorHandler, SurfacePotimErrorHandler, \
+#     SurfaceVaspErrorHandler
 
 from pymatgen.core.surface import SlabGenerator, GetMillerIndices
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
@@ -462,13 +460,13 @@ class CreateSurfaceWorkflow(object):
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
                     VaspErrorHandler(),
-                    FrozenJobErrorHandler(output_filename="OSZICAR", timeout=3600),
+                    FrozenJobErrorHandler(output_filename="OSZICAR", timeout=3600)]#,
                     # If none of the usual custodian handlers work, use the
                     # altered surface specific handlers as a last resort
-                    SurfacePositiveEnergyErrorHandler(),
-                    SurfacePotimErrorHandler(),
-                    SurfaceVaspErrorHandler(),
-                    SurfaceFrozenJobErrorHandler(output_filename="OSZICAR")]
+                    # SurfacePositiveEnergyErrorHandler(),
+                    # SurfacePotimErrorHandler(),
+                    # SurfaceVaspErrorHandler(),
+                    # SurfaceFrozenJobErrorHandler(output_filename="OSZICAR")]
 
         if additional_handlers:
             handlers.extend(additional_handlers)

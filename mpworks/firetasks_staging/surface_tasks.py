@@ -14,16 +14,14 @@ from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
 
 from custodian.custodian import Custodian
-from pymongo import MongoClient
 
 from matgendb.creator import VaspToDbTaskDrone
 from matgendb import QueryEngine
 
 from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSetMetals, MPSlabVaspInputSetOxides
-from pymatgen.io.vasp.outputs import Incar, Outcar, Poscar, Oszicar
-from pymatgen.core.surface import SlabGenerator, GetMillerIndices, symmetrize_slab
+from pymatgen.io.vasp.outputs import Incar, Outcar, Oszicar
+from pymatgen.core.surface import SlabGenerator, symmetrize_slab
 from pymatgen.core.structure import Structure, Lattice
-from pymatgen.matproj.rest import MPRester
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_analyzer import RelaxationAnalyzer, VoronoiConnectivity
 
@@ -47,7 +45,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
     required_params = ["vaspdbinsert_parameters", "mpid", "conventional_unit_cell",
                        "struct_type", "loc","miller_index",
                        "cwd", "conventional_spacegroup", "polymorph"]
-    optional_params = ["surface_area", "shift",
+    optional_params = ["surface_area", "shift", "debug",
                        "vsize", "ssize", "isolated_atom"]
 
     def run_task(self, fw_spec):
@@ -105,6 +103,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))
+        debug = dec.process_decoded(self.get("debug", False))
 
         qe = QueryEngine(**vaspdbinsert_parameters)
 
@@ -227,7 +226,7 @@ class WriteAtomVaspInputs(FireTaskBase):
 
     required_params = ["atom", "folder", "cwd"]
     optional_params = ["user_incar_settings", "potcar_functional",
-                       "latt_a", "kpoints", ]
+                       "latt_a", "kpoints", "debug"]
 
     def run_task(self, fw_spec):
 
@@ -261,6 +260,7 @@ class WriteAtomVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("kpoints0", 1))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_functional", 'PBE'))
+        debug = dec.process_decoded(self.get("debug", False))
 
 
         mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
@@ -283,7 +283,7 @@ class WriteUCVaspInputs(FireTaskBase):
 
     required_params = ["oriented_ucell", "folder", "cwd", "potcar_functional"]
     optional_params = ["user_incar_settings", "oxides",
-                       "k_product", "gpu"]
+                       "k_product", "gpu", "debug"]
 
     def run_task(self, fw_spec):
 
@@ -313,6 +313,8 @@ class WriteUCVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_functional"))
         oxides = \
             dec.process_decoded(self.get("oxides", False))
+        debug = dec.process_decoded(self.get("debug", False))
+
 
         if oxides:
             user_incar_settings = \
@@ -348,7 +350,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings", "oxides",
-                       "k_product", "gpu"]
+                       "k_product", "gpu", "debug"]
 
     def run_task(self, fw_spec):
 
@@ -395,6 +397,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         oxides = dec.process_decoded(self.get("oxides", False))
         gpu = dec.process_decoded(self.get("gpu", False))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
+        debug = dec.process_decoded(self.get("debug", False))
+
 
         if oxides:
             user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
@@ -513,7 +517,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             if gpu:
                 if "KPAR" not in incar.keys():
                     incar.__setitem__('KPAR', 1)
-                del incar["NPAR"]
+                if incar["NPAR"]:
+                    del incar["NPAR"]
 
             incar.update(user_incar_settings)
 
@@ -548,7 +553,7 @@ class RunCustodianTask(FireTaskBase):
     """
 
     required_params = ["dir", "cwd", "custodian_params"]
-
+    optional_params = ["debug"]
     def run_task(self, fw_spec):
 
         """
@@ -564,6 +569,7 @@ class RunCustodianTask(FireTaskBase):
         dec = MontyDecoder()
         dir = dec.process_decoded(self['dir'])
         cwd = dec.process_decoded(self['cwd'])
+        debug = dec.process_decoded(self.get("debug", False))
 
         # Change to the directory with the vasp inputs to run custodian
         os.chdir(cwd+dir)
