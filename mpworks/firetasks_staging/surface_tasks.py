@@ -517,7 +517,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             if gpu:
                 if "KPAR" not in incar.keys():
                     incar.__setitem__('KPAR', 1)
-                if incar["NPAR"]:
+                if "NPAR" in incar.keys():
                     del incar["NPAR"]
 
             incar.update(user_incar_settings)
