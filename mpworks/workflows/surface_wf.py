@@ -47,15 +47,15 @@ class SurfaceWorkflowManager(object):
     """
 
     def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
-                 slab_size=10, vac_size=10, host=None, port=None, user=None,
-                 password=None, symprec=0.001, angle_tolerance=5, database=None,
-                 collection="surface_tasks", fail_safe=True, reset=False,
-                 ucell_indices_dict={}, check_exists=True):
+                 slab_size=10, vac_size=10, symprec=0.001, angle_tolerance=5,
+                 fail_safe=True, reset=False, ucell_indices_dict={},
+                 check_exists=True, debug=False,
+                 host=None, port=None, user=None, password=None,
+                 collection="surface_tasks",  database=None):
 
         """
             Args:
-                api_key (str): A String API key for accessing the MaterialsProject
-                list_of_elements ([str, ...]): A list of compounds or elements to create
+                elements_and_mpids ([str, ...]): A list of compounds or elements to create
                     slabs from. Must be a string that can be searched for with MPRester.
                     Either list_of_elements or indices_dict has to be entered in.
                 indices_dict ({element(str): [[h,k,l], ...]}): A dictionary of
@@ -63,24 +63,26 @@ class SurfaceWorkflowManager(object):
                     (key) to transform into a list of slabs. Either list_of_elements
                     or indices_dict has to be entered in.
                 ucell_dict ({some name or mpid: structure, ...}): A dictionary of
-                    conventional unit cells with custom names as keys. Will get a indices_
-                    dict using max index
+                    conventional unit cells with custom names as keys. Will get a
+                    indices_dict using max index
                 ucell_indices_dict ({some name or mpid: {"ucell": structure, "hkl_list": [(), ...]} ...}):
                     A dictionary of conventional unit cells and miller indices with custom
                     names as keys. Behave similarly to indices_dict
-                host (str): For database insertion
-                port (int): For database insertion
-                user (str): For database insertion
-                password (str): For database insertion
-                symprec (float): See SpaceGroupAnalyzer in analyzer.py
                 angle_tolerance (int): See SpaceGroupAnalyzer in analyzer.py
-                database (str): For database insertion
-                collection (str): For database insertion
+                symprec (float): See SpaceGroupAnalyzer in analyzer.py
                 fail_safe (bool): Check for slabs/bulk structures with
                     more than 200 atoms (defaults to True)
                 reset (bool): Reset your launchpad (defaults to False)
                 check_exists (bool): Check if slab/bulk calculation
                     has already been completed
+                debug (bool): Used by unit test to run workflow
+                    without having to run custodian
+                host (str): For database insertion
+                port (int): For database insertion
+                user (str): For database insertion
+                password (str): For database insertion
+                collection (str): For database insertion
+                database (str): For database insertion
         """
 
         unit_cells_dict = {}
@@ -193,8 +195,9 @@ class SurfaceWorkflowManager(object):
         self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
         self.check_exists = check_exists
+        self.debug = debug
 
-    def from_max_index(self, max_index, max_normal_search=True, max_only=False, get_bulk_e=True):
+    def from_max_index(self, max_index, max_normal_search=1, max_only=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -238,9 +241,9 @@ class SurfaceWorkflowManager(object):
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
                                          max_normal_search=max_normal_search,
-                                         get_bulk_e=get_bulk_e)
+                                         get_bulk_e=get_bulk_e, debug=self.debug)
 
-    def from_list_of_indices(self, list_of_indices, max_normal_search=True, get_bulk_e=True):
+    def from_list_of_indices(self, list_of_indices, max_normal_search=1, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a
@@ -264,9 +267,9 @@ class SurfaceWorkflowManager(object):
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
                                          max_normal_search=max_normal_search,
-                                         get_bulk_e=get_bulk_e)
+                                         get_bulk_e=get_bulk_e, debug=self.debug)
 
-    def from_indices_dict(self, max_normal_search=True, get_bulk_e=True):
+    def from_indices_dict(self, max_normal_search=1, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a dictionary with the keys
@@ -283,10 +286,10 @@ class SurfaceWorkflowManager(object):
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
                                          max_normal_search=max_normal_search,
-                                         get_bulk_e=get_bulk_e)
+                                         get_bulk_e=get_bulk_e, debug=self.debug)
 
 
-    def check_existing_entries(self, miller_dict, max_normal_search=True):
+    def check_existing_entries(self, miller_dict, max_normal_search=1):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -356,10 +359,10 @@ class SurfaceWorkflowManager(object):
                      'max_normal_search': max_normal_search,
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
-        with_bulk = CreateSurfaceWorkflow(calculate_with_bulk,
+        with_bulk = CreateSurfaceWorkflow(calculate_with_bulk, debug=self.debug,
                                           get_bulk_e=True, **wf_kwargs)
 
-        with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only,
+        with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only, debug=self.debug,
                                                get_bulk_e=False, **wf_kwargs)
 
         print "total number of Indices: ", total_calculations
@@ -384,7 +387,7 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
-                 ssize, vsize, max_normal_search=True,
+                 ssize, vsize, max_normal_search=1, debug=False,
                  fail_safe=True, reset=False, get_bulk_e=True):
 
         """
@@ -414,6 +417,7 @@ class CreateSurfaceWorkflow(object):
         self.reset = reset
         self.fail_safe = fail_safe
         self.get_bulk_e = get_bulk_e
+        self.debug = debug
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
@@ -493,13 +497,9 @@ class CreateSurfaceWorkflow(object):
 
                 print str(miller_index)
 
-                max_norm = max(miller_index) if self.max_normal_search else None
-                # Whether or not we want to use the
-                # max_normal_search algorithm from surface.py
-                print 'true or false max norm is ', max_norm, self.max_normal_search
-
                 slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
-                                     self.ssize, self.vsize, max_normal_search=max_norm,
+                                     self.ssize, self.vsize,
+                                     max_normal_search=self.max_normal_search,
                                      primitive=False)
                 oriented_uc = slab.oriented_unit_cell
 
@@ -522,11 +522,13 @@ class CreateSurfaceWorkflow(object):
                                                     folder=folderbulk, cwd=cwd, gpu=gpu,
                                                     user_incar_settings=user_incar_settings,
                                                     potcar_functional=potcar_functional,
-                                                    k_product=k_product, oxides=oxides),
+                                                    k_product=k_product, oxides=oxides,
+                                                    debug=self.debug),
                                  RunCustodianTask(dir=folderbulk, cwd=cwd,
-                                                  custodian_params=cust_params),
+                                                  custodian_params=cust_params,
+                                                  debug=self.debug),
                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                      loc=folderbulk, cwd=cwd,
+                                                      loc=folderbulk, cwd=cwd, debug=self.debug,
                                                       miller_index=miller_index, mpid=mpid,
                                                       conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                       conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
@@ -546,7 +548,7 @@ class CreateSurfaceWorkflow(object):
                                                   min_vacuum_size=self.vsize, mpid=mpid,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                   polymorph=self.unit_cells_dict[mpid]["polymorph"],
-                                                  oxides=oxides)])
+                                                  oxides=oxides, debug=self.debug)])
 
                 fw = Firework(tasks, name=folderbulk)
 
