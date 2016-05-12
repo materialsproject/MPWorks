@@ -235,8 +235,11 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        bonds, max_broken_bonds = termination_analysis(self.unit_cells_dict[mpid]['ucell'],
-                                                       max_index)
+        if find_min_terms:
+            bonds, max_broken_bonds = termination_analysis(self.unit_cells_dict[mpid]['ucell'],
+                                                           max_index)
+        else:
+            bonds, max_broken_bonds = None, None
 
         if self.check_exists:
             return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search,
@@ -436,7 +439,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
-                        additional_handlers=[], scratch_dir=None, find_min_terms=False,):
+                        additional_handlers=[], scratch_dir=None):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
