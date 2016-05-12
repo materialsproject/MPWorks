@@ -350,7 +350,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "mpid", "conventional_spacegroup", "polymorph"]
     optional_params = ["min_slab_size", "min_vacuum_size",
                        "user_incar_settings", "oxides",
-                       "k_product", "gpu", "debug"]
+                       "k_product", "gpu", "debug", "bonds", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
 
@@ -397,6 +397,8 @@ class WriteSlabVaspInputs(FireTaskBase):
         oxides = dec.process_decoded(self.get("oxides", False))
         gpu = dec.process_decoded(self.get("gpu", False))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
+        bonds = dec.process_decoded(self.get("bonds", None))
+        max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", None))
         debug = dec.process_decoded(self.get("debug", False))
 
 
@@ -426,12 +428,27 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         relax_orient_uc = ucell_entry.structure
 
-        slabs = SlabGenerator(relax_orient_uc, (0,0,1),
-                              min_slab_size=min_slab_size,
-                              min_vacuum_size=min_vacuum_size,
-                              max_normal_search=max(miller_index),
-                              primitive=True)
-        slab_list = slabs.get_slabs()
+        # While loop ensures slab is at least 10 A
+        bond_dist = 0
+        while bond_dist <= 10:
+
+            slabgen = SlabGenerator(relax_orient_uc, (0,0,1),
+                                    min_slab_size=min_slab_size,
+                                    min_vacuum_size=min_vacuum_size,
+                                    center_slab=True,
+                                    max_normal_search=max(miller_index),
+                                    primitive=True, bonds=bonds,
+                                    max_broken_bonds=max_broken_bonds)
+
+            c_pos = []
+            for site in slabgen.get_slabs()[0].frac_coords:
+                c_pos.append[site[2]]
+            c_pos = sorted(c_pos)
+            bond_dist = abs(c_pos[0]-c_pos[-1])*slabgen.get_slabs()[0].lattice.c
+            if bond_dist < 10:
+                min_slab_size += 5
+
+        slab_list = slabgen.get_slabs()
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
@@ -464,6 +481,10 @@ class WriteSlabVaspInputs(FireTaskBase):
             return
 
         for slab in new_slab_list:
+
+            if len(slab) > 199:
+                warnings.warn("SLAB CELL EXCEEDED 199 ATOMS!!!")
+                continue
 
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                         %(slab.shift)

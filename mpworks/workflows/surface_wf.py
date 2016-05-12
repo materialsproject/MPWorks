@@ -16,6 +16,7 @@ __date__ = "6/24/15"
 import os
 import copy
 from pymongo import MongoClient
+import warnings
 db = MongoClient().data
 
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
@@ -25,13 +26,11 @@ from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
-# from custodian.vasp.surface_handlers import SurfaceFrozenJobErrorHandler, \
-#     SurfacePositiveEnergyErrorHandler, SurfacePotimErrorHandler, \
-#     SurfaceVaspErrorHandler
 
-from pymatgen.core.surface import SlabGenerator, GetMillerIndices
+from pymatgen.core.surface import SlabGenerator, GetMillerIndices, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
+from pymatgen.analysis.structure_analyzer import VoronoiConnectivity
 
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
@@ -86,6 +85,7 @@ class SurfaceWorkflowManager(object):
         """
 
         unit_cells_dict = {}
+
 
         # This initializes the REST adaptor. Put your own API key in.
         if "MAPI_KEY" not in os.environ:
@@ -197,7 +197,8 @@ class SurfaceWorkflowManager(object):
         self.check_exists = check_exists
         self.debug = debug
 
-    def from_max_index(self, max_index, max_normal_search=1, max_only=False, get_bulk_e=True):
+    def from_max_index(self, max_index, find_min_terms=False,
+                       max_normal_search=1, max_only=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -234,14 +235,19 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
+        bonds, max_broken_bonds = termination_analysis(self.unit_cells_dict[mpid]['ucell'],
+                                                       max_index)
+
         if self.check_exists:
-            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
+            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search,
+                                               bonds=bonds, max_broken_bonds=max_broken_bonds)
         else:
             return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
                                          max_normal_search=max_normal_search,
-                                         get_bulk_e=get_bulk_e, debug=self.debug)
+                                         get_bulk_e=get_bulk_e, debug=self.debug,
+                                         bonds=bonds, max_broken_bonds=max_broken_bonds)
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=1, get_bulk_e=True):
 
@@ -289,7 +295,8 @@ class SurfaceWorkflowManager(object):
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
 
-    def check_existing_entries(self, miller_dict, max_normal_search=1):
+    def check_existing_entries(self, miller_dict, max_normal_search=1,
+                               bonds=None, max_broken_bonds=None):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -316,7 +323,8 @@ class SurfaceWorkflowManager(object):
                 # Check if the oriented unit cell
                 # has already been calculated
 
-                ucell_entries = self.surface_query_engine.get_entries(criteria, inc_structure="Final")
+                ucell_entries = self.surface_query_engine.get_entries(criteria,
+                                                                      inc_structure="Final")
 
                 if ucell_entries:
                     print '%s %s oriented unit cell already calculated, ' \
@@ -360,10 +368,14 @@ class SurfaceWorkflowManager(object):
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
         with_bulk = CreateSurfaceWorkflow(calculate_with_bulk, debug=self.debug,
-                                          get_bulk_e=True, **wf_kwargs)
+                                          get_bulk_e=True, bonds=bonds,
+                                          max_broken_bonds=max_broken_bonds,
+                                          **wf_kwargs)
 
         with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only, debug=self.debug,
-                                               get_bulk_e=False, **wf_kwargs)
+                                               get_bulk_e=False, bonds=bonds,
+                                               max_broken_bonds=max_broken_bonds,
+                                               **wf_kwargs)
 
         print "total number of Indices: ", total_calculations
         print
@@ -387,8 +399,9 @@ class CreateSurfaceWorkflow(object):
     """
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
-                 ssize, vsize, max_normal_search=1, debug=False,
-                 fail_safe=True, reset=False, get_bulk_e=True):
+                 ssize, vsize, max_normal_search=1, debug=False, bonds=None,
+                 max_broken_bonds=None, fail_safe=True,
+                 reset=False, get_bulk_e=True):
 
         """
             Args:
@@ -418,10 +431,12 @@ class CreateSurfaceWorkflow(object):
         self.fail_safe = fail_safe
         self.get_bulk_e = get_bulk_e
         self.debug = debug
+        self.max_broken_bonds = max_broken_bonds
+        self.bonds = bonds
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
-                        additional_handlers=[], scratch_dir=None):
+                        additional_handlers=[], scratch_dir=None, find_min_terms=False,):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -504,7 +519,7 @@ class CreateSurfaceWorkflow(object):
                 oriented_uc = slab.oriented_unit_cell
 
                 if self.fail_safe and len(oriented_uc)> 199:
-                    print "UCELL EXCEEDED 199 ATOMS!!!"
+                    warnings.warn("UCELL EXCEEDED 199 ATOMS!!!")
                     continue
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
@@ -544,6 +559,7 @@ class CreateSurfaceWorkflow(object):
                                                   k_product=k_product, gpu=gpu,
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
+                                                  bonds=self.bonds, max_broken_bonds=self.max_broken_bonds,
                                                   conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   min_vacuum_size=self.vsize, mpid=mpid,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
@@ -633,3 +649,77 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
 
     wf = Workflow(fws, name='Surface Calculations')
     launchpad.add_wf(wf)
+
+def get_bond_length(structure):
+
+    list_of_bonds = []
+    voronoi_connections = VoronoiConnectivity(structure, cutoff=5)
+    list_of_bond_pairs = voronoi_connections.get_connections()
+    for pair in list_of_bond_pairs:
+        if pair[2] !=0:
+            list_of_bonds.append(pair[2])
+    return min(list_of_bonds)
+
+def termination_analysis(structure, max_index, bond_length_tol=0.1, max_term=6, min_surfaces=3):
+
+    """
+    Determines the most stable surfaces based on broken bond rules. This
+        should only be used for structures with unreasonable number of
+        terminations (e.g. Mn, S, Se, P, B) making the calculation of their
+        surfaces computationally intensive. For now, let's assume we're
+        dealing with elemental solids.
+
+    Args:
+        structure (Structure): Initial input structure. Note that to
+                ensure that the miller indices correspond to usual
+                crystallographic definitions, you should supply a
+                conventional unit cell structure.
+        max_index (int): The maximum Miller index to go up to.
+
+        search_broken_bonds (int): The number of broken bonds to limit. The
+            algorithm will increase the number of allowed broken bonds to
+            find stable surfaces up until this number.
+
+    Returns:
+        Slab parameters:
+            bonds ({("element1", "element2"): int})
+            max_broken_bonds (int)
+    """
+
+    bond_length = get_bond_length(structure)+bond_length_tol
+    el = str(structure[0].specie)
+    bonds = {(el, el): bond_length}
+
+    max_broken_bonds = 0
+    term_count = 0
+    last_num_terms=False
+    while term_count <= max_term:
+
+        all_slabs = generate_all_slabs(structure, max_index, 10,
+                                       10, max_normal_search=1,
+                                       symmetrize=True, bonds=bonds,
+                                       max_broken_bonds=max_broken_bonds)
+        slabdict = {}
+        for slab in all_slabs:
+            if slab.miller_index not in slabdict.keys():
+                slabdict[slab.miller_index] = []
+            slabdict[slab.miller_index].append(slab)
+
+        max_terms = [len(slabdict[hkl]) for hkl in slabdict.keys()]
+        if max_terms:
+            term_count = max(max_terms)
+        max_broken_bonds += 1
+
+        if len(slabdict.keys()) >= min_surfaces:
+            break
+        print 1
+
+        last_num_terms = max_terms
+
+    if not last_num_terms:
+        max_broken_bonds -= 1
+    if last_num_terms != 0:
+        max_broken_bonds -= 1
+
+
+    return bonds, max_broken_bonds
