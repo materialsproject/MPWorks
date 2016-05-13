@@ -296,9 +296,9 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
 
             ucell = self.unit_cells_dict[mpid]["ucell"]
-            bonds, max_broken_bonds = termination_analysis(ucell, max_index, max_term=max_term,
-                                                           bond_length_tol=bond_length_tol,
-                                                           min_surfaces=min_surfaces)
+            bonds, bondlength, max_broken_bonds = termination_analysis(ucell, max_index, max_term=max_term,
+                                                                       bond_length_tol=bond_length_tol,
+                                                                       min_surfaces=min_surfaces)
 
             all_slabs = generate_all_slabs(ucell, max_index, 10, 10, bonds=bonds,
                                            max_broken_bonds=max_broken_bonds,
@@ -311,18 +311,18 @@ class SurfaceWorkflowManager(object):
             indices_dict[mpid] = miller_list
 
         if self.check_exists:
-            return self.check_existing_entries(indices_dict, bonds=bonds,
+            return self.check_existing_entries(indices_dict, bonds=bonds, bondlength=bondlength,
                                                max_broken_bonds=max_broken_bonds,
                                                max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(indices_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
-                                         self.ssize, self.vsize, bonds=bonds,
+                                         self.ssize, self.vsize, bonds=bonds, bondlength=bondlength,
                                          max_broken_bonds=max_broken_bonds,
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
-    def check_existing_entries(self, miller_dict, max_normal_search=1,
+    def check_existing_entries(self, miller_dict, max_normal_search=1, bondlength=None,
                                bonds=None, max_broken_bonds=None):
 
         # Checks if a calculation is already in the DB to avoid
@@ -395,12 +395,12 @@ class SurfaceWorkflowManager(object):
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
         with_bulk = CreateSurfaceWorkflow(calculate_with_bulk, debug=self.debug,
-                                          get_bulk_e=True, bonds=bonds,
+                                          get_bulk_e=True, bonds=bonds, bondlength=bondlength,
                                           max_broken_bonds=max_broken_bonds,
                                           **wf_kwargs)
 
         with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only, debug=self.debug,
-                                               get_bulk_e=False, bonds=bonds,
+                                               get_bulk_e=False, bonds=bonds, bondlength=bondlength,
                                                max_broken_bonds=max_broken_bonds,
                                                **wf_kwargs)
 
@@ -427,7 +427,7 @@ class CreateSurfaceWorkflow(object):
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
                  ssize, vsize, max_normal_search=1, debug=False, bonds=None,
-                 max_broken_bonds=None, fail_safe=True,
+                 max_broken_bonds=None, fail_safe=True, bondlength=None,
                  reset=False, get_bulk_e=True):
 
         """
@@ -460,6 +460,7 @@ class CreateSurfaceWorkflow(object):
         self.debug = debug
         self.max_broken_bonds = max_broken_bonds
         self.bonds = bonds
+        self.bondlength =bondlength
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
@@ -587,7 +588,7 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize,
-                                                  bonds= self.bonds, mpid=mpid,
+                                                  bondlength= self.bondlength, mpid=mpid,
                                                   conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   max_broken_bonds=self.max_broken_bonds,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
@@ -750,4 +751,4 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1,
     if last_num_terms != 0:
         max_broken_bonds -= 1
 
-    return bonds, max_broken_bonds
+    return bonds, bond_length, max_broken_bonds

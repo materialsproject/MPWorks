@@ -349,7 +349,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters", "miller_index", "mpid", "polymorph",
                        "conventional_unit_cell", "conventional_spacegroup"]
     optional_params = ["min_slab_size", "min_vacuum_size", "user_incar_settings",
-                       "oxides", "k_product", "gpu", "debug", "bonds", "max_broken_bonds"]
+                       "oxides", "k_product", "gpu", "debug", "bondlength", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
 
@@ -396,10 +396,12 @@ class WriteSlabVaspInputs(FireTaskBase):
         oxides = dec.process_decoded(self.get("oxides", False))
         gpu = dec.process_decoded(self.get("gpu", False))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
-        bonds = dec.process_decoded(self.get("bonds", None))
+        bondlength = dec.process_decoded(self.get("bondlength", None))
         max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", None))
         debug = dec.process_decoded(self.get("debug", False))
 
+        el = str(conventional_unit_cell[0].specie)
+        bonds = {(el, el): bondlength}
 
         if oxides:
             user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
