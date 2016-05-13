@@ -346,11 +346,10 @@ class WriteSlabVaspInputs(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "cwd", "custodian_params", "potcar_functional",
-                       "vaspdbinsert_parameters", "miller_index", "conventional_unit_cell",
-                       "mpid", "conventional_spacegroup", "polymorph"]
-    optional_params = ["min_slab_size", "min_vacuum_size",
-                       "user_incar_settings", "oxides",
-                       "k_product", "gpu", "debug", "bonds", "max_broken_bonds"]
+                       "vaspdbinsert_parameters", "miller_index", "mpid", "polymorph",
+                       "conventional_unit_cell", "conventional_spacegroup"]
+    optional_params = ["min_slab_size", "min_vacuum_size", "user_incar_settings",
+                       "oxides", "k_product", "gpu", "debug", "bonds", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
 
@@ -552,8 +551,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                            VaspSlabDBInsertTask(struct_type="slab_cell",
                                                 loc=new_folder, cwd=cwd, shift=slab.shift,
                                                 surface_area=slab.surface_area,
-                                                vsize=slabs.min_vac_size,
-                                                ssize=slabs.min_slab_size,
+                                                vsize=slab.min_vac_size,
+                                                ssize=slab.min_slab_size,
                                                 miller_index=miller_index,
                                                 mpid=mpid, conventional_spacegroup=spacegroup,
                                                 polymorph=polymorph,
