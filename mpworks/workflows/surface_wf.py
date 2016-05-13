@@ -197,8 +197,8 @@ class SurfaceWorkflowManager(object):
         self.check_exists = check_exists
         self.debug = debug
 
-    def from_max_index(self, max_index, find_min_terms=False,
-                       max_normal_search=1, max_only=False, get_bulk_e=True):
+    def from_max_index(self, max_index, max_normal_search=1,
+                       max_only=False, get_bulk_e=True):
 
         """
             Class method to create a surface workflow with a list of unit cells
@@ -235,22 +235,14 @@ class SurfaceWorkflowManager(object):
             else:
                 miller_dict[mpid] = list_of_indices
 
-        if find_min_terms:
-            bonds, max_broken_bonds = termination_analysis(self.unit_cells_dict[mpid]['ucell'],
-                                                           max_index)
-        else:
-            bonds, max_broken_bonds = None, None
-
         if self.check_exists:
-            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search,
-                                               bonds=bonds, max_broken_bonds=max_broken_bonds)
+            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
                                          max_normal_search=max_normal_search,
-                                         get_bulk_e=get_bulk_e, debug=self.debug,
-                                         bonds=bonds, max_broken_bonds=max_broken_bonds)
+                                         get_bulk_e=get_bulk_e, debug=self.debug)
 
     def from_list_of_indices(self, list_of_indices, max_normal_search=1, get_bulk_e=True):
 
@@ -297,6 +289,38 @@ class SurfaceWorkflowManager(object):
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
+    def from_termination_analysis(self, max_index, max_normal_search=1, get_bulk_e=True,
+                                  bond_length_tol=0.1, max_term=6, min_surfaces=3):
+
+        indices_dict = {}
+        for mpid in self.unit_cells_dict.keys():
+
+            ucell = self.unit_cells_dict[mpid]["ucell"]
+            bonds, max_broken_bonds = termination_analysis(ucell, max_index, max_term=max_term,
+                                                           bond_length_tol=bond_length_tol,
+                                                           min_surfaces=min_surfaces)
+
+            all_slabs = generate_all_slabs(ucell, max_index, 10, 10, bonds=bonds,
+                                           max_broken_bonds=max_broken_bonds,
+                                           center_slab=True, max_normal_search=1)
+            miller_list = []
+            for slab in all_slabs:
+                if slab.miller_index not in miller_list:
+                    miller_list.append(slab.miller_index)
+
+            indices_dict[mpid] = miller_list
+
+        if self.check_exists:
+            return self.check_existing_entries(indices_dict, bonds=bonds,
+                                               max_broken_bonds=max_broken_bonds,
+                                               max_normal_search=max_normal_search)
+        else:
+            return CreateSurfaceWorkflow(indices_dict, self.unit_cells_dict,
+                                         self.vaspdbinsert_params,
+                                         self.ssize, self.vsize, bonds=bonds,
+                                         max_broken_bonds=max_broken_bonds,
+                                         max_normal_search=max_normal_search,
+                                         get_bulk_e=get_bulk_e, debug=self.debug)
 
     def check_existing_entries(self, miller_dict, max_normal_search=1,
                                bonds=None, max_broken_bonds=None):
@@ -663,7 +687,8 @@ def get_bond_length(structure):
             list_of_bonds.append(pair[2])
     return min(list_of_bonds)
 
-def termination_analysis(structure, max_index, bond_length_tol=0.1, max_term=6, min_surfaces=3):
+def termination_analysis(structure, max_index, bond_length_tol=0.1,
+                         max_term=6, min_surfaces=3):
 
     """
     Determines the most stable surfaces based on broken bond rules. This
@@ -723,6 +748,5 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1, max_term=6, 
         max_broken_bonds -= 1
     if last_num_terms != 0:
         max_broken_bonds -= 1
-
 
     return bonds, max_broken_bonds
