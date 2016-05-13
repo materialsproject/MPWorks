@@ -587,7 +587,7 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize,
-                                                  bondlength=self.bonds[self.bonds.keys()], mpid=mpid,
+                                                  bonds= self.bonds, mpid=mpid,
                                                   conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   max_broken_bonds=self.max_broken_bonds,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
@@ -717,7 +717,7 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1,
 
     bond_length = get_bond_length(structure)+bond_length_tol
     el = str(structure[0].specie)
-    bonds = {(el, el): bond_length}
+    bonds = {tuple((el, el)): bond_length}
 
     max_broken_bonds = 0
     term_count = 0
