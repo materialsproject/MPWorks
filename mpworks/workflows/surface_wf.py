@@ -587,7 +587,7 @@ class CreateSurfaceWorkflow(object):
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize,
-                                                  bonds=self.bonds, mpid=mpid,
+                                                  bondlength=self.bonds[self.bonds.keys()], mpid=mpid,
                                                   conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   max_broken_bonds=self.max_broken_bonds,
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
