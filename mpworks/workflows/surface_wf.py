@@ -323,7 +323,7 @@ class SurfaceWorkflowManager(object):
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
     def check_existing_entries(self, miller_dict, max_normal_search=1, bondlength=None,
-                               bonds=None, max_broken_bonds=None):
+                               bonds=None, max_broken_bonds=0):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -427,7 +427,7 @@ class CreateSurfaceWorkflow(object):
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
                  ssize, vsize, max_normal_search=1, debug=False, bonds=None,
-                 max_broken_bonds=None, fail_safe=True, bondlength=None,
+                 max_broken_bonds=0, fail_safe=True, bondlength=None,
                  reset=False, get_bulk_e=True):
 
         """
