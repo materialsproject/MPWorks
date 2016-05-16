@@ -397,7 +397,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         gpu = dec.process_decoded(self.get("gpu", False))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
         bondlength = dec.process_decoded(self.get("bondlength", None))
-        max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", None))
+        max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", 0))
         debug = dec.process_decoded(self.get("debug", False))
 
         el = str(conventional_unit_cell[0].specie)
@@ -441,6 +441,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                                     primitive=True)
 
             c_pos = []
+
             for site in slabgen.get_slabs(bonds=bonds,
                                           max_broken_bonds=max_broken_bonds)[0].frac_coords:
                 c_pos.append[site[2]]
