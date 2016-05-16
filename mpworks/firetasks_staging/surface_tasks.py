@@ -401,7 +401,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         debug = dec.process_decoded(self.get("debug", False))
 
         el = str(conventional_unit_cell[0].specie)
-        bonds = {(el, el): bondlength}
+        bonds = {(el, el): bondlength} if bondlength else None
 
         if oxides:
             user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
@@ -438,11 +438,11 @@ class WriteSlabVaspInputs(FireTaskBase):
                                     min_vacuum_size=min_vacuum_size,
                                     center_slab=True,
                                     max_normal_search=max(miller_index),
-                                    primitive=True, bonds=bonds,
-                                    max_broken_bonds=max_broken_bonds)
+                                    primitive=True)
 
             c_pos = []
-            for site in slabgen.get_slabs()[0].frac_coords:
+            for site in slabgen.get_slabs(bonds=bonds,
+                                          max_broken_bonds=max_broken_bonds)[0].frac_coords:
                 c_pos.append[site[2]]
             c_pos = sorted(c_pos)
             bond_dist = abs(c_pos[0]-c_pos[-1])*slabgen.get_slabs()[0].lattice.c
