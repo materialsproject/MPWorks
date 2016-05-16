@@ -443,8 +443,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             c_pos = []
 
             for site in slabgen.get_slabs(bonds=bonds,
-                                          max_broken_bonds=max_broken_bonds)[0].frac_coords:
-                c_pos.append[site[2]]
+                                          max_broken_bonds=max_broken_bonds[0]).frac_coords:
+                c_pos.append(site[2])
             c_pos = sorted(c_pos)
             bond_dist = abs(c_pos[0]-c_pos[-1])*slabgen.get_slabs()[0].lattice.c
             if bond_dist < 10:
