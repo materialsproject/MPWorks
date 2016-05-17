@@ -472,10 +472,10 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         # Now create the slab(s) and ensure the surfaces are
         # symmeric and the ssize is at least that of min_slab_size
-        new_slab_list = check_termination_symmetry(slab_list, miller_index,
-                                                   min_slab_size,
-                                                   min_vacuum_size,
-                                                   relax_orient_uc)
+        new_slab_list, new_min_slab_size = check_termination_symmetry(slab_list, miller_index,
+                                                                      min_slab_size,
+                                                                      min_vacuum_size,
+                                                                      relax_orient_uc)
 
         # If no stoichiometric/symmetric slab can be
         # generated, don't bother generating a fw
@@ -549,13 +549,14 @@ class WriteSlabVaspInputs(FireTaskBase):
                 incar.pop("NBANDS")
             incar.write_file(cwd+new_folder+'/INCAR')
 
+
             fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                             custodian_params=custodian_params),
                            VaspSlabDBInsertTask(struct_type="slab_cell",
                                                 loc=new_folder, cwd=cwd, shift=slab.shift,
                                                 surface_area=slab.surface_area,
-                                                vsize=slab.min_vac_size,
-                                                ssize=slab.min_slab_size,
+                                                vsize=min_vacuum_size,
+                                                ssize=new_min_slab_size,
                                                 miller_index=miller_index,
                                                 mpid=mpid, conventional_spacegroup=spacegroup,
                                                 polymorph=polymorph,
@@ -656,7 +657,6 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
     # Function to symmetrize set of slabs with different
     # terminations and prevent removal of too many atoms.
 
-    is_symmetric = False # Checks if slab is symmetrize
     ssize_check = False # Checks if ssize is at least
                         # that of the initial min_slab_size
     new_min_slab_size = min_slab_size
@@ -722,4 +722,4 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
 
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
-    return new_slab_list
+    return new_slab_list, new_min_slab_size
