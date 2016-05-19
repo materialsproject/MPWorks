@@ -548,6 +548,15 @@ class CreateSurfaceWorkflow(object):
                                      primitive=False)
                 oriented_uc = slab.oriented_unit_cell
 
+                # The unit cell should not be exceedingly larger than the
+                # conventional unit cell, reduced it down further if it is
+                if len(oriented_uc)/len(self.unit_cells_dict[mpid]['ucell']) > 20:
+                    reduced_slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
+                                                 lll_reduce=True, primitive=False)
+                    reduces_oriented_uc = reduced_slab.oriented_unit_cell
+                    if len(reduces_oriented_uc) < len(oriented_uc):
+                        oriented_uc = reduces_oriented_uc
+
                 if self.fail_safe and len(oriented_uc)> 199:
                     warnings.warn("UCELL EXCEEDED 199 ATOMS!!!")
                     continue
