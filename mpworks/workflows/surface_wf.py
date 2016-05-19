@@ -607,7 +607,7 @@ class CreateSurfaceWorkflow(object):
         # Automatically runs fw to create child fireworks for slab calculations
         if not self.get_bulk_e:
             for fw_id in fw_ids:
-                os.system("rlaunch singleshot --fw_id %s" %(fw_id))
+                os.system("rlaunch singleshot --fw_id %s" %(-1*fw_id))
 
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
