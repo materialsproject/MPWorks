@@ -552,6 +552,7 @@ class CreateSurfaceWorkflow(object):
                 # conventional unit cell, reduced it down further if it is
                 if len(oriented_uc)/len(self.unit_cells_dict[mpid]['ucell']) > 20:
                     reduced_slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
+                                                 self.ssize, self.vsize,
                                                  lll_reduce=True, primitive=False)
                     reduces_oriented_uc = reduced_slab.oriented_unit_cell
                     if len(reduces_oriented_uc) < len(oriented_uc):
