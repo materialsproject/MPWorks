@@ -32,9 +32,11 @@ from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 from pymatgen.analysis.structure_analyzer import VoronoiConnectivity
 
+from matgendb import QueryEngine
+
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
-from matgendb import QueryEngine
+from fireworks.scripts.rlaunch_run import rlaunch
 
 
 class SurfaceWorkflowManager(object):
@@ -527,7 +529,7 @@ class CreateSurfaceWorkflow(object):
                        "max_errors": 10}  # will return a list of jobs
                                            # instead of just being one job
 
-        fws = []
+        fws, fw_ids = [], []
         for mpid in self.miller_dict.keys():
 
             # Enumerate through all compounds in the dictionary,
@@ -596,11 +598,16 @@ class CreateSurfaceWorkflow(object):
                                                   oxides=oxides, debug=self.debug)])
 
                 fw = Firework(tasks, name=folderbulk)
-
+                fw_ids.append(fw.fw_id)
                 fws.append(fw)
                 print self.unit_cells_dict[mpid]['spacegroup']
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
+
+        # Automatically runs fw to create child fireworks for slab calculations
+        if not self.get_bulk_e:
+            for fw_id in fw_ids:
+                os.system("rlaunch singleshot --fw_id %s" %(fw_id))
 
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
