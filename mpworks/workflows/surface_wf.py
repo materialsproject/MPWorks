@@ -615,7 +615,6 @@ class CreateSurfaceWorkflow(object):
         launchpad.add_wf(wf)
 
         # Automatically runs fw to create child fireworks for slab calculations
-        wf.
         if not self.get_bulk_e:
             for fw_id in fw_ids:
                 os.system("rlaunch singleshot --fw_id %s" %(-1*fw_id))
