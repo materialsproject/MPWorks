@@ -282,7 +282,7 @@ class WriteUCVaspInputs(FireTaskBase):
     """
 
     required_params = ["oriented_ucell", "folder", "cwd", "potcar_functional"]
-    optional_params = ["user_incar_settings", "oxides",
+    optional_params = ["user_incar_settings", "oxides", "limit_sites",
                        "k_product", "gpu", "debug"]
 
     def run_task(self, fw_spec):
@@ -313,6 +313,7 @@ class WriteUCVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_functional"))
         oxides = \
             dec.process_decoded(self.get("oxides", False))
+
         debug = dec.process_decoded(self.get("debug", False))
 
 
@@ -349,7 +350,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters", "miller_index", "mpid", "polymorph",
                        "conventional_unit_cell", "conventional_spacegroup"]
     optional_params = ["min_slab_size", "min_vacuum_size", "user_incar_settings",
-                       "oxides", "k_product", "gpu", "debug", "bondlength", "max_broken_bonds"]
+                       "limit_sites", "oxides", "k_product", "gpu", "debug",
+                       "bondlength", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
 
@@ -398,6 +400,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
         bondlength = dec.process_decoded(self.get("bondlength", None))
         max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", 0))
+        limit_sites = dec.process_decoded(self.get("limit_sites", 199))
         debug = dec.process_decoded(self.get("debug", False))
 
         el = str(conventional_unit_cell[0].specie)
@@ -484,8 +487,8 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         for slab in new_slab_list:
 
-            if len(slab) > 199:
-                warnings.warn("SLAB CELL EXCEEDED 199 ATOMS!!!")
+            if len(slab) > limit_sites:
+                warnings.warn("SLAB CELL EXCEEDED %s ATOMS!!!" %(limit_sites))
                 continue
 
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \

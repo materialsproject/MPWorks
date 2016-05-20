@@ -466,7 +466,7 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
-                        additional_handlers=[], scratch_dir=None):
+                        additional_handlers=[], limit_sites=199, scratch_dir=None):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -558,8 +558,8 @@ class CreateSurfaceWorkflow(object):
                     if len(reduces_oriented_uc) < len(oriented_uc):
                         oriented_uc = reduces_oriented_uc
 
-                if self.fail_safe and len(oriented_uc)> 199:
-                    warnings.warn("UCELL EXCEEDED 199 ATOMS!!!")
+                if self.fail_safe and len(oriented_uc)> limit_sites:
+                    warnings.warn("UCELL EXCEEDED %s ATOMS!!!" %(limit_sites))
                     continue
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
