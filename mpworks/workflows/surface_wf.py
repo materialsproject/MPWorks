@@ -615,6 +615,7 @@ class CreateSurfaceWorkflow(object):
         launchpad.add_wf(wf)
 
         # Automatically runs fw to create child fireworks for slab calculations
+        wf.
         if not self.get_bulk_e:
             for fw_id in fw_ids:
                 os.system("rlaunch singleshot --fw_id %s" %(-1*fw_id))
@@ -707,7 +708,7 @@ def get_bond_length(structure):
     return min(list_of_bonds)
 
 def termination_analysis(structure, max_index, bond_length_tol=0.1,
-                         max_term=6, min_surfaces=3):
+                         max_term=6, min_surfaces=2):
 
     """
     Determines the most stable surfaces based on broken bond rules. This

@@ -543,7 +543,8 @@ class WriteSlabVaspInputs(FireTaskBase):
                 if "NPAR" in incar.keys():
                     del incar["NPAR"]
 
-            incar.update(user_incar_settings)
+            if user_incar_settings:
+                incar.update(user_incar_settings)
 
             if "NBANDS" in incar.keys():
                 incar.pop("NBANDS")
