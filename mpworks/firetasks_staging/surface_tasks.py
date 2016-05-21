@@ -470,9 +470,6 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         FWs = []
 
-        # Make a slab from scratch to double check
-        # if we're using the most reduced structure
-
         # Now create the slab(s) and ensure the surfaces are
         # symmeric and the ssize is at least that of min_slab_size
         new_slab_list, new_min_slab_size = check_termination_symmetry(slab_list, miller_index,
