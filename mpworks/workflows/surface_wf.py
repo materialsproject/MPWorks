@@ -466,7 +466,8 @@ class CreateSurfaceWorkflow(object):
 
     def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
-                        additional_handlers=[], limit_sites_bulk=199, limit_sites_slabs=199, scratch_dir=None):
+                        additional_handlers=[], limit_sites_bulk=199, limit_sites_slabs=199,
+                        limit_sites_at_least_slab=0, limit_sites_at_least_bulk=0, scratch_dir=None):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -561,6 +562,9 @@ class CreateSurfaceWorkflow(object):
                 if self.fail_safe and len(oriented_uc)> limit_sites_bulk:
                     warnings.warn("UCELL EXCEEDED %s ATOMS!!!" %(limit_sites_bulk))
                     continue
+                if self.fail_safe and len(oriented_uc)< limit_sites_at_least_bulk:
+                    warnings.warn("UCELL LESS THAN %s ATOMS!!!" %(limit_sites_bulk))
+                    continue
                 # This method only creates the oriented unit cell, the
                 # slabs are created in the WriteSlabVaspInputs task.
                 # WriteSlabVaspInputs will create the slabs from
@@ -606,6 +610,7 @@ class CreateSurfaceWorkflow(object):
                                                   conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
                                                   polymorph=self.unit_cells_dict[mpid]["polymorph"],
                                                   limit_sites=limit_sites_slabs,
+                                                  limit_sites_at_least=limit_sites_at_least_slab,
                                                   oxides=oxides, debug=self.debug)])
 
                 fw = Firework(tasks, name=folderbulk)

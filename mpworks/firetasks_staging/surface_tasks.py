@@ -350,7 +350,7 @@ class WriteSlabVaspInputs(FireTaskBase):
                        "vaspdbinsert_parameters", "miller_index", "mpid", "polymorph",
                        "conventional_unit_cell", "conventional_spacegroup"]
     optional_params = ["min_slab_size", "min_vacuum_size", "user_incar_settings",
-                       "limit_sites", "oxides", "k_product", "gpu", "debug",
+                       "limit_sites", "limit_sites_at_least", "oxides", "k_product", "gpu", "debug",
                        "bondlength", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
@@ -401,6 +401,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         bondlength = dec.process_decoded(self.get("bondlength", None))
         max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", 0))
         limit_sites = dec.process_decoded(self.get("limit_sites", 199))
+        limit_sites_at_least = dec.process_decoded(self.get("limit_sites_at_least", 0))
         debug = dec.process_decoded(self.get("debug", False))
 
         el = str(conventional_unit_cell[0].specie)
@@ -476,17 +477,21 @@ class WriteSlabVaspInputs(FireTaskBase):
                                                                       min_slab_size,
                                                                       min_vacuum_size,
                                                                       relax_orient_uc)
-
         # If no stoichiometric/symmetric slab can be
         # generated, don't bother generating a fw
         if not new_slab_list:
             return
 
-        for slab in new_slab_list:
+        # If any of the slab number of sites exceed the limit, complete this task
+        exceeded_lim = [len(slab) > limit_sites for slab in new_slab_list]
+        if any(exceeded_lim):
+            return
+        # If any of the slab number of sites less then the limit, complete this task
+        exceeded_lim = [len(slab) < limit_sites_at_least for slab in new_slab_list]
+        if any(exceeded_lim):
+            return
 
-            if len(slab) > limit_sites:
-                warnings.warn("SLAB CELL EXCEEDED %s ATOMS!!!" %(limit_sites))
-                continue
+        for slab in new_slab_list:
 
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                         %(slab.shift)
