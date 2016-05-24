@@ -42,11 +42,11 @@ class VaspSlabDBInsertTask(FireTaskBase):
         to slabs and oriented unit cells.
     """
 
-    required_params = ["vaspdbinsert_parameters", "mpid", "conventional_unit_cell",
+    required_params = ["vaspdbinsert_parameters" "conventional_unit_cell",
                        "struct_type", "loc","miller_index",
                        "cwd", "conventional_spacegroup", "polymorph"]
     optional_params = ["surface_area", "shift", "debug",
-                       "vsize", "ssize", "isolated_atom"]
+                       "vsize", "ssize", "isolated_atom", "mpid"]
 
     def run_task(self, fw_spec):
 
@@ -96,7 +96,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         vsize = dec.process_decoded(self.get("vsize", None))
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
-        mpid = dec.process_decoded(self.get("mpid"))
+        mpid = dec.process_decoded(self.get("mpid", None))
         polymorph = dec.process_decoded(self.get("polymorph"))
         spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
         conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
@@ -201,7 +201,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              "miller_index": miller_index,
                              "surface_area": surface_area, "shift": shift,
                              "vac_size": vsize, "slab_size": ssize,
-                             "material_id": mpid, "conventional_spacegroup": spacegroup,
+                             "conventional_spacegroup": spacegroup,
                              "isolated_atom": isolated_atom,
                              "polymorph": polymorph,
                              "final_incar": Incar.from_file("./INCAR.relax2.gz"),
@@ -215,6 +215,11 @@ class VaspSlabDBInsertTask(FireTaskBase):
                             "calculation_name":  name,
                             "warnings": warnings
                            }
+
+        # Add mpid as optional so we won't get None
+        # when looking for mpid of isolated atoms
+        if mpid:
+            additional_fields["material_id"] = mpid
 
         drone = VaspToDbTaskDrone(use_full_uri=False,
                                   additional_fields=additional_fields,
