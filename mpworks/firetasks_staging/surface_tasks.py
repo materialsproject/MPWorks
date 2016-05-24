@@ -115,6 +115,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         spa = SpacegroupAnalyzer(conventional_unit_cell,
                                  symprec=0.001, angle_tolerance=5)
         calculated_sg = spa.get_spacegroup_symbol()
+
         if str(calculated_sg) != queried_sg:
             warnings.append("api_mp_spacegroup_inconsistent")
 
@@ -183,6 +184,12 @@ class VaspSlabDBInsertTask(FireTaskBase):
             surface_e = final_energy - e_per_atom*len(initial)
             if surface_e < 0:
                 warnings.append("negative_surface_energy")
+
+            # Check if the EDIFF was changed (this will only happen as
+            # a last resort for bypassing the NonConvergenceError)
+            incar = Incar.from_file(cwd+loc+'/INCAR.relax2.gz')
+            if incar["EDIFF"] > 1e-06:
+                warnings.append("ediff_is_1e-05")
 
         name = loc.replace("/", "")
 
@@ -542,6 +549,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             incar.__setitem__('ISTART', 0)
             incar.__setitem__('NELMIN', 8)
             incar.__setitem__('IBRION', 2)
+            incar.__setitem__('EDIFF', 1e-06)
+
             if gpu:
                 if "KPAR" not in incar.keys():
                     incar.__setitem__('KPAR', 1)

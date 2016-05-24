@@ -617,9 +617,10 @@ class CreateSurfaceWorkflow(object):
                 fw_ids.append(fw.fw_id)
                 fws.append(fw)
                 print self.unit_cells_dict[mpid]['spacegroup']
-        wf = Workflow(fws, name='Surface Calculations')
-        launchpad.add_wf(wf)
 
+        wf = Workflow(fws, name='Surface Calculations')
+
+        launchpad.add_wf(wf)
         # Automatically runs fw to create child fireworks for slab calculations
         if not self.get_bulk_e:
             for fw_id in fw_ids:
