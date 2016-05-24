@@ -132,7 +132,6 @@ class SurfaceWorkflowManager(object):
                 conv_unit_cell = ucell_dict[el]
                 spa = SpacegroupAnalyzer(conv_unit_cell, symprec=symprec,
                                          angle_tolerance=angle_tolerance)
-                spacegroup = spa.get_spacegroup_symbol()
                 polymorph_order = float("nan")
                 mpid = copy.copy(el)
 
@@ -140,7 +139,6 @@ class SurfaceWorkflowManager(object):
                 conv_unit_cell = ucell_indices_dict[el]["ucell"]
                 spa = SpacegroupAnalyzer(conv_unit_cell, symprec=symprec,
                                          angle_tolerance=angle_tolerance)
-                spacegroup = spa.get_spacegroup_symbol()
                 polymorph_order = float("nan")
                 mpid = copy.copy(el)
                 new_indices_dict[mpid] = ucell_indices_dict[mpid]["hkl_list"]

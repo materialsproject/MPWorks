@@ -42,7 +42,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         to slabs and oriented unit cells.
     """
 
-    required_params = ["vaspdbinsert_parameters" "conventional_unit_cell",
+    required_params = ["vaspdbinsert_parameters", "conventional_unit_cell",
                        "struct_type", "loc","miller_index",
                        "cwd", "conventional_spacegroup", "polymorph"]
     optional_params = ["surface_area", "shift", "debug",
