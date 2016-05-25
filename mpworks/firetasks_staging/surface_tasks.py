@@ -561,6 +561,9 @@ class WriteSlabVaspInputs(FireTaskBase):
                     incar.__setitem__('KPAR', 1)
                 if "NPAR" in incar.keys():
                     del incar["NPAR"]
+            else:
+                if "KPAR" in incar.keys():
+                    del incar["KPAR"]
 
             if user_incar_settings:
                 incar.update(user_incar_settings)
