@@ -42,9 +42,9 @@ class VaspSlabDBInsertTask(FireTaskBase):
         to slabs and oriented unit cells.
     """
 
-    required_params = ["vaspdbinsert_parameters", "conventional_unit_cell",
-                       "struct_type", "loc","miller_index",
-                       "cwd", "conventional_spacegroup", "polymorph"]
+    required_params = ["vaspdbinsert_parameters",
+                       "struct_type", "folder","miller_index",
+                       "cwd", "unit_cell_dict"]
     optional_params = ["surface_area", "shift", "debug",
                        "vsize", "ssize", "isolated_atom", "mpid"]
 
@@ -89,7 +89,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         # Get all the optional/required parameters
         dec = MontyDecoder()
         struct_type = dec.process_decoded(self.get("struct_type"))
-        loc = dec.process_decoded(self.get("loc"))
+        folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
         surface_area = dec.process_decoded(self.get("surface_area", None))
         shift = dec.process_decoded(self.get("shift", None))
@@ -97,9 +97,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid", None))
-        polymorph = dec.process_decoded(self.get("polymorph"))
-        spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
-        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
+        unit_cell_dict = dec.process_decoded(self.get("unit_cell_dict"))
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
         vaspdbinsert_parameters = \
             dec.process_decoded(self.get("vaspdbinsert_parameters"))
@@ -111,12 +109,13 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
         # Check if the spacegroup queried from MP API consistent
         # with the one calculated from the queried structure
-        queried_sg = spacegroup
+        spacegroup = unit_cell_dict["spacegroup"]
+        conventional_unit_cell = unit_cell_dict["ucell"]
         spa = SpacegroupAnalyzer(conventional_unit_cell,
                                  symprec=0.001, angle_tolerance=5)
         calculated_sg = spa.get_spacegroup_symbol()
 
-        if str(calculated_sg) != queried_sg:
+        if str(calculated_sg) != spacegroup:
             warnings.append("api_mp_spacegroup_inconsistent")
 
         if struct_type == "slab_cell":
@@ -135,8 +134,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
             if abs(relaxation.get_percentage_volume_change()*100) > 1:
                 warnings.append("|bulk_vol_rel|>1%")
 
-            initial = Structure.from_file(cwd+loc+'/POSCAR')
-            final = Structure.from_file(cwd+loc+'/CONTCAR.relax2.gz')
+            initial = Structure.from_file(cwd+folder+'/POSCAR')
+            final = Structure.from_file(cwd+folder+'/CONTCAR.relax2.gz')
 
             # Analyze slab site relaxations for possible
             # warning signs, too much site relaxation
@@ -175,23 +174,23 @@ class VaspSlabDBInsertTask(FireTaskBase):
             if str(pg) not in laue:
                 warnings.append("unequivalent_surfaces")
 
-            # For Check negative surface energy
+            # For check negative surface energy
             e_per_atom = ucell_entry.energy_per_atom
             # Find out if an entry for this slab already exists.
             # If so, see if the slab at shift=0 has been calculated,
             # then calculate all other terminations besides c=0
-            final_energy = Oszicar(cwd+loc+'/OSZICAR.relax2.gz').final_energy
+            final_energy = Oszicar(cwd+folder+'/OSZICAR.relax2.gz').final_energy
             surface_e = final_energy - e_per_atom*len(initial)
             if surface_e < 0:
                 warnings.append("negative_surface_energy")
 
             # Check if the EDIFF was changed (this will only happen as
             # a last resort for bypassing the NonConvergenceError)
-            incar = Incar.from_file(cwd+loc+'/INCAR.relax2.gz')
+            incar = Incar.from_file(cwd+folder+'/INCAR.relax2.gz')
             if incar["EDIFF"] > 1e-06:
                 warnings.append("ediff_is_1e-05")
 
-        name = loc.replace("/", "")
+        name = folder.replace("/", "")
 
         # Addtional info relating to slabs
         additional_fields = {
@@ -203,7 +202,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              "vac_size": vsize, "slab_size": ssize,
                              "conventional_spacegroup": spacegroup,
                              "isolated_atom": isolated_atom,
-                             "polymorph": polymorph,
+                             "polymorph": unit_cell_dict["polymorph"],
                              "final_incar": Incar.from_file("./INCAR.relax2.gz"),
                              # Final incar parameters after custodian fixes have been applied.
                              # Useful for creating the slab incar parameters based on the
@@ -224,7 +223,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         drone = VaspToDbTaskDrone(use_full_uri=False,
                                   additional_fields=additional_fields,
                                   **vaspdbinsert_parameters)
-        drone.assimilate(cwd+loc)
+        drone.assimilate(cwd+folder)
 
 @explicit_serialize
 class WriteAtomVaspInputs(FireTaskBase):
@@ -358,12 +357,11 @@ class WriteSlabVaspInputs(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "cwd", "custodian_params", "potcar_functional",
-                       "vaspdbinsert_parameters", "miller_index", "mpid", "polymorph",
-                       "conventional_unit_cell", "conventional_spacegroup"]
+    required_params = ["folder", "cwd", "custodian_params", "potcar_functional", "mpid",
+                       "vaspdbinsert_parameters", "miller_index", "unit_cell_dict"]
     optional_params = ["min_slab_size", "min_vacuum_size", "user_incar_settings",
-                       "limit_sites", "limit_sites_at_least", "oxides", "k_product", "gpu", "debug",
-                       "bondlength", "max_broken_bonds"]
+                       "limit_sites", "limit_sites_at_least", "oxides", "k_product",
+                       "gpu", "debug", "bondlength", "max_broken_bonds"]
 
     def run_task(self, fw_spec):
 
@@ -405,18 +403,16 @@ class WriteSlabVaspInputs(FireTaskBase):
         min_vacuum_size = dec.process_decoded(self.get("min_vacuum_size", 10))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid"))
-        polymorph = dec.process_decoded(self.get("polymorph"))
-        spacegroup = dec.process_decoded(self.get("conventional_spacegroup"))
         oxides = dec.process_decoded(self.get("oxides", False))
         gpu = dec.process_decoded(self.get("gpu", False))
-        conventional_unit_cell = dec.process_decoded(self.get("conventional_unit_cell"))
         bondlength = dec.process_decoded(self.get("bondlength", None))
         max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", 0))
         limit_sites = dec.process_decoded(self.get("limit_sites", 199))
         limit_sites_at_least = dec.process_decoded(self.get("limit_sites_at_least", 0))
+        unit_cell_dict = dec.process_decoded(self.get("unit_cell_dict", 0))
         debug = dec.process_decoded(self.get("debug", False))
 
-        el = str(conventional_unit_cell[0].specie)
+        el = str(unit_cell_dict["ucell"][0].specie)
         bonds = {(el, el): bondlength} if bondlength else None
 
         if oxides:
@@ -572,18 +568,14 @@ class WriteSlabVaspInputs(FireTaskBase):
                 incar.pop("NBANDS")
             incar.write_file(cwd+new_folder+'/INCAR')
 
-
             fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
                                             custodian_params=custodian_params),
                            VaspSlabDBInsertTask(struct_type="slab_cell",
                                                 loc=new_folder, cwd=cwd, shift=slab.shift,
                                                 surface_area=slab.surface_area,
                                                 vsize=min_vacuum_size,
-                                                ssize=new_min_slab_size,
-                                                miller_index=miller_index,
-                                                mpid=mpid, conventional_spacegroup=spacegroup,
-                                                polymorph=polymorph,
-                                                conventional_unit_cell=conventional_unit_cell,
+                                                ssize=new_min_slab_size, miller_index=miller_index,
+                                                mpid=mpid, unit_cell_dict=unit_cell_dict,
                                                 vaspdbinsert_parameters=vaspdbinsert_parameters)],
                           name=new_folder)
 
@@ -595,12 +587,14 @@ class WriteSlabVaspInputs(FireTaskBase):
 
 @explicit_serialize
 class RunCustodianTask(FireTaskBase):
+
     """
         Runs Custodian.
     """
 
-    required_params = ["dir", "cwd", "custodian_params"]
+    required_params = ["folder", "cwd", "custodian_params"]
     optional_params = ["debug"]
+
     def run_task(self, fw_spec):
 
         """
@@ -614,12 +608,12 @@ class RunCustodianTask(FireTaskBase):
         """
 
         dec = MontyDecoder()
-        dir = dec.process_decoded(self['dir'])
+        folder = dec.process_decoded(self['folder'])
         cwd = dec.process_decoded(self['cwd'])
         debug = dec.process_decoded(self.get("debug", False))
 
         # Change to the directory with the vasp inputs to run custodian
-        os.chdir(cwd+dir)
+        os.chdir(cwd+folder)
 
         fw_env = fw_spec.get("_fw_env", {})
         custodian_params = self.get("custodian_params", {})
@@ -637,6 +631,7 @@ class RunCustodianTask(FireTaskBase):
 
 @explicit_serialize
 class MoveDirectoryTask(FireTaskBase):
+
     """
     Basic task to create new directories to move
     and organize completed directories. This will
@@ -673,6 +668,7 @@ class MoveDirectoryTask(FireTaskBase):
         for directory in directories:
             if hkl in directory and mpid in directory:
                 os.system('mv %s %s' %(directory, final_directory + '/' + subdir))
+
 
 def check_termination_symmetry(slab_list, miller_index, min_slab_size,
                                min_vacuum_size, relax_orient_uc):

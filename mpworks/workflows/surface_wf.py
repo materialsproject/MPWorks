@@ -22,12 +22,14 @@ db = MongoClient().data
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
     WriteAtomVaspInputs
+
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
     FrozenJobErrorHandler
 
-from pymatgen.core.surface import SlabGenerator, GetMillerIndices, generate_all_slabs
+from pymatgen.core.surface import SlabGenerator, \
+    get_symmetrically_distinct_miller_indices, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 from pymatgen.analysis.structure_analyzer import VoronoiConnectivity
@@ -36,7 +38,6 @@ from matgendb import QueryEngine
 
 from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
-from fireworks.scripts.rlaunch_run import rlaunch
 
 
 class SurfaceWorkflowManager(object):
@@ -50,7 +51,7 @@ class SurfaceWorkflowManager(object):
     def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
                  slab_size=10, vac_size=10, symprec=0.001, angle_tolerance=5,
                  fail_safe=True, reset=False, ucell_indices_dict={},
-                 check_exists=True, debug=False,
+                 check_exists=True, debug=False, verbose=True,
                  host=None, port=None, user=None, password=None,
                  collection="surface_tasks",  database=None):
 
@@ -144,7 +145,9 @@ class SurfaceWorkflowManager(object):
                 new_indices_dict[mpid] = ucell_indices_dict[mpid]["hkl_list"]
             else:
                 entries = mprest.get_entries(el, inc_structure="final")
-                print "# of entries for %s: " %(el), len(entries)
+
+                if verbose:
+                    print "# of entries for %s: " %(el), len(entries)
 
                 # First, let's get the order of energy values of,
                 # polymorphs so we can rank them by stability
@@ -174,13 +177,17 @@ class SurfaceWorkflowManager(object):
                 spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
                                          angle_tolerance=angle_tolerance)
                 conv_unit_cell = spa.get_conventional_standard_structure()
-                print conv_unit_cell
-                print spa.get_spacegroup_symbol()
+
+                if verbose:
+                    print conv_unit_cell
+                    print spa.get_spacegroup_symbol()
 
             # Get a dictionary of different properties for a particular material
             unit_cells_dict[mpid] = {"ucell": conv_unit_cell, "spacegroup": spa.get_spacegroup_symbol(),
                                      "polymorph": polymorph_order}
-            print el
+
+            if verbose:
+                print el
 
         self.apikey = apikey
         self.vaspdbinsert_params = vaspdbinsert_params
@@ -194,7 +201,9 @@ class SurfaceWorkflowManager(object):
         self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
         self.check_exists = check_exists
+        self.verbose = verbose
         self.debug = debug
+        self.mprester = mprest
 
     def from_max_index(self, max_index, max_normal_search=1,
                        max_only=False, get_bulk_e=True):
@@ -219,10 +228,11 @@ class SurfaceWorkflowManager(object):
         for mpid in self.unit_cells_dict.keys():
             max_miller = []
             list_of_indices = \
-                GetMillerIndices(self.unit_cells_dict[mpid]['ucell'],
-                                 max_index).get_symmetrically_distinct_miller_indices()
+                get_symmetrically_distinct_miller_indices(self.unit_cells_dict[mpid]['ucell'],
+                                                          max_index)
 
-            print '# ', mpid
+            if self.verbose:
+                print '# ', mpid
 
             # Will only return slabs whose indices
             # contain the max index if max_only = True
@@ -310,19 +320,21 @@ class SurfaceWorkflowManager(object):
             indices_dict[mpid] = miller_list
 
         if self.check_exists:
-            return self.check_existing_entries(indices_dict, bonds=bonds, bondlength=bondlength,
+            return self.check_existing_entries(indices_dict, bonds=bonds,
+                                               bondlength=bondlength,
                                                max_broken_bonds=max_broken_bonds,
                                                max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(indices_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
-                                         self.ssize, self.vsize, bonds=bonds, bondlength=bondlength,
+                                         self.ssize, self.vsize, bonds=bonds,
+                                         bondlength=bondlength,
                                          max_broken_bonds=max_broken_bonds,
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
-    def check_existing_entries(self, miller_dict, max_normal_search=1, bondlength=None,
-                               bonds=None, max_broken_bonds=0):
+    def check_existing_entries(self, miller_dict, max_normal_search=1,
+                               bondlength=None, bonds=None, max_broken_bonds=0):
 
         # Checks if a calculation is already in the DB to avoid
         # calculations that are already finish and creates workflows
@@ -332,12 +344,9 @@ class SurfaceWorkflowManager(object):
 
         # To keep track of which calculations
         # are done and can be skipped
-        calculate_with_bulk = {}
-        calculate_with_slab_only = {}
-        total_calculations = 0
-        total_calcs_finished = 0
-        total_calcs_with_bulk = 0
-        total_calcs_with_nobulk = 0
+        calculate_with_bulk, calculate_with_slab_only = {}, {}
+        total_calculations, total_calcs_finished, \
+        total_calcs_with_bulk, total_calcs_with_nobulk = 0, 0, 0, 0
 
         for mpid in miller_dict.keys():
             total_calculations += len(miller_dict[mpid])
@@ -353,8 +362,10 @@ class SurfaceWorkflowManager(object):
                                                                       inc_structure="Final")
 
                 if ucell_entries:
-                    print '%s %s oriented unit cell already calculated, ' \
-                          'now checking for existing slab' %(mpid, hkl)
+
+                    if self.verbose:
+                        print '%s %s oriented unit cell already calculated, ' \
+                              'now checking for existing slab' %(mpid, hkl)
 
                     # Check if slab calculations are complete if the
                     # oriented unit cell has already been calculated
@@ -369,8 +380,11 @@ class SurfaceWorkflowManager(object):
                         # No slab calculations found, insert slab calculations
                         if mpid not in calculate_with_slab_only.keys():
                             calculate_with_slab_only[mpid] = []
-                        print '%s %s slab cell not in DB, ' \
-                              'will insert calculation into WF' %(mpid, hkl)
+
+                        if self.verbose:
+                            print '%s %s slab cell not in DB, ' \
+                                  'will insert calculation into WF' %(mpid, hkl)
+
                         calculate_with_slab_only[mpid].append(hkl)
                         total_calcs_with_nobulk += 1
                 else:
@@ -379,8 +393,11 @@ class SurfaceWorkflowManager(object):
                     # slabs if no oriented ucell calculation has been found
                     if mpid not in calculate_with_bulk.keys():
                         calculate_with_bulk[mpid] = []
-                    print '%s %s oriented unit  cell not in DB, ' \
-                          'will insert calculation into WF' %(mpid, hkl)
+
+                    if self.verbose:
+                        print '%s %s oriented unit  cell not in DB, ' \
+                              'will insert calculation into WF' %(mpid, hkl)
+
                     calculate_with_bulk[mpid].append(hkl)
                     total_calcs_with_bulk +=1
 
@@ -394,23 +411,25 @@ class SurfaceWorkflowManager(object):
                      'fail_safe': self.fail_safe, 'reset': self.reset}
 
         with_bulk = CreateSurfaceWorkflow(calculate_with_bulk, debug=self.debug,
-                                          get_bulk_e=True, bonds=bonds, bondlength=bondlength,
-                                          max_broken_bonds=max_broken_bonds,
-                                          **wf_kwargs)
+                                          get_bulk_e=True, bonds=bonds,
+                                          bondlength=bondlength,
+                                          max_broken_bonds=max_broken_bonds, **wf_kwargs)
 
         with_slab_only = CreateSurfaceWorkflow(calculate_with_slab_only, debug=self.debug,
-                                               get_bulk_e=False, bonds=bonds, bondlength=bondlength,
-                                               max_broken_bonds=max_broken_bonds,
-                                               **wf_kwargs)
+                                               get_bulk_e=False, bonds=bonds,
+                                               bondlength=bondlength,
+                                               max_broken_bonds=max_broken_bonds, **wf_kwargs)
 
-        print "total number of Indices: ", total_calculations
-        print
-        print "total number of calculations with no bulk: ", total_calcs_with_nobulk, calculate_with_slab_only
-        print
-        print "total number of calculations with bulk: ", total_calcs_with_bulk, calculate_with_bulk
-        print
-        print "total number of calculations already finished: ", total_calcs_finished
-        print
+        status = ["total number of indices: ",
+                  "total number of calculations with no bulk: ",
+                  "total number of calculations with bulk: ",
+                  "total number of calculations already finished: ", ]
+        if self.verbose:
+            print status[0], total_calculations
+            print status[1], total_calcs_with_nobulk, calculate_with_slab_only
+            print status[2], total_calcs_with_bulk, calculate_with_bulk
+            print status[3], total_calcs_finished
+            print
 
         return [with_bulk, with_slab_only]
 
@@ -426,8 +445,7 @@ class CreateSurfaceWorkflow(object):
 
     def __init__(self, miller_dict, unit_cells_dict, vaspdbinsert_params,
                  ssize, vsize, max_normal_search=1, debug=False, bonds=None,
-                 max_broken_bonds=0, fail_safe=True, bondlength=None,
-                 reset=False, get_bulk_e=True):
+                 max_broken_bonds=0, bondlength=None, get_bulk_e=True):
 
         """
             Args:
@@ -453,15 +471,13 @@ class CreateSurfaceWorkflow(object):
         self.max_normal_search = max_normal_search
         self.ssize = ssize
         self.vsize = vsize
-        self.reset = reset
-        self.fail_safe = fail_safe
         self.get_bulk_e = get_bulk_e
         self.debug = debug
         self.max_broken_bonds = max_broken_bonds
         self.bonds = bonds
-        self.bondlength =bondlength
+        self.bondlength = bondlength
 
-    def launch_workflow(self, launchpad_dir="", k_product=50, job=None, gpu=False,
+    def launch_workflow(self, k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
                         additional_handlers=[], limit_sites_bulk=199, limit_sites_slabs=199,
                         limit_sites_at_least_slab=0, limit_sites_at_least_bulk=0, scratch_dir=None):
@@ -488,13 +504,6 @@ class CreateSurfaceWorkflow(object):
                 potcar_functional (str): default to PBE
         """
 
-        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
-                                                     launchpad_dir,
-                                                     "my_launchpad.yaml"))
-
-        if self.reset:
-            launchpad.reset('', require_password=False)
-
         # Scratch directory reffered to by custodian.
         # May be different on non-Nersc systems.
 
@@ -507,13 +516,7 @@ class CreateSurfaceWorkflow(object):
                     PotimErrorHandler(),
                     PositiveEnergyErrorHandler(),
                     VaspErrorHandler(),
-                    FrozenJobErrorHandler(output_filename="OSZICAR", timeout=3600)]#,
-                    # If none of the usual custodian handlers work, use the
-                    # altered surface specific handlers as a last resort
-                    # SurfacePositiveEnergyErrorHandler(),
-                    # SurfacePotimErrorHandler(),
-                    # SurfaceVaspErrorHandler(),
-                    # SurfaceFrozenJobErrorHandler(output_filename="OSZICAR")]
+                    FrozenJobErrorHandler(output_filename="OSZICAR", timeout=3600)]
 
         if additional_handlers:
             handlers.extend(additional_handlers)
@@ -566,62 +569,89 @@ class CreateSurfaceWorkflow(object):
                 # slabs are created in the WriteSlabVaspInputs task.
                 # WriteSlabVaspInputs will create the slabs from
                 # the contcar of the oriented unit cell calculation
-                tasks = []
 
                 folderbulk = '/%s_%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
                                                              mpid,'bulk', k_product, self.ssize,
                                                              self.vsize, str(miller_index[0]),
                                                              str(miller_index[1]), str(miller_index[2]))
                 cwd = os.getcwd()
-                if self.get_bulk_e:
-                    tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc,
-                                                    folder=folderbulk, cwd=cwd, gpu=gpu,
-                                                    user_incar_settings=user_incar_settings,
-                                                    potcar_functional=potcar_functional,
-                                                    k_product=k_product, oxides=oxides,
-                                                    debug=self.debug),
-                                 RunCustodianTask(dir=folderbulk, cwd=cwd,
-                                                  custodian_params=cust_params,
-                                                  debug=self.debug),
-                                 VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                      loc=folderbulk, cwd=cwd, debug=self.debug,
-                                                      miller_index=miller_index, mpid=mpid,
-                                                      conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
-                                                      conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
-                                                      polymorph=self.unit_cells_dict[mpid]["polymorph"],
-                                                      vaspdbinsert_parameters=self.vaspdbinsert_params)])
 
-                tasks.extend([WriteSlabVaspInputs(folder=folderbulk, cwd=cwd,
-                                                  user_incar_settings=user_incar_settings,
-                                                  custodian_params=cust_params,
+                task_kwargs = {"folder": folderbulk, "cwd": cwd, "debug": self.debug}
+                input_task_kwargs = task_kwargs.copy()
+                input_task_kwargs.update({"user_incar_settings": user_incar_settings,
+                                          "k_product": k_product, "gpu": gpu, "oxides": oxides,
+                                          "potcar_functional": potcar_functional})
+                tasks = []
+
+                if self.get_bulk_e:
+                    tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc, **input_task_kwargs),
+                                 RunCustodianTask(custodian_params=cust_params, **task_kwargs),
+                                 VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
+                                                      miller_index=miller_index, mpid=mpid,
+                                                      unit_cell_dict=self.unit_cells_dict[mpid],
+                                                      vaspdbinsert_parameters=self.vaspdbinsert_params,
+                                                      **task_kwargs)])
+
+                tasks.extend([WriteSlabVaspInputs(custodian_params=cust_params,
                                                   vaspdbinsert_parameters=
                                                   self.vaspdbinsert_params,
-                                                  potcar_functional=potcar_functional,
-                                                  k_product=k_product, gpu=gpu,
                                                   miller_index=miller_index,
                                                   min_slab_size=self.ssize,
                                                   min_vacuum_size=self.vsize,
                                                   bondlength= self.bondlength, mpid=mpid,
-                                                  conventional_unit_cell=self.unit_cells_dict[mpid]["ucell"],
                                                   max_broken_bonds=self.max_broken_bonds,
-                                                  conventional_spacegroup=self.unit_cells_dict[mpid]['spacegroup'],
-                                                  polymorph=self.unit_cells_dict[mpid]["polymorph"],
+                                                  unit_cell_dict=self.unit_cells_dict[mpid],
                                                   limit_sites=limit_sites_slabs,
                                                   limit_sites_at_least=limit_sites_at_least_slab,
-                                                  oxides=oxides, debug=self.debug)])
+                                                  **input_task_kwargs)])
 
                 fw = Firework(tasks, name=folderbulk)
                 fw_ids.append(fw.fw_id)
                 fws.append(fw)
                 print self.unit_cells_dict[mpid]['spacegroup']
 
-        wf = Workflow(fws, name='Surface Calculations')
+        return fws
 
+    def run_all_fws(self, fws, launchpad_dir="", reset=False):
+
+        launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
+                                                     launchpad_dir,
+                                                     "my_launchpad.yaml"))
+        if reset:
+            launchpad.reset('', require_password=False)
+
+        wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
-        # Automatically runs fw to create child fireworks for slab calculations
+
         if not self.get_bulk_e:
-            for fw_id in fw_ids:
-                os.system("rlaunch singleshot --fw_id %s" %(-1*fw_id))
+            for fw in fws:
+                os.system("rlaunch singleshot --fw_id %s" %(-1*fw.fw_id))
+
+    def get_conventional_ucell(self, formula_id):
+
+        """
+        Gets the conventional unit cell by querying
+        materials project for the primitive unit cell
+
+        Args:
+            formula_id (string): Materials Project ID
+                associated with the slab data entry.
+        """
+
+        entries = self.mprester.get_entries(formula_id,
+                                            inc_structure="Final",
+                                            property_data=["e_above_hull"])
+        if formula_id[:2] == "mp":
+            prim_unit_cell = entries[0].structure
+        else:
+            ehulls = [entry.data["e_above_hull"] for entry in entries]
+            ehulls, entries = zip(*sorted(zip(ehulls, entries)))
+            prim_unit_cell = entries[0].structure
+
+        spa = SpacegroupAnalyzer(prim_unit_cell, symprec=self.symprec,
+                                 angle_tolerance=self.angle_tolerance)
+
+        return spa.get_conventional_standard_structure()
 
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
@@ -773,3 +803,5 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1,
         max_broken_bonds -= 1
 
     return bonds, bond_length, max_broken_bonds
+
+
