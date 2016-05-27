@@ -462,13 +462,13 @@ class WriteSlabVaspInputs(FireTaskBase):
             if bond_dist < 10:
                 min_slab_size += 5
 
-        slab_list = slabgen.get_slabs()
+        slab_list = slabgen.get_slabs(bonds=bonds, max_broken_bonds=max_broken_bonds)
 
         print 'chemical formula', relax_orient_uc.composition.reduced_formula
         print 'mpid', mpid
         print "Miller Index: ", miller_index
         print ucell_entry.data['state']
-
+	print os.path.join(cwd, folder)
         # Check if ucell calculation was successful before doing slab calculation
         if ucell_entry.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
@@ -568,10 +568,10 @@ class WriteSlabVaspInputs(FireTaskBase):
                 incar.pop("NBANDS")
             incar.write_file(cwd+new_folder+'/INCAR')
 
-            fw = Firework([RunCustodianTask(dir=new_folder, cwd=cwd,
+            fw = Firework([RunCustodianTask(folder=new_folder, cwd=cwd,
                                             custodian_params=custodian_params),
                            VaspSlabDBInsertTask(struct_type="slab_cell",
-                                                loc=new_folder, cwd=cwd, shift=slab.shift,
+                                                folder=new_folder, cwd=cwd, shift=slab.shift,
                                                 surface_area=slab.surface_area,
                                                 vsize=min_vacuum_size,
                                                 ssize=new_min_slab_size, miller_index=miller_index,

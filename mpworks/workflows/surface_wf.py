@@ -50,7 +50,7 @@ class SurfaceWorkflowManager(object):
 
     def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
                  slab_size=10, vac_size=10, symprec=0.001, angle_tolerance=5,
-                 fail_safe=True, reset=False, ucell_indices_dict={},
+                 ucell_indices_dict={},
                  check_exists=True, debug=False, verbose=True,
                  host=None, port=None, user=None, password=None,
                  collection="surface_tasks",  database=None):
@@ -197,8 +197,6 @@ class SurfaceWorkflowManager(object):
         self.indices_dict = new_indices_dict
         self.ssize = slab_size
         self.vsize = vac_size
-        self.reset = reset
-        self.fail_safe = fail_safe
         self.surface_query_engine = QueryEngine(**vaspdbinsert_params)
         self.check_exists = check_exists
         self.verbose = verbose
@@ -407,8 +405,7 @@ class SurfaceWorkflowManager(object):
         wf_kwargs = {'unit_cells_dict': self.unit_cells_dict,
                      'vaspdbinsert_params': self.vaspdbinsert_params,
                      'ssize': self.ssize, 'vsize': self.vsize,
-                     'max_normal_search': max_normal_search,
-                     'fail_safe': self.fail_safe, 'reset': self.reset}
+                     'max_normal_search': max_normal_search}
 
         with_bulk = CreateSurfaceWorkflow(calculate_with_bulk, debug=self.debug,
                                           get_bulk_e=True, bonds=bonds,
@@ -559,10 +556,10 @@ class CreateSurfaceWorkflow(object):
                     if len(reduces_oriented_uc) < len(oriented_uc):
                         oriented_uc = reduces_oriented_uc
 
-                if self.fail_safe and len(oriented_uc)> limit_sites_bulk:
+                if len(oriented_uc)> limit_sites_bulk:
                     warnings.warn("UCELL EXCEEDED %s ATOMS!!!" %(limit_sites_bulk))
                     continue
-                if self.fail_safe and len(oriented_uc)< limit_sites_at_least_bulk:
+                if len(oriented_uc)< limit_sites_at_least_bulk:
                     warnings.warn("UCELL LESS THAN %s ATOMS!!!" %(limit_sites_bulk))
                     continue
                 # This method only creates the oriented unit cell, the
@@ -612,7 +609,7 @@ class CreateSurfaceWorkflow(object):
 
         return fws
 
-    def run_all_fws(self, fws, launchpad_dir="", reset=False):
+    def run_all_fws(self, fws, launchpad_dir="", reset=False, slabs_only=False):
 
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                      launchpad_dir,
@@ -623,9 +620,10 @@ class CreateSurfaceWorkflow(object):
         wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
 
-        if not self.get_bulk_e:
+        if slabs_only:
             for fw in fws:
-                os.system("rlaunch singleshot --fw_id %s" %(-1*fw.fw_id))
+		print "launching fw_id %s" %(fw.fw_id)
+                os.system("rlaunch singleshot --fw_id %s" %(fw.fw_id))
 
     def get_conventional_ucell(self, formula_id):
 
@@ -801,7 +799,7 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1,
         max_broken_bonds -= 1
     if last_num_terms != 0:
         max_broken_bonds -= 1
-
+    print bonds, bond_length, max_broken_bonds
     return bonds, bond_length, max_broken_bonds
 
 
