@@ -50,7 +50,7 @@ class SurfaceWorkflowManager(object):
 
     def __init__(self, elements_and_mpids=[], indices_dict=None, ucell_dict={},
                  slab_size=10, vac_size=10, symprec=0.001, angle_tolerance=5,
-                 ucell_indices_dict={},
+                 ucell_indices_dict={}, bonds=None, max_broken_bonds=0, bondlength=None,
                  check_exists=True, debug=False, verbose=True,
                  host=None, port=None, user=None, password=None,
                  collection="surface_tasks",  database=None):
@@ -202,6 +202,9 @@ class SurfaceWorkflowManager(object):
         self.verbose = verbose
         self.debug = debug
         self.mprester = mprest
+        self.bonds = bonds
+        self.max_broken_bonds = max_broken_bonds
+        self.bondlength=bondlength
 
     def from_max_index(self, max_index, max_normal_search=1,
                        max_only=False, get_bulk_e=True):
@@ -243,11 +246,18 @@ class SurfaceWorkflowManager(object):
                 miller_dict[mpid] = list_of_indices
 
         if self.check_exists:
-            return self.check_existing_entries(miller_dict, max_normal_search=max_normal_search)
+            return self.check_existing_entries(miller_dict,
+                                               max_broken_bonds=self.max_broken_bonds,
+                                               bonds=self.bonds,
+                                               bondlength=self.bonds[self.bonds.keys()[0]],
+                                               max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
+                                         max_broken_bonds=self.max_broken_bonds,
+                                         bonds=self.bonds,
+                                         bondlength=self.bonds[self.bonds.keys()[0]],
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
@@ -269,11 +279,17 @@ class SurfaceWorkflowManager(object):
 
         if self.check_exists:
             return self.check_existing_entries(miller_dict,
+                                               max_broken_bonds=self.max_broken_bonds,
+                                               bonds=self.bonds,
+                                               bondlength=self.bonds[self.bonds.keys()[0]],
                                                max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(miller_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
+                                         max_broken_bonds=self.max_broken_bonds,
+                                         bonds=self.bonds,
+                                         bondlength=self.bonds[self.bonds.keys()[0]],
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 
@@ -288,11 +304,17 @@ class SurfaceWorkflowManager(object):
 
         if self.check_exists:
             return self.check_existing_entries(self.indices_dict,
+                                               max_broken_bonds=self.max_broken_bonds,
+                                               bonds=self.bonds,
+                                               bondlength=self.bonds[self.bonds.keys()[0]],
                                                max_normal_search=max_normal_search)
         else:
             return CreateSurfaceWorkflow(self.indices_dict, self.unit_cells_dict,
                                          self.vaspdbinsert_params,
                                          self.ssize, self.vsize,
+                                         max_broken_bonds=self.max_broken_bonds,
+                                         bonds=self.bonds,
+                                         bondlength=self.bonds[self.bonds.keys()[0]],
                                          max_normal_search=max_normal_search,
                                          get_bulk_e=get_bulk_e, debug=self.debug)
 

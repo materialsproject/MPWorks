@@ -18,9 +18,9 @@ from custodian.custodian import Custodian
 from matgendb.creator import VaspToDbTaskDrone
 from matgendb import QueryEngine
 
-from pymatgen.io.vaspio_metal_slabs import MPSlabVaspInputSetMetals, MPSlabVaspInputSetOxides
+from pymatgen.io.vasp.sets import MVLSlabSet
 from pymatgen.io.vasp.outputs import Incar, Outcar, Oszicar
-from pymatgen.core.surface import SlabGenerator, symmetrize_slab
+from pymatgen.core.surface import SlabGenerator
 from pymatgen.core.structure import Structure, Lattice
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_analyzer import RelaxationAnalyzer, VoronoiConnectivity
@@ -265,16 +265,14 @@ class WriteAtomVaspInputs(FireTaskBase):
         atom = dec.process_decoded(self.get("atom"))
 
         user_incar_settings = \
-            dec.process_decoded(self.get("user_incar_settings",
-                                         MPSlabVaspInputSetMetals().incar_settings))
+            dec.process_decoded(self.get("user_incar_settings", None))
         kpoints0 = \
             dec.process_decoded(self.get("kpoints0", 1))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_functional", 'PBE'))
         debug = dec.process_decoded(self.get("debug", False))
 
-
-        mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
+        mplb = MVLSlabSet(user_incar_settings=user_incar_settings,
                                   kpoints0=[kpoints0]*3, bulk=False,
                                   potcar_functional=potcar_functional,
                                   ediff_per_atom=False)
@@ -324,29 +322,16 @@ class WriteUCVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("potcar_functional"))
         oxides = \
             dec.process_decoded(self.get("oxides", False))
-
         debug = dec.process_decoded(self.get("debug", False))
 
+        user_incar_settings = \
+            dec.process_decoded(self.get("user_incar_settings", {}))
+        mplb = MVLSlabSet(oriented_ucell, bulk=True, gpu=gpu,
+                          user_incar_settings=user_incar_settings,
+                          k_product=k_product,
+                          potcar_functional=potcar_functional)
 
-        if oxides:
-            user_incar_settings = \
-                dec.process_decoded(self.get("user_incar_settings",
-                                             MPSlabVaspInputSetOxides().incar_settings))
-            mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
-                                            k_product=k_product, bulk=True,
-                                            ediff_per_atom=True, gpu=gpu,
-                                            potcar_functional=potcar_functional)
-        else:
-            user_incar_settings = \
-                dec.process_decoded(self.get("user_incar_settings",
-                                             MPSlabVaspInputSetMetals().incar_settings))
-            mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, bulk=True, gpu=gpu,
-                                      potcar_functional=potcar_functional,
-                                      ediff_per_atom=False)
-
-
-        mplb.write_input(oriented_ucell, cwd+folder)
+        mplb.write_input(cwd+folder)
 
 
 @explicit_serialize
@@ -411,22 +396,10 @@ class WriteSlabVaspInputs(FireTaskBase):
         limit_sites_at_least = dec.process_decoded(self.get("limit_sites_at_least", 0))
         unit_cell_dict = dec.process_decoded(self.get("unit_cell_dict", 0))
         debug = dec.process_decoded(self.get("debug", False))
+        user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
 
         el = str(unit_cell_dict["ucell"][0].specie)
         bonds = {(el, el): bondlength} if bondlength else None
-
-        if oxides:
-            user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
-            mplb = MPSlabVaspInputSetOxides(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, gpu=gpu,
-                                      potcar_functional=potcar_functional,
-                                      ediff_per_atom=True)
-        else:
-            user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
-            mplb = MPSlabVaspInputSetMetals(user_incar_settings=user_incar_settings,
-                                      k_product=k_product, gpu=gpu,
-                                      potcar_functional=potcar_functional,
-                                      ediff_per_atom=False)
 
         # Create slabs from the relaxed oriented unit cell. Since the unit
         # cell is already oriented with the miller index, entering (0,0,1)
@@ -469,6 +442,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         print "Miller Index: ", miller_index
         print ucell_entry.data['state']
 	print os.path.join(cwd, folder)
+
         # Check if ucell calculation was successful before doing slab calculation
         if ucell_entry.data['state'] != 'successful':
             print "%s bulk calculations were incomplete, cancelling FW" \
@@ -504,7 +478,10 @@ class WriteSlabVaspInputs(FireTaskBase):
             new_folder = folder.replace('bulk', 'slab')+'_shift%s' \
                                                         %(slab.shift)
 
-            mplb.write_input(slab, cwd+new_folder)
+            mplb = MVLSlabSet(slab, user_incar_settings=user_incar_settings,
+                              k_product=k_product, gpu=gpu,
+                              potcar_functional=potcar_functional)
+            mplb.write_input(cwd+new_folder)
 
             # Inherit the final magnetization of a slab
             # from the outcar of the ucell calculation.
@@ -629,74 +606,33 @@ class RunCustodianTask(FireTaskBase):
         return FWAction(stored_data=output)
 
 
-@explicit_serialize
-class MoveDirectoryTask(FireTaskBase):
-
-    """
-    Basic task to create new directories to move
-    and organize completed directories. This will
-    prevent the home directory from being filled up.
-    """
-
-    required_params = ["cwd", "formula", "miller_index",
-                       "mpid", "final_directory"]
-
-    def run_task(self, fw_spec):
-
-        """
-
-        """
-
-        dec = MontyDecoder()
-        final_directory = dec.process_decoded(self['final_directory'])
-        cwd = dec.process_decoded(self['cwd'])
-        os.chdir(cwd)
-        miller_index = dec.process_decoded(self['miller_index'])
-        mpid = dec.process_decoded(self['mpid'])
-        formula = dec.process_decoded(self['formula'])
-
-        subdir = formula + "_" + mpid
-
-        final_subdirs = [d for d in os.listdir(final_directory) if os.path.isdir(d)]
-
-        if subdir not in final_subdirs:
-            os.system('mkdir %s' %(final_directory + '/' + subdir))
-
-        directories = [d for d in os.listdir(cwd) if os.path.isdir(d)]
-
-        hkl = str(miller_index[0]) + str(miller_index[1]) + str(miller_index[2])
-        for directory in directories:
-            if hkl in directory and mpid in directory:
-                os.system('mv %s %s' %(directory, final_directory + '/' + subdir))
-
-
 def check_termination_symmetry(slab_list, miller_index, min_slab_size,
                                min_vacuum_size, relax_orient_uc):
 
     # Function to symmetrize set of slabs with different
     # terminations and prevent removal of too many atoms.
 
-    ssize_check = False # Checks if ssize is at least
-                        # that of the initial min_slab_size
+    ssize_check = False # Checks if ssize is at least that
+                        # of the initial min_slab_size
     new_min_slab_size = min_slab_size
     original_num_sites = len(slab_list[0])
-
-    # First, check the symmetry of the slabs
-    Laue_groups = ["-1", "2/m", "mmm", "4/m", "4/mmm", "-3",
-                   "-3m", "6/m", "6/mmm", "m-3", "m-3m"]
 
     new_shifts = [slab.shift for slab in slab_list]
     while ssize_check is False:
 
         new_slab_list = []
+
+        slabs = SlabGenerator(relax_orient_uc, (0,0,1),
+                              min_slab_size=new_min_slab_size,
+                              min_vacuum_size=min_vacuum_size,
+                              max_normal_search=max(miller_index),
+                              primitive=True)
         # For loop will generate a list of symmetrized
         # slabs of different terminations
         for slab in slab_list:
 
             # Get the symmetrize slab
-            slab = symmetrize_slab(slab)
-            sg = SpacegroupAnalyzer(slab, symprec=1E-3)
-            pg = sg.get_point_group()
+            slab = slabs.symmetrize_slab(slab)
 
             # Just skip the calculation if false,
             # further investigation will be required...
@@ -736,8 +672,6 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
                                   min_vacuum_size=min_vacuum_size,
                                   max_normal_search=max(miller_index),
                                   primitive=True)
-
-
 
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
