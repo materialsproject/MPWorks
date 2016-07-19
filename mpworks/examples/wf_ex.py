@@ -51,7 +51,7 @@ def structure_to_wf(structure):
     spec['task_type'] = 'GGA optimize structure (2x) example'
 
     # set up the custodian that we want to run
-    jobs = VaspJob.double_relaxation_run('', gzipped=False)
+    jobs = VaspJob.double_relaxation_run('')
     for j in jobs: # turn off auto npar, it doesn't work for >1 node
             j.auto_npar = False
     handlers = [VaspErrorHandler(), FrozenJobErrorHandler(), MeshSymmetryErrorHandler(),

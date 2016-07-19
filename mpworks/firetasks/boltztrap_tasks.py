@@ -104,7 +104,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
                                     max_val = val
                                     max_temp = float(t)
                                     max_dope = d['doping'][te_type][didx]
-                                    max_mu = d['mu_doping'][te_type][t][didx]
+                                    max_mu = d['mu_doping'][te_type][str(t)][didx]
 
                                 isotropic = evs['isotropic']
                 data[te_type] = {'value': max_val, 'temperature': max_temp, 'doping': max_dope, 'mu': max_mu, 'isotropic': isotropic}
@@ -121,7 +121,6 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         # import here to prevent import errors in bigger MPCollab
-        from mpcollab.thermoelectrics.boltztrap_TE import BoltztrapAnalyzerTE, BoltzSPB
         # get the band structure and nelect from files
         """
         prev_dir = get_loc(fw_spec['prev_vasp_dir'])
@@ -195,9 +194,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             """
 
             # now for the "sanitized" data
-            te_analyzer = BoltztrapAnalyzerTE.from_BoltztrapAnalyzer(bta)
-
-            ted = te_analyzer.as_dict()
+            ted = bta.as_dict()
             del ted['seebeck']
             del ted['hall']
             del ted['kappa']
@@ -206,13 +203,13 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             # ted['boltztrap_full_fs_id'] = btid
             ted['snlgroup_id'] = fw_spec['snlgroup_id']
             ted['run_tags'] = fw_spec['run_tags']
-            ted['snl'] = fw_spec['mpsnl']
+            ted['snl'] = fw_spec['mpsnl'].as_dict()
             ted['dir_name_full'] = dir
             ted['dir_name'] = get_block_part(dir)
             ted['task_id'] = m_task['task_id']
 
-            ted['pf_doping'] = te_analyzer.get_power_factor(tau=self.TAU).as_dict()
-            ted['zt_doping'] = te_analyzer.get_ZT(kappal=self.KAPPAL, tau=self.TAU).as_dict()
+            ted['pf_doping'] = bta.get_power_factor(output='tensor', relaxation_time=self.TAU)
+            ted['zt_doping'] = bta.get_zt(output='tensor', relaxation_time=self.TAU, kl=self.KAPPAL)
 
             ted['pf_eigs'] = self.get_eigs(ted, 'pf_doping')
             ted['pf_best'] = self.get_extreme(ted, 'pf_eigs')
@@ -236,7 +233,8 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             ted['kappa_best_dope19'] = self.get_extreme(ted, 'kappa_eigs', maximize=False, max_didx=4)
 
             try:
-                bzspb = BoltzSPB(te_analyzer)
+	        from mpcollab.thermoelectrics.boltztrap_TE import BoltzSPB
+                bzspb = BoltzSPB(ted)
                 maxpf_p = bzspb.get_maximum_power_factor('p', temperature=0, tau=1E-14, ZT=False, kappal=0.5,\
                     otherprops=('get_seebeck_mu_eig', 'get_conductivity_mu_eig', \
                                                     'get_thermal_conductivity_mu_eig', 'get_average_eff_mass_tensor_mu'))
@@ -283,7 +281,7 @@ class BoltztrapRunTask(FireTaskBase, FWSerializable):
             update_spec = {'prev_vasp_dir': fw_spec['prev_vasp_dir'],
                        'boltztrap_dir': os.getcwd(),
                        'prev_task_type': fw_spec['task_type'],
-                       'mpsnl': fw_spec['mpsnl'],
+                       'mpsnl': fw_spec['mpsnl'].as_dict(),
                        'snlgroup_id': fw_spec['snlgroup_id'],
                        'run_tags': fw_spec['run_tags'], 'parameters': fw_spec.get('parameters')}
 
