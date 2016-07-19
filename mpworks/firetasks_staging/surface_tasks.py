@@ -134,8 +134,8 @@ class VaspSlabDBInsertTask(FireTaskBase):
             if abs(relaxation.get_percentage_volume_change()*100) > 1:
                 warnings.append("|bulk_vol_rel|>1%")
 
-            initial = Structure.from_file(cwd+folder+'/POSCAR')
-            final = Structure.from_file(cwd+folder+'/CONTCAR.relax2.gz')
+            initial = Structure.from_file(os.path.join(cwd, folder, 'POSCAR'))
+            final = Structure.from_file(os.path.join(cwd, folder, 'CONTCAR.relax2.gz'))
 
             # Analyze slab site relaxations for possible
             # warning signs, too much site relaxation
@@ -179,18 +179,18 @@ class VaspSlabDBInsertTask(FireTaskBase):
             # Find out if an entry for this slab already exists.
             # If so, see if the slab at shift=0 has been calculated,
             # then calculate all other terminations besides c=0
-            final_energy = Oszicar(cwd+folder+'/OSZICAR.relax2.gz').final_energy
+            final_energy = Oszicar(os.path.join(cwd,folder,'OSZICAR.relax2.gz')).final_energy
             surface_e = final_energy - e_per_atom*len(initial)
             if surface_e < 0:
                 warnings.append("negative_surface_energy")
 
             # Check if the EDIFF was changed (this will only happen as
             # a last resort for bypassing the NonConvergenceError)
-            incar = Incar.from_file(cwd+folder+'/INCAR.relax2.gz')
+            incar = Incar.from_file(os.path.join(cwd, folder, 'INCAR.relax2.gz'))
             if incar["EDIFF"] > 1e-06:
                 warnings.append("ediff_is_1e-05")
 
-        name = folder.replace("/", "")
+        name = folder
 
         # Addtional info relating to slabs
         additional_fields = {
@@ -223,7 +223,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         drone = VaspToDbTaskDrone(use_full_uri=False,
                                   additional_fields=additional_fields,
                                   **vaspdbinsert_parameters)
-        drone.assimilate(cwd+folder)
+        drone.assimilate(os.path.join(cwd, folder))
 
 @explicit_serialize
 class WriteAtomVaspInputs(FireTaskBase):
@@ -281,7 +281,7 @@ class WriteAtomVaspInputs(FireTaskBase):
         lattice = Lattice.cubic(latt_a)
         atom_in_a_box = Structure(lattice, [atom], [[0.5, 0.5, 0.5]])
 
-        mplb.write_input(atom_in_a_box, cwd+folder)
+        mplb.write_input(atom_in_a_box, os.path.join(cwd, folder))
 
 
 @explicit_serialize
@@ -331,7 +331,7 @@ class WriteUCVaspInputs(FireTaskBase):
                           k_product=k_product,
                           potcar_functional=potcar_functional)
 
-        mplb.write_input(cwd+folder)
+        mplb.write_input(os.path.join(cwd, folder))
 
 
 @explicit_serialize
@@ -437,19 +437,19 @@ class WriteSlabVaspInputs(FireTaskBase):
 
         slab_list = slabgen.get_slabs(bonds=bonds, max_broken_bonds=max_broken_bonds)
 
-        print 'chemical formula', relax_orient_uc.composition.reduced_formula
-        print 'mpid', mpid
-        print "Miller Index: ", miller_index
-        print ucell_entry.data['state']
-	print os.path.join(cwd, folder)
+        print('chemical formula', relax_orient_uc.composition.reduced_formula)
+        print('mpid', mpid)
+        print("Miller Index: ", miller_index)
+        print(ucell_entry.data['state'])
+	print(os.path.join(cwd, folder))
 
         # Check if ucell calculation was successful before doing slab calculation
         if ucell_entry.data['state'] != 'successful':
-            print "%s bulk calculations were incomplete, cancelling FW" \
-                  %(relax_orient_uc.composition.reduced_formula)
+            print("%s bulk calculations were incomplete, cancelling FW" \
+                  %(relax_orient_uc.composition.reduced_formula))
             return FWAction()
 
-        print ucell_entry.data['state']
+        print(ucell_entry.data['state'])
 
         FWs = []
 
@@ -481,7 +481,7 @@ class WriteSlabVaspInputs(FireTaskBase):
             mplb = MVLSlabSet(slab, user_incar_settings=user_incar_settings,
                               k_product=k_product, gpu=gpu,
                               potcar_functional=potcar_functional)
-            mplb.write_input(cwd+new_folder)
+            mplb.write_input(os.path.join(cwd, new_folder))
 
             # Inherit the final magnetization of a slab
             # from the outcar of the ucell calculation.
@@ -543,7 +543,7 @@ class WriteSlabVaspInputs(FireTaskBase):
 
             if "NBANDS" in incar.keys():
                 incar.pop("NBANDS")
-            incar.write_file(cwd+new_folder+'/INCAR')
+            incar.write_file(os.path.join(cwd,new_folder,'INCAR'))
 
             fw = Firework([RunCustodianTask(folder=new_folder, cwd=cwd,
                                             custodian_params=custodian_params),
@@ -589,8 +589,10 @@ class RunCustodianTask(FireTaskBase):
         cwd = dec.process_decoded(self['cwd'])
         debug = dec.process_decoded(self.get("debug", False))
 
+        print(os.path.join(cwd,folder))
+
         # Change to the directory with the vasp inputs to run custodian
-        os.chdir(cwd+folder)
+        os.chdir(os.path.join(cwd,folder))
 
         fw_env = fw_spec.get("_fw_env", {})
         custodian_params = self.get("custodian_params", {})
@@ -666,7 +668,7 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
             break
 
         if not ssize_check:
-            print "making new slabs because ssize too small"
+            print("making new slabs because ssize too small")
             slabs = SlabGenerator(relax_orient_uc, (0,0,1),
                                   min_slab_size=new_min_slab_size,
                                   min_vacuum_size=min_vacuum_size,
