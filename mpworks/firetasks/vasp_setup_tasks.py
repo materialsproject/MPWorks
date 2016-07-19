@@ -5,8 +5,7 @@ from fireworks.utilities.fw_serializers import FWSerializable
 from fireworks.core.firework import FireTaskBase, FWAction
 from pymatgen.io.vasp.outputs import Vasprun, Outcar
 from pymatgen.io.vasp.inputs import VaspInput, Incar, Poscar, Kpoints, Potcar
-from pymatgen.io.vasp.sets import MPVaspInputSet, MPStaticVaspInputSet, \
-    MPNonSCFVaspInputSet
+from pymatgen.io.vasp.sets import MPRelaxSet, MPStaticSet, MPNonSCFSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
 
 __author__ = 'Wei Chen, Anubhav Jain'
@@ -39,17 +38,21 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         self.user_incar_settings.update({"NPAR": 2})
+        # Get kpoint density per vol
+        vol = Poscar.from_file("POSCAR").structure.volume
+        kppra_vol = self.kpoints_density / vol
+        new_set = MPStaticSet.from_previous_calc(
+            os.getcwd(),
+            user_incar_settings=self.user_incar_settings, 
+            reciprocal_density=kppra_vol)
 
-        MPStaticVaspInputSet.from_previous_vasp_run(os.getcwd(),
-                                                    user_incar_settings=self.user_incar_settings, kpoints_density=self.kpoints_density)
-        structure = MPStaticVaspInputSet.get_structure(Vasprun(zpath("vasprun.xml")), Outcar(zpath("OUTCAR")),
-                                                       initial_structure=False,
-                                                       additional_info=True)
-
-        return FWAction(stored_data={'refined_structure': structure[1][0].as_dict(),
-                                     'conventional_standard_structure': structure[1][1].as_dict(),
-                                     'symmetry_dataset': structure[1][2],
-                                     'symmetry_operations': [x.as_dict() for x in structure[1][3]]})
+        structure = new_set.structure
+        sga = SpacegroupAnalyzer(structure, 0.1)
+        return FWAction(stored_data={
+            'refined_structure': sga.get_refined_structure().as_dict(),
+            'conventional_standard_structure': sga.get_conventional_standard_structure().as_dict(),
+            'symmetry_dataset': sga.get_symmetry_dataset(),
+            'symmetry_operations': [x.as_dict() for x in sga.get_symmetry_operations()]})
 
 
 class SetupUnconvergedHandlerTask(FireTaskBase, FWSerializable):
@@ -86,15 +89,21 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
 
     def run_task(self, fw_spec):
         user_incar_settings= {"NPAR": 2}
+        vol = Poscar.from_file("POSCAR").structure.volume
+        kppra_vol = self.kpoints_density / vol
         if self.line:
-            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Line", copy_chgcar=False,
-                                                        user_incar_settings=user_incar_settings, kpoints_line_density=self.kpoints_line_density)
+            MPNonSCFSet.from_prev_calc(
+                os.getcwd(), mode="Line", copy_chgcar=False,
+                user_incar_settings=user_incar_settings,
+                kpoints_line_density=self.kpoints_line_density)
             kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure)
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
         else:
-            MPNonSCFVaspInputSet.from_previous_vasp_run(os.getcwd(), mode="Uniform", copy_chgcar=False,
-                                 user_incar_settings=user_incar_settings, kpoints_density=self.kpoints_density)
+            MPNonSCFSet.from_prev_calc(
+                os.getcwd(), mode="Uniform", copy_chgcar=False,
+                user_incar_settings=user_incar_settings,
+                reciprocal_density=kppra_vol)
             return FWAction()
 
 
@@ -114,8 +123,8 @@ class SetupGGAUTask(FireTaskBase, FWSerializable):
 
         # figure out what GGA+U values to use and override them
         # LDAU values to use
-        mpvis = MPVaspInputSet()
-        ggau_incar = mpvis.get_incar(poscar.structure).as_dict()
+        mpvis = MPRelaxSet(poscar.structure)
+        ggau_incar = mpvis.incar.as_dict()
         incar_updates = {k: ggau_incar[k] for k in ggau_incar.keys() if 'LDAU' in k}
 
         for k in ggau_incar:
