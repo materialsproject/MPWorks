@@ -1,14 +1,9 @@
-print 'fixing fireworks documents for MPComplete runs on XSEDE ...'
-
-import os, json, sys
+import os, json
 from pymongo import DESCENDING, ASCENDING
 from fireworks.fw_config import CONFIG_FILE_DIR, SORT_FWS
 from fireworks.core.fworker import FWorker
 from fireworks.core.launchpad import LaunchPad
 from pymongo import ReturnDocument
-from datetime import datetime
-from dateutil import parser
-from collections import Counter
 
 launchpad = LaunchPad.from_file(os.path.join(CONFIG_FILE_DIR, 'my_launchpad.yaml'))
 fworker = FWorker.from_file(os.path.join(CONFIG_FILE_DIR, 'my_fworker.yaml'))
@@ -64,17 +59,3 @@ for idoc, doc in enumerate(launchpad.fireworks.find(m_query, projection=projecti
 	    continue
     fw_ids.append(doc['fw_id'])
 print 'fixed', fw_ids
-
-sys.exit(0)
-m_query.pop('state')
-counter = Counter()
-#launchpad.fireworks.create_index([('spec.mpsnl.about.remarks', ASCENDING), ('spec.snl.about.remarks', ASCENDING)])
-for idoc, doc in enumerate(launchpad.fireworks.find(m_query, projection=projection)):
-    if 'updated_on' not in doc: continue
-    try:
-        dt = parser.parse(doc['updated_on'])
-    except:
-        dt = doc['updated_on']
-    if bool(datetime(2016, 4, 10) < dt):
-        counter[doc['state']] += 1
-print counter
