@@ -7,8 +7,8 @@ __date__ = 'May 10, 2013'
 
 # don't change nnodes unless other parts of code are also changed
 # nodes configuration will be ignored on SLURM due to different naming convention (nnodes vs nodes)
-QA_VASP = {'nnodes': 2}
-QA_VASP_SMALL = {'nnodes': 2, 'walltime': '72:00:00'}  # small walltime jobs
+QA_VASP = {'nnodes': 2, 'nodes': 2, 'walltime': '48:00:00'}
+QA_VASP_SMALL = {'nnodes': 2, 'nodes': 2, 'walltime': '48:00:00'}  # small walltime jobs
 QA_DB = {'nnodes': 1, 'nodes' : 1, 'walltime': '2:00:00'}
 QA_CONTROL = {'nnodes': 1, 'nodes': 1, 'walltime': '00:30:00'}
 
