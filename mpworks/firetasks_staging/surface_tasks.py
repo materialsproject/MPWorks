@@ -9,6 +9,7 @@ __date__ = "6/2/15"
 import os
 import numpy as np
 import warnings
+from functools import reduce
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
@@ -24,6 +25,11 @@ from pymatgen.core.surface import SlabGenerator
 from pymatgen.core.structure import Structure, Lattice
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_analyzer import RelaxationAnalyzer, VoronoiConnectivity
+from pymatgen.util.coord_utils import in_coord_list
+from pymatgen.symmetry.groups import SpaceGroup
+
+import itertools
+from fractions import gcd
 
 from monty.json import MontyDecoder
 
@@ -225,64 +231,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   **vaspdbinsert_parameters)
         drone.assimilate(os.path.join(cwd, folder))
 
-@explicit_serialize
-class WriteAtomVaspInputs(FireTaskBase):
-
-    """
-        Writes VASP inputs for an isolated atom in a box. For calculating
-        cohesive energy. Cohesive energy define as the excess energy
-        of a single isolated atom (separated from the bulk) relative
-        to the energy of a single atom in a bulk structure
-    """
-
-    required_params = ["atom", "folder", "cwd"]
-    optional_params = ["user_incar_settings", "potcar_functional",
-                       "latt_a", "kpoints", "debug"]
-
-    def run_task(self, fw_spec):
-
-        """
-            Required parameters:
-                atom (str): Species of the isolated atom
-                folder (str): Location to write the inputs to
-                cwd (str): Current working directory
-            Optional parameters:
-                user_incar_settings (dict): See launch_workflow() method in
-                    CreateSurfaceWorkflow class
-                potcar_functional (dict): See launch_workflow() method in
-                    CreateSurfaceWorkflow class
-                latt_a (float, Angstroms): The cubic lattice dimensions of
-                    the box that the isolated atom inhabits. Defaults to
-                    16 A based on convergence test with Cs
-                kpoints (int): The kpoint of the box holding the isolated
-                    atom. Defaults to 1 based on convergence test.
-        """
-
-        dec = MontyDecoder()
-        latt_a = dec.process_decoded(self.get("latt_a", 16))
-        folder = dec.process_decoded(self.get("folder"))
-        cwd = dec.process_decoded(self.get("cwd"))
-        atom = dec.process_decoded(self.get("atom"))
-
-        user_incar_settings = \
-            dec.process_decoded(self.get("user_incar_settings", None))
-        kpoints0 = \
-            dec.process_decoded(self.get("kpoints0", 1))
-        potcar_functional = \
-            dec.process_decoded(self.get("potcar_functional", 'PBE'))
-        debug = dec.process_decoded(self.get("debug", False))
-
-        mplb = MVLSlabSet(user_incar_settings=user_incar_settings,
-                                  kpoints0=[kpoints0]*3, bulk=False,
-                                  potcar_functional=potcar_functional,
-                                  ediff_per_atom=False)
-
-        # Build the isolated atom in a box
-        lattice = Lattice.cubic(latt_a)
-        atom_in_a_box = Structure(lattice, [atom], [[0.5, 0.5, 0.5]])
-
-        mplb.write_input(atom_in_a_box, os.path.join(cwd, folder))
-
 
 @explicit_serialize
 class WriteUCVaspInputs(FireTaskBase):
@@ -409,7 +357,7 @@ class WriteSlabVaspInputs(FireTaskBase):
         qe = QueryEngine(**vaspdbinsert_parameters)
         optional_data = ["state", "shift", "final_incar", "final_magnetization"]
         ucell_entry = qe.get_entries({'material_id': mpid, 'structure_type': 'oriented_unit_cell',
-                                      'miller_index': miller_index}, inc_structure=True,
+                                      'miller_index': miller_index}, inc_structure="Final",
                                       optional_data=optional_data)[0]
 
         relax_orient_uc = ucell_entry.structure
@@ -563,6 +511,133 @@ class WriteSlabVaspInputs(FireTaskBase):
 
 
 @explicit_serialize
+class GenerateFwsTask(FireTaskBase):
+    """
+        Writes VASP inputs for an oriented unit cell
+    """
+
+    required_params = ["miller_list", "unit_cells_dict", "ssize", "vsize", "max_normal_search",
+                       "vaspdbinsert_params", "cust_params", "get_bulk_e", "mpid", "cwd"]
+    optional_params = ["user_incar_settings", "oxides", "k_product", "gpu", "debug",
+                       "potcar_functional", "limit_sites_at_least_slab", "limit_sites_slab",
+                       "limit_sites_bulk", "limit_sites_at_least_bulk", "max_broken_bonds",
+                       "bondlength"]
+
+    def run_task(self, fw_spec):
+
+        dec = MontyDecoder()
+        miller_list = dec.process_decoded(self.get("miller_list"))
+        unit_cells_dict = dec.process_decoded(self.get("unit_cells_dict"))
+        ssize = dec.process_decoded(self.get("ssize"))
+        vsize = dec.process_decoded(self.get("vsize"))
+        max_normal_search = dec.process_decoded(self.get("max_normal_search"))
+        vaspdbinsert_params = dec.process_decoded(self.get("vaspdbinsert_params"))
+        cust_params = dec.process_decoded(self.get("cust_params"))
+        get_bulk_e = dec.process_decoded(self.get("get_bulk_e"))
+        mpid = dec.process_decoded(self.get("mpid"))
+        cwd = dec.process_decoded(self.get("cwd"))
+
+        user_incar_settings = dec.process_decoded(self.get("user_incar_settings", {}))
+        oxides = dec.process_decoded(self.get("oxides", False))
+        k_product = dec.process_decoded(self.get("k_product", 50))
+        gpu = dec.process_decoded(self.get("gpu", False))
+        debug = dec.process_decoded(self.get("debug", False))
+        potcar_functional = dec.process_decoded(self.get("potcar_functional", "PBE"))
+        limit_sites_at_least_slab = dec.process_decoded(self.get("limit_sites_at_least_slab", 0))
+        limit_sites_slab = dec.process_decoded(self.get("limit_sites_slab", 199))
+        limit_sites_bulk = dec.process_decoded(self.get("limit_sites_bulk", 199))
+        limit_sites_at_least_bulk = dec.process_decoded(self.get("limit_sites_at_least_bulk", 0))
+        max_broken_bonds = dec.process_decoded(self.get("max_broken_bonds", 0))
+        bondlength = dec.process_decoded(self.get("bondlength", None))
+
+        qe = QueryEngine(**vaspdbinsert_params)
+
+        miller_handler = GetMillerIndices(unit_cells_dict[mpid]["ucell"], 1)
+        criteria = {"structure_type": "oriented_unit_cell",
+                    "material_id": mpid}
+        for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
+            criteria["miller_index"] = tuple(hkl)
+            conv_ucell_entries = qe.get_entries(criteria, inc_structure="Final")
+            if conv_ucell_entries:
+                print("Found relaxed conventional unit cell, "
+                      "will construct all oriented ucells from this")
+                unit_cells_dict[mpid]["ucell"] = conv_ucell_entries[0].structure
+                break
+
+        FWs = []
+        for miller_index in miller_list:
+            # Enumerates through all miller indices we
+            # want to create slabs of that compound from
+
+            print(str(miller_index))
+
+            slab = SlabGenerator(unit_cells_dict['ucell'], miller_index,
+                                 ssize, vsize, max_normal_search=max_normal_search,
+                                 primitive=False)
+            oriented_uc = slab.oriented_unit_cell
+
+            # The unit cell should not be exceedingly larger than the
+            # conventional unit cell, reduced it down further if it is
+            if len(oriented_uc)/len(unit_cells_dict['ucell']) > 20:
+                reduced_slab = SlabGenerator(unit_cells_dict['ucell'], miller_index,
+                                             ssize, vsize,
+                                             lll_reduce=True, primitive=False)
+                oriented_uc = reduced_slab.oriented_unit_cell
+
+            if len(oriented_uc)> limit_sites_bulk:
+                warnings.warn("UCELL EXCEEDED %s ATOMS!!!" %(limit_sites_bulk))
+                continue
+            if len(oriented_uc)< limit_sites_at_least_bulk:
+                warnings.warn("UCELL LESS THAN %s ATOMS!!!" %(limit_sites_bulk))
+                continue
+            # This method only creates the oriented unit cell, the
+            # slabs are created in the WriteSlabVaspInputs task.
+            # WriteSlabVaspInputs will create the slabs from
+            # the contcar of the oriented unit cell calculation
+
+            folderbulk = '%s_%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
+                                                        mpid,'bulk', k_product, ssize,
+                                                        vsize, str(miller_index[0]),
+                                                        str(miller_index[1]), str(miller_index[2]))
+
+            task_kwargs = {"folder": folderbulk, "cwd": cwd, "debug": debug}
+            input_task_kwargs = task_kwargs.copy()
+            input_task_kwargs.update({"user_incar_settings": user_incar_settings,
+                                      "k_product": k_product, "gpu": gpu, "oxides": oxides,
+                                      "potcar_functional": potcar_functional})
+            tasks = []
+
+            if get_bulk_e:
+
+                tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc, **input_task_kwargs),
+                              RunCustodianTask(custodian_params=cust_params, **task_kwargs),
+                              VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
+                                                   miller_index=miller_index, mpid=mpid,
+                                                   unit_cell_dict=unit_cells_dict,
+                                                   vaspdbinsert_parameters=vaspdbinsert_params,
+                                                   **task_kwargs)])
+
+            tasks.extend([WriteSlabVaspInputs(custodian_params=cust_params,
+                                              vaspdbinsert_parameters=
+                                              vaspdbinsert_params,
+                                              miller_index=miller_index,
+                                              min_slab_size=ssize,
+                                              min_vacuum_size=vsize,
+                                              bondlength= bondlength, mpid=mpid,
+                                              max_broken_bonds=max_broken_bonds,
+                                              unit_cell_dict=unit_cells_dict,
+                                              limit_sites=limit_sites_slab,
+                                              limit_sites_at_least=limit_sites_at_least_slab,
+                                              **input_task_kwargs)])
+
+            fw = Firework(tasks, name=folderbulk)
+            FWs.append(fw)
+            print(unit_cells_dict['spacegroup'])
+
+        return FWAction(additions=FWs)
+
+
+@explicit_serialize
 class RunCustodianTask(FireTaskBase):
 
     """
@@ -606,6 +681,65 @@ class RunCustodianTask(FireTaskBase):
         output = c.run()
 
         return FWAction(stored_data=output)
+
+
+@explicit_serialize
+class WriteAtomVaspInputs(FireTaskBase):
+
+    """
+        Writes VASP inputs for an isolated atom in a box. For calculating
+        cohesive energy. Cohesive energy define as the excess energy
+        of a single isolated atom (separated from the bulk) relative
+        to the energy of a single atom in a bulk structure
+    """
+
+    required_params = ["atom", "folder", "cwd"]
+    optional_params = ["user_incar_settings", "potcar_functional",
+                       "latt_a", "kpoints", "debug"]
+
+    def run_task(self, fw_spec):
+
+        """
+            Required parameters:
+                atom (str): Species of the isolated atom
+                folder (str): Location to write the inputs to
+                cwd (str): Current working directory
+            Optional parameters:
+                user_incar_settings (dict): See launch_workflow() method in
+                    CreateSurfaceWorkflow class
+                potcar_functional (dict): See launch_workflow() method in
+                    CreateSurfaceWorkflow class
+                latt_a (float, Angstroms): The cubic lattice dimensions of
+                    the box that the isolated atom inhabits. Defaults to
+                    16 A based on convergence test with Cs
+                kpoints (int): The kpoint of the box holding the isolated
+                    atom. Defaults to 1 based on convergence test.
+        """
+
+        dec = MontyDecoder()
+        latt_a = dec.process_decoded(self.get("latt_a", 16))
+        folder = dec.process_decoded(self.get("folder"))
+        cwd = dec.process_decoded(self.get("cwd"))
+        atom = dec.process_decoded(self.get("atom"))
+
+        user_incar_settings = \
+            dec.process_decoded(self.get("user_incar_settings", None))
+        kpoints0 = \
+            dec.process_decoded(self.get("kpoints0", 1))
+        potcar_functional = \
+            dec.process_decoded(self.get("potcar_functional", 'PBE'))
+        debug = dec.process_decoded(self.get("debug", False))
+
+        mplb = MVLSlabSet(user_incar_settings=user_incar_settings,
+                                  kpoints0=[kpoints0]*3, bulk=False,
+                                  potcar_functional=potcar_functional,
+                                  ediff_per_atom=False)
+
+        # Build the isolated atom in a box
+        lattice = Lattice.cubic(latt_a)
+        atom_in_a_box = Structure(lattice, [atom], [[0.5, 0.5, 0.5]])
+
+        mplb.write_input(atom_in_a_box, os.path.join(cwd, folder))
 
 
 def check_termination_symmetry(slab_list, miller_index, min_slab_size,
@@ -678,3 +812,156 @@ def check_termination_symmetry(slab_list, miller_index, min_slab_size,
             new_slab_list = [slabs.get_slab(shift=shift) for shift in new_shifts]
 
     return new_slab_list, new_min_slab_size
+
+class GetMillerIndices(object):
+
+    def __init__(self, structure, max_index, reciprocal=True):
+
+        """
+        A class for obtaining a family of indices or
+            unique indices up to a certain max index.
+
+        Args:
+            structure (Structure): input structure.
+            max_index (int): The maximum index. For example, a max_index of 1
+                means that (100), (110), and (111) are returned for the cubic
+                structure. All other indices are equivalent to one of these.
+        """
+
+        recp_lattice = structure.lattice.reciprocal_lattice_crystallographic
+        # Need to make sure recp lattice is big enough, otherwise symmetry
+        # determination will fail. We set the overall volume to 1.
+        recp_lattice = recp_lattice.scale(1)
+        recp = Structure(recp_lattice, ["H"], [[0, 0, 0]])
+        structure_sym = recp if reciprocal else structure
+
+        analyzer = SpacegroupAnalyzer(structure_sym, symprec=0.001)
+        symm_ops = analyzer.get_symmetry_operations()
+
+        self.structure = structure
+        self.max_index = max_index
+        self.symm_ops = symm_ops
+
+    def is_already_analyzed(self, miller_index, unique_millers=[]):
+
+        """
+        Creates a function that uses the symmetry operations in the
+        structure to find Miller indices that might give repetitive orientations
+
+        Args:
+            miller_index (tuple): Algorithm will find indices
+                equivalent to this index.
+            unique_millers (list): Algorithm will check if the
+                miller_index is equivalent to any indices in this list.
+        """
+
+        for op in self.symm_ops:
+            if in_coord_list(unique_millers, op.operate(miller_index)):
+                return True
+        return False
+
+    def get_symmetrically_distinct_miller_indices(self):
+
+        """
+        Returns all symmetrically distinct indices below a certain max-index for
+        a given structure. Analysis is based on the symmetry of the reciprocal
+        lattice of the structure.
+        """
+
+        unique_millers = []
+
+        r = list(range(-self.max_index, self.max_index + 1))
+        r.reverse()
+        for miller in itertools.product(r, r, r):
+            if any([i != 0 for i in miller]):
+                d = abs(reduce(gcd, miller))
+                miller = tuple([int(i / d) for i in miller])
+                if not self.is_already_analyzed(miller, unique_millers):
+                    unique_millers.append(miller)
+        return unique_millers
+
+    def get_symmetrically_equivalent_miller_indices(self, miller_index):
+        """
+        Returns all symmetrically equivalent indices below a certain max-index for
+        a given structure. Analysis is based on the symmetry of the reciprocal
+        lattice of the structure.
+
+        Args:
+            structure (Structure): input structure.
+            miller_index (tuple): Designates the family of Miller indices to find.
+        """
+        equivalent_millers = [miller_index]
+        r = list(range(-self.max_index, self.max_index + 1))
+        r.reverse()
+
+        for miller in itertools.product(r, r, r):
+            # print miller
+            if miller[0] == miller_index[0] and \
+               miller[1] == miller_index[1] and \
+               miller[2] == miller_index[2]:
+
+                continue
+
+            if any([i != 0 for i in miller]):
+                d = abs(reduce(gcd, miller))
+                miller = tuple([int(i / d) for i in miller])
+                if in_coord_list(equivalent_millers, miller):
+                    continue
+                if self.is_already_analyzed(miller,
+                                            unique_millers=equivalent_millers):
+                    equivalent_millers.append(miller)
+
+        return equivalent_millers
+
+    def get_true_index(self, miller_index, spacegroup=None):
+        if len(miller_index) == 4:
+            return miller_index
+        if not spacegroup:
+            spacegroup = SpacegroupAnalyzer(self.structure).get_spacegroup_symbol()
+        if SpaceGroup(spacegroup).crystal_system in ["trigonal",
+                                                     "hexagonal"]:
+            return (miller_index[0], miller_index[1],
+                    -1*miller_index[0]-miller_index[1],
+                    miller_index[2])
+        else:
+            return miller_index
+
+    def get_reduced_index(self, miller_index):
+
+        if len(miller_index) == 4:
+            return (miller_index[0],
+                    miller_index[1],
+                    miller_index[3])
+        else:
+            return miller_index
+
+    def hkl_str_to_tuple(self, hkl):
+
+        # Converts a string in the format 'hkl' to (h, k, l)
+        miller_index = []
+        for i, index in enumerate(hkl):
+            if hkl[i-1] == "-":
+                miller_index.append(-1*int(index))
+
+            elif index in ["-", ")", "(", ",", " "]:
+                continue
+            else:
+                miller_index.append(int(index))
+
+        return self.get_true_index(tuple(miller_index))
+
+    def hkl_tuple_to_str(self, miller_index):
+
+        # converts a Miller index to standard string
+        # format where negative values have a bar on top.
+
+        true_index = self.get_true_index(miller_index)
+        str_format = '($'
+        for x in true_index:
+            if x < 0:
+                str_format += '\overline{' + str(-x) +'}'
+            else:
+                str_format += str(x)
+        str_format += '$)'
+
+        return str_format

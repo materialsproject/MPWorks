@@ -22,31 +22,25 @@ except ImportError:
 
 import os
 import copy
-from functools import reduce
 
 from pymongo import MongoClient
-import warnings
-import itertools
-from fractions import gcd
-from pymatgen.util.coord_utils import in_coord_list
+
 db = MongoClient().data
 
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
-    VaspSlabDBInsertTask, WriteSlabVaspInputs, WriteUCVaspInputs, \
-    WriteAtomVaspInputs
+    VaspSlabDBInsertTask, WriteUCVaspInputs, \
+    WriteAtomVaspInputs, GenerateFwsTask, GetMillerIndices
 
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     UnconvergedErrorHandler, PotimErrorHandler, PositiveEnergyErrorHandler, \
-    FrozenJobErrorHandler, MeshSymmetryErrorHandler, AliasingErrorHandler, MaxForceErrorHandler
+    FrozenJobErrorHandler
 
-from pymatgen.core.surface import SlabGenerator, \
+from pymatgen.core.surface import \
     get_symmetrically_distinct_miller_indices, generate_all_slabs
 from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.matproj.rest import MPRester
 from pymatgen.analysis.structure_analyzer import VoronoiConnectivity
-from pymatgen.core.structure import Structure
-from pymatgen.symmetry.groups import SpaceGroup
 from pymatgen import Element
 
 from matgendb import QueryEngine
@@ -199,7 +193,6 @@ class SurfaceWorkflowManager(object):
 
         unit_cells_dict = {}
 
-
         # This initializes the REST adaptor. Put your own API key in.
         if "MAPI_KEY" not in os.environ:
             apikey = input('Enter your api key (str): ')
@@ -222,7 +215,6 @@ class SurfaceWorkflowManager(object):
             compounds = ucell_indices_dict.keys()
         else:
             compounds = copy.copy(elements_and_mpids)
-
 
         # For loop will enumerate through all the compositional
         # formulas in list_of_elements or indices_dict to get a
@@ -616,7 +608,8 @@ class CreateSurfaceWorkflow(object):
     def launch_workflow(self, k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
                         additional_handlers=[], limit_sites_bulk=199, limit_sites_slab=199,
-                        limit_sites_at_least_slab=0, limit_sites_at_least_bulk=0, scratch_dir=None):
+                        limit_sites_at_least_slab=0, limit_sites_at_least_bulk=0,
+                        scratch_dir=None, launchpad_dir=""):
 
         """
             Creates a list of Fireworks. Each Firework represents calculations
@@ -665,7 +658,7 @@ class CreateSurfaceWorkflow(object):
                        "handlers": handlers,
                        "max_errors": 10}  # will return a list of jobs
                                            # instead of just being one job
-
+        cwd = os.getcwd()
         fws, fw_ids = [], []
         for mpid in self.miller_dict.keys():
 
@@ -673,103 +666,96 @@ class CreateSurfaceWorkflow(object):
             # the key is the compositional formula of the compound
 
             print(mpid)
-            for miller_index in self.miller_dict[mpid]:
-                # Enumerates through all miller indices we
-                # want to create slabs of that compound from
 
-                print(str(miller_index))
+            miller_handler = GetMillerIndices(self.unit_cells_dict[mpid]["ucell"], 1)
+            criteria = {"structure_type": "oriented_unit_cell",
+                        "material_id": mpid}
 
-                slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
-                                     self.ssize, self.vsize,
-                                     max_normal_search=self.max_normal_search,
-                                     primitive=False)
-                oriented_uc = slab.oriented_unit_cell
-                scale_factor = slab.slab_scale_factor
+            for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
+                criteria["miller_index"] = tuple(hkl)
+                conv_ucell_entries = self.surface_query_engine.get_entries(criteria,
+                                                                           inc_structure="Final")
+                if conv_ucell_entries:
+                    print("Found relaxed conventional unit cell, "
+                          "will construct all oriented ucells from this")
+                    self.unit_cells_dict[mpid]["ucell"] = conv_ucell_entries[0].structure
+                    tasks = [GenerateFwsTask(miller_list=self.miller_dict[mpid],
+                                             unit_cells_dict=self.unit_cells_dict[mpid],
+                                             ssize=self.ssize,
+                                             vsize=self.vsize,
+                                             max_normal_search=self.max_normal_search,
+                                             vaspdbinsert_params=self.vaspdbinsert_params,
+                                             cust_params=cust_params,
+                                             get_bulk_e=self.get_bulk_e,
+                                             mpid=mpid,
+                                             user_incar_settings=user_incar_settings,
+                                             oxides=oxides,
+                                             k_product=k_product,
+                                             gpu=gpu,
+                                             debug=self.debug,
+                                             potcar_functional=potcar_functional,
+                                             limit_sites_at_least_slab=limit_sites_at_least_slab,
+                                             limit_sites_slab=limit_sites_slab,
+                                             limit_sites_bulk=limit_sites_bulk,
+                                             limit_sites_at_least_bulk=limit_sites_at_least_bulk,
+                                             max_broken_bonds=self.max_broken_bonds,
+                                             bondlength=self.bondlength,
+                                             cwd=cwd)]
+                    break
 
-                # The unit cell should not be exceedingly larger than the
-                # conventional unit cell, reduced it down further if it is
-                if len(oriented_uc)/len(self.unit_cells_dict[mpid]['ucell']) > 20:
-                    reduced_slab = SlabGenerator(self.unit_cells_dict[mpid]['ucell'], miller_index,
-                                                 self.ssize, self.vsize,
-                                                 lll_reduce=True, primitive=False)
-
-                    if len(reduced_slab.oriented_unit_cell) < len(oriented_uc):
-                        scale_factor = reduced_slab.slab_scale_factor
-
-                oriented_uc = self.unit_cells_dict[mpid]['ucell'].copy()
-                oriented_uc.make_supercell([reduce_miller_index(scale_factor[0]),
-                                            reduce_miller_index(scale_factor[1]),
-                                            reduce_miller_index(scale_factor[2])])
-
-
-                if len(oriented_uc)> limit_sites_bulk:
-                    warnings.warn("UCELL EXCEEDED %s ATOMS!!!" %(limit_sites_bulk))
-                    continue
-                if len(oriented_uc)< limit_sites_at_least_bulk:
-                    warnings.warn("UCELL LESS THAN %s ATOMS!!!" %(limit_sites_bulk))
-                    continue
-                # This method only creates the oriented unit cell, the
-                # slabs are created in the WriteSlabVaspInputs task.
-                # WriteSlabVaspInputs will create the slabs from
-                # the contcar of the oriented unit cell calculation
-
+            if not conv_ucell_entries:
+                print("No relaxed conventional unit cell available, "
+                      "need to calculate relaxed ucell first")
+                oriented_uc = self.unit_cells_dict[mpid]["ucell"]
                 folderbulk = '%s_%s_%s_k%s_s%sv%s_%s%s%s' %(oriented_uc.composition.reduced_formula,
                                                             mpid,'bulk', k_product, self.ssize,
-                                                            self.vsize, str(miller_index[0]),
-                                                            str(miller_index[1]), str(miller_index[2]))
-                cwd = os.getcwd()
+                                                            self.vsize, 0,0,1)
 
                 task_kwargs = {"folder": folderbulk, "cwd": cwd, "debug": self.debug}
                 input_task_kwargs = task_kwargs.copy()
                 input_task_kwargs.update({"user_incar_settings": user_incar_settings,
                                           "k_product": k_product, "gpu": gpu, "oxides": oxides,
                                           "potcar_functional": potcar_functional})
-                tasks = []
 
-                if self.get_bulk_e:
-                    tasks.extend([WriteUCVaspInputs(oriented_ucell=oriented_uc, **input_task_kwargs),
-                                  RunCustodianTask(custodian_params=cust_params, **task_kwargs),
-                                  VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
-                                                      miller_index=miller_index, mpid=mpid,
-                                                      unit_cell_dict=self.unit_cells_dict[mpid],
-                                                      vaspdbinsert_parameters=self.vaspdbinsert_params,
-                                                      **task_kwargs)])
+                tasks = [WriteUCVaspInputs(oriented_ucell=oriented_uc, **input_task_kwargs),
+                         RunCustodianTask(custodian_params=cust_params, **task_kwargs),
+                         VaspSlabDBInsertTask(struct_type="oriented_unit_cell",
+                                              miller_index=(0,0,1), mpid=mpid,
+                                              unit_cell_dict=self.unit_cells_dict[mpid],
+                                              vaspdbinsert_parameters=self.vaspdbinsert_params,
+                                              **task_kwargs),
+                         GenerateFwsTask(miller_list=self.miller_dict[mpid],
+                                         unit_cells_dict=self.unit_cells_dict[mpid],
+                                         ssize=self.ssize,
+                                         vsize=self.vsize,
+                                         max_normal_search=self.max_normal_search,
+                                         vaspdbinsert_params=self.vaspdbinsert_params,
+                                         cust_params=cust_params,
+                                         get_bulk_e=self.get_bulk_e,
+                                         mpid=mpid,
+                                         user_incar_settings=user_incar_settings,
+                                         oxides=oxides,
+                                         k_product=k_product,
+                                         gpu=gpu,
+                                         debug=self.debug,
+                                         potcar_functional=potcar_functional,
+                                         limit_sites_at_least_slab=limit_sites_at_least_slab,
+                                         limit_sites_slab=limit_sites_slab,
+                                         limit_sites_bulk=limit_sites_bulk,
+                                         limit_sites_at_least_bulk=limit_sites_at_least_bulk,
+                                         max_broken_bonds=self.max_broken_bonds,
+                                         bondlength=self.bondlength,
+                                         cwd=cwd)]
 
-                tasks.extend([WriteSlabVaspInputs(custodian_params=cust_params,
-                                                  vaspdbinsert_parameters=
-                                                  self.vaspdbinsert_params,
-                                                  miller_index=miller_index,
-                                                  min_slab_size=self.ssize,
-                                                  min_vacuum_size=self.vsize,
-                                                  bondlength= self.bondlength, mpid=mpid,
-                                                  max_broken_bonds=self.max_broken_bonds,
-                                                  unit_cell_dict=self.unit_cells_dict[mpid],
-                                                  limit_sites=limit_sites_slab,
-                                                  limit_sites_at_least=limit_sites_at_least_slab,
-                                                  **input_task_kwargs)])
+            fw = Firework(tasks, name="%s_%s" %(str(self.unit_cells_dict[mpid]["ucell"][0].specie), mpid))
+            fw_ids.append(fw.fw_id)
+            fws.append(fw)
 
-                fw = Firework(tasks, name=folderbulk)
-                fw_ids.append(fw.fw_id)
-                fws.append(fw)
-                print(self.unit_cells_dict[mpid]['spacegroup'])
-
-        return fws
-
-    def run_all_fws(self, fws, launchpad_dir="", reset=False, slabs_only=False):
-
+        wf = Workflow(fws, name='Surface Calculations')
         launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                      launchpad_dir,
                                                      "my_launchpad.yaml"))
-        if reset:
-            launchpad.reset('', require_password=False)
-
-        wf = Workflow(fws, name='Surface Calculations')
         launchpad.add_wf(wf)
-
-        if slabs_only:
-            for fw in fws:
-                print("launching fw_id %s" %(fw.fw_id))
-                os.system("rlaunch singleshot --fw_id %s" %(fw.fw_id))
 
     def get_conventional_ucell(self, formula_id):
 
@@ -949,161 +935,3 @@ def termination_analysis(structure, max_index, bond_length_tol=0.1,
     return bonds, bond_length, max_broken_bonds
 
 
-class GetMillerIndices(object):
-
-    def __init__(self, structure, max_index, reciprocal=True):
-
-        """
-        A class for obtaining a family of indices or
-            unique indices up to a certain max index.
-
-        Args:
-            structure (Structure): input structure.
-            max_index (int): The maximum index. For example, a max_index of 1
-                means that (100), (110), and (111) are returned for the cubic
-                structure. All other indices are equivalent to one of these.
-        """
-
-        recp_lattice = structure.lattice.reciprocal_lattice_crystallographic
-        # Need to make sure recp lattice is big enough, otherwise symmetry
-        # determination will fail. We set the overall volume to 1.
-        recp_lattice = recp_lattice.scale(1)
-        recp = Structure(recp_lattice, ["H"], [[0, 0, 0]])
-        structure_sym = recp if reciprocal else structure
-
-        analyzer = SpacegroupAnalyzer(structure_sym, symprec=0.001)
-        symm_ops = analyzer.get_symmetry_operations()
-
-        self.structure = structure
-        self.max_index = max_index
-        self.symm_ops = symm_ops
-
-    def is_already_analyzed(self, miller_index, unique_millers=[]):
-
-        """
-        Creates a function that uses the symmetry operations in the
-        structure to find Miller indices that might give repetitive orientations
-
-        Args:
-            miller_index (tuple): Algorithm will find indices
-                equivalent to this index.
-            unique_millers (list): Algorithm will check if the
-                miller_index is equivalent to any indices in this list.
-        """
-
-        for op in self.symm_ops:
-            if in_coord_list(unique_millers, op.operate(miller_index)):
-                return True
-        return False
-
-    def get_symmetrically_distinct_miller_indices(self):
-
-        """
-        Returns all symmetrically distinct indices below a certain max-index for
-        a given structure. Analysis is based on the symmetry of the reciprocal
-        lattice of the structure.
-        """
-
-        unique_millers = []
-
-        r = list(range(-self.max_index, self.max_index + 1))
-        r.reverse()
-        for miller in itertools.product(r, r, r):
-            if any([i != 0 for i in miller]):
-                d = abs(reduce(gcd, miller))
-                miller = tuple([int(i / d) for i in miller])
-                if not self.is_already_analyzed(miller, unique_millers):
-                    unique_millers.append(miller)
-        return unique_millers
-
-    def get_symmetrically_equivalent_miller_indices(self, miller_index):
-        """
-        Returns all symmetrically equivalent indices below a certain max-index for
-        a given structure. Analysis is based on the symmetry of the reciprocal
-        lattice of the structure.
-
-        Args:
-            structure (Structure): input structure.
-            miller_index (tuple): Designates the family of Miller indices to find.
-        """
-        equivalent_millers = [miller_index]
-        r = list(range(-self.max_index, self.max_index + 1))
-        r.reverse()
-
-        for miller in itertools.product(r, r, r):
-            # print miller
-            if miller[0] == miller_index[0] and \
-               miller[1] == miller_index[1] and \
-               miller[2] == miller_index[2]:
-
-                continue
-
-            if any([i != 0 for i in miller]):
-                d = abs(reduce(gcd, miller))
-                miller = tuple([int(i / d) for i in miller])
-                if in_coord_list(equivalent_millers, miller):
-                    continue
-                if self.is_already_analyzed(miller,
-                                            unique_millers=equivalent_millers):
-                    equivalent_millers.append(miller)
-
-        return equivalent_millers
-
-    def get_true_index(self, miller_index, spacegroup=None):
-        if len(miller_index) == 4:
-            return miller_index
-        if not spacegroup:
-            spacegroup = SpacegroupAnalyzer(self.structure).get_spacegroup_symbol()
-        if SpaceGroup(spacegroup).crystal_system in ["trigonal",
-                                                     "hexagonal"]:
-            return (miller_index[0], miller_index[1],
-                    -1*miller_index[0]-miller_index[1],
-                    miller_index[2])
-        else:
-            return miller_index
-
-    def get_reduced_index(self, miller_index):
-
-        if len(miller_index) == 4:
-            return (miller_index[0],
-                    miller_index[1],
-                    miller_index[3])
-        else:
-            return miller_index
-
-    def hkl_str_to_tuple(self, hkl):
-
-        # Converts a string in the format 'hkl' to (h, k, l)
-        miller_index = []
-        for i, index in enumerate(hkl):
-            if hkl[i-1] == "-":
-                miller_index.append(-1*int(index))
-
-            elif index in ["-", ")", "(", ",", " "]:
-                continue
-            else:
-                miller_index.append(int(index))
-
-        return self.get_true_index(tuple(miller_index))
-
-    def hkl_tuple_to_str(self, miller_index):
-
-        # converts a Miller index to standard string
-        # format where negative values have a bar on top.
-
-        true_index = self.get_true_index(miller_index)
-        str_format = '($'
-        for x in true_index:
-            if x < 0:
-                str_format += '\overline{' + str(-x) +'}'
-            else:
-                str_format += str(x)
-        str_format += '$)'
-
-        return str_format
-
-
-def reduce_miller_index(miller_index):
-    d = abs(reduce(gcd, miller_index))
-    miller_index = tuple([int(i / d) for i in miller_index])
-    return miller_index
