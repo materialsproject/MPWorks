@@ -15,6 +15,8 @@ from pymatgen.analysis.structure_matcher import StructureMatcher, ElementCompara
 from multiprocessing import Pool
 import numpy as np
 from tabulate import tabulate
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+import argparse
 
 mpr = MPRester()
 
@@ -56,56 +58,61 @@ def find_structures(structure, sg, ltol=0.1, stol=0.1, angle_tol = 3):
         rmses = []
     return matches, rmses
 
-def verify(entry, ltol = 0.5, stol = 0.5, angle_tol = 5, verbose = False):
+
+def verify(entry, ltol = 0.2, stol = 0.3, angle_tol = 5, verbose = False):
     """
     Attempts to verify that a given material_id in an elasticity document
     corresponds to the correct structure in the online materials collection
     """
     try:
-        wc_db_entry = wc_elasticity.find_one({"material_id":entry}, {'snl':1, 'spacegroup':1})
-        struct = Structure.from_dict(wc_db_entry['snl'])
-        spacegroup = wc_db_entry['spacegroup']['number']
-        s_list, rmses = find_structures(struct, spacegroup, ltol=ltol,
-                                        stol=stol, angle_tol=angle_tol)
-        '''
-        if len(s_list) > 1:
-            verify(entry, ltol = 0.9*ltol, stol = 0.25*stol, angle_tol=0.9*angle_tol)
-        '''
-        if len(s_list) == 0:
-            verify(entry, ltol = 1.5*ltol, stol = 2.5*stol,
-                   angle_tol = 2.5*angle_tol)
-        if verbose:
-            print "Matching {}".format(entry)
-            print rmses[0][0]
-            rms1, rms2 = zip(*rmses)
-            print tabulate({"matches":s_list, "RMS_dist":rms1}, headers = 'keys')
-        if s_list[0] == entry:
-            print "Verified {}".format(entry)
-            return True
-        else:
-            print "Unverified {}".format(entry)
+        this = mpr.query({'task_id':entry}, {'structure':1, 'elasticity':1})
+        web_struct = this[0]['structure']
+
+        wc_db_entries = wc_elasticity.find({"material_id":entry, 
+                                            "homogeneous_poisson":this[0]['elasticity']['homogeneous_poisson']}).sort([('kpoint_density',-1)])
+        doc = wc_db_entries[0]
+        db_struct = Structure.from_dict(doc['snl'])
+        m = StructureMatcher(ltol=ltol, stol=stol, angle_tol = angle_tol, scale=True,
+                             primitive_cell=True, attempt_supercell=False, 
+                             comparator=ElementComparator())
+        struct_match = m.fit(web_struct, db_struct)
+        # tol = 1e-7
+        # elast_match = (doc['homogeneous_poisson'] - this[0]['elasticity']['homogeneous_poisson'] < tol)
+
+        if not m.fit(web_struct, db_struct):
+            sga = SpacegroupAnalyzer(web_struct)
+            web_conv = sga.get_conventional_standard_structure()
+            if m.fit(web_conv, db_struct):
+                elasticity.update_one({'_id':doc['_id']}, {'$set':doc}, upsert = True)
+                return True
+            print 'Unverified: {} does not structure match'.format(entry)
             return False
+        else:
+            elasticity.update_one({'_id':doc['_id']}, {'$set':doc}, upsert = True)
+            return True
     except Exception as e:
-        print "Unverified {}".format(entry)
+        print 'Unverified: {} returns error {}'.format(entry, e)
         return False
 
-reassigned_ids = {"mp-12552":"mp-2593",
-                  "whoknows":"ifthemoonsaballoon"}
 
-if __name__ == "__main__": 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-unverified', action='store_true',
+                        help = 'flag to limit materials to previously unverified materials')
+    args = parser.parse_args()
+    if os.path.isfile('unverified_elastic_ids.json') and args.unverified:
+        with open('unverified_elastic_ids.json') as f:
+            matlist = json.load(f)
+    else:
+        matlist = wc_data.keys()
     # sys.exit(1)
     # unverified = []
     # TODO: verification framework
-    # verify(wc_data.keys()[0])
-    '''
+    if not verify(wc_data.keys()[0]):
+        sys.exit(0)
     p = Pool(16)
-    result = p.map(verify, wc_data.keys())
-    unverified = np.array(wc_data.keys())[np.where(np.logical_not(np.array(result)))]
+    result = p.map(verify, matlist)
+    unverified = np.array(matlist)[np.where(np.logical_not(np.array(result)))]
     print 'Unverified total, {}:{}'.format(len(unverified), ', '.join(unverified))
     with open('unverified_elastic_ids.json','w') as f:
         json.dump(unverified.tolist(), f)
-    '''
-    for mpid in wc_data.keys():
-        doc = wc_elasticity.find({'material_id' : mpid, 'G_Voigt_Reuss_Hill': wc_data[mpid]['G_VRH']}).sort
-
-        

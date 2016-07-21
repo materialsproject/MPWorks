@@ -123,7 +123,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
         self.update(parameters)
 
         self.additional_fields = self.get('additional_fields', {})
-        self.update_duplicates = self.get('update_duplicates', False)  # off so DOS/BS doesn't get entered twice
+        self.update_duplicates = self.get('update_duplicates', True)  # off so DOS/BS doesn't get entered twice
 
     def run_task(self, fw_spec):
         if '_fizzled_parents' in fw_spec and not 'prev_vasp_dir' in fw_spec:
@@ -188,6 +188,7 @@ class VaspToDBTask(FireTaskBase, FWSerializable):
             unconverged_tag = 'unconverged_handler--{}'.format(fw_spec['prev_task_type'])
             output_dir = last_relax(os.path.join(prev_dir, 'vasprun.xml'))
             ueh = UnconvergedErrorHandler(output_filename=output_dir)
+            # TODO: make this a little more flexible
             if ueh.check() and unconverged_tag not in fw_spec['run_tags']:
                 print 'Unconverged run! Creating dynamic FW...'
 

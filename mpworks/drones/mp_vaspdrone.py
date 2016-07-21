@@ -321,7 +321,6 @@ class MPVaspDrone(VaspToDbTaskDrone):
 
         if d['state'] == 'successful' and 'optimize structure' in d['task_type']:
             sl.append(Relax2ExistsSignal())
-
         signals = sl.detect_all(last_relax_dir)
 
         signals = signals.union(WallTimeSignal().detect(dir_name))
