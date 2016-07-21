@@ -671,36 +671,36 @@ class CreateSurfaceWorkflow(object):
             criteria = {"structure_type": "oriented_unit_cell",
                         "material_id": mpid}
 
+            kwargs_GenerateFwsTasks = {"miller_list": self.miller_dict[mpid],
+                                       "unit_cells_dict": self.unit_cells_dict[mpid],
+                                       "ssize": self.ssize, "vsize":self.vsize,
+                                       "max_normal_search": self.max_normal_search,
+                                       "vaspdbinsert_params": self.vaspdbinsert_params,
+                                       "cust_params": cust_params,
+                                       "get_bulk_e": self.get_bulk_e, "mpid": mpid,
+                                       "user_incar_settings": user_incar_settings,
+                                       "oxides": oxides, "k_product": k_product,
+                                       "gpu": gpu, "debug": self.debug,
+                                       "potcar_functional": potcar_functional,
+                                       "limit_sites_at_least_slab": limit_sites_at_least_slab,
+                                       "limit_sites_slab": limit_sites_slab,
+                                       "limit_sites_bulk": limit_sites_bulk,
+                                       "limit_sites_at_least_bulk": limit_sites_at_least_bulk,
+                                       "max_broken_bonds": self.max_broken_bonds,
+                                       "bondlength": self.bondlength, "cwd": cwd}
+
             for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
                 criteria["miller_index"] = tuple(hkl)
                 conv_ucell_entries = self.surface_query_engine.get_entries(criteria,
                                                                            inc_structure="Final")
                 if conv_ucell_entries:
+
                     print("Found relaxed conventional unit cell, "
                           "will construct all oriented ucells from this")
                     self.unit_cells_dict[mpid]["ucell"] = conv_ucell_entries[0].structure
-                    tasks = [GenerateFwsTask(miller_list=self.miller_dict[mpid],
-                                             unit_cells_dict=self.unit_cells_dict[mpid],
-                                             ssize=self.ssize,
-                                             vsize=self.vsize,
-                                             max_normal_search=self.max_normal_search,
-                                             vaspdbinsert_params=self.vaspdbinsert_params,
-                                             cust_params=cust_params,
-                                             get_bulk_e=self.get_bulk_e,
-                                             mpid=mpid,
-                                             user_incar_settings=user_incar_settings,
-                                             oxides=oxides,
-                                             k_product=k_product,
-                                             gpu=gpu,
-                                             debug=self.debug,
-                                             potcar_functional=potcar_functional,
-                                             limit_sites_at_least_slab=limit_sites_at_least_slab,
-                                             limit_sites_slab=limit_sites_slab,
-                                             limit_sites_bulk=limit_sites_bulk,
-                                             limit_sites_at_least_bulk=limit_sites_at_least_bulk,
-                                             max_broken_bonds=self.max_broken_bonds,
-                                             bondlength=self.bondlength,
-                                             cwd=cwd)]
+                    kwargs_GenerateFwsTasks["unit_cells_dict"] = self.unit_cells_dict[mpid]
+
+                    tasks = [GenerateFwsTask(**kwargs_GenerateFwsTasks)]
                     break
 
             if not conv_ucell_entries:
@@ -724,28 +724,7 @@ class CreateSurfaceWorkflow(object):
                                               unit_cell_dict=self.unit_cells_dict[mpid],
                                               vaspdbinsert_parameters=self.vaspdbinsert_params,
                                               **task_kwargs),
-                         GenerateFwsTask(miller_list=self.miller_dict[mpid],
-                                         unit_cells_dict=self.unit_cells_dict[mpid],
-                                         ssize=self.ssize,
-                                         vsize=self.vsize,
-                                         max_normal_search=self.max_normal_search,
-                                         vaspdbinsert_params=self.vaspdbinsert_params,
-                                         cust_params=cust_params,
-                                         get_bulk_e=self.get_bulk_e,
-                                         mpid=mpid,
-                                         user_incar_settings=user_incar_settings,
-                                         oxides=oxides,
-                                         k_product=k_product,
-                                         gpu=gpu,
-                                         debug=self.debug,
-                                         potcar_functional=potcar_functional,
-                                         limit_sites_at_least_slab=limit_sites_at_least_slab,
-                                         limit_sites_slab=limit_sites_slab,
-                                         limit_sites_bulk=limit_sites_bulk,
-                                         limit_sites_at_least_bulk=limit_sites_at_least_bulk,
-                                         max_broken_bonds=self.max_broken_bonds,
-                                         bondlength=self.bondlength,
-                                         cwd=cwd)]
+                         GenerateFwsTask(**kwargs_GenerateFwsTasks)]
 
             fw = Firework(tasks, name="%s_%s" %(str(self.unit_cells_dict[mpid]["ucell"][0].specie), mpid))
             fw_ids.append(fw.fw_id)

@@ -552,7 +552,7 @@ class GenerateFwsTask(FireTaskBase):
 
         qe = QueryEngine(**vaspdbinsert_params)
 
-        miller_handler = GetMillerIndices(unit_cells_dict[mpid]["ucell"], 1)
+        miller_handler = GetMillerIndices(unit_cells_dict["ucell"], 1)
         criteria = {"structure_type": "oriented_unit_cell",
                     "material_id": mpid}
         for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
@@ -561,7 +561,7 @@ class GenerateFwsTask(FireTaskBase):
             if conv_ucell_entries:
                 print("Found relaxed conventional unit cell, "
                       "will construct all oriented ucells from this")
-                unit_cells_dict[mpid]["ucell"] = conv_ucell_entries[0].structure
+                unit_cells_dict["ucell"] = conv_ucell_entries[0].structure
                 break
 
         FWs = []
