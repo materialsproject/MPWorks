@@ -1,6 +1,8 @@
 from gzip import GzipFile
 import logging
 import socket
+
+from fireworks.fw_config import FWData
 from monty.os.path import which
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
     FrozenJobErrorHandler, MeshSymmetryErrorHandler, PositiveEnergyErrorHandler
@@ -23,10 +25,11 @@ __maintainer__ = 'Anubhav Jain'
 __email__ = 'ajain@lbl.gov'
 __date__ = 'Mar 15, 2013'
 
+
 def check_incar(task_type):
     errors = []
     incar = Incar.from_file("INCAR")
-    
+
     if 'deformed' in task_type:
         if incar['ISIF'] != 2:
             errors.append("Deformed optimization requires ISIF = 2")
@@ -39,13 +42,13 @@ def check_incar(task_type):
             errors.append("NSW must be 0 for non structure optimization runs")
 
     if 'static' in task_type and not incar["LCHARG"]:
-            errors.append("LCHARG must be True for static runs")
+        errors.append("LCHARG must be True for static runs")
 
-    if 'Uniform' in task_type and incar["ICHARG"]!=11:
-            errors.append("ICHARG must be 11 for Uniform runs")
+    if 'Uniform' in task_type and incar["ICHARG"] != 11:
+        errors.append("ICHARG must be 11 for Uniform runs")
 
-    if 'band structure' in task_type and incar["ICHARG"]!=11:
-            errors.append("ICHARG must be 11 for band structure runs")
+    if 'band structure' in task_type and incar["ICHARG"] != 11:
+        errors.append("ICHARG must be 11 for band structure runs")
 
     if 'GGA+U' in task_type:
         # check LDAU
@@ -91,16 +94,24 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         # TODO: last two env vars, i.e. SGE and LoadLeveler, are untested
         env_vars = ['PBS_NP', 'SLURM_NTASKS', 'NSLOTS', 'LOADL_TOTAL_TASKS']
+        nproc = None
         for env_var in env_vars:
             nproc = os.environ.get(env_var, None)
-            if nproc is not None: break
+            if nproc is not None:
+                break
         if nproc is None:
             raise ValueError("None of the env vars {} found to set nproc!".format(env_vars))
 
-        v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
-        gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
+        fw_data = FWData()
+        if (not fw_data.MULTIPROCESSING) or (fw_data.NODE_LIST is None):
+            if "srun" in mpi_cmd:
+                mpi_cmd += " -v"
+            v_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("vasp_cmd", "vasp")))
+            gv_exe = shlex.split('{} -n {} {}'.format(mpi_cmd, nproc, fw_env.get("gvasp_cmd", "gvasp")))
+        else:
+            v_exe, gv_exe = self._get_vasp_cmd_in_job_packing(fw_data, fw_env, mpi_cmd)
 
-        print 'host:', os.environ['HOSTNAME']
+        print('host:', os.environ['HOSTNAME'])
 
         for job in self.jobs:
             job.vasp_cmd = v_exe
@@ -111,7 +122,8 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
             raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
-        c = Custodian(self.handlers, self.jobs, max_errors=self.max_errors, gzipped_output=False, validators=[VasprunXMLValidator()])  # manual gzip
+        c = Custodian(self.handlers, self.jobs, max_errors=self.max_errors, gzipped_output=False,
+                      validators=[VasprunXMLValidator()])  # manual gzip
         custodian_out = c.run()
 
         if self.gzip_output:
@@ -137,10 +149,50 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         return FWAction(stored_data=stored_data, update_spec=update_spec)
 
-    def _write_formula_file(self, fw_spec):
+    @staticmethod
+    def _get_vasp_cmd_in_job_packing(fw_data, fw_env, mpi_cmd):
+        tasks_per_node_flag = {"srun": "--ntasks-per-node",
+                               "mpirun": "--npernode",
+                               "aprun": "-N"}
+        nodelist_flag = {"srun": "--nodelist",
+                         "mpirun": "--host",
+                         "aprun": "-L"}
+        ranks_num_flag = {"srun": "--ntasks",
+                          "mpirun": "-n",
+                          "aprun": "-n"}
+        nodes_spec = {"srun": "--nodes {}".format(len(fw_data.NODE_LIST)),
+                      "mpirun": "",
+                      "aprun": ""}
+        verbose_flag = {"srun": "-v",
+                        "mpirun": "",
+                        "aprun": ""}
+        mpirun = mpi_cmd.split()[0]
+        fw_data = FWData()
+        #  Don't honor the SLURM_NTASKS in case of job packing, Because SLURM_NTASKS is referring
+        #  to total number of processes of the parent job
+        sub_nproc = fw_data.SUB_NPROCS
+        vasp_cmds = [fw_env.get("vasp_cmd", "vasp"), fw_env.get("gvasp_cmd", "gvasp")]
+        vasp_exes = [shlex.split('{mpi_cmd} {verbose_flag} {nodes_spec} {ranks_flag} {nproc} {tpn_flag} {tpn} '
+                                 '{nl_flag} {nl} {vasp_cmd}'.
+                                 format(mpi_cmd=mpi_cmd,
+                                        verbose_flag=verbose_flag,
+                                        nodes_spec=nodes_spec[mpirun],
+                                        ranks_flag=ranks_num_flag[mpirun],
+                                        nproc=sub_nproc,
+                                        tpn_flag=tasks_per_node_flag[mpirun],
+                                        tpn=int(fw_data.SUB_NPROCS) / len(fw_data.NODE_LIST),
+                                        nl_flag=nodelist_flag[mpirun],
+                                        nl=','.join(fw_data.NODE_LIST),
+                                        vasp_cmd=vasp_cmd))
+                     for vasp_cmd in vasp_cmds]
+        v_exe, gv_exe = vasp_exes
+        return v_exe, gv_exe
+
+    @staticmethod
+    def _write_formula_file(fw_spec):
         filename = get_slug(
-            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula + '--'
-            + fw_spec['task_type'])
+            'JOB--' + fw_spec['mpsnl'].structure.composition.reduced_formula +
+            '--' + fw_spec['task_type'])
         with open(filename, 'w+') as f:
             f.write('')
 
