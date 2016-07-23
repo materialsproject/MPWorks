@@ -14,7 +14,7 @@ from custodian.vasp.jobs import VaspJob
 import shlex
 import os
 from fireworks.utilities.fw_utilities import get_slug
-from mpworks.workflows.wf_utils import j_decorate
+from mpworks.workflows.wf_utils import j_decorate, ScancelJobStepTerminator
 from pymatgen.io.vasp.inputs import Incar
 from monty.json import MontyDecoder
 
@@ -113,17 +113,26 @@ class VaspCustodianTask(FireTaskBase, FWSerializable):
 
         print('host:', os.environ['HOSTNAME'])
 
+        stderr_file = "std_err.txt"
         for job in self.jobs:
             job.vasp_cmd = v_exe
             job.gamma_vasp_cmd = gv_exe
+            job.stderr_file = stderr_file
+        if v_exe[0] == "srun":
+            scancel_terminator = ScancelJobStepTerminator(stderr_file)
+            terminate_func = scancel_terminator.cancel_job_step
+        else:
+            terminate_func = None
 
         incar_errors = check_incar(fw_spec['task_type'])
         if incar_errors:
             raise ValueError("Critical error: INCAR does not pass checks: {}".format(incar_errors))
 
         logging.basicConfig(level=logging.DEBUG)
+
         c = Custodian(self.handlers, self.jobs, max_errors=self.max_errors, gzipped_output=False,
-                      validators=[VasprunXMLValidator()])  # manual gzip
+                      validators=[VasprunXMLValidator()],
+                      terminate_func=terminate_func)  # manual gzip
         custodian_out = c.run()
 
         if self.gzip_output:
