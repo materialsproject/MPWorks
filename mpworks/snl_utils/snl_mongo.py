@@ -171,12 +171,17 @@ class SNLMongoAdapter(FWSerializable):
         new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
         self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.as_dict())
 
-    def lock_db(self):
+    def lock_db(self, n_tried=0, n_max_tries=10):
         x = self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': True}}, fields={'lock':1})
         if 'lock' in x and x['lock']:
-            print 'DB is already locked, waiting 30 secs...'
-            time.sleep(30)
-            self.lock_db()  # DB was already locked by another process in a race condition
+            # x is original object
+            if n_tried < n_max_tries:
+                time.sleep(30)
+                n_tried += 1
+                # DB was already locked by another process in a race condition
+                self.lock_db(n_tried=n_tried, n_max_tries=n_max_tries)
+            else:
+                raise ValueError('DB locked by another process! Could not lock even after {} minutes!'.format(n_max_tries/60))
 
     def release_lock(self):
         self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': False}})

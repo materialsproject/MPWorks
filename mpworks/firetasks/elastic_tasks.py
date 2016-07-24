@@ -177,6 +177,10 @@ class AddElasticDataToDBTask(FireTaskBase, FWSerializable):
                 dtype = "_".join(["s", str(d_ind[0] + d_ind[1]),
                                   "{:.0e}".format(delta)])
             sm = IndependentStrain(defo)
+            if dtype in d["deformation_tasks"].keys():
+                print "old_task: {}".format(d["deformation_tasks"][dtype]["task_id"])
+                print "new_task: {}".format(k["task_id"])
+                raise ValueError("Duplicate deformation task in database.")
             d["deformation_tasks"][dtype] = {"state" : k["state"],
                                              "deformation_matrix" : defo,
                                              "strain" : sm.tolist(),
@@ -221,7 +225,7 @@ class AddElasticDataToDBTask(FireTaskBase, FWSerializable):
         if ndocs >= 20:
             # Perform Elastic tensor fitting and analysis
             result = ElasticTensor.from_stress_dict(ss_dict)
-            d["elastic_tensor"] = result.tolist()
+            d["elastic_tensor"] = result.voigt.tolist()
             kg_average = result.kg_average
             d.update({"K_Voigt":kg_average[0], "G_Voigt":kg_average[1], 
                       "K_Reuss":kg_average[2], "G_Reuss":kg_average[3], 
@@ -233,19 +237,19 @@ class AddElasticDataToDBTask(FireTaskBase, FWSerializable):
                 d["warning"].append("less than 24 tasks completed")
 
             # Perform filter checks
-            symm_t = result.symmetrized
-            d["symmetrized_tensor"] = symm_t.tolist()
+            symm_t = result.voigt_symmetrized
+            d["symmetrized_tensor"] = symm_t.voigt.tolist()
             d["analysis"]["not_rare_earth"] = True
             for s in calc_struct.species:
                 if s.is_rare_earth_metal:
                     d["analysis"]["not_rare_earth"] = False
-            eigvals = np.linalg.eigvals(symm_t)
+            eigvals = np.linalg.eigvals(symm_t.voigt)
             eig_positive = np.all((eigvals > 0) & np.isreal(eigvals))
-            d["analysis"]["eigval_positive"] = bool(eig_positive) 
-            c11 = symm_t[0][0]
-            c12 = symm_t[0][1]
-            c13 = symm_t[0][2]
-            c23 = symm_t[1][2]
+            d["analysis"]["eigval_positive"] = bool(eig_positive)
+            c11 = symm_t.voigt[0][0]
+            c12 = symm_t.voigt[0][1]
+            c13 = symm_t.voigt[0][2]
+            c23 = symm_t.voigt[1][2]
             d["analysis"]["c11_c12"]= not (abs((c11-c12)/c11) < 0.05
                                            or c11 < c12)
             d["analysis"]["c11_c13"]= not (abs((c11-c13)/c11) < 0.05 
