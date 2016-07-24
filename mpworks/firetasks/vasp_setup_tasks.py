@@ -7,6 +7,7 @@ from pymatgen.io.vasp.outputs import Vasprun, Outcar
 from pymatgen.io.vasp.inputs import VaspInput, Incar, Poscar, Kpoints, Potcar
 from pymatgen.io.vasp.sets import MPRelaxSet, MPStaticSet, MPNonSCFSet
 from pymatgen.symmetry.bandstructure import HighSymmKpath
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 
 __author__ = 'Wei Chen, Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -41,11 +42,11 @@ class SetupStaticRunTask(FireTaskBase, FWSerializable):
         # Get kpoint density per vol
         vol = Poscar.from_file("POSCAR").structure.volume
         kppra_vol = self.kpoints_density / vol
-        new_set = MPStaticSet.from_previous_calc(
+        new_set = MPStaticSet.from_prev_calc(
             os.getcwd(),
             user_incar_settings=self.user_incar_settings, 
             reciprocal_density=kppra_vol)
-
+        new_set.write_input('.')
         structure = new_set.structure
         sga = SpacegroupAnalyzer(structure, 0.1)
         return FWAction(stored_data={
@@ -95,15 +96,16 @@ class SetupNonSCFTask(FireTaskBase, FWSerializable):
             MPNonSCFSet.from_prev_calc(
                 os.getcwd(), mode="Line", copy_chgcar=False,
                 user_incar_settings=user_incar_settings,
-                kpoints_line_density=self.kpoints_line_density)
+                kpoints_line_density=self.kpoints_line_density).write_input('.')
             kpath = HighSymmKpath(Poscar.from_file("POSCAR").structure)
+
             return FWAction(stored_data={"kpath": kpath.kpath,
                                          "kpath_name": kpath.name})
         else:
             MPNonSCFSet.from_prev_calc(
                 os.getcwd(), mode="Uniform", copy_chgcar=False,
                 user_incar_settings=user_incar_settings,
-                reciprocal_density=kppra_vol)
+                reciprocal_density=kppra_vol).write_input('.')
             return FWAction()
 
 
