@@ -6,10 +6,13 @@ __version__ = "0.1"
 __email__ = "rit634989@gmail.com"
 __date__ = "6/2/15"
 
-import os
 import numpy as np
+import itertools
+import cStringIO
+import json
+import os
+import logging
 import warnings
-from functools import reduce
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework
 from fireworks import explicit_serialize
@@ -23,21 +26,39 @@ from pymatgen.io.vasp.sets import MVLSlabSet
 from pymatgen.io.vasp.outputs import Incar, Outcar, Oszicar
 from pymatgen.core.surface import SlabGenerator
 from pymatgen.core.structure import Structure, Lattice
-from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
 from pymatgen.analysis.structure_analyzer import RelaxationAnalyzer, VoronoiConnectivity
 from pymatgen.util.coord_utils import in_coord_list
+from pymatgen import MPRester
 from pymatgen.symmetry.groups import SpaceGroup
+from pymatgen.symmetry.analyzer import SpacegroupAnalyzer
+from pymatgen.analysis.wulff import WulffShape
 
-import itertools
+from pymongo import MongoClient
+from bson import binary
+from monty.json import MontyDecoder
+from functools import reduce
 from fractions import gcd
 
-from monty.json import MontyDecoder
+logger = logging.getLogger(__name__)
 
+
+class EntryError(Exception):
+    def __init__(self, value):
+        self.value = value
+
+EV_PER_ANG2_TO_JOULES_PER_M2 = 16.0217656
+
+# This initializes the REST adaptor. Put your own API key in.
+if "MAPI_KEY" not in os.environ:
+    apikey = input('Enter your api key (str): ')
+else:
+    apikey = os.environ["MAPI_KEY"]
+
+mprester = MPRester(apikey)
 
 """
 Firework tasks
 """
-
 
 @explicit_serialize
 class VaspSlabDBInsertTask(FireTaskBase):
@@ -113,16 +134,17 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
         warnings = []
 
-        # Check if the spacegroup queried from MP API consistent
-        # with the one calculated from the queried structure
-        spacegroup = unit_cell_dict["spacegroup"]
-        conventional_unit_cell = unit_cell_dict["ucell"]
-        spa = SpacegroupAnalyzer(conventional_unit_cell,
-                                 symprec=0.001, angle_tolerance=5)
-        calculated_sg = spa.get_spacegroup_symbol()
+        if struct_type != "isolated_atom":
+            # Check if the spacegroup queried from MP API consistent
+            # with the one calculated from the queried structure
+            spacegroup = unit_cell_dict["spacegroup"]
+            conventional_unit_cell = unit_cell_dict["ucell"]
+            spa = SpacegroupAnalyzer(conventional_unit_cell,
+                                     symprec=0.001, angle_tolerance=5)
+            calculated_sg = spa.get_spacegroup_symbol()
 
-        if str(calculated_sg) != spacegroup:
-            warnings.append("api_mp_spacegroup_inconsistent")
+            if str(calculated_sg) != spacegroup:
+                warnings.append("api_mp_spacegroup_inconsistent")
 
         if struct_type == "slab_cell":
 
@@ -203,12 +225,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
                              "author": os.environ.get("USER"),
                              # User that ran the calculation
                              "structure_type": struct_type,
-                             "miller_index": miller_index,
-                             "surface_area": surface_area, "shift": shift,
-                             "vac_size": vsize, "slab_size": ssize,
-                             "conventional_spacegroup": spacegroup,
-                             "isolated_atom": isolated_atom,
-                             "polymorph": unit_cell_dict["polymorph"],
                              "final_incar": Incar.from_file("./INCAR.relax2.gz"),
                              # Final incar parameters after custodian fixes have been applied.
                              # Useful for creating the slab incar parameters based on the
@@ -223,6 +239,18 @@ class VaspSlabDBInsertTask(FireTaskBase):
 
         # Add mpid as optional so we won't get None
         # when looking for mpid of isolated atoms
+        if struct_type != "isolated_atom":
+            additional_fields["miller_index"] = miller_index
+            additional_fields["surface_area"] = surface_area
+            additional_fields["shift"] = shift
+            additional_fields["vac_size"] = vsize
+            additional_fields["slab_size"] = ssize
+            additional_fields["material_id"] = mpid
+            additional_fields["material_id"] = mpid
+            additional_fields["conventional_spacegroup"] = spacegroup
+            additional_fields["polymorph"] =  unit_cell_dict["polymorph"]
+        else:
+            additional_fields["isolated_atom"] = isolated_atom
         if mpid:
             additional_fields["material_id"] = mpid
 
@@ -231,6 +259,11 @@ class VaspSlabDBInsertTask(FireTaskBase):
                                   **vaspdbinsert_parameters)
         drone.assimilate(os.path.join(cwd, folder))
 
+        if struct_type != "isolated_atom":
+            # Now we update the surface properties collection
+            post_process_updater = UpdateRepositoriesAndDBs(vaspdbinsert_parameters)
+            post_process_updater.insert_surface_property_entry(mpid)
+            post_process_updater.insert_wulff_entry(mpid)
 
 @explicit_serialize
 class WriteUCVaspInputs(FireTaskBase):
@@ -551,18 +584,9 @@ class GenerateFwsTask(FireTaskBase):
         bondlength = dec.process_decoded(self.get("bondlength", None))
 
         qe = QueryEngine(**vaspdbinsert_params)
-
-        miller_handler = GetMillerIndices(unit_cells_dict["ucell"], 1)
-        criteria = {"structure_type": "oriented_unit_cell",
-                    "material_id": mpid}
-        for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
-            criteria["miller_index"] = tuple(hkl)
-            conv_ucell_entries = qe.get_entries(criteria, inc_structure="Final")
-            if conv_ucell_entries:
-                print("Found relaxed conventional unit cell, "
-                      "will construct all oriented ucells from this")
-                unit_cells_dict["ucell"] = conv_ucell_entries[0].structure
-                break
+        unit_cells_dict["ucell"] = get_conventional_ucell(mpid,
+                                                          from_mapi=False,
+                                                          qe=qe)
 
         FWs = []
         for miller_index in miller_list:
@@ -572,8 +596,8 @@ class GenerateFwsTask(FireTaskBase):
             print(str(miller_index))
 
             slab = SlabGenerator(unit_cells_dict['ucell'], miller_index,
-                                 ssize, vsize, max_normal_search=max_normal_search,
-                                 primitive=False)
+                                 ssize, vsize, primitive=False,
+                                 max_normal_search=max_normal_search)
             oriented_uc = slab.oriented_unit_cell
 
             # The unit cell should not be exceedingly larger than the
@@ -606,6 +630,14 @@ class GenerateFwsTask(FireTaskBase):
                                       "k_product": k_product, "gpu": gpu, "oxides": oxides,
                                       "potcar_functional": potcar_functional})
             tasks = []
+
+            # This task is only initialized once the conventional unit
+            # cell has been relaxed, skip the conventional unit cell
+            # relaxation and go straight to the slab calculation
+            miller_handler = GetMillerIndices(unit_cells_dict["ucell"], 1)
+            if miller_handler.is_already_analyzed(miller_index, unique_millers=[(0,0,1)]):
+                get_bulk_e = False
+                miller_index = (0,0,1)
 
             if get_bulk_e:
 
@@ -678,9 +710,10 @@ class RunCustodianTask(FireTaskBase):
                 fw_env['scratch_root'])
 
         c = Custodian(gzipped_output=True, **custodian_params)
-        output = c.run()
 
-        return FWAction(stored_data=output)
+        if not debug:
+            output = c.run()
+            return FWAction(stored_data=output)
 
 
 @explicit_serialize
@@ -695,7 +728,7 @@ class WriteAtomVaspInputs(FireTaskBase):
 
     required_params = ["atom", "folder", "cwd"]
     optional_params = ["user_incar_settings", "potcar_functional",
-                       "latt_a", "kpoints", "debug"]
+                       "latt_a", "kpoints", "gpu"]
 
     def run_task(self, fw_spec):
 
@@ -721,6 +754,7 @@ class WriteAtomVaspInputs(FireTaskBase):
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
         atom = dec.process_decoded(self.get("atom"))
+        gpu = dec.process_decoded(self.get("gpu", False))
 
         user_incar_settings = \
             dec.process_decoded(self.get("user_incar_settings", None))
@@ -728,18 +762,33 @@ class WriteAtomVaspInputs(FireTaskBase):
             dec.process_decoded(self.get("kpoints0", 1))
         potcar_functional = \
             dec.process_decoded(self.get("potcar_functional", 'PBE'))
-        debug = dec.process_decoded(self.get("debug", False))
-
-        mplb = MVLSlabSet(user_incar_settings=user_incar_settings,
-                                  kpoints0=[kpoints0]*3, bulk=False,
-                                  potcar_functional=potcar_functional,
-                                  ediff_per_atom=False)
 
         # Build the isolated atom in a box
         lattice = Lattice.cubic(latt_a)
-        atom_in_a_box = Structure(lattice, [atom], [[0.5, 0.5, 0.5]])
+        atom_in_a_box = Structure(lattice, [atom],
+                                  [[0.5, 0.5, 0.5]])
 
-        mplb.write_input(atom_in_a_box, os.path.join(cwd, folder))
+        mplb = MVLSlabSet(atom_in_a_box, k_product=1, gpu=gpu,
+                          user_incar_settings=user_incar_settings,
+                          potcar_functional=potcar_functional)
+        mplb.write_input(os.path.join(cwd, folder))
+
+        incar = mplb.incar
+        kpt = mplb.kpoints
+        kpt.kpts[0] = [kpoints0]*3
+        kpt.write_file(os.path.join(cwd, folder, "KPOINTS"))
+
+        if gpu:
+            if "KPAR" not in incar.keys():
+                incar.__setitem__('KPAR', 1)
+            if "NPAR" in incar.keys():
+                del incar["NPAR"]
+        else:
+            if "KPAR" in incar.keys():
+                del incar["KPAR"]
+
+        incar.write_file(os.path.join(cwd, folder, "INCAR"))
+
 
 
 def check_termination_symmetry(slab_list, miller_index, min_slab_size,
@@ -965,3 +1014,426 @@ class GetMillerIndices(object):
         str_format += '$)'
 
         return str_format
+
+
+class SurfaceQueryEngine(QueryEngine):
+    def __init__(self, db_credentials):
+
+        super(SurfaceQueryEngine, self).__init__(**db_credentials)
+
+
+"""
+class summary:
+    UpdateRepositoriesAndDBs(QueryEngine):
+        A class used for updating the different collections in "surfacedb"
+        and json files in the pymacy repo.
+"""
+
+class UpdateRepositoriesAndDBs(object):
+
+    """
+    Goes through the raw collection (surface_tasks) to
+    find entries that are not preset in current
+    collections or repositories
+
+
+    Format of each entry in surface_properties collection:
+
+        {"material_id": str,
+         "polymorph": int,
+         "weighted_surface_energy_EV_PER_ANG2": float,
+         "e_above_hull": float,
+         "pretty_formula": str,
+         "weighted_surface_energy": float,
+         "anisotropy": float,
+         "spacegroup": {"symbol": str,
+                        "number": int},
+         "surfaces":
+           [
+               {"miller_index": list,
+                "tasks": {"OUC": int, "slab": int},
+                "surface_energy_EV_PER_ANG2": float,
+                "surface_energy": float,
+                "is_reconstructed": bool,
+                "area_fraction": float,
+                "structure": str(cif)
+               },
+               {
+               },
+               {
+               },
+               etc ...
+           ]
+        }
+
+    Format of each entry in wulff collection:
+
+        {"material_id": str,
+         "polymorph": int,
+         "pretty_formula": str,
+         "spacegroup": {"symbol": str,
+                        "number": int},
+         "thumbnail": binary,
+         "hi_res_images":
+           [
+               {"miller_index": list,
+                "image": binary
+               },
+               {
+               },
+               {
+               },
+               etc ...
+           ]
+        }
+
+    """
+
+    def __init__(self, db_credentials):
+
+        conn = MongoClient(host=db_credentials["host"],
+                           port=db_credentials["port"])
+        db = conn.get_database(db_credentials["database"])
+        db.authenticate(db_credentials["user"],
+                        db_credentials["password"])
+
+        optional_data = ["surface_area", "nsites", "structure_type",
+                         "miller_index", "polymorph", "shift", "state",
+                         "material_id", "pretty_formula", "task_id",
+                         "final_structure", "initial_structure",
+                         "is_reconstructed", "calculations"]
+
+        self.property_coll_to_update = db["surface_properties"]
+        self.vasp_details = db["vasp_details"]
+        self.surface_tasks = db["surface_tasks"]
+        self.wulff_coll_to_update = db["wulff"]
+        self.optional_data = optional_data
+        self.mprester = MPRester(apikey)
+        self.qe = SurfaceQueryEngine(db_credentials)
+
+    def insert_surface_property_entry(self, mpid):
+
+        """
+        Sets up the basic metadata information for an entry, i.e.
+            e_above_hull, material_id, pretty_formula etc.
+
+            Args:
+                mpid (str):
+                    material id from MP for a material
+        """
+
+        entry = {}
+
+        task_entry = self.surface_tasks.find_one({"material_id": mpid,
+                                                  "structure_type": "slab_cell"})
+        if not task_entry:
+            warnings.warn("No calculations completed for this material.")
+            return
+
+        mp_entry = self.mprester.get_entries(mpid,
+                                             property_data=["spacegroup",
+                                                            "e_above_hull"])[0]
+
+        if mpid not in self.property_coll_to_update.distinct("material_id"):
+
+            sp_symbol = task_entry["conventional_spacegroup"]
+            entry["material_id"] = mpid
+            entry["polymorph"] = task_entry["polymorph"]
+
+            entry["spacegroup"] = {"symbol": sp_symbol,
+                                   "number": SpaceGroup(sp_symbol).int_number}
+            entry["pretty_formula"] = task_entry["pretty_formula"]
+            entry["e_above_hull"] = mp_entry.data["e_above_hull"]
+
+            self.property_coll_to_update.insert(entry)
+
+        if mpid not in self.vasp_details.distinct("material_id"):
+            self.vasp_details.insert({"material_id": mpid})
+
+        self.update_surface_property_entry(mpid)
+
+    def update_surface_property_entry(self, mpid):
+
+        """
+        Query raw information from the task collection for post processing
+            and insertion into the surface_properties database.
+
+            Args:
+                mpid (str):
+                    material id from MP for a material
+        """
+
+        if mpid not in self.property_coll_to_update.distinct("material_id"):
+            warnings.warn("No entry in surface_properties collection, update "
+                          "collection with insert_surface_property_entry()")
+            return
+
+        miller_handler = GetMillerIndices(get_conventional_ucell(mpid, from_mapi=False,
+                                                                 qe=self.qe), 3)
+        ucell_entries = self.qe.get_entries({"structure_type": "oriented_unit_cell",
+                                             "material_id": mpid}, inc_structure="Final",
+                                            optional_data=self.optional_data)
+
+        entries_dict = {}
+        for entry in ucell_entries:
+            entries_dict[tuple(entry.data["miller_index"])] = \
+                {"ucell": entry,
+                 "slabcell": self.qe.get_entries({"structure_type": "slab_cell",
+                                                  "material_id": mpid,
+                                                  "miller_index": tuple(entry.data["miller_index"])},
+                                                 inc_structure="Final",
+                                                 optional_data=self.optional_data)}
+
+        # Make updates to individual surfaces
+        e_surf_list, miller_list, surfaces, slab_vasp_details, ucell_energies = [], [], [], [], []
+        for hkl in entries_dict.keys():
+            # For loop will create a list of surface dictionaries
+            # containing information on specfic surfaces
+
+            if not entries_dict[hkl]["slabcell"]:
+                continue
+            miller_index = miller_handler.get_true_index(hkl)
+            surface = {"miller_index": miller_index}
+
+            miller_list.append(miller_index)
+            tasks = {"OUC": entries_dict[hkl]["ucell"].data["task_id"]}
+
+            surface_energies = []
+            for slab_entry in entries_dict[hkl]["slabcell"]:
+                surface_energy = ((slab_entry.energy - slab_entry.data["nsites"]*
+                                   entries_dict[hkl]["ucell"].energy_per_atom)/
+                                  (2*slab_entry.data["surface_area"]))*\
+                                 EV_PER_ANG2_TO_JOULES_PER_M2
+                surface_energies.append(surface_energy)
+
+            # sort by surface energy, assume first entry is the
+            # most stable termination, if a system reconstructs,
+            # assume the first entry is a reconstruction and the
+            # second entry is the most stable ideal surface/termination
+            surface_energies, entries_dict[hkl]["slabcell"] = \
+                zip(*sorted(zip(surface_energies,
+                                entries_dict[hkl]["slabcell"])))
+
+            count = 0
+            true_slab_entry = entries_dict[hkl]["slabcell"][count]
+
+            e_surf_list.append(surface_energies[count])
+            tasks["slab"] = slab_entry.data["task_id"]
+            surface["tasks"] = tasks
+            surface["surface_energy_EV_PER_ANG2"] = surface_energies[count]/EV_PER_ANG2_TO_JOULES_PER_M2
+            surface["surface_energy"] = surface_energies[count]
+            surface["is_reconstructed"] = True if true_slab_entry.data["is_reconstructed"] else False
+            surface["structure"] = true_slab_entry.structure.to("cif")
+            surface["initial_structure"] = \
+                Structure.from_dict(true_slab_entry.data["initial_structure"]).to("cif")
+
+            surfaces.append(surface)
+
+            # Create a dictionary for the details on VASP calculations
+            surface_vasp_detail = {"miller_index": miller_index}
+            surface_vasp_detail["is_reconstructed"] = True if true_slab_entry.data["is_reconstructed"] else False
+            surface_vasp_detail["calculations"] =  {}
+            relax1 = true_slab_entry.data["calculations"][0]
+
+            for key in relax1.keys():
+                if key in ["input", "output"]:
+                    continue
+                surface_vasp_detail["calculations"][key] = relax1[key]
+            surface_vasp_detail["calculations"]["input"] = relax1["input"]
+            if len(true_slab_entry.data["calculations"]) > 1:
+                output = true_slab_entry.data["calculations"][1]["output"]
+            else:
+                output = true_slab_entry.data["calculations"][0]["output"]
+
+            new_output = {}
+            for key in output.keys():
+                if key in ["epsilon_static", "epsilon_static_wolfe", "cbm", "vbm",
+                           "bandgap", "epsilon_ionic", "efermi", "is_gap_direct",
+                           "eigenvalues"]:
+                    continue
+                else:
+                    new_output[key] = output[key]
+
+            surface_vasp_detail["calculations"]["output"] = new_output
+
+            slab_vasp_details.append(surface_vasp_detail)
+
+        if len(e_surf_list) < 1:
+            warnings.warn("Require at least one surface before inserting, skipping %s" %(mpid))
+            return
+        elif len(e_surf_list) < 2:
+            wulff_shape = None
+        else:
+            try:
+                wulff_shape = self.get_wulff(mpid, miller_list=miller_list,
+                                        e_surf_list=e_surf_list)
+            except RuntimeError:
+                wulff_shape = None
+
+        weighted_energy = {"weighted_surface_energy": wulff_shape.weighted_surface_energy,
+                           "weighted_surface_energy_EV_PER_ANG2": wulff_shape.weighted_surface_energy/\
+                                                                  EV_PER_ANG2_TO_JOULES_PER_M2} \
+            if wulff_shape else {"weighted_surface_energy": e_surf_list[0],
+                                 "weighted_surface_energy_EV_PER_ANG2": e_surf_list[0]/\
+                                                                        EV_PER_ANG2_TO_JOULES_PER_M2}
+
+        area_fraction = wulff_shape.area_fraction_dict if wulff_shape else {tuple(miller_list[0]): 1}
+
+        self.property_coll_to_update.update_one({"material_id": mpid},
+                                                {"$set": weighted_energy})
+
+        if wulff_shape:
+            for surface in surfaces:
+                surface["area_fraction"] = area_fraction[surface["miller_index"]]
+
+        anisotropy = wulff_shape.anisotropy if wulff_shape else 0
+        shape_factor = wulff_shape.shape_factor if wulff_shape else None
+
+        self.property_coll_to_update.update_one({"material_id": mpid},
+                                   {"$set": {"surfaces": surfaces,
+                                             "surface_anisotropy": anisotropy,
+                                             "shape_factor": shape_factor}})
+
+        self.vasp_details.update_one({"material_id": mpid},
+                                     {"$set": {"surfaces": slab_vasp_details}})
+
+    def insert_wulff_entry(self, mpid):
+
+        """
+        Inserts the Wulff shape image of the materials in
+        this SlabDict object into a Wulff database.
+
+            Args:
+                mpid (str):
+                    material id from MP for a material
+        """
+
+        if not self.wulff_coll_to_update:
+            raise EntryError("No collection specified for parameter: wulff_collection")
+
+        if mpid not in self.property_coll_to_update.distinct("material_id"):
+            warnings.warn("No entry in surface_properties collection, update "
+                          "collection with insert_surface_property_entry()")
+            return
+
+        else:
+            material_props = self.property_coll_to_update.find_one({"material_id": mpid})
+
+        if mpid not in self.wulff_coll_to_update.distinct("material_id"):
+            entry = {"material_id": mpid}
+            entry["polymorph"] = material_props["polymorph"]
+            entry["spacegroup"] = material_props["spacegroup"]
+            entry["pretty_formula"] = material_props["pretty_formula"]
+            self.wulff_coll_to_update.insert(entry)
+
+        self.update_wulff_entry(mpid)
+
+    def update_wulff_entry(self, mpid):
+
+        # Function used by insert_wulff_shapes() to
+        # insert the image of the Wulff shape in the DB
+
+        if mpid not in self.wulff_coll_to_update.distinct("material_id"):
+            warnings.warn("No entry in wulff collection, update "
+                          "collection with insert_wulff_entry()")
+            return
+
+        miller_list = [tuple(surface["miller_index"]) for surface in \
+                       self.property_coll_to_update.find_one({"material_id": mpid})["surfaces"]]
+
+        ucell = get_conventional_ucell(mpid, from_mapi=False, qe=self.qe)
+
+        # Get all miller indices up to 2 and insert the
+        # wulff images in those directions initially
+        miller_handler = GetMillerIndices(ucell, 2)
+        mill_list_max2 = miller_handler.get_symmetrically_distinct_miller_indices()
+
+        for hkl in mill_list_max2:
+            mill = miller_handler.get_true_index(hkl)
+            if mill not in miller_list:
+                miller_list.append(mill)
+        print(miller_list, len(miller_list))
+        wulff = self.get_wulff(mpid)
+
+        wulff_plot = wulff.get_plot(bar_on=False, legend_on=False)
+        data = cStringIO.StringIO()
+
+        wulff_plot.savefig(data, transparent=True, dpi=30,
+                           bbox_inches='tight', pad_inches=-1.25)
+        wulff_plot.close()
+        self.wulff_coll_to_update.update_one({"material_id": mpid},
+                                {"$set": {"thumbnail": binary.Binary(data.getvalue())}})
+
+        new_images = []
+        for miller_index in miller_list:
+            image = {}
+
+            wulff_plot = wulff.get_plot(direction=miller_index,
+                                        bar_on=False,
+                                        legend_on=True)
+            data = cStringIO.StringIO()
+            wulff_plot.savefig(data, transparent=True, dpi=100)
+            wulff_plot.close()
+            image["miller_index"] = miller_index
+            image["image"] = binary.Binary(data.getvalue())
+            new_images.append(image)
+
+        self.wulff_coll_to_update.update_one({"material_id": mpid},
+                                {"$set": {"hi_res_images": new_images}})
+
+    def get_wulff(self, mpid, miller_list=[], e_surf_list=[]):
+
+        ucell = get_conventional_ucell(mpid, from_mapi=False, qe=self.qe)
+        if not (miller_list or e_surf_list):
+            miller_list = []
+            e_surf_list = []
+
+            entry = self.property_coll_to_update.find_one({"material_id": mpid})
+
+            for surface in entry["surfaces"]:
+                miller_list.append(surface["miller_index"])
+                e_surf_list.append(surface["surface_energy"])
+
+        return WulffShape(ucell.lattice, miller_list, e_surf_list)
+
+
+def get_conventional_ucell(formula_id, symprec=1e-3,
+                           angle_tolerance=5, from_mapi=True,
+                           qe=None):
+
+    """
+    Gets the conventional unit cell by querying
+    materials project for the primitive unit cell
+
+    Args:
+        formula_id (string): Materials Project ID
+            associated with the slab data entry.
+    """
+
+    entries = mprester.get_entries(formula_id, inc_structure="Final",
+                                   property_data=["e_above_hull"])
+    if formula_id[:2] == "mp":
+        prim_unit_cell = entries[0].structure
+    else:
+        ehulls = [entry.data["e_above_hull"] for entry in entries]
+        ehulls, entries = zip(*sorted(zip(ehulls, entries)))
+        prim_unit_cell = entries[0].structure
+
+    spa = SpacegroupAnalyzer(prim_unit_cell, symprec=symprec,
+                             angle_tolerance=angle_tolerance)
+    ucell = spa.get_conventional_standard_structure()
+
+    if from_mapi:
+        return ucell
+    else:
+        miller_handler = GetMillerIndices(ucell, 1)
+        criteria = {"structure_type": "oriented_unit_cell",
+                    "material_id": formula_id}
+
+        for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
+            criteria["miller_index"] = tuple(hkl)
+            conv_ucell_entries = qe.get_entries(criteria, inc_structure="Final")
+            if conv_ucell_entries:
+                return conv_ucell_entries[0].structure
+            else:
+                return False

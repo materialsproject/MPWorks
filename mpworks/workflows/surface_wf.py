@@ -29,7 +29,7 @@ db = MongoClient().data
 
 from mpworks.firetasks_staging.surface_tasks import RunCustodianTask, \
     VaspSlabDBInsertTask, WriteUCVaspInputs, \
-    WriteAtomVaspInputs, GenerateFwsTask, GetMillerIndices
+    WriteAtomVaspInputs, GenerateFwsTask, GetMillerIndices, get_conventional_ucell
 
 from custodian.vasp.jobs import VaspJob
 from custodian.vasp.handlers import VaspErrorHandler, NonConvergingErrorHandler, \
@@ -51,8 +51,8 @@ from fireworks.core.launchpad import LaunchPad
 
 def get_all_wfs(job, scratch_dir, limit_atoms=10, collection_only=True, less_than_ehull=0.05,
                 specific=[], avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
-                                      "mp-568286", "mp-48", "mp-568348", "mp-96",
-                                      "mp-142", "mp-11", "mp-570481", "mp-35"],
+                                    "mp-568286", "mp-48", "mp-568348", "mp-96",
+                                    "mp-142", "mp-11", "mp-570481", "mp-35"],
                 host=None, port=None, user=None, password=None,
                 collection="surface_tasks", database=None,
                 user_incar_settings={"EDIFF": 1e-04}, gpu=False, launchpad_dir=""):
@@ -285,7 +285,8 @@ class SurfaceWorkflowManager(object):
                     print(spa.get_spacegroup_symbol())
 
             # Get a dictionary of different properties for a particular material
-            unit_cells_dict[mpid] = {"ucell": conv_unit_cell, "spacegroup": spa.get_spacegroup_symbol(),
+            unit_cells_dict[mpid] = {"ucell": conv_unit_cell,
+                                     "spacegroup": spa.get_spacegroup_symbol(),
                                      "polymorph": polymorph_order}
 
             if verbose:
@@ -605,6 +606,7 @@ class CreateSurfaceWorkflow(object):
         self.bonds = bonds
         self.bondlength = bondlength
 
+
     def launch_workflow(self, k_product=50, job=None, gpu=False,
                         user_incar_settings=None, potcar_functional='PBE', oxides=False,
                         additional_handlers=[], limit_sites_bulk=199, limit_sites_slab=199,
@@ -667,10 +669,6 @@ class CreateSurfaceWorkflow(object):
 
             print(mpid)
 
-            miller_handler = GetMillerIndices(self.unit_cells_dict[mpid]["ucell"], 1)
-            criteria = {"structure_type": "oriented_unit_cell",
-                        "material_id": mpid}
-
             kwargs_GenerateFwsTasks = {"miller_list": self.miller_dict[mpid],
                                        "unit_cells_dict": self.unit_cells_dict[mpid],
                                        "ssize": self.ssize, "vsize":self.vsize,
@@ -689,21 +687,17 @@ class CreateSurfaceWorkflow(object):
                                        "max_broken_bonds": self.max_broken_bonds,
                                        "bondlength": self.bondlength, "cwd": cwd}
 
-            for hkl in miller_handler.get_symmetrically_equivalent_miller_indices((0,0,1)):
-                criteria["miller_index"] = tuple(hkl)
-                conv_ucell_entries = self.surface_query_engine.get_entries(criteria,
-                                                                           inc_structure="Final")
-                if conv_ucell_entries:
+            conv_ucell = get_conventional_ucell(mpid, from_mapi=False,
+                                                qe=self.surface_query_engine)
+            if conv_ucell:
+                print("Found relaxed conventional unit cell, "
+                      "will construct all oriented ucells from this")
+                self.unit_cells_dict[mpid]["ucell"] = conv_ucell
+                kwargs_GenerateFwsTasks["unit_cells_dict"] = self.unit_cells_dict[mpid]
 
-                    print("Found relaxed conventional unit cell, "
-                          "will construct all oriented ucells from this")
-                    self.unit_cells_dict[mpid]["ucell"] = conv_ucell_entries[0].structure
-                    kwargs_GenerateFwsTasks["unit_cells_dict"] = self.unit_cells_dict[mpid]
+                tasks = [GenerateFwsTask(**kwargs_GenerateFwsTasks)]
 
-                    tasks = [GenerateFwsTask(**kwargs_GenerateFwsTasks)]
-                    break
-
-            if not conv_ucell_entries:
+            else:
                 print("No relaxed conventional unit cell available, "
                       "need to calculate relaxed ucell first")
                 oriented_uc = self.unit_cells_dict[mpid]["ucell"]
@@ -736,37 +730,11 @@ class CreateSurfaceWorkflow(object):
                                                      "my_launchpad.yaml"))
         launchpad.add_wf(wf)
 
-    def get_conventional_ucell(self, formula_id):
-
-        """
-        Gets the conventional unit cell by querying
-        materials project for the primitive unit cell
-
-        Args:
-            formula_id (string): Materials Project ID
-                associated with the slab data entry.
-        """
-
-        entries = self.mprester.get_entries(formula_id,
-                                            inc_structure="Final",
-                                            property_data=["e_above_hull"])
-        if formula_id[:2] == "mp":
-            prim_unit_cell = entries[0].structure
-        else:
-            ehulls = [entry.data["e_above_hull"] for entry in entries]
-            ehulls, entries = zip(*sorted(zip(ehulls, entries)))
-            prim_unit_cell = entries[0].structure
-
-        spa = SpacegroupAnalyzer(prim_unit_cell, symprec=self.symprec,
-                                 angle_tolerance=self.angle_tolerance)
-
-        return spa.get_conventional_standard_structure()
-
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
                            collection="Surface_Collection", latt_a=16, kpoints=1, job=None,
                            scratch_dir=None, additional_handlers=[], launchpad_dir="",
-                           elements=[], user_incar_settings={}):
+                           elements=[], user_incar_settings={}, gpu=False):
 
     """
     A simple workflow for calculating a single isolated atom in a box
@@ -794,44 +762,45 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
         job = VaspJob(["mpirun", "-n", "64", "vasp"],
                       auto_npar=False, copy_magmom=True)
 
-    handlers = [VaspErrorHandler(),
-                NonConvergingErrorHandler(nionic_steps=4, change_algo=True),
+    handlers = [NonConvergingErrorHandler(change_algo=True),
                 UnconvergedErrorHandler(),
                 PotimErrorHandler(),
                 PositiveEnergyErrorHandler(),
-                FrozenJobErrorHandler(output_filename="OSZICAR", timeout=7200)]
+                VaspErrorHandler(),
+                FrozenJobErrorHandler(output_filename="OSZICAR",
+                                      timeout=3600)]
     if additional_handlers:
         handlers.extend(additional_handlers)
 
     scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
 
-    cust_params = {"custodian_params":
-                       {"scratch_dir":
-                            os.path.join(scratch_dir,
-                                         os.environ["USER"])},
+    cust_params = {"scratch_dir":
+                       os.path.join(scratch_dir,
+                                    os.environ["USER"]),
                    "jobs": job.double_relaxation_run(job.vasp_cmd,
                                                      auto_npar=False),
                    "handlers": handlers,
-                   "max_errors": 10,
-                   "skip_over_errors": True}  # will return a list of jobs instead of just being one job
+                   "max_errors": 10}
 
     fws = []
     for el in elements:
-        folder_atom = '/%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
+        folder_atom = '%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
         cwd = os.getcwd()
 
         tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
-                                     latt_a=latt_a, kpoints=kpoints,
+                                     latt_a=latt_a, kpoints=kpoints, gpu=gpu,
                                      user_incar_settings=user_incar_settings),
-                 RunCustodianTask(dir=folder_atom, cwd=cwd,
-                                              **cust_params),
+                 RunCustodianTask(folder=folder_atom, cwd=cwd,
+                                  custodian_params=cust_params),
                  VaspSlabDBInsertTask(struct_type="isolated_atom",
-                                      loc=folder_atom, cwd=cwd,
+                                      folder=folder_atom, cwd=cwd,
                                       miller_index=None, mpid=None,
                                       conventional_spacegroup=None,
                                       conventional_unit_cell=None,
                                       isolated_atom=el,
                                       polymorph=None,
+                                      unit_cell_dict={"polymoph": None, "ucell": None,
+                                                      "spacegroup": None},
                                       vaspdbinsert_parameters=vaspdbinsert_params)]
 
         fws.append(Firework(tasks, name=folder_atom))
