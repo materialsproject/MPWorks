@@ -49,13 +49,13 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 
 
-def get_all_wfs(job, scratch_dir, limit_atoms=10, collection_only=True, less_than_ehull=0.05,
-                specific=[], avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
-                                    "mp-568286", "mp-48", "mp-568348", "mp-96",
-                                    "mp-142", "mp-11", "mp-570481", "mp-35"],
-                host=None, port=None, user=None, password=None,
-                collection="surface_tasks", database=None,
-                user_incar_settings={"EDIFF": 1e-04}, gpu=False, launchpad_dir=""):
+def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
+                collection_only=False, less_than_ehull=0.05, specific=[],
+                avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
+                       "mp-568286", "mp-48", "mp-568348", "mp-96",
+                       "mp-142", "mp-11", "mp-570481", "mp-35"],
+                collection="surface_tasks", user_incar_settings={"EDIFF": 1e-04},
+                gpu=False, launchpad_dir=""):
 
     # Makes running calculations on all solid systems less of a hassle every time
 
@@ -70,11 +70,6 @@ def get_all_wfs(job, scratch_dir, limit_atoms=10, collection_only=True, less_tha
     cubic, non_cubic = [], []
 
     if collection_only:
-        vaspdbinsert_params = {'host': host,
-                               'port': port, 'user': user,
-                               'password': password,
-                               'database': database,
-                               'collection': collection}
 
         conn = MongoClient(host=vaspdbinsert_params["host"],
                            port=vaspdbinsert_params["port"])
@@ -110,7 +105,7 @@ def get_all_wfs(job, scratch_dir, limit_atoms=10, collection_only=True, less_tha
                 continue
 
             entries = mprester.get_entries(str(el), inc_structure="Final",
-                                           property_data=["material_id"])
+                                           property_data=["material_id", "e_above_hull"])
             for entry in entries:
                 spa = SpacegroupAnalyzer(entry.structure)
                 ucell = spa.get_conventional_standard_structure()
