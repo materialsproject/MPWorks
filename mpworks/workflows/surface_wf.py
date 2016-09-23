@@ -130,9 +130,8 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
                                     **vaspdbinsert_params)
         workflows = wf.from_max_index(max_index, max_normal_search=1,
                                       get_bulk_e=True)[slab]
-        fws = workflows.launch_workflow(user_incar_settings=user_incar_settings,
-                                        job=job, scratch_dir=scratch_dir, gpu=gpu)
-        workflows.run_all_fws(fws, slabs_only=slab, launchpad_dir=launchpad_dir)
+
+        workflows.launch_workflow()
 
     run_wf(cubic, 3, slab=0)
     run_wf(cubic, 3, slab=1)
