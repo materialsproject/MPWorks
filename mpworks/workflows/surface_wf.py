@@ -99,7 +99,7 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
 
             if Element(el).group in [17, 18]:
                 continue
-            if el in ["H", "Po", "At", "Fr", "Ra"]:
+            if str(el) in ["H", "Po", "At", "Fr", "Ra", "N", "O"]:
                 continue
             if Element(el).Z > 94:
                 continue
@@ -110,9 +110,8 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
                 spa = SpacegroupAnalyzer(entry.structure)
                 ucell = spa.get_conventional_standard_structure()
                 mpid = entry.data["material_id"]
-                if mpid in avoid:
-                    continue
-                elif entry.data["e_above_hull"] > less_than_ehull:
+
+                if entry.data["e_above_hull"] > less_than_ehull:
                     continue
                 elif len(ucell) > limit_atoms:
                     continue
