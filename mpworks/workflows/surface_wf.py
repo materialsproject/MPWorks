@@ -50,7 +50,7 @@ from fireworks.core.launchpad import LaunchPad
 
 
 def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
-                collection_only=False, less_than_ehull=0.05, specific=[],
+                collection_only=False, less_than_ehull=0.001, specific=[],
                 avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
                        "mp-568286", "mp-48", "mp-568348", "mp-96",
                        "mp-142", "mp-11", "mp-570481", "mp-35"],
@@ -111,7 +111,9 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
                 ucell = spa.get_conventional_standard_structure()
                 mpid = entry.data["material_id"]
 
-                if entry.data["e_above_hull"] > less_than_ehull:
+                if mpid in avoid:
+                    continue
+                elif entry.data["e_above_hull"] > less_than_ehull:
                     continue
                 elif len(ucell) > limit_atoms:
                     continue
@@ -130,13 +132,20 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
         workflows = wf.from_max_index(max_index, max_normal_search=1,
                                       get_bulk_e=True)[slab]
 
-        workflows.launch_workflow(user_incar_settings=user_incar_settings,
-                                  job=job, scratch_dir=scratch_dir, gpu=gpu,
-                                  launchpad_dir=launchpad_dir)
-    run_wf(cubic, 3, slab=0)
-    run_wf(cubic, 3, slab=1)
-    run_wf(non_cubic, 2, slab=0)
-    run_wf(non_cubic, 2, slab=1)
+        number_of_fws = workflows.launch_workflow(user_incar_settings=user_incar_settings,
+                                                  job=job, scratch_dir=scratch_dir, gpu=gpu,
+                                                  launchpad_dir=launchpad_dir)
+
+        return number_of_fws
+
+    number_of_fws = 0
+
+    number_of_fws += run_wf(cubic, 3, slab=0)
+    number_of_fws += run_wf(cubic, 3, slab=1)
+    number_of_fws += run_wf(non_cubic, 2, slab=0)
+    number_of_fws += run_wf(non_cubic, 2, slab=1)
+
+    print("TOTAL NUMBER OF FIREWORKS: %s" %(number_of_fws))
 
 class SurfaceWorkflowManager(object):
 
@@ -724,6 +733,8 @@ class CreateSurfaceWorkflow(object):
                                                      "my_launchpad.yaml"))
         launchpad.add_wf(wf)
 
+        number_of_fws = len(fws)
+        return number_of_fws
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
                            collection="Surface_Collection", latt_a=16, kpoints=1, job=None,
