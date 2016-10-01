@@ -49,13 +49,17 @@ from fireworks.core.firework import Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
 
 
-def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
-                collection_only=False, less_than_ehull=0.01, specific=[],
-                avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
-                       "mp-568286", "mp-48", "mp-568348", "mp-96",
-                       "mp-142", "mp-11", "mp-570481", "mp-35"],
-                collection="surface_tasks", user_incar_settings={"EDIFF": 1e-04},
-                gpu=False, launchpad_dir=""):
+def get_all_wfs(job, scratch_dir, vaspdbinsert_params,
+                limit_atoms=10, collection_only=False,
+                less_than_ehull=0.01, specific=[],
+                avoid_mpid=["mp-37", "mp-85", "mp-67",
+                            "mp-160", "mp-165", "mp-568286",
+                            "mp-48", "mp-568348", "mp-96",
+                            "mp-142", "mp-11", "mp-570481", "mp-35"],
+                avoid_elements=["H", "Po", "At", "Fr", "Ra",
+                                "N", "O", "C", "Hg"],
+                collection="surface_tasks", launchpad_dir="",
+                gpu=False, user_incar_settings={"EDIFF": 1e-04}):
 
     # Makes running calculations on all solid systems less of a hassle every time
 
@@ -99,7 +103,7 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
 
             if Element(el).group in [17, 18]:
                 continue
-            if str(el) in ["H", "Po", "At", "Fr", "Ra", "N", "O"]:
+            if str(el) in avoid_elements:
                 continue
             if int(Element(el).Z) > 86:
                 continue
@@ -111,7 +115,7 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
                 ucell = spa.get_conventional_standard_structure()
                 mpid = entry.data["material_id"]
 
-                if mpid in avoid:
+                if mpid in avoid_mpid:
                     continue
                 elif entry.data["e_above_hull"] > less_than_ehull:
                     continue
