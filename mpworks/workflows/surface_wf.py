@@ -50,7 +50,7 @@ from fireworks.core.launchpad import LaunchPad
 
 
 def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
-                collection_only=False, less_than_ehull=0.001, specific=[],
+                collection_only=False, less_than_ehull=0.01, specific=[],
                 avoid=["mp-37", "mp-85", "mp-67", "mp-160", "mp-165",
                        "mp-568286", "mp-48", "mp-568348", "mp-96",
                        "mp-142", "mp-11", "mp-570481", "mp-35"],
@@ -101,7 +101,7 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params, limit_atoms=10,
                 continue
             if str(el) in ["H", "Po", "At", "Fr", "Ra", "N", "O"]:
                 continue
-            if Element(el).Z > 94:
+            if int(Element(el).Z) > 86:
                 continue
 
             entries = mprester.get_entries(str(el), inc_structure="Final",
