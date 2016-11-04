@@ -116,7 +116,7 @@ class SNLMongoAdapter(FWSerializable):
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.as_dict()
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
-        self.snl.insert(snl_d)
+        self.snl.insert_one(snl_d)
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
 
     def _add_if_belongs(self, snlgroup, mpsnl, testing_mode):
@@ -124,7 +124,7 @@ class SNLMongoAdapter(FWSerializable):
         if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
-                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
+                self.snlgroups.update_one({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
 
         return match_found, spec_group
 
@@ -184,7 +184,7 @@ class SNLMongoAdapter(FWSerializable):
                 raise ValueError('DB locked by another process! Could not lock even after {} minutes!'.format(n_max_tries/60))
 
     def release_lock(self):
-        self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': False}})
+        self.id_assigner.update_many({}, {'$set':{'lock': False}})
 
     def to_dict(self):
         """
