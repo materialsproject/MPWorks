@@ -91,16 +91,16 @@ class SNLMongoAdapter(FWSerializable):
             spstruc = snl.structure.copy()
             spstruc.remove_oxidation_states()
             sf = SpacegroupAnalyzer(spstruc, SPACEGROUP_TOLERANCE)
-            sf.get_spacegroup()
-            sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
+            sf.get_space_group_operations()
+            sgnum = sf.get_space_group_number() if sf.get_space_group_number() \
                 else -1
-            sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() \
+            sgsym = sf.get_space_group_symbol() if sf.get_space_group_symbol() \
                 else 'unknown'
             sghall = sf.get_hall() if sf.get_hall() else 'unknown'
             sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
                 else 'unknown'
             sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
-            sgpoint = sf.get_point_group()
+            sgpoint = sf.get_point_group_symbol()
 
             mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                            sgxtal, sglatt, sgpoint)
