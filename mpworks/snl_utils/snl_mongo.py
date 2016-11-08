@@ -124,7 +124,7 @@ class SNLMongoAdapter(FWSerializable):
         if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
-                self.snlgroups.update_one({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
+		self.snlgroups.update_one({'snlgroup_id': snlgroup.snlgroup_id}, {'$set': snlgroup.as_dict()})
 
         return match_found, spec_group
 
