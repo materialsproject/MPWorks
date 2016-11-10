@@ -215,7 +215,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['analysis'].update(update_doc)
                     d['calculations'][0]['output'].update(update_doc)
 
-                coll.update_one({"dir_name": d["dir_name"]}, d, upsert=True)
+		coll.update_one({"dir_name": d["dir_name"]}, {'$set': d}, upsert=True)
 
                 return d["task_id"], d
             else:
