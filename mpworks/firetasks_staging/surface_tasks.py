@@ -780,7 +780,7 @@ class WriteAtomVaspInputs(FireTaskBase):
             atom_in_a_box = Structure(lattice, [atom],
                                       [[0.5, 0.5, 0.5]])
 
-        mplb = MVLSlabSet(atom_in_a_box, k_product=1, gpu=gpu,
+        mplb = MVLSlabSet(atom_in_a_box, k_product=1,
                           user_incar_settings=user_incar_settings,
                           potcar_functional=potcar_functional)
         mplb.write_input(os.path.join(cwd, folder))
