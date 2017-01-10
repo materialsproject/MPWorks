@@ -794,7 +794,10 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
 
     fws = []
     for el in elements:
-        folder_atom = '%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
+        if diatomic:
+            folder_atom = '%s_isolated_atom_%s_k%s' %(el+"2", latt_a, kpoints)
+        else:
+            folder_atom = '%s_isolated_atom_%s_k%s' %(el, latt_a, kpoints)
         cwd = os.getcwd()
 
         tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
