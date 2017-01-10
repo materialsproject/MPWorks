@@ -72,7 +72,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
     required_params = ["vaspdbinsert_parameters",
                        "struct_type", "folder","miller_index",
                        "cwd", "unit_cell_dict"]
-    optional_params = ["surface_area", "shift", "debug",
+    optional_params = ["surface_area", "shift", "debug", "diatomic",
                        "vsize", "ssize", "isolated_atom", "mpid"]
 
     def run_task(self, fw_spec):
@@ -124,6 +124,7 @@ class VaspSlabDBInsertTask(FireTaskBase):
         ssize = dec.process_decoded(self.get("ssize", None))
         miller_index = dec.process_decoded(self.get("miller_index"))
         mpid = dec.process_decoded(self.get("mpid", None))
+        diatomic = dec.process_decoded(self.get("diatomic", False))
         unit_cell_dict = dec.process_decoded(self.get("unit_cell_dict"))
         isolated_atom = dec.process_decoded(self.get("isolated_atom", None))
         vaspdbinsert_parameters = \
@@ -250,7 +251,10 @@ class VaspSlabDBInsertTask(FireTaskBase):
             additional_fields["conventional_spacegroup"] = spacegroup
             additional_fields["polymorph"] =  unit_cell_dict["polymorph"]
         else:
-            additional_fields["isolated_atom"] = isolated_atom
+            if diatomic:
+                additional_fields["isolated_atom"] = isolated_atom + "2"
+            else:
+                additional_fields["isolated_atom"] = isolated_atom
         if mpid:
             additional_fields["material_id"] = mpid
 
@@ -728,7 +732,8 @@ class WriteAtomVaspInputs(FireTaskBase):
 
     required_params = ["atom", "folder", "cwd"]
     optional_params = ["user_incar_settings", "potcar_functional",
-                       "latt_a", "kpoints", "gpu"]
+                       "latt_a", "kpoints", "gpu",
+                       "diatomic", "diatomic_blength"]
 
     def run_task(self, fw_spec):
 
@@ -750,10 +755,12 @@ class WriteAtomVaspInputs(FireTaskBase):
         """
 
         dec = MontyDecoder()
-        latt_a = dec.process_decoded(self.get("latt_a", 16))
+        latt_a = dec.process_decoded(self.get("latt_a", 18))
         folder = dec.process_decoded(self.get("folder"))
         cwd = dec.process_decoded(self.get("cwd"))
         atom = dec.process_decoded(self.get("atom"))
+        diatomic = dec.process_decoded(self.get("diatomic", False))
+        diatomic_blength = dec.process_decoded(self.get("diatomic_blength", None))
         gpu = dec.process_decoded(self.get("gpu", False))
 
         user_incar_settings = \
@@ -765,8 +772,13 @@ class WriteAtomVaspInputs(FireTaskBase):
 
         # Build the isolated atom in a box
         lattice = Lattice.cubic(latt_a)
-        atom_in_a_box = Structure(lattice, [atom],
-                                  [[0.5, 0.5, 0.5]])
+        if diatomic:
+            atom_in_a_box = Structure(lattice, [atom, atom],
+                                      [[0., 0., 0.], [0, 0, diatomic_blength]],
+                                      coords_are_cartesian=True)
+        else:
+            atom_in_a_box = Structure(lattice, [atom],
+                                      [[0.5, 0.5, 0.5]])
 
         mplb = MVLSlabSet(atom_in_a_box, k_product=1, gpu=gpu,
                           user_incar_settings=user_incar_settings,
@@ -1174,18 +1186,10 @@ class UpdateRepositoriesAndDBs(object):
                                              "material_id": mpid}, inc_structure="Final",
                                             optional_data=self.optional_data)
 
-        entries_dict = {}
-        for entry in ucell_entries:
-            entries_dict[tuple(entry.data["miller_index"])] = \
-                {"ucell": entry,
-                 "slabcell": self.qe.get_entries({"structure_type": "slab_cell",
-                                                  "material_id": mpid,
-                                                  "miller_index": tuple(entry.data["miller_index"])},
-                                                 inc_structure="Final",
-                                                 optional_data=self.optional_data)}
-
+        entries_dict = self.get_entries_dict(ucell_entries)
         # Make updates to individual surfaces
-        e_surf_list, miller_list, surfaces, slab_vasp_details, ucell_energies = [], [], [], [], []
+        e_surf_list, miller_list, surfaces, slab_vasp_details, \
+        ucell_energies = [], [], [], [], []
         for hkl in entries_dict.keys():
             # For loop will create a list of surface dictionaries
             # containing information on specfic surfaces
@@ -1296,6 +1300,18 @@ class UpdateRepositoriesAndDBs(object):
 
         self.vasp_details.update_one({"material_id": mpid},
                                      {"$set": {"surfaces": slab_vasp_details}})
+
+    def get_entries_dict(self, ucell_entries, mpid):
+
+        entries_dict = {}
+        for entry in ucell_entries:
+            entries_dict[tuple(entry.data["miller_index"])] = \
+                {"ucell": entry,
+                 "slabcell": self.qe.get_entries({"structure_type": "slab_cell",
+                                                  "material_id": mpid,
+                                                  "miller_index": tuple(entry.data["miller_index"])},
+                                                 inc_structure="Final",
+                                                 optional_data=self.optional_data)}
 
     def insert_wulff_entry(self, mpid):
 

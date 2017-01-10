@@ -743,7 +743,8 @@ class CreateSurfaceWorkflow(object):
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
                            collection="Surface_Collection", latt_a=16, kpoints=1, job=None,
                            scratch_dir=None, additional_handlers=[], launchpad_dir="",
-                           elements=[], user_incar_settings={}, gpu=False):
+                           elements=[], user_incar_settings={}, gpu=False,
+                           diatomic=False, diatomic_blengths={}):
 
     """
     A simple workflow for calculating a single isolated atom in a box
@@ -798,7 +799,9 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
 
         tasks = [WriteAtomVaspInputs(atom=el, folder=folder_atom, cwd=cwd,
                                      latt_a=latt_a, kpoints=kpoints, gpu=gpu,
-                                     user_incar_settings=user_incar_settings),
+                                     user_incar_settings=user_incar_settings,
+                                     diatomic=diatomic,
+                                     diatomic_blength=diatomic_blengths[el]),
                  RunCustodianTask(folder=folder_atom, cwd=cwd,
                                   custodian_params=cust_params),
                  VaspSlabDBInsertTask(struct_type="isolated_atom",
@@ -808,6 +811,7 @@ def atomic_energy_workflow(host=None, port=None, user=None, password=None, datab
                                       conventional_unit_cell=None,
                                       isolated_atom=el,
                                       polymorph=None,
+                                      diatomic=diatomic,
                                       unit_cell_dict={"polymoph": None, "ucell": None,
                                                       "spacegroup": None},
                                       vaspdbinsert_parameters=vaspdbinsert_params)]
