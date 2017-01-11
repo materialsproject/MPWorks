@@ -741,7 +741,7 @@ class CreateSurfaceWorkflow(object):
         return number_of_fws
 
 def atomic_energy_workflow(host=None, port=None, user=None, password=None, database=None,
-                           collection="Surface_Collection", latt_a=16, kpoints=1, job=None,
+                           collection="surface_tasks", latt_a=16, kpoints=1, job=None,
                            scratch_dir=None, additional_handlers=[], launchpad_dir="",
                            elements=[], user_incar_settings={}, gpu=False,
                            diatomic=False, diatomic_blengths={}):
