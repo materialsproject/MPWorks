@@ -7,6 +7,7 @@ from fireworks.core.launchpad import LaunchPad
 from fireworks import explicit_serialize
 
 from custodian.custodian import Custodian
+from custodian.vasp.jobs import VaspJob
 
 from pymongo import MongoClient
 from monty.json import MontyDecoder
@@ -15,7 +16,7 @@ from matgendb import QueryEngine
 
 
 def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
-                         debug=False, collection="surface_tasks", scratch_dir="", launchpad_dir=""):
+                         debug=False, scratch_dir="", launchpad_dir=""):
 
     conn = MongoClient(host=db_credentials["host"],
                        port=db_credentials["port"])
@@ -23,17 +24,13 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
     db.authenticate(db_credentials["user"],
                     db_credentials["password"])
     surface_properties = db["surface_properties"]
-    db_credentials["collection"] = collection
 
     qe = QueryEngine(**db_credentials)
 
     cwd = os.getcwd()
     scratch_dir = "/scratch2/scratchdirs/" if not scratch_dir else scratch_dir
     cust_params = {"scratch_dir": os.path.join(scratch_dir, os.environ["USER"]),
-                   "jobs": job,
-                   "handlers": handlers,
-                   "max_errors": 10}  # will return a list of jobs
-    # instead of just being one job
+                   "handlers": handlers, "max_errors": 10}
     fws, fw_ids = [], []
 
     for mpid in mpids:
@@ -83,7 +80,7 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
                              InsertTask(cwd=cwd, folder=folder, mpid=mpid,
                                         debug=debug, miller_index=hkl, 
                                         db_credentials=db_credentials)]
-
+                  
                     fw = Firework(tasks, name=folder)
                     fw_ids.append(fw.fw_id)
                     fws.append(fw)
@@ -123,8 +120,8 @@ class RunCustodianTask(FireTaskBase):
             if fw_env.get('scratch_root'):
                 custodian_params['scratch_dir'] = os.path.expandvars(
                     fw_env['scratch_root'])
-
-            c = Custodian(gzipped_output=True, **custodian_params)
+            job = VaspJob(["mpirun", "-np", "16", "/opt/vasp/5.2.12/openmpi_ib/bin/vasp"], auto_npar=False, copy_magmom=True, suffix="relax1")
+            c = Custodian(jobs=[job], gzipped_output=True, **custodian_params)
 
             output = c.run()
             return FWAction(stored_data=output)
