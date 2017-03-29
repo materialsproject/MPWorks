@@ -1,5 +1,4 @@
-
-m __future__ import division, unicode_literals
+from __future__ import division, unicode_literals
 
 from pymatgen.io.vasp.outputs import Incar, Outcar, Kpoints, Potcar, Locpot
 
@@ -15,8 +14,8 @@ import os
 from matgendb import QueryEngine
 
 
-def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[], debug=False,
-                         scratch_dir="", launchpad_dir=""):
+def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
+                         debug=False, collection="surface_tasks", scratch_dir="", launchpad_dir=""):
 
     conn = MongoClient(host=db_credentials["host"],
                        port=db_credentials["port"])
@@ -24,6 +23,7 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[], debug=False,
     db.authenticate(db_credentials["user"],
                     db_credentials["password"])
     surface_properties = db["surface_properties"]
+    db_credentials["collection"] = collection
 
     qe = QueryEngine(**db_credentials)
 
@@ -60,56 +60,39 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[], debug=False,
                 if surface["is_reconstructed"]:
                     folder = folder + "recon"
 
-                if debug:
-                    tasks = [WriteSlabVaspInputs(entry=entry, cwd=cwd,
-                                                 folder=folder)]
-                else:
-                    tasks = [WriteSlabVaspInputs(entry=entry, cwd=cwd,
-                                                 folder=folder),
-                             RunCustodianTask(cwd=cwd, folder=folder,
+                if len(entry.data["calculations"]) == 2:
+                    relax2 = entry.data["calculations"][1]
+                    incar = relax2["input"]["incar"]
+                    poscar = entry.structure
+
+                    os.mkdir(folder)
+                    incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
+
+                    incar = Incar.from_dict(incar)
+                    incar.write_file(os.path.join(cwd, folder, "INCAR"))
+
+                    kpoints = Kpoints.from_dict(relax2["input"]["kpoints"])
+                    kpoints.write_file(os.path.join(cwd, folder, "KPOINTS"))
+                    poscar.to("POSCAR", os.path.join(cwd, folder, "POSCAR"))
+                    potcar = Potcar(symbols=[poscar[0].species_string],
+                                    functional="PBE")
+                    potcar.write_file(os.path.join(cwd, folder, "POTCAR"))
+
+                    tasks = [RunCustodianTask(cwd=cwd, folder=folder, debug=debug,
                                               custodian_params=cust_params),
                              InsertTask(cwd=cwd, folder=folder, mpid=mpid,
-                                        surface_entry=surface_entry,
-                                        miller_index=hkl)]
+                                        debug=debug, miller_index=hkl, 
+                                        db_credentials=db_credentials)]
 
-            fw = Firework(tasks, name=folder)
-            fw_ids.append(fw.fw_id)
-            fws.append(fw)
+                    fw = Firework(tasks, name=folder)
+                    fw_ids.append(fw.fw_id)
+                    fws.append(fw)
 
     wf = Workflow(fws, name='Workfunction Calculations')
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
                                                  launchpad_dir,
                                                  "my_launchpad.yaml"))
     launchpad.add_wf(wf)
-
-
-@explicit_serialize
-class WriteSlabVaspInputs(FireTaskBase):
-    required_params = ["entry", "cwd", "folder"]
-
-    def run_task(self, fw_spec):
-        dec = MontyDecoder()
-        entry = dec.process_decoded(self.get("entry"))
-        cwd = dec.process_decoded(self.get("cwd"))
-        folder = dec.process_decoded(self.get("folder"))
-
-        if len(entry.data["calculations"]) == 2:
-            relax2 = entry.data["calculations"][1]
-            incar = relax2["input"]["incar"]
-            poscar = entry.structure
-
-            os.mkdir(folder)
-            incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
-
-            incar = Incar.from_dict(incar)
-            incar.write_file(os.path.join(cwd, folder, "INCAR"))
-
-            kpoints = Kpoints.from_dict(relax2["input"]["kpoints"])
-            kpoints.write_file(os.path.join(cwd, folder, "KPOINTS"))
-            poscar.to("POSCAR", os.path.join(cwd, folder, "POSCAR"))
-            potcar = Potcar(symbols=[poscar[0].species_string],
-                            functional="PBE")
-            potcar.write_file(os.path.join(cwd, folder, "POTCAR"))
 
 
 @explicit_serialize
@@ -120,29 +103,31 @@ class RunCustodianTask(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "cwd", "custodian_params"]
+    required_params = ["folder", "cwd", "custodian_params", "debug"]
 
     def run_task(self, fw_spec):
 
         dec = MontyDecoder()
         folder = dec.process_decoded(self['folder'])
         cwd = dec.process_decoded(self['cwd'])
+        debug = dec.process_decoded(self['debug'])
 
-        # Change to the directory with the vasp inputs to run custodian
-        os.chdir(os.path.join(cwd, folder))
+        if not debug:
+            # Change to the directory with the vasp inputs to run custodian
+            os.chdir(os.path.join(cwd, folder))
 
-        fw_env = fw_spec.get("_fw_env", {})
-        custodian_params = self.get("custodian_params", {})
+            fw_env = fw_spec.get("_fw_env", {})
+            custodian_params = self.get("custodian_params", {})
 
-        # Get the scratch directory
-        if fw_env.get('scratch_root'):
-            custodian_params['scratch_dir'] = os.path.expandvars(
-                fw_env['scratch_root'])
+            # Get the scratch directory
+            if fw_env.get('scratch_root'):
+                custodian_params['scratch_dir'] = os.path.expandvars(
+                    fw_env['scratch_root'])
 
-        c = Custodian(gzipped_output=True, **custodian_params)
+            c = Custodian(gzipped_output=True, **custodian_params)
 
-        output = c.run()
-        return FWAction(stored_data=output)
+            output = c.run()
+            return FWAction(stored_data=output)
 
 
 @explicit_serialize
@@ -153,8 +138,8 @@ class InsertTask(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "cwd", "mpid", "surface_entry",
-                       "miller_index", "surface_properties"]
+    required_params = ["folder", "cwd", "mpid", "debug",
+                       "miller_index", "db_credentials"]
 
     def run_task(self, fw_spec):
 
@@ -162,23 +147,31 @@ class InsertTask(FireTaskBase):
         folder = dec.process_decoded(self['folder'])
         cwd = dec.process_decoded(self['cwd'])
         mpid = dec.process_decoded(self['mpid'])
-        surface_entry = dec.process_decoded(self['surface_entry'])
+        debug = dec.process_decoded(self['debug'])
         miller_index = dec.process_decoded(self['miller_index'])
-        surface_properties = dec.process_decoded(self['surface_properties'])
+        db_credentials = dec.process_decoded(self['db_credentials'])
 
-        surfaces = surface_entry["surfaces"]
-        update_surfaces = []
-        for surface in surfaces:
-            if miller_index == surface["miller_index"]:
-                locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.relax1.gz"))
-                loc = locpot.get_average_along_axis(2)
-                evac = max(loc)
-                outcar = Outcar(os.path.join(folder, "OUTCAR.relax1.gz"))
-                efermi = outcar.efermi
-                surface["work_function"] = evac - efermi
-            update_surfaces.append(surface)
+        conn = MongoClient(host=db_credentials["host"],
+                           port=db_credentials["port"])
+        db = conn.get_database(db_credentials["database"])
+        db.authenticate(db_credentials["user"],
+                        db_credentials["password"])
+        surface_properties = db["surface_properties"]
 
-        surface_properties.update_one({"material_id": mpid},
-                                      {"$set": {"surfaces": update_surfaces}})
+        if not debug:
 
+            surface_entry = surface_properties.find_one({"material_id": mpid})
+            surfaces = surface_entry["surfaces"]
+            update_surfaces = []
+            for surface in surfaces:
+                if miller_index == surface["miller_index"]:
+                    locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.relax1.gz"))
+                    loc = locpot.get_average_along_axis(2)
+                    evac = max(loc)
+                    outcar = Outcar(os.path.join(folder, "OUTCAR.relax1.gz"))
+                    efermi = outcar.efermi
+                    surface["work_function"] = evac - efermi
+                update_surfaces.append(surface)
 
+            surface_properties.update_one({"material_id": mpid},
+                                          {"$set": {"surfaces": update_surfaces}})
