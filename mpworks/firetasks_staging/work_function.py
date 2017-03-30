@@ -1,6 +1,7 @@
 from __future__ import division, unicode_literals
 
 from pymatgen.io.vasp.outputs import Incar, Outcar, Kpoints, Potcar, Locpot
+from pymatgen.io.vasp.sets import MVLSlabSet
 
 from fireworks.core.firework import FireTaskBase, FWAction, Firework, Workflow
 from fireworks.core.launchpad import LaunchPad
@@ -63,17 +64,16 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
                     poscar = entry.structure
 
                     os.mkdir(folder)
-                    incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
+                    mplb = MVLSlabSet(poscar, potcar_functional="PBE")
+                    mplb.write_input(os.path.join(cwd, folder))
 
+                    incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
                     incar = Incar.from_dict(incar)
                     incar.write_file(os.path.join(cwd, folder, "INCAR"))
 
                     kpoints = Kpoints.from_dict(relax2["input"]["kpoints"])
                     kpoints.write_file(os.path.join(cwd, folder, "KPOINTS"))
                     poscar.to("POSCAR", os.path.join(cwd, folder, "POSCAR"))
-                    potcar = Potcar(symbols=[poscar[0].species_string],
-                                    functional="PBE")
-                    potcar.write_file(os.path.join(cwd, folder, "POTCAR"))
 
                     tasks = [RunCustodianTask(cwd=cwd, folder=folder, debug=debug,
                                               custodian_params=cust_params),
@@ -120,7 +120,7 @@ class RunCustodianTask(FireTaskBase):
             if fw_env.get('scratch_root'):
                 custodian_params['scratch_dir'] = os.path.expandvars(
                     fw_env['scratch_root'])
-            job = VaspJob(["mpirun", "-np", "16", "/opt/vasp/5.2.12/openmpi_ib/bin/vasp"], auto_npar=False, copy_magmom=True, suffix="relax1")
+            job = VaspJob(["mpirun", "-np", "16", "/opt/vasp/5.2.12/openmpi_ib/bin/vasp"], auto_npar=False, copy_magmom=True, suffix=".relax1")
             c = Custodian(jobs=[job], gzipped_output=True, **custodian_params)
 
             output = c.run()
@@ -162,10 +162,10 @@ class InsertTask(FireTaskBase):
             update_surfaces = []
             for surface in surfaces:
                 if miller_index == surface["miller_index"]:
-                    locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.relax1.gz"))
+                    locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.gz"))
                     loc = locpot.get_average_along_axis(2)
                     evac = max(loc)
-                    outcar = Outcar(os.path.join(folder, "OUTCAR.relax1.gz"))
+                    outcar = Outcar(os.path.join(cwd, folder, "OUTCAR.relax1.gz"))
                     efermi = outcar.efermi
                     surface["work_function"] = evac - efermi
                 update_surfaces.append(surface)
