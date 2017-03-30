@@ -5,4 +5,4 @@ PyYAML==3.11
 requests==2.6.0
 six==1.9.0
 xmltodict==0.9.2
-pymatgen<=3.7.1
+pymatgen>=4.0.0

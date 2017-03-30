@@ -91,16 +91,16 @@ class SNLMongoAdapter(FWSerializable):
             spstruc = snl.structure.copy()
             spstruc.remove_oxidation_states()
             sf = SpacegroupAnalyzer(spstruc, SPACEGROUP_TOLERANCE)
-            sf.get_spacegroup()
-            sgnum = sf.get_spacegroup_number() if sf.get_spacegroup_number() \
+            sf.get_space_group_operations()
+            sgnum = sf.get_space_group_number() if sf.get_space_group_number() \
                 else -1
-            sgsym = sf.get_spacegroup_symbol() if sf.get_spacegroup_symbol() \
+            sgsym = sf.get_space_group_symbol() if sf.get_space_group_symbol() \
                 else 'unknown'
             sghall = sf.get_hall() if sf.get_hall() else 'unknown'
             sgxtal = sf.get_crystal_system() if sf.get_crystal_system() \
                 else 'unknown'
             sglatt = sf.get_lattice_type() if sf.get_lattice_type() else 'unknown'
-            sgpoint = sf.get_point_group()
+            sgpoint = sf.get_point_group_symbol()
 
             mpsnl = MPStructureNL.from_snl(snl, snl_id, sgnum, sgsym, sghall,
                                            sgxtal, sglatt, sgpoint)
@@ -116,7 +116,7 @@ class SNLMongoAdapter(FWSerializable):
     def add_mpsnl(self, mpsnl, force_new=False, snlgroup_guess=None):
         snl_d = mpsnl.as_dict()
         snl_d['snl_timestamp'] = datetime.datetime.utcnow().isoformat()
-        self.snl.insert(snl_d)
+        self.snl.insert_one(snl_d)
         return self.build_groups(mpsnl, force_new, snlgroup_guess)
 
     def _add_if_belongs(self, snlgroup, mpsnl, testing_mode):
@@ -124,7 +124,7 @@ class SNLMongoAdapter(FWSerializable):
         if match_found:
             print 'MATCH FOUND, grouping (snl_id, snlgroup): {}'.format((mpsnl.snl_id, snlgroup.snlgroup_id))
             if not testing_mode:
-                self.snlgroups.update({'snlgroup_id': snlgroup.snlgroup_id}, snlgroup.as_dict())
+		self.snlgroups.update_one({'snlgroup_id': snlgroup.snlgroup_id}, {'$set': snlgroup.as_dict()})
 
         return match_found, spec_group
 
@@ -171,15 +171,20 @@ class SNLMongoAdapter(FWSerializable):
         new_group = SNLGroup(snlgroup_id, canonical_mpsnl, all_snl_ids)
         self.snlgroups.update({'snlgroup_id': snlgroup_id}, new_group.as_dict())
 
-    def lock_db(self):
+    def lock_db(self, n_tried=0, n_max_tries=10):
         x = self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': True}}, fields={'lock':1})
         if 'lock' in x and x['lock']:
-            print 'DB is already locked, waiting 30 secs...'
-            time.sleep(30)
-            self.lock_db()  # DB was already locked by another process in a race condition
+            # x is original object
+            if n_tried < n_max_tries:
+                time.sleep(30)
+                n_tried += 1
+                # DB was already locked by another process in a race condition
+                self.lock_db(n_tried=n_tried, n_max_tries=n_max_tries)
+            else:
+                raise ValueError('DB locked by another process! Could not lock even after {} minutes!'.format(n_max_tries/60))
 
     def release_lock(self):
-        self.id_assigner.find_and_modify(query={}, update={'$set':{'lock': False}})
+        self.id_assigner.update_many({}, {'$set':{'lock': False}})
 
     def to_dict(self):
         """

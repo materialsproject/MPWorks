@@ -100,9 +100,9 @@ class MPVaspDrone(VaspToDbTaskDrone):
                 if result is None:
                     if ("task_id" not in d) or (not d["task_id"]):
                         d["task_id"] = "mp-{}".format(
-                            db.counter.find_and_modify(
-                                query={"_id": "taskid"},
-                                update={"$inc": {"c": 1}})["c"])
+                            db.counter.find_one_and_update(
+                                {"_id": "taskid"}, {"$inc": {"c": 1}}
+			    )["c"])
                     logger.info("Inserting {} with taskid = {}"
                     .format(d["dir_name"], d["task_id"]))
                 elif self.update_duplicates:
@@ -215,7 +215,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     d['analysis'].update(update_doc)
                     d['calculations'][0]['output'].update(update_doc)
 
-                coll.update({"dir_name": d["dir_name"]}, d, upsert=True)
+		coll.update_one({"dir_name": d["dir_name"]}, {'$set': d}, upsert=True)
 
                 return d["task_id"], d
             else:

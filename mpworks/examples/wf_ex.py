@@ -9,7 +9,7 @@ from mpworks.firetasks.vasp_io_tasks import VaspWriterTask, VaspCopyTask
 from mpworks.firetasks.vasp_setup_tasks import SetupStaticRunTask
 from pymatgen import Composition, Lattice
 from pymatgen.core.structure import Structure
-from pymatgen.io.vasp.sets import MPGGAVaspInputSet
+from pymatgen.io.vasp.sets import MPRelaxSet
 
 __author__ = 'Anubhav Jain'
 __copyright__ = 'Copyright 2013, The Materials Project'
@@ -34,11 +34,12 @@ def structure_to_wf(structure):
     connections = defaultdict(list)  # dependencies between FireWorks
 
     # generate VASP input objects for 1st VASP run - this is put in the FW spec
-    mpvis = MPGGAVaspInputSet(user_incar_settings={'NPAR': 2})
-    incar = mpvis.get_incar(structure)
-    poscar = mpvis.get_poscar(structure)
-    kpoints = mpvis.get_kpoints(structure)
-    potcar = mpvis.get_potcar(structure)
+    mpvis = MPRelaxSet(structure, user_incar_settings={'NPAR': 2, 
+                                                       "GGAU":False})
+    incar = mpvis.incar
+    poscar = mpvis.poscar
+    kpoints = mpvis.poscar
+    potcar = mpvis.poscar
 
     # serialize the VASP input objects to the FW spec
     spec = {}

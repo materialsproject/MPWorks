@@ -12,7 +12,7 @@ from mpworks.snl_utils.mpsnl import get_meta_from_structure, MPStructureNL
 from mpworks.workflows.wf_settings import QA_DB, QA_VASP, QA_CONTROL
 from pymatgen import Composition
 from pymatgen.io.cif import CifParser
-from pymatgen.io.vasp.sets import MPVaspInputSet, MPGGAVaspInputSet
+from pymatgen.io.vasp.sets import MPRelaxSet
 from pymatgen.matproj.snl import StructureNL
 
 __author__ = 'Anubhav Jain'
@@ -34,13 +34,15 @@ def _snl_to_spec(snl, enforce_gga=False, parameters=None):
         structure = snl.structure
     else:
         structure = snl.structure.get_primitive_structure()
+    if enforce_gga:
+        incar_enforce.update({"LDAU" : False})
+    mpvis = MPRelaxSet(snl.structure,
+                       user_incar_settings=incar_enforce)
 
-    mpvis = MPGGAVaspInputSet(user_incar_settings=incar_enforce) if enforce_gga else MPVaspInputSet(user_incar_settings=incar_enforce)
-
-    incar = mpvis.get_incar(structure)
-    poscar = mpvis.get_poscar(structure)
-    kpoints = mpvis.get_kpoints(structure)
-    potcar = mpvis.get_potcar(structure)
+    incar = mpvis.incar
+    poscar = mpvis.poscar
+    kpoints = mpvis.kpoints
+    potcar = mpvis.potcar
 
     spec['vasp'] = {}
     spec['vasp']['incar'] = incar.as_dict()
@@ -95,11 +97,16 @@ def snl_to_wf(snl, parameters=None):
     else:
         # add the SNL to the SNL DB and figure out duplicate group
         tasks = [AddSNLTask()]
-        spec = {'task_type': 'Add to SNL database', 'snl': snl.as_dict(), '_queueadapter': QA_DB, '_priority': snl_priority}
-        fws.append(Firework(tasks, spec, name=get_slug(f + '--' + spec['task_type']), fw_id=0))
+        spec = {'task_type': 'Add to SNL database',
+                'snl': snl.as_dict(), '_queueadapter': QA_DB,
+                '_priority': snl_priority}
+        fws.append(Firework(tasks, spec, fw_id=0,
+                            name=get_slug(f + '--' + spec['task_type'])))
         connections[0] = [1]
 
-    trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'), Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'), Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
+    trackers = [Tracker('FW_job.out'), Tracker('FW_job.error'),
+                Tracker('vasp.out'), Tracker('OUTCAR'), Tracker('OSZICAR'),
+                Tracker('OUTCAR.relax1'), Tracker('OUTCAR.relax2')]
     trackers_db = [Tracker('FW_job.out'), Tracker('FW_job.error')]
     # run GGA structure optimization
     spec = _snl_to_spec(snl, enforce_gga=True, parameters=parameters)
@@ -112,56 +119,60 @@ def snl_to_wf(snl, parameters=None):
 
     # insert into DB - GGA structure optimization
     spec = {'task_type': 'VASP db insertion', '_priority': priority*2,
-            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
-    fws.append(
-        Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=2))
+            '_allow_fizzled_parents': True, '_queueadapter': QA_DB, 
+            "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
+    fws.append(Firework([VaspToDBTask()], spec, fw_id=2,
+                        name=get_slug(f + '--' + spec['task_type'])))
     connections[1] = [2]
 
     # determine if GGA+U FW is needed
-    incar = MPVaspInputSet().get_incar(snl.structure).as_dict()
+    incar = MPRelaxSet(snl.structure).incar.as_dict()
     ggau_compound = ('LDAU' in incar and incar['LDAU'])
 
-    if not parameters.get('skip_bandstructure', False) and (not ggau_compound or parameters.get('force_gga_bandstructure', False)):
-        spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
-                '_queueadapter': QA_CONTROL}
-        fws.append(
-            Firework([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
-                     fw_id=3))
+    if not parameters.get('skip_bandstructure', False) and \
+      (not ggau_compound or parameters.get('force_gga_bandstructure', False)):
+        spec = {'task_type': 'Controller: add Electronic Structure v2', 
+                '_priority': priority, '_queueadapter': QA_CONTROL}
+        fws.append(Firework([AddEStructureTask()], spec, fw_id=3,
+                            name=get_slug(f + '--' + spec['task_type'])))
         connections[2] = [3]
 
     if ggau_compound:
         spec = _snl_to_spec(snl, enforce_gga=False, parameters=parameters)
-        del spec['vasp']  # we are stealing all VASP params and such from previous run
+        del spec['vasp']  # we are stealing all VASP params from previous run
         spec['_priority'] = priority
         spec['_queueadapter'] = QA_VASP
         spec['_trackers'] = trackers
         fws.append(Firework(
-            [VaspCopyTask(), SetupGGAUTask(),
-             get_custodian_task(spec)], spec, name=get_slug(f + '--' + spec['task_type']),
-            fw_id=10))
+            [VaspCopyTask(), SetupGGAUTask(), get_custodian_task(spec)],
+            spec, name=get_slug(f + '--' + spec['task_type']), fw_id=10))
         connections[2].append(10)
 
         spec = {'task_type': 'VASP db insertion', '_queueadapter': QA_DB,
-                '_allow_fizzled_parents': True, '_priority': priority, "_dupefinder": DupeFinderDB().to_dict(), '_trackers': trackers_db}
+                '_allow_fizzled_parents': True, '_priority': priority, 
+                "_dupefinder": DupeFinderDB().to_dict(), 
+                '_trackers': trackers_db}
         fws.append(
-            Firework([VaspToDBTask()], spec, name=get_slug(f + '--' + spec['task_type']), fw_id=11))
+            Firework([VaspToDBTask()], spec, 
+                     name=get_slug(f + '--' + spec['task_type']), fw_id=11))
         connections[10] = [11]
 
         if not parameters.get('skip_bandstructure', False):
-            spec = {'task_type': 'Controller: add Electronic Structure v2', '_priority': priority,
-                    '_queueadapter': QA_CONTROL}
+            spec = {'task_type': 'Controller: add Electronic Structure v2', 
+                    '_priority': priority, '_queueadapter': QA_CONTROL}
             fws.append(
-                Firework([AddEStructureTask()], spec, name=get_slug(f + '--' + spec['task_type']),
-                         fw_id=12))
+                Firework([AddEStructureTask()], spec, fw_id=12,
+                         name=get_slug(f + '--' + spec['task_type'])))
             connections[11] = [12]
 
     wf_meta = get_meta_from_structure(snl.structure)
     wf_meta['run_version'] = 'May 2013 (1)'  # not maintained
 
-    if '_materialsproject' in snl.data and 'submission_id' in snl.data['_materialsproject']:
+    if '_materialsproject' in snl.data and \
+       'submission_id' in snl.data['_materialsproject']:
         wf_meta['submission_id'] = snl.data['_materialsproject']['submission_id']
-    return Workflow(fws, connections, name=Composition(
-        snl.structure.composition.reduced_formula).alphabetical_formula, metadata=wf_meta)
+
+    return Workflow(fws, connections, name=f, metadata=wf_meta)
 
 
 """
@@ -188,7 +199,6 @@ def snl_to_wf_ggau(snl):
 
     return Workflow(fws, connections, name=Composition(snl.structure.composition.reduced_formula).alphabetical_formula)
 """
-
 
 if __name__ == '__main__':
     s1 = CifParser('test_wfs/Si.cif').get_structures()[0]

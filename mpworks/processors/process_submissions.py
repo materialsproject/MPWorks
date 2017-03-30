@@ -109,6 +109,11 @@ class SubmissionProcessor():
         
         wf = self.launchpad.workflows.find_one({'metadata.submission_id': submission_id},
                                                sort=[('updated_on', -1)])
+	if not wf:
+	    # submission_id from jobs collection doesn't exist in workflows collection
+	    # workflow has probably been removed manually by user via `lpad delete_wflows`
+	    return
+
         details = '(none)'
         for e in self.launchpad.fireworks.find({'fw_id': {'$in' : wf['nodes']}},
                             {'spec.task_type': 1 ,'state': 1, 'launches': 1}):
