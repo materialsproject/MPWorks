@@ -59,31 +59,33 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
                     folder = folder + "recon"
 
                 if len(entry.data["calculations"]) == 2:
-                    relax2 = entry.data["calculations"][1]
-                    incar = relax2["input"]["incar"]
-                    poscar = entry.structure
+                    relax = entry.data["calculations"][1]
+                else:
+                    relax = entry.data["calculations"][0]
+                incar = relax["input"]["incar"]
+                poscar = entry.structure
 
-                    os.mkdir(folder)
-                    mplb = MVLSlabSet(poscar, potcar_functional="PBE")
-                    mplb.write_input(os.path.join(cwd, folder))
+                os.mkdir(folder)
+                mplb = MVLSlabSet(poscar, potcar_functional="PBE")
+                mplb.write_input(os.path.join(cwd, folder))
 
-                    incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
-                    incar = Incar.from_dict(incar)
-                    incar.write_file(os.path.join(cwd, folder, "INCAR"))
+                incar.update({"NSW": 0, "IBRION": -1, "LVTOT": True, "EDIFF": 0.0001})
+                incar = Incar.from_dict(incar)
+                incar.write_file(os.path.join(cwd, folder, "INCAR"))
 
-                    kpoints = Kpoints.from_dict(relax2["input"]["kpoints"])
-                    kpoints.write_file(os.path.join(cwd, folder, "KPOINTS"))
-                    poscar.to("POSCAR", os.path.join(cwd, folder, "POSCAR"))
+                kpoints = Kpoints.from_dict(relax["input"]["kpoints"])
+                kpoints.write_file(os.path.join(cwd, folder, "KPOINTS"))
+                poscar.to("POSCAR", os.path.join(cwd, folder, "POSCAR"))
 
-                    tasks = [RunCustodianTask(cwd=cwd, folder=folder, debug=debug,
-                                              custodian_params=cust_params),
-                             InsertTask(cwd=cwd, folder=folder, mpid=mpid,
-                                        debug=debug, miller_index=hkl, 
-                                        db_credentials=db_credentials)]
-                  
-                    fw = Firework(tasks, name=folder)
-                    fw_ids.append(fw.fw_id)
-                    fws.append(fw)
+                tasks = [RunCustodianTask(cwd=cwd, folder=folder, debug=debug,
+                                          custodian_params=cust_params),
+                         InsertTask(cwd=cwd, folder=folder, mpid=mpid,
+                                    debug=debug, miller_index=hkl,
+                                    db_credentials=db_credentials)]
+
+                fw = Firework(tasks, name=folder)
+                fw_ids.append(fw.fw_id)
+                fws.append(fw)
 
     wf = Workflow(fws, name='Workfunction Calculations')
     launchpad = LaunchPad.from_file(os.path.join(os.environ["HOME"],
@@ -120,7 +122,9 @@ class RunCustodianTask(FireTaskBase):
             if fw_env.get('scratch_root'):
                 custodian_params['scratch_dir'] = os.path.expandvars(
                     fw_env['scratch_root'])
-            job = VaspJob(["mpirun", "-np", "16", "/opt/vasp/5.2.12/openmpi_ib/bin/vasp"], auto_npar=False, copy_magmom=True, suffix=".relax1")
+            job = VaspJob(["mpirun", "-np", "16",
+                           "/opt/vasp/5.2.12/openmpi_ib/bin/vasp"],
+                          auto_npar=False, copy_magmom=True, suffix=".relax1")
             c = Custodian(jobs=[job], gzipped_output=True, **custodian_params)
 
             output = c.run()
