@@ -512,7 +512,8 @@ class WriteSlabVaspInputs(FireTaskBase):
             incar.__setitem__('ISTART', 0)
             incar.__setitem__('NELMIN', 8)
             incar.__setitem__('IBRION', 2)
-            incar.__setitem__('EDIFF', 1e-06)
+            incar.__setitem__('EDIFF', 1e-04)
+            incar.__setitem__('LVTOT', True)
 
             if gpu:
                 if "KPAR" not in incar.keys():

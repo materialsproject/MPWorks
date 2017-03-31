@@ -59,7 +59,7 @@ def get_all_wfs(job, scratch_dir, vaspdbinsert_params,
                 avoid_elements=["H", "Po", "At", "Fr", "Ra",
                                 "N", "O", "C", "Hg"],
                 collection="surface_tasks", launchpad_dir="",
-                gpu=False, user_incar_settings={"EDIFF": 1e-04}):
+                gpu=False, user_incar_settings={"EDIFF": 1e-04, "LVTOT": True}):
 
     # Makes running calculations on all solid systems less of a hassle every time
 

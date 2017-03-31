@@ -51,10 +51,10 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
 
                 poscar = entry.structure
                 hkl = surface["miller_index"]
-                folder = "%s_%s_slab_s10v10_%s%s%s_shift%s" \
-                         % (poscar[0].species_string,
-                            mpid, hkl[0], hkl[1], hkl[2],
-                            entry.data["shift"])
+                folder = "%s_%s_slab_s10v10_" %(poscar[0].species_string, mpid)
+                for i in hkl:
+                    folder = folder+str(i)
+                folder = folder + "_shift%s" %(entry.data["shift"])                      
                 if surface["is_reconstructed"]:
                     folder = folder + "recon"
 
