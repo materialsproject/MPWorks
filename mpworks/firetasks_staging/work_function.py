@@ -13,6 +13,7 @@ from custodian.vasp.jobs import VaspJob
 from pymongo import MongoClient
 from monty.json import MontyDecoder
 import os
+import shutil
 from matgendb import QueryEngine
 
 
@@ -33,21 +34,30 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
     cust_params = {"scratch_dir": os.path.join(scratch_dir, os.environ["USER"]),
                    "handlers": handlers, "max_errors": 10}
     fws, fw_ids = [], []
-
+    
+    if not os.path.isdir("complete"):
+        os.mkdir("complete")
+    
     for mpid in mpids:
 
         print(mpid)
         surface_entry = surface_properties.find_one({"material_id": mpid})
+        if not surface_entry:
+            print(surface_entry)
         for surface in surface_entry["surfaces"]:
             if "work_function" not in surface.keys():
 
                 task = surface["tasks"]["slab"]
-                entry = qe.get_entries({"task_id": task},
+                entries = qe.get_entries({"task_id": task},
                                        optional_data=["calculations",
                                                       "calculation_name",
                                                       "shift",
                                                       "miller_index"],
-                                       inc_structure="Final")[0]
+                                       inc_structure="Final")
+                if not entries:
+                    print(task)
+                else:
+                    entry = entries[0]
 
                 poscar = entry.structure
                 hkl = surface["miller_index"]
@@ -176,3 +186,5 @@ class InsertTask(FireTaskBase):
 
             surface_properties.update_one({"material_id": mpid},
                                           {"$set": {"surfaces": update_surfaces}})
+
+        shutil.move(os.path.join(cwd, folder), os.path.join(cwd, "complete"))
