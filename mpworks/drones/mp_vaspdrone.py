@@ -185,7 +185,7 @@ class MPVaspDrone(VaspToDbTaskDrone):
                     and d['state'] == 'successful':
                     launch_doc = launches_coll.find_one({"fw_id": d['fw_id'], "launch_dir": {"$regex": d["dir_name"]}},
                                                         {"action.stored_data": 1})
-                    vasp_run = Vasprun(zpath(os.path.join(path, "vasprun.xml")), parse_projected_eigen=False)
+                    vasp_run = Vasprun(zpath(os.path.join(path, "vasprun.xml")), parse_projected_eigen=True)
 
                     if 'band structure' in d['task_type']:
                         def string_to_numlist(stringlist):
