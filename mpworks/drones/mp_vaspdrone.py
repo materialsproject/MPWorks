@@ -5,6 +5,7 @@ import logging
 import pprint
 import re
 import traceback
+import six
 from monty.io import zopen
 from monty.os.path import zpath
 from pymongo import MongoClient
@@ -196,7 +197,8 @@ class MPVaspDrone(VaspToDbTaskDrone):
                             d['stored_data'][i] = launch_doc['action']['stored_data'][i]
                         kpoints_doc = d['stored_data']['kpath']['kpoints']
                         for i in kpoints_doc:
-                            kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
+                            if isinstance(kpoints_doc[i], six.string_types):
+                                kpoints_doc[i]=string_to_numlist(kpoints_doc[i])
                         bs=vasp_run.get_band_structure(efermi=d['calculations'][0]['output']['outcar']['efermi'],
                                                        line_mode=True)
                     else:
