@@ -247,7 +247,6 @@ class VaspSlabDBInsertTask(FireTaskBase):
             additional_fields["vac_size"] = vsize
             additional_fields["slab_size"] = ssize
             additional_fields["material_id"] = mpid
-            additional_fields["material_id"] = mpid
             additional_fields["conventional_spacegroup"] = spacegroup
             additional_fields["polymorph"] =  unit_cell_dict["polymorph"]
         else:
@@ -1223,7 +1222,7 @@ class UpdateRepositoriesAndDBs(object):
             true_slab_entry = entries_dict[hkl]["slabcell"][count]
 
             e_surf_list.append(surface_energies[count])
-            tasks["slab"] = slab_entry.data["task_id"]
+            tasks["slab"] = true_slab_entry.data["task_id"]
             surface["tasks"] = tasks
             surface["surface_energy_EV_PER_ANG2"] = surface_energies[count]/EV_PER_ANG2_TO_JOULES_PER_M2
             surface["surface_energy"] = surface_energies[count]
