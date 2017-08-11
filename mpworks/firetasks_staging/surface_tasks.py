@@ -1223,7 +1223,7 @@ class UpdateRepositoriesAndDBs(object):
 
             e_surf_list.append(surface_energies[count])
             tasks["slab"] = true_slab_entry.data["task_id"]
-            surface["tasks"] = tasks
+            surface["tasks"] = tasks.copy()
             surface["surface_energy_EV_PER_ANG2"] = surface_energies[count]/EV_PER_ANG2_TO_JOULES_PER_M2
             surface["surface_energy"] = surface_energies[count]
             surface["is_reconstructed"] = True if true_slab_entry.data["is_reconstructed"] else False
