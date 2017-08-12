@@ -91,7 +91,8 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
                                           custodian_params=cust_params),
                          InsertTask(cwd=cwd, folder=folder, mpid=mpid,
                                     debug=debug, miller_index=hkl,
-                                    db_credentials=db_credentials)]
+                                    db_credentials=db_credentials,
+                                    is_reconstructed=surface["is_reconstructed"])]
 
                 fw = Firework(tasks, name=folder)
                 fw_ids.append(fw.fw_id)
@@ -150,7 +151,8 @@ class InsertTask(FireTaskBase):
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
     required_params = ["folder", "cwd", "mpid", "debug",
-                       "miller_index", "db_credentials"]
+                       "miller_index", "db_credentials",
+                       "is_reconstructed"]
 
     def run_task(self, fw_spec):
 
@@ -161,6 +163,7 @@ class InsertTask(FireTaskBase):
         debug = dec.process_decoded(self['debug'])
         miller_index = dec.process_decoded(self['miller_index'])
         db_credentials = dec.process_decoded(self['db_credentials'])
+        is_reconstructed = dec.process_decoded(self['is_reconstructed'])
 
         conn = MongoClient(host=db_credentials["host"],
                            port=db_credentials["port"])
@@ -175,11 +178,14 @@ class InsertTask(FireTaskBase):
             surfaces = surface_entry["surfaces"]
             update_surfaces = []
             for surface in surfaces:
-                if miller_index == surface["miller_index"]:
-                    locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.gz"))
+                if miller_index == surface["miller_index"] and \
+                                is_reconstructed == surface["is_reconstructed"]:
+                    locpot = Locpot.from_file(os.path.join(cwd, folder,
+                                                           "LOCPOT.gz"))
                     loc = locpot.get_average_along_axis(2)
                     evac = max(loc)
-                    outcar = Outcar(os.path.join(cwd, folder, "OUTCAR.relax1.gz"))
+                    outcar = Outcar(os.path.join(cwd, folder,
+                                                 "OUTCAR.relax1.gz"))
                     efermi = outcar.efermi
                     surface["work_function"] = evac - efermi
                 update_surfaces.append(surface)
