@@ -17,7 +17,7 @@ import shutil
 from matgendb import QueryEngine
 
 
-def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
+def WorkFunctionWorkFlow(mpids, db_credentials, handlers=[],
                          debug=False, scratch_dir="", launchpad_dir=""):
 
     conn = MongoClient(host=db_credentials["host"],
@@ -89,10 +89,9 @@ def WorkFunctionWorkFlow(mpids, job, db_credentials, handlers=[],
 
                 tasks = [RunCustodianTask(cwd=cwd, folder=folder, debug=debug,
                                           custodian_params=cust_params),
-                         InsertTask(cwd=cwd, folder=folder, mpid=mpid,
-                                    debug=debug, miller_index=hkl,
+                         InsertTask(cwd=cwd, folder=folder, debug=debug,
                                     db_credentials=db_credentials,
-                                    is_reconstructed=surface["is_reconstructed"])]
+                                    task_id=task)]
 
                 fw = Firework(tasks, name=folder)
                 fw_ids.append(fw.fw_id)
@@ -150,47 +149,29 @@ class InsertTask(FireTaskBase):
         inputs of a slab is created, then the Firework for that specific slab
         is made with a RunCustodianTask and a VaspSlabDBInsertTask
     """
-    required_params = ["folder", "cwd", "mpid", "debug",
-                       "miller_index", "db_credentials",
-                       "is_reconstructed"]
+    required_params = ["folder", "cwd", "debug",
+                       "task_id", "db_credentials"]
 
     def run_task(self, fw_spec):
 
         dec = MontyDecoder()
         folder = dec.process_decoded(self['folder'])
         cwd = dec.process_decoded(self['cwd'])
-        mpid = dec.process_decoded(self['mpid'])
         debug = dec.process_decoded(self['debug'])
-        miller_index = dec.process_decoded(self['miller_index'])
+        task_id = dec.process_decoded(self['task_id'])
         db_credentials = dec.process_decoded(self['db_credentials'])
-        is_reconstructed = dec.process_decoded(self['is_reconstructed'])
 
         conn = MongoClient(host=db_credentials["host"],
                            port=db_credentials["port"])
         db = conn.get_database(db_credentials["database"])
         db.authenticate(db_credentials["user"],
                         db_credentials["password"])
-        surface_properties = db["surface_properties"]
+        surface_tasks = db["surface_tasks"]
 
         if not debug:
 
-            surface_entry = surface_properties.find_one({"material_id": mpid})
-            surfaces = surface_entry["surfaces"]
-            update_surfaces = []
-            for surface in surfaces:
-                if miller_index == surface["miller_index"] and \
-                                is_reconstructed == surface["is_reconstructed"]:
-                    locpot = Locpot.from_file(os.path.join(cwd, folder,
-                                                           "LOCPOT.gz"))
-                    loc = locpot.get_average_along_axis(2)
-                    evac = max(loc)
-                    outcar = Outcar(os.path.join(cwd, folder,
-                                                 "OUTCAR.relax1.gz"))
-                    efermi = outcar.efermi
-                    surface["work_function"] = evac - efermi
-                update_surfaces.append(surface)
-
-            surface_properties.update_one({"material_id": mpid},
-                                          {"$set": {"surfaces": update_surfaces}})
-
-        shutil.move(os.path.join(cwd, folder), os.path.join(cwd, "complete"))
+            locpot = Locpot.from_file(os.path.join(cwd, folder,
+                                                   "LOCPOT.gz"))
+            loc = locpot.get_average_along_axis(2)
+            surface_tasks.update_one({"task_id": task_id},
+                                     {"$set": {"local_potential_along_c": loc}})
