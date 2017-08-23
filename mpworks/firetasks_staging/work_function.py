@@ -170,8 +170,9 @@ class InsertTask(FireTaskBase):
 
         if not debug:
 
-            locpot = Locpot.from_file(os.path.join(cwd, folder,
-                                                   "LOCPOT.gz"))
+            locpot = Locpot.from_file(os.path.join(cwd, folder, "LOCPOT.gz"))
             loc = locpot.get_average_along_axis(2)
+            efermi = Outcar(os.path.join(cwd, folder, "OUTCAR.relax1.gz")).efermi
             surface_tasks.update_one({"task_id": task_id},
-                                     {"$set": {"local_potential_along_c": loc}})
+                                     {"$set": {"local_potential_along_c": loc,
+                                               "efermi": efermi}})
