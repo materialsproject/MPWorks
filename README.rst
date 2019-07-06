@@ -2,9 +2,9 @@
 MPWorks
 =======
 
-MPWorks merges pymatgen, custodian, and FireWorks into a custom workflow for Materials Project. It is very powerful in that it is used for all the calculations performed for the Materials Project database; however, it is also quite complicated and not completely flexible. This guide will try to explain the operation of the MPWorks system of running calculations.
+**WARNING**:  MPWorks is no longer being developed. A newer and simpler version of MPWorks called *atomate* (https://www.github.com/hackingmaterials/atomate) has been developed by some of the same developers of MPWorks. Use that instead.
 
-**Important note**: a newer and simpler version of MPWorks called *atomate* (https://www.github.com/hackingmaterials/atomate) has been developed by some of the same developers of MPWorks. Much of MPWorks-style development is migrating there and you might want to check out atomate.
+MPWorks merges pymatgen, custodian, and FireWorks into a custom workflow for Materials Project. It is very powerful in that it is used for all the calculations performed for the Materials Project database; however, it is also quite complicated and not completely flexible. This guide will try to explain the operation of the MPWorks system of running calculations.
 
 0. Installation
 ===============
